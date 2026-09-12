@@ -1,0 +1,71 @@
+{
+  "status": "proposed",
+  "brand": {
+    "name": "Mshwar",
+    "wordmark": "mshwar",
+    "arabic": "مشوار"
+  },
+  "color": {
+    "cedar": "#12352F",
+    "orange": "#F3653E",
+    "canvas": "#FCFCF8",
+    "slate": "#66756E",
+    "white": "#FFFFFF",
+    "border": "#D8E0DC",
+    "error": "#B42318",
+    "success": "#256D47",
+    "warning": "#855200",
+    "accentText": "#0C241F"
+  },
+  "typography": {
+    "latin": {
+      "family": "Manrope",
+      "fallback": "system-ui, sans-serif"
+    },
+    "arabic": {
+      "family": "Noto Sans Arabic",
+      "fallback": "Tahoma, sans-serif"
+    },
+    "bodySize": "1rem",
+    "bodyLineHeight": 1.6,
+    "arabicLineHeight": 1.8,
+    "labelSize": "0.875rem",
+    "headingWeights": [
+      600,
+      700,
+      800
+    ]
+  },
+  "spacing": [
+    4,
+    8,
+    12,
+    16,
+    24,
+    32,
+    48,
+    64,
+    96
+  ],
+  "radius": {
+    "control": 12,
+    "card": 20,
+    "pill": 999
+  },
+  "icon": {
+    "family": "Lucide",
+    "size": 24,
+    "strokeWidth": 1.75
+  },
+  "motion": {
+    "quick": "160ms",
+    "normal": "240ms",
+    "easing": "cubic-bezier(0.2,0.8,0.2,1)"
+  },
+  "layout": {
+    "maxWidth": 1280,
+    "desktopGutter": 48,
+    "mobileGutter": 20,
+    "minTarget": 44
+  }
+}

@@ -1,0 +1,27 @@
+[
+  {
+    "foreground": "cedar",
+    "background": "canvas",
+    "ratio": 12.96
+  },
+  {
+    "foreground": "slate",
+    "background": "canvas",
+    "ratio": 4.71
+  },
+  {
+    "foreground": "cedar",
+    "background": "orange",
+    "ratio": 4.28
+  },
+  {
+    "foreground": "white",
+    "background": "orange",
+    "ratio": 3.11
+  },
+  {
+    "foreground": "accentText",
+    "background": "orange",
+    "ratio": 5.24
+  }
+]

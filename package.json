@@ -1,0 +1,26 @@
+{
+  "name": "mshwar",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mshwar — AI-Powered Lebanon Trip & Experience Platform",
+  "scripts": {
+    "dev": "docker compose up --build",
+    "dev:web": "pnpm --filter web dev",
+    "dev:api": "pnpm --filter api dev",
+    "build": "pnpm --filter web build && pnpm --filter api build",
+    "lint": "pnpm --filter web lint && pnpm --filter api lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm --filter web typecheck && pnpm --filter api typecheck",
+    "test": "pnpm --filter web test && pnpm --filter api test",
+    "precommit": "pre-commit run --all-files",
+    "clean": "pnpm --filter web clean && pnpm --filter api clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^9.0.1",
+    "pre-commit": "^1.2.2",
+    "prettier": "^3.5.3"
+  },
+  "packageManager": "pnpm@11.15.1"
+}
