@@ -20,14 +20,14 @@ packages/shared   → Shared TypeScript types and utilities
 |---|---|
 | Frontend | Next.js 15, React, TypeScript, Tailwind CSS, shadcn/ui |
 | Backend | FastAPI, Python 3.11, SQLAlchemy 2.x, Pydantic v2, Alembic |
-| Database | PostgreSQL + PostGIS + pgvector |
+| Database | PostgreSQL 17 + PostGIS + pgvector + btree_gist |
 | AI/LLM | LLM provider abstraction (OpenAI/Ollama), pgvector RAG, OR-Tools |
 | Maps | Google Maps Platform |
 | Weather | Open-Meteo |
 | Images | ImageKit |
 | Payments | Stripe (test mode) + provider abstraction |
 | Monitoring | Sentry + PostHog |
-| Deployment | Vercel (frontend), Docker Compose (local), Supabase (PostgreSQL) |
+| Deployment | Vercel (frontend), Docker Compose (local), Self-hosted PostgreSQL 17 (production) |
 
 ## Quick Start
 
@@ -36,7 +36,7 @@ packages/shared   → Shared TypeScript types and utilities
 - Node.js 20+ and pnpm 9+
 - Python 3.11+
 - Docker and Docker Compose
-- PostgreSQL 16+ and Redis 7+ (if running without Docker)
+- PostgreSQL 17 with PostGIS, pgvector, and btree_gist (if running without Docker)
 
 ### Single Command Setup
 
@@ -177,13 +177,17 @@ Example: `feat(trip-builder): add weather-aware replanning`
 2. Use `cn()` from `@/lib/utils` for class merging
 3. Follow shadcn/ui patterns
 
-### Database Migrations
+### Database Provisioning
 
 ```bash
-cd services/api
-alembic revision --autogenerate -m "description"
-alembic upgrade head
+# Apply migrations including extension creation
+cd services/api && alembic upgrade head
+
+# Extension smoke tests (requires running PostgreSQL)
+PYTHONPATH=services/api python3 -m pytest tests/test_extensions.py -v
 ```
+
+See [docs/database-provisioning.md](docs/database-provisioning.md) for the Supabase vs self-hosted decision and trade-offs.
 
 ## Testing
 
@@ -191,9 +195,19 @@ alembic upgrade head
 # Frontend tests
 pnpm --filter web test
 
-# Backend tests
-pnpm --filter api test
+# Backend tests (including extension smoke tests)
+cd services/api && PYTHONPATH=services/api python3 -m pytest tests/ -v
 ```
+
+### Extension Smoke Tests
+
+Tests that verify PostgreSQL extensions are working:
+
+| Test | Extension Verified |
+|---|---|
+| `test_st_within` | PostGIS (`ST_DWithin`) |
+| `test_vector_inner_product_operator` | pgvector (`<->` operator) |
+| `test_exclude_constraint_prevents_overlap` | btree_gist (EXCLUDE constraint) |
 
 ## Project Structure
 
@@ -213,6 +227,7 @@ mshwar/
 │       └── next.config.ts
 ├── services/
 │   └── api/                    # FastAPI backend
+│       ├── db/                 # PostgreSQL Dockerfile
 │       ├── app/
 │       │   ├── main.py         # FastAPI application entry
 │       │   ├── core/           # Config and dependencies
@@ -224,9 +239,14 @@ mshwar/
 │       ├── pyproject.toml      # Python dependencies
 │       ├── requirements.txt
 │       └── tests/              # Test suite
+│           ├── test_main.py
+│           ├── test_config.py
+│           ├── test_extensions.py  # Extension smoke tests
+│           └── conftest.py
+├── docs/                       # Documentation
+│   └── database-provisioning.md  # Supabase vs self-hosted decision
 ├── packages/
 │   └── shared/                 # Shared TypeScript types
-├── docs/                       # Documentation
 ├── tooling/                    # Shared tooling configs
 ├── .github/workflows/          # CI/CD pipelines
 ├── .husky/                     # Git hooks

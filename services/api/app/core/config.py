@@ -15,12 +15,22 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24 * 8
 
+    # Connection pool settings
+    pool_size: int = 20
+    max_overflow: int = 10
+    pool_recycle: int = 1800
+    pool_pre_ping: bool = True
+    connect_timeout: int = 10
+
+    # Statement timeout in milliseconds
+    statement_timeout_ms: int = 30000
+
     class Config:
         env_file = ".env"
         case_sensitive = True
 
 
-@lru_cache
+@lru_cache()
 def get_settings() -> Settings:
     return Settings()
 
