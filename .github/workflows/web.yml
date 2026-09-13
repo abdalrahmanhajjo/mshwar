@@ -80,20 +80,30 @@ jobs:
     environment: preview
     steps:
       - uses: actions/checkout@v4
-      - name: Skip preview when Vercel is not configured
-        if: ${{ secrets.VERCEL_TOKEN == '' }}
-        run: echo "VERCEL_TOKEN is not set; skipping preview deploy"
+      - name: Check Vercel configuration
+        id: vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -n "$VERCEL_TOKEN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::VERCEL_TOKEN is not set; skipping preview deploy"
+          fi
       - uses: ./.github/actions/setup-node-pnpm
-        if: ${{ secrets.VERCEL_TOKEN != '' }}
+        if: steps.vercel.outputs.configured == 'true'
         with:
           node-version: ${{ env.NODE_VERSION }}
           pnpm-version: ${{ env.PNPM_VERSION }}
-      - if: ${{ secrets.VERCEL_TOKEN != '' }}
+      - name: Install dependencies
+        if: steps.vercel.outputs.configured == 'true'
         run: pnpm install
-      - if: ${{ secrets.VERCEL_TOKEN != '' }}
+      - name: Build
+        if: steps.vercel.outputs.configured == 'true'
         run: pnpm run build
       - name: Deploy to Vercel Preview
-        if: ${{ secrets.VERCEL_TOKEN != '' }}
+        if: steps.vercel.outputs.configured == 'true'
         uses: amondnet/vercel-action@v25.2.0
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
@@ -112,13 +122,30 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v4
+      - name: Check Vercel configuration
+        id: vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -n "$VERCEL_TOKEN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::VERCEL_TOKEN is not set; skipping Vercel staging deploy"
+          fi
       - uses: ./.github/actions/setup-node-pnpm
+        if: steps.vercel.outputs.configured == 'true'
         with:
           node-version: ${{ env.NODE_VERSION }}
           pnpm-version: ${{ env.PNPM_VERSION }}
-      - run: pnpm install
-      - run: pnpm run build
+      - name: Install dependencies
+        if: steps.vercel.outputs.configured == 'true'
+        run: pnpm install
+      - name: Build
+        if: steps.vercel.outputs.configured == 'true'
+        run: pnpm run build
       - name: Deploy to Vercel Staging
+        if: steps.vercel.outputs.configured == 'true'
         uses: amondnet/vercel-action@v25.2.0
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
@@ -137,13 +164,37 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v4
+      - name: Check Vercel configuration
+        id: vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          PRODUCTION_WEB_URL: ${{ secrets.PRODUCTION_WEB_URL }}
+        run: |
+          if [ -n "$VERCEL_TOKEN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::VERCEL_TOKEN is not set; skipping Vercel production deploy"
+          fi
+          if [ -n "$PRODUCTION_WEB_URL" ]; then
+            echo "health=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "health=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::PRODUCTION_WEB_URL is not set; skipping production health check"
+          fi
       - uses: ./.github/actions/setup-node-pnpm
+        if: steps.vercel.outputs.configured == 'true'
         with:
           node-version: ${{ env.NODE_VERSION }}
           pnpm-version: ${{ env.PNPM_VERSION }}
-      - run: pnpm install
-      - run: pnpm run build
+      - name: Install dependencies
+        if: steps.vercel.outputs.configured == 'true'
+        run: pnpm install
+      - name: Build
+        if: steps.vercel.outputs.configured == 'true'
+        run: pnpm run build
       - name: Deploy to Vercel Production
+        if: steps.vercel.outputs.configured == 'true'
         uses: amondnet/vercel-action@v25.2.0
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
@@ -154,19 +205,41 @@ jobs:
           github-comment: true
           github-comment-delete: true
       - name: Verify production deployment
+        if: steps.vercel.outputs.health == 'true'
+        env:
+          PRODUCTION_WEB_URL: ${{ secrets.PRODUCTION_WEB_URL }}
         run: |
-          curl -f https://mshwar.app || exit 1
+          curl -f "$PRODUCTION_WEB_URL"
           echo "Production deployment verified"
 
   rollback:
     name: Rollback Web Deployment
     runs-on: ubuntu-latest
-    if: failure() && github.ref == 'refs/heads/main'
+    if: failure() && github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: [deploy-preview, deploy-staging, deploy-production-gate]
     environment: production
     steps:
       - uses: actions/checkout@v4
+      - name: Check Vercel rollback configuration
+        id: vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          PRODUCTION_WEB_URL: ${{ secrets.PRODUCTION_WEB_URL }}
+        run: |
+          if [ -n "$VERCEL_TOKEN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::VERCEL_TOKEN is not set; skipping Vercel rollback"
+          fi
+          if [ -n "$PRODUCTION_WEB_URL" ]; then
+            echo "health=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "health=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::PRODUCTION_WEB_URL is not set; skipping rollback health check"
+          fi
       - name: Rollback Vercel to previous version
+        if: steps.vercel.outputs.configured == 'true'
         uses: amondnet/vercel-action@v25.2.0
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
@@ -175,6 +248,12 @@ jobs:
           vercel-args: "--rollback"
           scope: ${{ secrets.VERCEL_ORG_ID }}
       - name: Verify rollback
+        if: steps.vercel.outputs.health == 'true'
+        env:
+          PRODUCTION_WEB_URL: ${{ secrets.PRODUCTION_WEB_URL }}
         run: |
-          curl -f https://mshwar.app || exit 1
+          curl -f "$PRODUCTION_WEB_URL"
           echo "Web rollback verified"
+      - name: Rollback check complete
+        if: always()
+        run: echo "::notice::Web rollback finished; destructive steps ran only when secrets were configured"
