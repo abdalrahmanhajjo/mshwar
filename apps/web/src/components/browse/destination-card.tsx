@@ -5,7 +5,7 @@ import type { Destination } from "@/lib/catalog";
 
 export function DestinationCard({ destination }: { destination: Destination }) {
   return (
-    <Link href={`/destinations/${destination.slug}`} className="group block">
+    <Link href={`/destinations/${destination.slug}`} aria-label={destination.name} className="group block">
       <article className="relative overflow-hidden rounded-card">
         <div className="aspect-[4/3] md:aspect-[5/4]">
           <CatalogImage src={destination.image} alt={destination.imageAlt} />

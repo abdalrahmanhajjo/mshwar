@@ -90,7 +90,32 @@ export type BrowseKey =
   | "sampleDisclaimer"
   | "backDestinations"
   | "backExperiences"
-  | "previewNote";
+  | "previewNote"
+  | "kindAll"
+  | "kindExperiences"
+  | "kindAttractions"
+  | "kindRestaurants"
+  | "filterDate"
+  | "filterPrice"
+  | "filterDistance"
+  | "filterGroup"
+  | "filterRating"
+  | "priceAny"
+  | "distanceAny"
+  | "anyRating"
+  | "availableOnly"
+  | "availabilityUnknown"
+  | "policies"
+  | "sortRating"
+  | "pagePrevious"
+  | "pageNext"
+  | "discoverTitle"
+  | "discoverBody"
+  | "savedTitle"
+  | "savedEmpty"
+  | "quoteRequired"
+  | "availabilityStatus"
+  | "fromBeirut";
 
 export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
   en: {
@@ -185,6 +210,31 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     backDestinations: "All destinations",
     backExperiences: "Back to experiences",
     previewNote: "Request to book · Preview",
+    kindAll: "All",
+    kindExperiences: "Experiences",
+    kindAttractions: "Attractions",
+    kindRestaurants: "Restaurants",
+    filterDate: "Date",
+    filterPrice: "Price",
+    filterDistance: "Distance from Beirut",
+    filterGroup: "Group size",
+    filterRating: "Rating",
+    priceAny: "Any price",
+    distanceAny: "Any distance",
+    anyRating: "Any rating",
+    availableOnly: "Available where known",
+    availabilityUnknown: "Availability unknown",
+    policies: "Policies",
+    sortRating: "Rating",
+    pagePrevious: "Previous",
+    pageNext: "Next",
+    discoverTitle: "Find your kind of somewhere.",
+    discoverBody: "Destinations, experiences, attractions, restaurants and a few ready-made days.",
+    savedTitle: "Kept for a later trip.",
+    savedEmpty: "Nothing saved yet. Heart a place while you browse.",
+    quoteRequired: "Quote required",
+    availabilityStatus: "Availability",
+    fromBeirut: "from Beirut",
   },
   ar: {
     heroTitle: "اترك مساحة لمشوار صغير.",
@@ -277,6 +327,31 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     backDestinations: "كل الوجهات",
     backExperiences: "العودة إلى التجارب",
     previewNote: "طلب حجز · معاينة",
+    kindAll: "الكل",
+    kindExperiences: "تجارب",
+    kindAttractions: "معالم",
+    kindRestaurants: "مطاعم",
+    filterDate: "التاريخ",
+    filterPrice: "السعر",
+    filterDistance: "المسافة من بيروت",
+    filterGroup: "حجم المجموعة",
+    filterRating: "التقييم",
+    priceAny: "أي سعر",
+    distanceAny: "أي مسافة",
+    anyRating: "أي تقييم",
+    availableOnly: "المتاح حيث يُعرف",
+    availabilityUnknown: "التوفر غير معروف",
+    policies: "السياسات",
+    sortRating: "التقييم",
+    pagePrevious: "السابق",
+    pageNext: "التالي",
+    discoverTitle: "اعثر على نوع مكانك.",
+    discoverBody: "وجهات وتجارب ومعالم ومطاعم وأيام جاهزة.",
+    savedTitle: "محفوظة لرحلة لاحقة.",
+    savedEmpty: "لا شيء محفوظ بعد. احفظ مكاناً أثناء التصفح.",
+    quoteRequired: "يتطلب عرض سعر",
+    availabilityStatus: "التوفر",
+    fromBeirut: "من بيروت",
   },
   fr: {
     heroTitle: "Faites une place à un petit mshwar.",
@@ -370,6 +445,31 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     backDestinations: "Toutes les destinations",
     backExperiences: "Retour aux expériences",
     previewNote: "Demande de réservation · Aperçu",
+    kindAll: "Tout",
+    kindExperiences: "Expériences",
+    kindAttractions: "Attractions",
+    kindRestaurants: "Restaurants",
+    filterDate: "Date",
+    filterPrice: "Prix",
+    filterDistance: "Distance depuis Beyrouth",
+    filterGroup: "Taille du groupe",
+    filterRating: "Note",
+    priceAny: "Tous les prix",
+    distanceAny: "Toute distance",
+    anyRating: "Toutes les notes",
+    availableOnly: "Disponible lorsque connu",
+    availabilityUnknown: "Disponibilité inconnue",
+    policies: "Politiques",
+    sortRating: "Note",
+    pagePrevious: "Précédent",
+    pageNext: "Suivant",
+    discoverTitle: "Trouvez votre quelque part.",
+    discoverBody: "Destinations, expériences, attractions, restaurants et quelques journées prêtes.",
+    savedTitle: "Gardé pour plus tard.",
+    savedEmpty: "Rien d’enregistré. Ajoutez un lieu pendant que vous explorez.",
+    quoteRequired: "Devis requis",
+    availabilityStatus: "Disponibilité",
+    fromBeirut: "depuis Beyrouth",
   },
 };
 

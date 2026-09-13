@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { parseExperienceFilters, serializeExperienceFilters } from "@/lib/catalog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,23 +11,21 @@ import { useBrowseCopy } from "@/lib/browse-copy";
 export function HeroSearch({ initialQuery = "", compact = false }: { initialQuery?: string; compact?: boolean }) {
   const copy = useBrowseCopy();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [where, setWhere] = React.useState(initialQuery);
   const [when, setWhen] = React.useState("");
   const [party, setParty] = React.useState("2");
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const params = new URLSearchParams();
-    if (where.trim()) {
-      params.set("q", where.trim());
+    const next = compact ? parseExperienceFilters(searchParams) : {};
+    next.q = where.trim() || undefined;
+    next.date = when || next.date || undefined;
+    if (!compact) {
+      next.party = party ? Number(party) : undefined;
     }
-    if (when) {
-      params.set("date", when);
-    }
-    if (party) {
-      params.set("party", party);
-    }
-    const query = params.toString();
+    next.page = 1;
+    const query = serializeExperienceFilters(next);
     router.push(query ? `/experiences?${query}` : "/experiences");
   }
 
