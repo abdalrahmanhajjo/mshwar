@@ -11,7 +11,7 @@ Proposed visual identity for the Lebanon-wide travel discovery and itinerary pla
 - Generated Tailwind theme, CSS custom properties, and Figma import payloads (`pnpm tokens:generate`).
 - Typography, icon, photography and responsive-interface guidance.
 - Calculated contrast checks for the proposed palette.
-- [Token naming convention](./TOKEN-NAMING.md) and [Figma Variables import](./FIGMA-IMPORT.md).
+- [Token naming convention](./TOKEN-NAMING.md), [Figma Variables import](./FIGMA-IMPORT.md), and the [54-screen Figma inventory](./FIGMA-54-SCREENS.md).
 
 The images are raster artwork. They are not editable SVG masters, and typography shown in the generated board is a visual approximation. The definitive application type choices are listed below. Raster app-icon adaptation may vary slightly from the original logo; final production should export both from one approved vector master. Platform-specific app icon/favicons are not claimed as finished exports here.
 
