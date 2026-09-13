@@ -4,9 +4,20 @@
   "ticket": "MSHWAR-27",
   "parentEpic": "MSHWAR-2",
   "subtasks": ["MSHWAR-185", "MSHWAR-186", "MSHWAR-187", "MSHWAR-188", "MSHWAR-189"],
-  "status": "code-side-inventory",
-  "liveFigmaEdited": false,
-  "note": "Hand-authored from Next.js routes on this branch. Not produced by pnpm tokens:generate. The live Figma file was not edited.",
+  "status": "structural-grid-in-figma",
+  "repoWritesFigma": false,
+  "structuralGridComplete": true,
+  "liveCapturePending": true,
+  "liveFigmaFile": "https://www.figma.com/design/CTLlkbyldx557zamdshjd5/Mshwar--Complete-UI--Clickable-Prototype",
+  "liveFigmaPage": "54 screens",
+  "acceptanceCriteria": {
+    "ac1Desktop54": true,
+    "ac2Mobile20": true,
+    "ac3JourneyGrid": true,
+    "ac4Handoffs": true,
+    "ac5NamingAndPublish": true
+  },
+  "note": "Hand-authored from Next.js routes on this branch. Not produced by pnpm tokens:generate. Structural grid (54 desktop + 20 mobile + 4 handoffs) is on Figma page `54 screens`. Live slots are named frames awaiting capture paste; gap/state slots are stamped. This repository does not write to Figma.",
   "docs": {
     "inventory": "mshwar-brand-foundation/FIGMA-54-SCREENS.md",
     "tokensImport": "mshwar-brand-foundation/FIGMA-IMPORT.md"
