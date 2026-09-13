@@ -3,9 +3,11 @@
 import * as React from "react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { VerificationBanner } from "@/components/auth/verification-banner";
 import { AuthStatus, type AuthState } from "@/components/shell/auth-status";
 import { BrandMark } from "@/components/shell/brand-mark";
 import { LanguageSwitcher } from "@/components/shell/language-switcher";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { MobileNav } from "@/components/shell/mobile-nav";
 import { NavLink } from "@/components/shell/nav-link";
 import { NAV_BY_SURFACE, type ShellSurface } from "@/components/shell/nav-config";
@@ -95,6 +97,9 @@ export function AppShell({ surface, children, auth, currentPath }: AppShellProps
                 ))}
               </nav>
               <div className="flex items-center gap-2">
+                <LocaleLink href="/business" className="hidden text-sm text-text-muted hover:text-text lg:inline">
+                  {t("forBusinesses")}
+                </LocaleLink>
                 <LanguageSwitcher compact />
                 <div className="hidden lg:block">
                   <AuthStatus auth={auth} />
@@ -102,7 +107,8 @@ export function AppShell({ surface, children, auth, currentPath }: AppShellProps
               </div>
             </div>
           </header>
-          <main id="main" className="shell-frame min-w-0 flex-1 py-6">
+          {surface === "traveller" ? <VerificationBanner /> : null}
+          <main id="main" className="min-w-0 flex-1">
             {children}
           </main>
           <ShellFooter surface={surface} />
@@ -125,5 +131,5 @@ export function AdminShell(props: Omit<AppShellProps, "surface">) {
 }
 
 export function ShellMain({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex min-w-0 max-w-full flex-col gap-4", className)} {...props} />;
+  return <div className={cn("shell-frame flex min-w-0 max-w-full flex-col gap-4 py-8", className)} {...props} />;
 }

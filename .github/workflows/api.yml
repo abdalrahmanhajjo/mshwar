@@ -134,7 +134,7 @@ jobs:
         run: |
           cd services/api
           export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar_test
-          PYTHONPATH=. python3 -m pytest tests/test_cross_tenant.py -v
+          PYTHONPATH=. python3 -m pytest tests/test_cross_tenant.py -v --no-cov
 
   coverage-threshold:
     name: Coverage Threshold Check
@@ -142,6 +142,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: actions/download-artifact@v4
         with:
           name: api-coverage
@@ -154,11 +156,14 @@ jobs:
           import xml.etree.ElementTree as ET
           import subprocess
 
-          # Get changed Python files
-          changed = subprocess.check_output(
-              ['git', 'diff', '--name-only', 'HEAD~1', 'HEAD'],
-              text=True
-          ).strip().split('\n')
+          try:
+              changed = subprocess.check_output(
+                  ['git', 'diff', '--name-only', 'HEAD~1', 'HEAD'],
+                  text=True,
+              ).strip().split('\n')
+          except subprocess.CalledProcessError:
+              print('No parent commit available; skipping changed-file coverage floor')
+              raise SystemExit(0)
           changed_py = [f for f in changed if f.startswith('services/api/app/') and f.endswith('.py')]
 
           if not changed_py:
@@ -166,7 +171,7 @@ jobs:
               exit(0)
 
           tree = ET.parse('coverage.xml')
-          root = tree.getRoot() if hasattr(tree, 'getRoot') else tree.getroot()
+          root = tree.getroot()
           for cls in root.findall('.//class'):
               filename = cls.get('filename')
               if any(f in filename for f in changed_py):

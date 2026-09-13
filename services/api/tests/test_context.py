@@ -12,6 +12,7 @@ from app.core.context import (
     get_current_organization_id,
     get_current_user_id,
     set_db_session_context,
+    set_local_gucs,
     set_session_context,
 )
 
@@ -43,6 +44,15 @@ def test_session_context_round_trip() -> None:
 
 
 @pytest.mark.asyncio
+async def test_set_local_gucs_uses_set_config() -> None:
+    db = _FakeSession()
+    await set_local_gucs(db, user_id="u1", organization_id="o1", request_id="r1")  # type: ignore[arg-type]
+    assert db.calls[0][1] == {"value": "u1"}
+    assert db.calls[1][1] == {"value": "o1"}
+    assert db.calls[2][1] == {"value": "r1"}
+
+
+@pytest.mark.asyncio
 async def test_set_db_session_context_requires_ids() -> None:
     with pytest.raises(PermissionError, match="Session context not set"):
         await set_db_session_context(_FakeSession())  # type: ignore[arg-type]
@@ -55,7 +65,8 @@ async def test_set_and_clear_db_session_context() -> None:
     set_session_context(user_id, org_id, "req-9")
     db = _FakeSession()
     await set_db_session_context(db)  # type: ignore[arg-type]
-    assert any(call[1] and call[1].get("user_id") == str(user_id) for call in db.calls)
+    assert any(call[1] and call[1].get("value") == str(user_id) for call in db.calls)
+    assert any("set_config('app.user_id'" in sql for sql, _ in db.calls)
     await clear_db_session_context(db)  # type: ignore[arg-type]
     assert get_current_user_id() is None
     assert any("RESET app.user_id" in sql for sql, _ in db.calls)

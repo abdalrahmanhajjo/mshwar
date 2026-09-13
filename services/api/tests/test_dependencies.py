@@ -5,12 +5,20 @@ import uuid
 import pytest
 
 from app.core.context import clear_session_context, set_session_context
-from app.dependencies import check_connection, get_db, get_read_db
+from app.dependencies import check_connection, get_auth_db, get_db, get_read_db
 
 
 @pytest.mark.asyncio
 async def test_check_connection() -> None:
     assert await check_connection() is True
+
+
+@pytest.mark.asyncio
+async def test_get_auth_db_does_not_require_session_context() -> None:
+    agen = get_auth_db()
+    session = await agen.__anext__()
+    assert session is not None
+    await agen.aclose()
 
 
 @pytest.mark.asyncio
@@ -40,6 +48,7 @@ async def test_get_db_and_read_db_with_context() -> None:
         assert session is not None
         await agen.aclose()
 
+        set_session_context(user_id, org_id, "req-db")
         read_agen = get_read_db()
         read_session = await read_agen.__anext__()
         assert read_session is not None

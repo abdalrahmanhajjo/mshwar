@@ -9,6 +9,24 @@
  */
 import { expect, test, type Page } from "@playwright/test";
 
+const E2E_ORIGIN = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3001";
+
+async function signInForShell(page: Page) {
+  await page.context().addCookies([{ name: "mshwar_session", value: "e2e-placeholder", url: E2E_ORIGIN }]);
+  await page.route("**/api/v1/auth/me", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        id: "00000000-0000-0000-0000-000000000001",
+        email: "e2e@example.com",
+        display_name: "Operator",
+        locale: "en",
+      }),
+    });
+  });
+}
+
 async function assertNoHorizontalScroll(page: Page) {
   const metrics = await page.evaluate(() => ({
     client: document.documentElement.clientWidth,
@@ -30,16 +48,15 @@ test.describe("MSHWAR-26 responsive app shell", () => {
     await page.getByRole("button", { name: "Open menu" }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByRole("link", { name: "Plan" })).toBeVisible();
+    await expect(dialog.getByRole("link", { name: "Plan a trip" })).toBeVisible();
     await expect(dialog.getByRole("link", { name: "Listings" })).toHaveCount(0);
     await page.keyboard.press("Escape");
 
-    const hrefBefore = page.url();
     await page.getByRole("button", { name: "العربية" }).first().click();
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.locator("[data-shell='traveller']")).toHaveAttribute("dir", "rtl");
     await expect(page.getByRole("button", { name: "فتح القائمة" })).toBeVisible();
-    expect(page.url()).toBe(hrefBefore);
+    await expect(page).toHaveURL(/\/ar\/?/);
     await assertNoHorizontalScroll(page);
   });
 
@@ -49,10 +66,13 @@ test.describe("MSHWAR-26 responsive app shell", () => {
     await assertNoHorizontalScroll(page);
     await expect(page.getByRole("button", { name: "Open menu" })).toBeHidden();
     await expect(page.getByRole("navigation", { name: "Menu" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Plan" })).toBeVisible();
+    await expect(
+      page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Plan a trip" }),
+    ).toBeVisible();
   });
 
   test("business and admin shells share chrome but differ in navigation", async ({ page }) => {
+    await signInForShell(page);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/business");
     await expect(page.locator("[data-shell='business']")).toBeVisible();
@@ -76,6 +96,272 @@ test.describe("MSHWAR-26 responsive app shell", () => {
     await expect(page.getByRole("link", { name: "Moderation" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Listings" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Discover" })).toHaveCount(0);
+    await assertNoHorizontalScroll(page);
+  });
+});
+
+test.describe("MSHWAR-29 recovery routes", () => {
+  test("forgot-password shows the same success copy after submit", async ({ page }) => {
+    await page.route("**/api/v1/auth/forgot-password", async (route) => {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) });
+    });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/forgot-password");
+    await page.getByLabel("Email").fill("ada@example.com");
+    await page.getByRole("button", { name: "Send reset link" }).click();
+    await expect(page.getByRole("status")).toHaveText(
+      "If an account exists for this address, a reset link has been sent.",
+    );
+    await expect(page).toHaveURL(/\/forgot-password$/);
+  });
+
+  test("forgot-password is usable at 390px and 1440px", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/forgot-password");
+    await expect(page.getByRole("heading", { name: "Forgot password?" })).toBeVisible();
+    await expect(page.getByLabel("Email")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Send reset link" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/forgot-password");
+    await expect(page.getByRole("link", { name: "Back to sign in" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+
+  test("reset-password shows invalid state without a token and a form with one", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/reset-password");
+    await expect(page.getByText("This reset link is invalid or has expired.")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/reset-password?token=demo-token");
+    await expect(page.getByLabel("New password")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Update password" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+});
+
+test.describe("MSHWAR-30 verification routes", () => {
+  test("verify-email is usable at 390px and 1440px", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/verify-email");
+    await expect(page.getByRole("heading", { name: "Verify email" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Resend verification email" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/verify-email");
+    await expect(page.getByLabel("Email")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+
+  test("verify-email shows the same success copy after resend", async ({ page }) => {
+    await page.route("**/api/v1/auth/resend-verification", async (route) => {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) });
+    });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/verify-email");
+    await page.getByLabel("Email").fill("ada@example.com");
+    await page.getByRole("button", { name: "Resend verification email" }).click();
+    await expect(page.getByRole("status")).toHaveText(
+      "If this address still needs verification, a new link has been sent.",
+    );
+    await expect(page).toHaveURL(/\/verify-email$/);
+  });
+});
+
+test.describe("MSHWAR-28 auth routes", () => {
+  test("unauthenticated /plan returns the user to sign-in with next", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/plan");
+    await expect(page).toHaveURL(/\/signin\?next=/);
+    await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
+    await expect(page.getByLabel("Email")).toBeVisible();
+    await expect(page.getByLabel("Password")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+
+  test("sign-up is usable at 390px and 1440px", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/signup");
+    await expect(page.getByRole("heading", { name: "Sign up" })).toBeVisible();
+    await expect(page.getByLabel("Display name")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/signup");
+    await expect(page.getByRole("button", { name: "Create account" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+});
+
+test.describe("MSHWAR-31 settings routes", () => {
+  test("unauthenticated /settings returns the user to sign-in", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/settings");
+    await expect(page).toHaveURL(/\/signin\?next=/);
+  });
+
+  test("settings is usable at 390px and 1440px when signed in", async ({ page }) => {
+    await signInForShell(page);
+    await mockSettingsApis(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/settings");
+    await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
+    await expect(page.getByLabel("Display name")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Save profile" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/settings");
+    await expect(page.getByRole("heading", { name: "Preferences" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+});
+
+async function mockSettingsApis(page: Page) {
+  await page.route("**/api/v1/profile/vocabularies", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        dietary: [
+          { kind: "dietary", slug: "vegetarian", label: "Vegetarian" },
+          { kind: "dietary", slug: "halal", label: "Halal" },
+        ],
+        accessibility: [{ kind: "accessibility", slug: "step-free", label: "Step-free access" }],
+        interest: [
+          { kind: "interest", slug: "food", label: "Food" },
+          { kind: "interest", slug: "heritage", label: "Heritage" },
+        ],
+        activity_intensity: [
+          { kind: "activity_intensity", slug: "relaxed", label: "Relaxed" },
+          { kind: "activity_intensity", slug: "moderate", label: "Moderate" },
+        ],
+      }),
+    });
+  });
+  await page.route("**/api/v1/locations/areas", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        source: "catalog",
+        picker: "stub",
+        replace_with: "map location picker",
+        areas: [{ id: "area-1", slug: "beirut", name: "Beirut", country_code: "LB" }],
+      }),
+    });
+  });
+  await page.route("**/api/v1/profile", async (route) => {
+    const locale = route.request().method() === "PUT" ? JSON.parse(route.request().postData() ?? "{}").locale : "en";
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        id: "00000000-0000-0000-0000-000000000001",
+        email: "e2e@example.com",
+        display_name: "Operator",
+        locale: locale ?? "en",
+        preferences: {
+          source: "explicit",
+          home_area_id: null,
+          default_group_size: null,
+          activity_intensity: null,
+          dietary: [],
+          accessibility: [],
+          interests: [],
+        },
+        home_area: null,
+      }),
+    });
+  });
+}
+
+test.describe("MSHWAR-32 language URLs", () => {
+  test("Arabic prefix is shareable and renders RTL without a cookie first", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/ar");
+    await expect(page).toHaveURL(/\/ar\/?/);
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(page.getByRole("heading", { name: "اترك مساحة لمشوار صغير." })).toBeVisible();
+    await page.goto("/fr/destinations");
+    await expect(page.getByRole("heading", { name: "Où allez-vous flâner ?" })).toBeVisible();
+    await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+  });
+
+  test("guest cookie keeps Arabic on an unprefixed visit", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/ar");
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    const cookie = (await page.context().cookies()).find((item) => item.name === "mshwar-locale");
+    expect(cookie?.value).toBe("ar");
+    await page.goto("/destinations");
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(page.getByRole("heading", { name: "إلى أين ستتجول؟" })).toBeVisible();
+  });
+
+  test("settings language select prefixes the shareable URL", async ({ page }) => {
+    await signInForShell(page);
+    await mockSettingsApis(page);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/settings");
+    await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
+    await page.getByRole("combobox", { name: "Language" }).click();
+    await page.getByRole("option", { name: "Français" }).click();
+    await expect(page).toHaveURL(/\/fr\/settings/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+    await expect(page.getByRole("heading", { name: "Profil" })).toBeVisible();
+  });
+});
+
+test.describe("MSHWAR-36 / MSHWAR-39 marketing browse", () => {
+  test("home and destinations match the marketing hierarchy at 390 and 1440", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await expect(page.getByRole("heading", { name: "Make room for a little mshwar." })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Find my next place" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/destinations");
+    await expect(page.getByRole("heading", { name: "Where will you wander?" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Byblos" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Batroun" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+
+  test("experience filters stay in the URL and listing detail states booking mode", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/experiences?category=coast&sort=price&available=1");
+    await expect(page).toHaveURL(/category=coast/);
+    await expect(page).toHaveURL(/available=1/);
+    await expect(page.getByRole("heading", { name: "A whole country. Your next discovery." })).toBeVisible();
+    await expect(page.getByLabel("Price")).toBeVisible();
+    await expect(page.getByLabel("Distance from Beirut")).toBeVisible();
+    await page.goto("/experiences/slow-day-byblos");
+    await expect(page.getByRole("heading", { name: "A slow day in Byblos" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Request to book · Preview" })).toBeVisible();
+    await expect(page.getByText("Estimated from", { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Policies" })).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "Policies" }).getByText("Cancellation", { exact: true }),
+    ).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+
+  test("discover hub and inspiration stay usable at 390px", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/discover");
+    await expect(page.getByRole("heading", { name: "Find your kind of somewhere." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Attractions" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Restaurants" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+    await page.goto("/ideas");
+    await expect(page.getByRole("heading", { name: "A little inspiration, ready to go." })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Explore this day" }).first()).toBeVisible();
     await assertNoHorizontalScroll(page);
   });
 });

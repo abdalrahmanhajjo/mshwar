@@ -4,9 +4,11 @@ import {
   Compass,
   Heart,
   LayoutDashboard,
+  MapPin,
   Route,
   Settings,
   Shield,
+  Sparkles,
   Store,
   Ticket,
   Users,
@@ -25,9 +27,10 @@ export interface ShellNavItem {
 
 export const TRAVELLER_NAV: ShellNavItem[] = [
   { href: "/", labelKey: "discover", icon: Compass, exact: true },
-  { href: "/plan", labelKey: "plan", icon: Route },
-  { href: "/saved", labelKey: "saved", icon: Heart },
-  { href: "/bookings", labelKey: "bookings", icon: Ticket },
+  { href: "/destinations", labelKey: "destinations", icon: MapPin },
+  { href: "/experiences", labelKey: "experiences", icon: Sparkles },
+  { href: "/plan", labelKey: "planATrip", icon: Route },
+  { href: "/saved", labelKey: "myTrips", icon: Heart },
 ];
 
 export const BUSINESS_NAV: ShellNavItem[] = [
@@ -53,8 +56,9 @@ export const NAV_BY_SURFACE: Record<ShellSurface, ShellNavItem[]> = {
 };
 
 export function isNavActive(pathname: string, item: ShellNavItem) {
+  const current = pathname.replace(/^\/(en|ar|fr)(?=\/|$)/, "") || "/";
   if (item.exact) {
-    return pathname === item.href;
+    return current === item.href;
   }
-  return pathname === item.href || pathname.startsWith(`${item.href}/`);
+  return current === item.href || current.startsWith(`${item.href}/`);
 }
