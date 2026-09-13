@@ -32,6 +32,8 @@ jobs:
       - run: pnpm tokens:check
       - run: pnpm tokens:contrast
       - run: pnpm tokens:test
+      - run: pnpm --filter web test
+      - run: pnpm --filter web build-storybook
       - name: Scan for secrets in web source
         run: |
           if grep -rnE '(sk_live_|sk_test_|pk_live_|pk_test_|password=|secret_key=|api_key=)' apps/web/src/ --include='*.ts' --include='*.tsx' 2>/dev/null; then
