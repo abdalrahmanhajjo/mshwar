@@ -7,11 +7,26 @@ Proposed visual identity for the Lebanon-wide travel discovery and itinerary pla
 - Primary bilingual logo concept, with the Latin wordmark `mshwar` and Arabic `مشوار`.
 - App icon master concept, using the same journey symbol.
 - Visual brand direction board.
-- Exact editable design tokens in JSON and a CSS foundation.
+- Exact editable design tokens in JSON — the single source of truth for colour, type, spacing, radius, elevation and motion.
+- Generated Tailwind theme, CSS custom properties, and Figma import payloads (`pnpm tokens:generate`).
 - Typography, icon, photography and responsive-interface guidance.
 - Calculated contrast checks for the proposed palette.
+- [Token naming convention](./TOKEN-NAMING.md) and [Figma Variables import](./FIGMA-IMPORT.md).
 
 The images are raster artwork. They are not editable SVG masters, and typography shown in the generated board is a visual approximation. The definitive application type choices are listed below. Raster app-icon adaptation may vary slightly from the original logo; final production should export both from one approved vector master. Platform-specific app icon/favicons are not claimed as finished exports here.
+
+## Design tokens (single source of truth)
+
+`design-tokens.json` is the only file that may define product colour, type, spacing, radius, elevation or motion. Light and dark palettes share the same semantic keys (`surface`, `accent`, `danger`, …). Primitive names such as `cedar` and `orange` stay in `primitive.color` for brand reference and are not Tailwind utilities.
+
+```bash
+# From the repo root
+pnpm tokens:generate   # write CSS, Tailwind theme, Figma exports
+pnpm tokens:check      # CI: fail if generated files are stale
+pnpm tokens:test       # node:test coverage for the generator
+```
+
+`apps/web` imports the generated CSS and extends Tailwind from the generated theme object. Do not hand-edit `generated/` or `apps/web/src/styles/generated/`. Figma publish is manual (no API access); see `FIGMA-IMPORT.md`.
 
 ## Logo concept
 
@@ -21,15 +36,22 @@ Do not imply that the logo is an official emblem, government asset, verified sup
 
 ## Color roles
 
-| Role | Exact value | Use |
-|---|---|---|
-| Cedar | #12352F | Primary text, navigation, primary buttons |
-| Orange | #F3653E | Brand accent, selected details and endpoint dot |
-| Canvas | #FCFCF8 | Main page background |
-| White | #FFFFFF | Cards, dialogs and input surfaces |
-| Slate | #66756E | Secondary text on canvas |
-| Border | #D8E0DC | Dividers and secondary boundaries |
-| Accent text | #0C241F | Small text on orange-filled controls |
+Product UI uses the **semantic** names. Primitive pigments are listed so the brand package stays reviewable.
+
+| Semantic token   | Primitive (light) | Exact value | Use                                             |
+| ---------------- | ----------------- | ----------- | ----------------------------------------------- |
+| `text` / `brand` | Cedar             | #12352F     | Primary text, navigation, primary buttons       |
+| `accent`         | Orange            | #F3653E     | Brand accent, selected details and endpoint dot |
+| `surface`        | Canvas            | #FCFCF8     | Main page background                            |
+| `surface-raised` | White             | #FFFFFF     | Cards, dialogs and input surfaces               |
+| `text-muted`     | Slate             | #66756E     | Secondary text on canvas                        |
+| `border`         | Border            | #D8E0DC     | Dividers and secondary boundaries               |
+| `text-on-accent` | Accent text       | #0C241F     | Small text on orange-filled controls            |
+| `danger`         | Error             | #B42318     | Destructive status                              |
+| `success`        | Success           | #256D47     | Positive status                                 |
+| `warning`        | Warning           | #855200     | Caution status                                  |
+
+Dark-mode values for the same semantic keys live in `color.dark` — they are not defined only inside a CSS media query.
 
 Canvas/cedar contrast is 12.96:1. Slate/canvas is 4.71:1. White/orange is only 3.11:1 and cedar/orange is 4.28:1, so neither is the default small-text pairing on orange. The CSS uses the darker accent text instead. These calculations cover these color pairs only; full interface accessibility still requires component and interaction checks.
 
@@ -45,23 +67,23 @@ Canvas/cedar contrast is 12.96:1. Slate/canvas is 4.71:1. White/orange is only 3
 
 Use [Lucide](https://lucide.dev/) consistently, with 24px default size and 1.75px stroke. Do not mix unrelated icon libraries, emoji or solid icons in the navigation. Keep its [license notices](https://lucide.dev/license) when distributing icon assets. Icons are specified here, not bundled as individual SVG exports.
 
-| Product purpose | Lucide icon |
-|---|---|
-| Discovery | Compass |
-| Location | MapPin |
-| Trip planning | Route |
-| Date | CalendarDays |
-| Party size | Users |
-| Saved places | Heart |
-| Booking | Ticket |
-| Nature | Mountain |
-| Dining | Utensils |
-| Stay | BedDouble |
-| Weather | CloudSun |
-| Search | Search |
-| Filters | SlidersHorizontal |
-| Business portal | Store |
-| Accessibility | Accessibility |
+| Product purpose | Lucide icon       |
+| --------------- | ----------------- |
+| Discovery       | Compass           |
+| Location        | MapPin            |
+| Trip planning   | Route             |
+| Date            | CalendarDays      |
+| Party size      | Users             |
+| Saved places    | Heart             |
+| Booking         | Ticket            |
+| Nature          | Mountain          |
+| Dining          | Utensils          |
+| Stay            | BedDouble         |
+| Weather         | CloudSun          |
+| Search          | Search            |
+| Filters         | SlidersHorizontal |
+| Business portal | Store             |
+| Accessibility   | Accessibility     |
 
 Give icon-only controls accessible names and 44px interaction targets. Mirror directional navigation appropriately in RTL; never mirror logos, photographs or non-directional icons automatically.
 

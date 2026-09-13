@@ -29,6 +29,8 @@ jobs:
       - run: pnpm run format:check
       - run: pnpm run lint
       - run: pnpm run typecheck
+      - run: pnpm tokens:check
+      - run: pnpm tokens:test
       - name: Scan for secrets in web source
         run: |
           if grep -rnE '(sk_live_|sk_test_|pk_live_|pk_test_|password=|secret_key=|api_key=)' apps/web/src/ --include='*.ts' --include='*.tsx' 2>/dev/null; then

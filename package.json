@@ -12,7 +12,10 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "pnpm --filter web typecheck && pnpm --filter api typecheck",
-    "test": "pnpm --filter web test && pnpm --filter api test",
+    "test": "pnpm --filter web test && pnpm --filter api test && pnpm tokens:test",
+    "tokens:generate": "node mshwar-brand-foundation/scripts/generate-tokens.mjs",
+    "tokens:check": "node mshwar-brand-foundation/scripts/generate-tokens.mjs --check",
+    "tokens:test": "node --test mshwar-brand-foundation/scripts/generate-tokens.test.mjs",
     "precommit": "pre-commit run --all-files",
     "clean": "pnpm --filter web clean && pnpm --filter api clean && rm -rf node_modules"
   },

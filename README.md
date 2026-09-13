@@ -9,24 +9,25 @@ Discover. Plan. Book Lebanon.
 ## Architecture
 
 ```
-apps/web          → Next.js 15 frontend (TypeScript, Tailwind, shadcn/ui)
-services/api      → FastAPI backend (SQLAlchemy 2.x, Pydantic v2, Alembic)
-packages/shared   → Shared TypeScript types and utilities
+apps/web                   → Next.js 15 frontend (TypeScript, Tailwind, shadcn/ui)
+services/api               → FastAPI backend (SQLAlchemy 2.x, Pydantic v2, Alembic)
+packages/shared            → Shared TypeScript types and utilities
+mshwar-brand-foundation    → Brand tokens (JSON source) and generated Tailwind / Figma artifacts
 ```
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend | Next.js 15, React, TypeScript, Tailwind CSS, shadcn/ui |
-| Backend | FastAPI, Python 3.11, SQLAlchemy 2.x, Pydantic v2, Alembic |
-| Database | PostgreSQL 17 + PostGIS + pgvector + btree_gist |
-| AI/LLM | LLM provider abstraction (OpenAI/Ollama), pgvector RAG, OR-Tools |
-| Maps | Google Maps Platform |
-| Weather | Open-Meteo |
-| Images | ImageKit |
-| Payments | Stripe (test mode) + provider abstraction |
-| Monitoring | Sentry + PostHog |
+| Layer      | Technology                                                                        |
+| ---------- | --------------------------------------------------------------------------------- |
+| Frontend   | Next.js 15, React, TypeScript, Tailwind CSS, shadcn/ui                            |
+| Backend    | FastAPI, Python 3.11, SQLAlchemy 2.x, Pydantic v2, Alembic                        |
+| Database   | PostgreSQL 17 + PostGIS + pgvector + btree_gist                                   |
+| AI/LLM     | LLM provider abstraction (OpenAI/Ollama), pgvector RAG, OR-Tools                  |
+| Maps       | Google Maps Platform                                                              |
+| Weather    | Open-Meteo                                                                        |
+| Images     | ImageKit                                                                          |
+| Payments   | Stripe (test mode) + provider abstraction                                         |
+| Monitoring | Sentry + PostHog                                                                  |
 | Deployment | Vercel (frontend), Docker Compose (local), Self-hosted PostgreSQL 17 (production) |
 
 ## Quick Start
@@ -63,6 +64,7 @@ pnpm --filter api dev
 ### Without Docker
 
 **Backend:**
+
 ```bash
 cd services/api
 python -m venv venv
@@ -73,6 +75,7 @@ uvicorn app.main:app --reload --port 8000
 ```
 
 **Frontend:**
+
 ```bash
 cd apps/web
 pnpm install
@@ -81,26 +84,26 @@ pnpm dev
 
 ## Ports
 
-| Service | Port | URL |
-|---|---|---|
-| Web (Next.js) | 3000 | http://localhost:3000 |
-| API (FastAPI) | 8000 | http://localhost:8000 |
-| API Docs | 8000 | http://localhost:8000/docs |
-| PostgreSQL | 5432 | localhost:5432 |
-| Redis | 6379 | localhost:6379 |
+| Service       | Port | URL                        |
+| ------------- | ---- | -------------------------- |
+| Web (Next.js) | 3000 | http://localhost:3000      |
+| API (FastAPI) | 8000 | http://localhost:8000      |
+| API Docs      | 8000 | http://localhost:8000/docs |
+| PostgreSQL    | 5432 | localhost:5432             |
+| Redis         | 6379 | localhost:6379             |
 
 ## Environment Variables
 
 See `.env.example` for all required variables. Key variables:
 
-| Variable | Default | Description |
-|---|---|---|
-| `NODE_ENV` | `development` | Application environment |
-| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Backend API URL for the web app |
-| `DATABASE_URL` | `postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar` | PostgreSQL connection string |
-| `REDIS_URL` | `redis://localhost:6379/0` | Redis connection string |
-| `SECRET_KEY` | `change-me-in-production` | JWT signing secret |
-| `ALGORITHM` | `HS256` | JWT algorithm |
+| Variable              | Default                                                        | Description                     |
+| --------------------- | -------------------------------------------------------------- | ------------------------------- |
+| `NODE_ENV`            | `development`                                                  | Application environment         |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8000`                                        | Backend API URL for the web app |
+| `DATABASE_URL`        | `postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar` | PostgreSQL connection string    |
+| `REDIS_URL`           | `redis://localhost:6379/0`                                     | Redis connection string         |
+| `SECRET_KEY`          | `change-me-in-production`                                      | JWT signing secret              |
+| `ALGORITHM`           | `HS256`                                                        | JWT algorithm                   |
 
 ## Code Quality
 
@@ -195,6 +198,11 @@ See [docs/database-provisioning.md](docs/database-provisioning.md) for the Supab
 # Frontend tests
 pnpm --filter web test
 
+# Design tokens (single source → Tailwind / CSS / Figma exports)
+pnpm tokens:generate
+pnpm tokens:check
+pnpm tokens:test
+
 # Backend tests (including extension smoke tests)
 cd services/api && PYTHONPATH=services/api python3 -m pytest tests/ -v
 ```
@@ -203,10 +211,10 @@ cd services/api && PYTHONPATH=services/api python3 -m pytest tests/ -v
 
 Tests that verify PostgreSQL extensions are working:
 
-| Test | Extension Verified |
-|---|---|
-| `test_st_within` | PostGIS (`ST_DWithin`) |
-| `test_vector_inner_product_operator` | pgvector (`<->` operator) |
+| Test                                       | Extension Verified              |
+| ------------------------------------------ | ------------------------------- |
+| `test_st_within`                           | PostGIS (`ST_DWithin`)          |
+| `test_vector_inner_product_operator`       | pgvector (`<->` operator)       |
 | `test_exclude_constraint_prevents_overlap` | btree_gist (EXCLUDE constraint) |
 
 ## Project Structure
@@ -220,9 +228,10 @@ mshwar/
 │       │   ├── components/     # React components
 │       │   │   └── ui/         # shadcn/ui components
 │       │   ├── lib/            # Utilities and config
-│       │   └── hooks/          # Custom React hooks
+│       │   ├── hooks/          # Custom React hooks
+│       │   └── styles/generated/  # CSS vars + Tailwind theme from tokens
 │       ├── components.json     # shadcn/ui configuration
-│       ├── tailwind.config.ts
+│       ├── tailwind.config.ts  # extends generated mshwarTheme
 │       ├── tsconfig.json
 │       └── next.config.ts
 ├── services/
@@ -243,6 +252,10 @@ mshwar/
 │           ├── test_config.py
 │           ├── test_extensions.py  # Extension smoke tests
 │           └── conftest.py
+├── mshwar-brand-foundation/    # Design tokens (JSON source of truth)
+│   ├── design-tokens.json
+│   ├── scripts/generate-tokens.mjs
+│   └── generated/              # Tailwind theme, CSS vars, Figma exports
 ├── docs/                       # Documentation
 │   └── database-provisioning.md  # Supabase vs self-hosted decision
 ├── packages/

@@ -1,27 +1,62 @@
 [
   {
-    "foreground": "cedar",
-    "background": "canvas",
-    "ratio": 12.96
+    "foreground": "primitive.color.cedar",
+    "background": "primitive.color.canvas",
+    "ratio": 12.96,
+    "note": "light text on surface"
   },
   {
-    "foreground": "slate",
-    "background": "canvas",
-    "ratio": 4.71
+    "foreground": "primitive.color.slate",
+    "background": "primitive.color.canvas",
+    "ratio": 4.71,
+    "note": "light muted text on surface"
   },
   {
-    "foreground": "cedar",
-    "background": "orange",
-    "ratio": 4.28
+    "foreground": "primitive.color.cedar",
+    "background": "primitive.color.orange",
+    "ratio": 4.28,
+    "note": "not the default small-text pairing on accent"
   },
   {
-    "foreground": "white",
-    "background": "orange",
-    "ratio": 3.11
+    "foreground": "primitive.color.white",
+    "background": "primitive.color.orange",
+    "ratio": 3.11,
+    "note": "fails AA for small text — do not use"
   },
   {
-    "foreground": "accentText",
-    "background": "orange",
-    "ratio": 5.24
+    "foreground": "primitive.color.accentText",
+    "background": "primitive.color.orange",
+    "ratio": 5.24,
+    "note": "semantic color.light.accent.foreground on accent"
+  },
+  {
+    "foreground": "color.light.text.primary",
+    "background": "color.light.surface.canvas",
+    "semantic": true
+  },
+  {
+    "foreground": "color.light.text.muted",
+    "background": "color.light.surface.canvas",
+    "semantic": true
+  },
+  {
+    "foreground": "color.light.accent.foreground",
+    "background": "color.light.accent.default",
+    "semantic": true
+  },
+  {
+    "foreground": "color.dark.text.primary",
+    "background": "color.dark.surface.canvas",
+    "semantic": true
+  },
+  {
+    "foreground": "color.dark.text.muted",
+    "background": "color.dark.surface.canvas",
+    "semantic": true
+  },
+  {
+    "foreground": "color.dark.accent.foreground",
+    "background": "color.dark.accent.default",
+    "semantic": true
   }
 ]
