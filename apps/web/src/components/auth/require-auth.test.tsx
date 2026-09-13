@@ -28,6 +28,27 @@ describe("RequireAuth", () => {
     navigationMocks.pathname = "/";
   });
 
+  it("keeps the locale prefix on the sign-in redirect", async () => {
+    navigationMocks.pathname = "/plan";
+    navigationMocks.replace = vi.fn();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
+
+    render(
+      <LocaleProvider initialLocale="ar">
+        <AuthProvider>
+          <RequireAuth>
+            <p>Protected itinerary</p>
+          </RequireAuth>
+        </AuthProvider>
+      </LocaleProvider>,
+    );
+
+    await waitFor(() => expect(navigationMocks.replace).toHaveBeenCalledWith("/ar/signin?next=%2Fplan"));
+
+    vi.unstubAllGlobals();
+    navigationMocks.pathname = "/";
+  });
+
   it("renders children once a session is confirmed", async () => {
     navigationMocks.replace = vi.fn();
     vi.stubGlobal(

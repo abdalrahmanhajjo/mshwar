@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { ArrowLeft, ArrowUpRight, Clock, MapPin } from "lucide-react";
 import { BookingWidget } from "@/components/browse/booking-widget";
 import { CatalogImage } from "@/components/browse/catalog-image";
 import { ExperienceCard } from "@/components/browse/experience-card";
 import { SaveExperienceButton } from "@/components/browse/save-button";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { useBrowseCopy } from "@/lib/browse-copy";
 import {
   bookingModeLabel,
@@ -60,10 +60,10 @@ export function ExperienceDetailView({ experience, related }: { experience: Expe
         }}
       />
       <div className="shell-frame grid gap-4 py-8">
-        <Link href="/experiences" className="inline-flex items-center gap-2 text-sm text-text-muted">
+        <LocaleLink href="/experiences" className="inline-flex items-center gap-2 text-sm text-text-muted">
           <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
           {copy.backExperiences}
-        </Link>
+        </LocaleLink>
         <p className="text-xs uppercase tracking-[0.16em] text-text-muted">
           {category} · {experience.placeLabel}
         </p>
@@ -156,15 +156,15 @@ export function ExperienceDetailView({ experience, related }: { experience: Expe
       <div className="shell-frame grid gap-6 pb-16">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <h2 className="text-3xl font-semibold tracking-tight">{copy.keepExploring}</h2>
-          <Link
+          <a
             href={`https://www.google.com/maps/search/?api=1&query=${mapsQuery}`}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-2 text-sm"
           >
             {copy.seeArea}
-            <ArrowUpRight className="size-4" aria-hidden />
-          </Link>
+            <ArrowUpRight className="size-4 rtl:-scale-x-100" aria-hidden />
+          </a>
         </div>
         <div className="grid gap-8 md:grid-cols-3">
           {related.map((item) => (

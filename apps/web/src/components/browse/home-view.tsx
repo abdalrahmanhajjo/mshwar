@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { CategoryPills } from "@/components/browse/category-pills";
 import { CatalogImage } from "@/components/browse/catalog-image";
 import { DestinationCard } from "@/components/browse/destination-card";
@@ -43,10 +43,10 @@ export function HomeView() {
         <section className="grid gap-8">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">{copy.goodDays}</h2>
-            <Link href="/experiences" className="inline-flex items-center gap-1 text-sm text-text">
+            <LocaleLink href="/experiences" className="inline-flex items-center gap-1 text-sm text-text">
               {copy.exploreAll}
-              <ArrowUpRight className="size-4" aria-hidden />
-            </Link>
+              <ArrowUpRight className="size-4 rtl:-scale-x-100" aria-hidden />
+            </LocaleLink>
           </div>
           <div className="grid gap-8 md:grid-cols-3">
             {featured.map((experience) => (
@@ -60,10 +60,10 @@ export function HomeView() {
         <section className="grid gap-8">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">{copy.closeToHome}</h2>
-            <Link href="/destinations" className="inline-flex items-center gap-1 text-sm text-text">
+            <LocaleLink href="/destinations" className="inline-flex items-center gap-1 text-sm text-text">
               {copy.findPlaceCta}
-              <ArrowUpRight className="size-4" aria-hidden />
-            </Link>
+              <ArrowUpRight className="size-4 rtl:-scale-x-100" aria-hidden />
+            </LocaleLink>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {strip.map((destination) => (

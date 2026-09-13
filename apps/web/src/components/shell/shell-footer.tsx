@@ -57,7 +57,7 @@ export function ShellFooter({ surface }: { surface: ShellSurface }) {
           <h2 className="max-w-xl text-4xl font-semibold tracking-tight md:text-5xl">{copy.yallaTitle}</h2>
           <Button asChild size="icon" className="size-14 rounded-full bg-surface text-text hover:bg-surface-sunken">
             <LocaleLink href="/plan" aria-label={copy.planATrip}>
-              <ArrowUpRight className="size-5" aria-hidden />
+              <ArrowUpRight className="size-5 rtl:-scale-x-100" aria-hidden />
             </LocaleLink>
           </Button>
         </div>

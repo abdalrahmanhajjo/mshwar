@@ -1,13 +1,13 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/components/shell/auth-provider";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { useLocale } from "@/components/shell/locale-provider";
 import { resendVerification, verifyEmail } from "@/lib/auth";
 
@@ -103,9 +103,9 @@ export function VerifyEmailForm() {
         )}
       </CardContent>
       <CardFooter className="justify-center text-sm text-text-muted">
-        <Link className="text-brand underline-offset-4 hover:underline" href="/signin">
+        <LocaleLink className="text-brand underline-offset-4 hover:underline" href="/signin">
           {t("backToSignIn")}
-        </Link>
+        </LocaleLink>
       </CardFooter>
     </Card>
   );

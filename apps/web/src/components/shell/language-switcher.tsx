@@ -16,7 +16,7 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
   function onSelect(next: (typeof LOCALES)[number]) {
     setLocale(next);
     const search = typeof window !== "undefined" ? window.location.search : "";
-    router.push(`${withLocalePrefix(next, pathname)}${search}`);
+    router.push(withLocalePrefix(next, `${pathname}${search}`));
     if (user) {
       void persistSignedInLocale(next);
     }

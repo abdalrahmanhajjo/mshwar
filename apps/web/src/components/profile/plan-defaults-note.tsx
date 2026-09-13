@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { useLocale } from "@/components/shell/locale-provider";
 import { fetchProfile } from "@/lib/profile";
 
@@ -34,9 +34,9 @@ export function PlanDefaultsNote() {
   return (
     <p className="text-sm text-text-muted">
       {summary}{" "}
-      <Link className="text-brand underline-offset-4 hover:underline" href="/settings">
+      <LocaleLink className="text-brand underline-offset-4 hover:underline" href="/settings">
         {t("profile")}
-      </Link>
+      </LocaleLink>
     </p>
   );
 }

@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { CatalogImage } from "@/components/browse/catalog-image";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { useBrowseCopy } from "@/lib/browse-copy";
 import { IDEAS } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
@@ -36,9 +37,10 @@ export function IdeasView() {
                 <p className="text-sm text-text-muted">
                   {copy.fromPrice} ${idea.priceFrom} {copy.perPerson} · {copy.preview}
                 </p>
+                <Progress value={(idea.stops / 3) * 100} label={`${idea.stops} / 3`} />
                 <div>
                   <Button asChild className={cn("rounded-pill", idea.accent && "bg-accent text-accent-foreground")}>
-                    <Link href={`/experiences/${idea.experienceSlugs[0]}`}>{copy.exploreDay}</Link>
+                    <LocaleLink href={`/experiences/${idea.experienceSlugs[0]}`}>{copy.exploreDay}</LocaleLink>
                   </Button>
                 </div>
               </div>

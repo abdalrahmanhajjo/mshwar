@@ -206,61 +206,7 @@ test.describe("MSHWAR-31 settings routes", () => {
 
   test("settings is usable at 390px and 1440px when signed in", async ({ page }) => {
     await signInForShell(page);
-    await page.route("**/api/v1/profile/vocabularies", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          dietary: [
-            { kind: "dietary", slug: "vegetarian", label: "Vegetarian" },
-            { kind: "dietary", slug: "halal", label: "Halal" },
-          ],
-          accessibility: [{ kind: "accessibility", slug: "step-free", label: "Step-free access" }],
-          interest: [
-            { kind: "interest", slug: "food", label: "Food" },
-            { kind: "interest", slug: "heritage", label: "Heritage" },
-          ],
-          activity_intensity: [
-            { kind: "activity_intensity", slug: "relaxed", label: "Relaxed" },
-            { kind: "activity_intensity", slug: "moderate", label: "Moderate" },
-          ],
-        }),
-      });
-    });
-    await page.route("**/api/v1/locations/areas", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          source: "catalog",
-          picker: "stub",
-          replace_with: "map location picker",
-          areas: [{ id: "area-1", slug: "beirut", name: "Beirut", country_code: "LB" }],
-        }),
-      });
-    });
-    await page.route("**/api/v1/profile", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          id: "00000000-0000-0000-0000-000000000001",
-          email: "e2e@example.com",
-          display_name: "Operator",
-          locale: "en",
-          preferences: {
-            source: "explicit",
-            home_area_id: null,
-            default_group_size: null,
-            activity_intensity: null,
-            dietary: [],
-            accessibility: [],
-            interests: [],
-          },
-          home_area: null,
-        }),
-      });
-    });
+    await mockSettingsApis(page);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/settings");
     await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
@@ -275,6 +221,65 @@ test.describe("MSHWAR-31 settings routes", () => {
   });
 });
 
+async function mockSettingsApis(page: Page) {
+  await page.route("**/api/v1/profile/vocabularies", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        dietary: [
+          { kind: "dietary", slug: "vegetarian", label: "Vegetarian" },
+          { kind: "dietary", slug: "halal", label: "Halal" },
+        ],
+        accessibility: [{ kind: "accessibility", slug: "step-free", label: "Step-free access" }],
+        interest: [
+          { kind: "interest", slug: "food", label: "Food" },
+          { kind: "interest", slug: "heritage", label: "Heritage" },
+        ],
+        activity_intensity: [
+          { kind: "activity_intensity", slug: "relaxed", label: "Relaxed" },
+          { kind: "activity_intensity", slug: "moderate", label: "Moderate" },
+        ],
+      }),
+    });
+  });
+  await page.route("**/api/v1/locations/areas", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        source: "catalog",
+        picker: "stub",
+        replace_with: "map location picker",
+        areas: [{ id: "area-1", slug: "beirut", name: "Beirut", country_code: "LB" }],
+      }),
+    });
+  });
+  await page.route("**/api/v1/profile", async (route) => {
+    const locale = route.request().method() === "PUT" ? JSON.parse(route.request().postData() ?? "{}").locale : "en";
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        id: "00000000-0000-0000-0000-000000000001",
+        email: "e2e@example.com",
+        display_name: "Operator",
+        locale: locale ?? "en",
+        preferences: {
+          source: "explicit",
+          home_area_id: null,
+          default_group_size: null,
+          activity_intensity: null,
+          dietary: [],
+          accessibility: [],
+          interests: [],
+        },
+        home_area: null,
+      }),
+    });
+  });
+}
+
 test.describe("MSHWAR-32 language URLs", () => {
   test("Arabic prefix is shareable and renders RTL without a cookie first", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -285,6 +290,30 @@ test.describe("MSHWAR-32 language URLs", () => {
     await page.goto("/fr/destinations");
     await expect(page.getByRole("heading", { name: "Où allez-vous flâner ?" })).toBeVisible();
     await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+  });
+
+  test("guest cookie keeps Arabic on an unprefixed visit", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/ar");
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    const cookie = (await page.context().cookies()).find((item) => item.name === "mshwar-locale");
+    expect(cookie?.value).toBe("ar");
+    await page.goto("/destinations");
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(page.getByRole("heading", { name: "إلى أين ستتجول؟" })).toBeVisible();
+  });
+
+  test("settings language select prefixes the shareable URL", async ({ page }) => {
+    await signInForShell(page);
+    await mockSettingsApis(page);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/settings");
+    await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
+    await page.getByRole("combobox", { name: "Language" }).click();
+    await page.getByRole("option", { name: "Français" }).click();
+    await expect(page).toHaveURL(/\/fr\/settings/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+    await expect(page.getByRole("heading", { name: "Profil" })).toBeVisible();
   });
 });
 

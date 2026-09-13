@@ -1,18 +1,19 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/components/shell/auth-provider";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { useLocale } from "@/components/shell/locale-provider";
 import { requestPasswordReset, resetPassword } from "@/lib/auth";
+import { withLocalePrefix } from "@/lib/locale";
 
 export function RecoveryForm({ mode }: { mode: "forgot" | "reset" }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const { refresh } = useAuth();
   const router = useRouter();
   const params = useSearchParams();
@@ -45,7 +46,7 @@ export function RecoveryForm({ mode }: { mode: "forgot" | "reset" }) {
     try {
       await resetPassword({ token, password });
       await refresh();
-      router.replace("/");
+      router.replace(withLocalePrefix(locale, "/"));
     } catch (err) {
       const message = err instanceof Error ? err.message : t("authError");
       if (message === "Invalid or expired reset link") {
@@ -66,9 +67,9 @@ export function RecoveryForm({ mode }: { mode: "forgot" | "reset" }) {
           <CardDescription>{t("invalidReset")}</CardDescription>
         </CardHeader>
         <CardFooter className="justify-center text-sm text-text-muted">
-          <Link className="text-brand underline-offset-4 hover:underline" href="/signin">
+          <LocaleLink className="text-brand underline-offset-4 hover:underline" href="/signin">
             {t("backToSignIn")}
-          </Link>
+          </LocaleLink>
         </CardFooter>
       </Card>
     );
@@ -130,9 +131,9 @@ export function RecoveryForm({ mode }: { mode: "forgot" | "reset" }) {
         )}
       </CardContent>
       <CardFooter className="justify-center text-sm text-text-muted">
-        <Link className="text-brand underline-offset-4 hover:underline" href="/signin">
+        <LocaleLink className="text-brand underline-offset-4 hover:underline" href="/signin">
           {t("backToSignIn")}
-        </Link>
+        </LocaleLink>
       </CardFooter>
     </Card>
   );

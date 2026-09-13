@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/components/shell/auth-provider";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { useLocale } from "@/components/shell/locale-provider";
 export function BookingGate() {
   const { user } = useAuth();
@@ -16,9 +16,9 @@ export function BookingGate() {
           {locked ? (
             <>
               {t("verifyToBook")}{" "}
-              <Link className="text-brand underline-offset-4 hover:underline" href="/verify-email">
+              <LocaleLink className="text-brand underline-offset-4 hover:underline" href="/verify-email">
                 {t("verifyEmail")}
-              </Link>
+              </LocaleLink>
             </>
           ) : (
             t("travellerFooter")
