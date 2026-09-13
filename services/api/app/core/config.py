@@ -1,6 +1,7 @@
 from functools import lru_cache
 from typing import Any
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -10,6 +11,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore",
+        populate_by_name=True,
     )
 
     project_name: str = "Mshwar API"
@@ -19,7 +21,10 @@ class Settings(BaseSettings):
     allowed_origins: list[str] = ["http://localhost:3000", "http://localhost:3001"]
 
     # Database
-    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar"
+    database_url: str = Field(
+        default="postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar",
+        validation_alias=AliasChoices("DATABASE_URL", "database_url"),
+    )
     redis_url: str = "redis://localhost:6379/0"
 
     # Auth
