@@ -58,6 +58,12 @@ const preview: Preview = {
     a11y: {
       test: "error",
     },
+    viewport: {
+      options: {
+        mobile390: { name: "390px", styles: { width: "390px", height: "844px" } },
+        desktop1440: { name: "1440px", styles: { width: "1440px", height: "900px" } },
+      },
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,
