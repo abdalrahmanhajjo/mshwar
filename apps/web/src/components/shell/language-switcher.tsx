@@ -1,11 +1,26 @@
 "use client";
 
-import { LOCALES, LOCALE_LABELS, LOCALE_SHORT_LABELS } from "@/lib/locale";
+import { usePathname, useRouter } from "next/navigation";
+import { LOCALES, LOCALE_LABELS, LOCALE_SHORT_LABELS, withLocalePrefix } from "@/lib/locale";
+import { persistSignedInLocale } from "@/lib/profile";
 import { cn, controlSize, focusRing } from "@/lib/utils";
+import { useAuth } from "@/components/shell/auth-provider";
 import { useLocale } from "@/components/shell/locale-provider";
 
 export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
   const { locale, setLocale, t } = useLocale();
+  const { user } = useAuth();
+  const pathname = usePathname() ?? "/";
+  const router = useRouter();
+
+  function onSelect(next: (typeof LOCALES)[number]) {
+    setLocale(next);
+    const search = typeof window !== "undefined" ? window.location.search : "";
+    router.push(`${withLocalePrefix(next, pathname)}${search}`);
+    if (user) {
+      void persistSignedInLocale(next);
+    }
+  }
 
   return (
     <div role="group" aria-label={t("language")} className="inline-flex rounded-control border border-border">
@@ -17,7 +32,7 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
             type="button"
             aria-pressed={active}
             aria-label={LOCALE_LABELS[item]}
-            onClick={() => setLocale(item)}
+            onClick={() => onSelect(item)}
             className={cn(
               "px-2 text-sm font-medium",
               controlSize,

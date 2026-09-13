@@ -3,6 +3,8 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { parseExperienceFilters, serializeExperienceFilters } from "@/lib/catalog";
+import { withLocalePrefix } from "@/lib/locale";
+import { useLocale } from "@/components/shell/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +12,7 @@ import { useBrowseCopy } from "@/lib/browse-copy";
 
 export function HeroSearch({ initialQuery = "", compact = false }: { initialQuery?: string; compact?: boolean }) {
   const copy = useBrowseCopy();
+  const { locale } = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [where, setWhere] = React.useState(initialQuery);
@@ -26,7 +29,7 @@ export function HeroSearch({ initialQuery = "", compact = false }: { initialQuer
     }
     next.page = 1;
     const query = serializeExperienceFilters(next);
-    router.push(query ? `/experiences?${query}` : "/experiences");
+    router.push(withLocalePrefix(locale, query ? `/experiences?${query}` : "/experiences"));
   }
 
   return (

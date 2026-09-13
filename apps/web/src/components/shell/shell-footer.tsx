@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { ArrowUpRight } from "lucide-react";
 import { cn, focusRing } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,15 +24,15 @@ export function ShellFooter({ surface }: { surface: ShellSurface }) {
         <div className="shell-frame flex flex-col gap-3 py-6 text-sm text-text-muted sm:flex-row sm:items-center sm:justify-between">
           <p>{t(FOOTER_COPY[surface])}</p>
           <nav aria-label={t("contact")} className="flex flex-wrap gap-4">
-            <Link href="/privacy" className={cn("hover:text-text", focusRing)}>
+            <LocaleLink href="/privacy" className={cn("hover:text-text", focusRing)}>
               {t("privacy")}
-            </Link>
-            <Link href="/terms" className={cn("hover:text-text", focusRing)}>
+            </LocaleLink>
+            <LocaleLink href="/terms" className={cn("hover:text-text", focusRing)}>
               {t("terms")}
-            </Link>
-            <Link href="/contact" className={cn("hover:text-text", focusRing)}>
+            </LocaleLink>
+            <LocaleLink href="/contact" className={cn("hover:text-text", focusRing)}>
               {t("contact")}
-            </Link>
+            </LocaleLink>
           </nav>
         </div>
       </footer>
@@ -56,9 +56,9 @@ export function ShellFooter({ surface }: { surface: ShellSurface }) {
         <div className="shell-frame flex flex-col items-start justify-between gap-6 py-12 md:flex-row md:items-center">
           <h2 className="max-w-xl text-4xl font-semibold tracking-tight md:text-5xl">{copy.yallaTitle}</h2>
           <Button asChild size="icon" className="size-14 rounded-full bg-surface text-text hover:bg-surface-sunken">
-            <Link href="/plan" aria-label={copy.planATrip}>
+            <LocaleLink href="/plan" aria-label={copy.planATrip}>
               <ArrowUpRight className="size-5" aria-hidden />
-            </Link>
+            </LocaleLink>
           </Button>
         </div>
       </div>
@@ -70,28 +70,28 @@ export function ShellFooter({ surface }: { surface: ShellSurface }) {
           </div>
           <nav aria-label={t("contact")} className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
             {columns.map((item) => (
-              <Link
+              <LocaleLink
                 key={`${item.href}-${item.label}`}
                 href={item.href}
                 className={cn("text-text hover:underline", focusRing)}
               >
                 {item.label}
-              </Link>
+              </LocaleLink>
             ))}
           </nav>
         </div>
         <div className="shell-frame flex flex-col gap-3 border-t border-border py-6 text-xs text-text-muted sm:flex-row sm:items-center sm:justify-between">
           <p>© 2026 mshwar · {copy.sampleDisclaimer}</p>
           <div className="flex flex-wrap gap-4">
-            <Link href="/privacy" className={cn("hover:text-text", focusRing)}>
+            <LocaleLink href="/privacy" className={cn("hover:text-text", focusRing)}>
               {t("privacy")}
-            </Link>
-            <Link href="/terms" className={cn("hover:text-text", focusRing)}>
+            </LocaleLink>
+            <LocaleLink href="/terms" className={cn("hover:text-text", focusRing)}>
               {t("terms")}
-            </Link>
-            <Link href="/contact" className={cn("hover:text-text", focusRing)}>
+            </LocaleLink>
+            <LocaleLink href="/contact" className={cn("hover:text-text", focusRing)}>
               {t("contact")}
-            </Link>
+            </LocaleLink>
           </div>
         </div>
       </div>

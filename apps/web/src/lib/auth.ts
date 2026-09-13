@@ -18,7 +18,8 @@ export const PROTECTED_PATHS = [
 ];
 
 export function isProtectedPath(pathname: string): boolean {
-  return PROTECTED_PATHS.some((pattern) => pattern.test(pathname));
+  const current = pathname.replace(/^\/(en|ar|fr)(?=\/|$)/, "") || "/";
+  return PROTECTED_PATHS.some((pattern) => pattern.test(current));
 }
 
 export function safeNextPath(value: string | null | undefined): string {

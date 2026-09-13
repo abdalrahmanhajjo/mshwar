@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { useSearchParams } from "next/navigation";
 import { Building2, Compass, Waves, Trees, Landmark, Mountain } from "lucide-react";
 import { useBrowseCopy } from "@/lib/browse-copy";
@@ -35,12 +35,12 @@ export function CategoryPills({ active, variant = "chips" }: { active?: string; 
           const Icon = ICONS[item.slug];
           return (
             <li key={item.slug}>
-              <Link href={hrefFor(item.slug)} className="flex flex-col items-center gap-3 text-sm text-text">
+              <LocaleLink href={hrefFor(item.slug)} className="flex flex-col items-center gap-3 text-sm text-text">
                 <span className="grid size-16 place-items-center rounded-full bg-surface-raised shadow-sm">
                   <Icon className="size-6" aria-hidden />
                 </span>
                 {item.slug === "all" ? copy.experiences : item.label}
-              </Link>
+              </LocaleLink>
             </li>
           );
         })}
@@ -55,7 +55,7 @@ export function CategoryPills({ active, variant = "chips" }: { active?: string; 
         const href = hrefFor(item.slug);
         const isActive = (active ?? "all") === item.slug;
         return (
-          <Link
+          <LocaleLink
             key={item.slug}
             href={href}
             className={cn(
@@ -65,7 +65,7 @@ export function CategoryPills({ active, variant = "chips" }: { active?: string; 
           >
             <Icon className="size-4" aria-hidden />
             {item.slug === "all" ? copy.experiences : item.label}
-          </Link>
+          </LocaleLink>
         );
       })}
     </div>

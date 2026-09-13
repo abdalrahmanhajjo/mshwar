@@ -108,6 +108,19 @@ export async function fetchAreas(): Promise<AreaCatalog> {
   return (await response.json()) as AreaCatalog;
 }
 
+export async function persistSignedInLocale(locale: string): Promise<void> {
+  try {
+    const profile = await fetchProfile();
+    await saveProfile({
+      display_name: profile.display_name,
+      locale,
+      preferences: hydratePreferences(profile),
+    });
+  } catch {
+    /* Guest or unauthenticated header switches still persist via cookie. */
+  }
+}
+
 export async function fetchVocabularies(): Promise<VocabularyCatalog> {
   const response = await fetch("/api/v1/profile/vocabularies", { credentials: "include" });
   if (!response.ok) {
