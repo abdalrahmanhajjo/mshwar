@@ -12,3 +12,6 @@ venv
 .husky
 coverage
 *.lock
+mshwar-brand-foundation/generated
+apps/web/src/styles/generated
+mshwar-brand-foundation/brand.css

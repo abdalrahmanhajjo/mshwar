@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node ../../mshwar-brand-foundation/scripts/generate-tokens.mjs",
     "build": "next build",
+    "tokens:generate": "node ../../mshwar-brand-foundation/scripts/generate-tokens.mjs",
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
@@ -49,10 +51,16 @@
   "vitest": {
     "test": {
       "environment": "jsdom",
-      "include": ["src/**/*.test.{ts,tsx}"],
+      "include": [
+        "src/**/*.test.{ts,tsx}"
+      ],
       "coverage": {
         "provider": "v8",
-        "reporter": ["text", "json", "html"],
+        "reporter": [
+          "text",
+          "json",
+          "html"
+        ],
         "reportsDirectory": "./coverage",
         "thresholds": {
           "lines": 80,

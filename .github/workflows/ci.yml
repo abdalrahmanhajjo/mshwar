@@ -45,6 +45,8 @@ jobs:
       - run: pnpm run format:check
       - run: pnpm run lint
       - run: pnpm run typecheck
+      - run: pnpm tokens:check
+      - run: pnpm tokens:test
       - name: Check no secrets in source
         run: |
           if grep -rnE '(sk_live_|sk_test_|pk_live_|pk_test_|password=|secret_key=|api_key=)' apps/web/src/ services/api/app/ --include='*.ts' --include='*.tsx' --include='*.py' 2>/dev/null; then
