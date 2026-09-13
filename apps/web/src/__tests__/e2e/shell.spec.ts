@@ -212,6 +212,9 @@ test.describe("MSHWAR-31 settings routes", () => {
     await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
     await expect(page.getByLabel("Display name")).toBeVisible();
     await expect(page.getByRole("button", { name: "Save profile" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Your data" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Download my data" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Anonymise my account" })).toBeDisabled();
     await assertNoHorizontalScroll(page);
 
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -278,7 +281,50 @@ async function mockSettingsApis(page: Page) {
       }),
     });
   });
+  await page.route("**/api/v1/privacy/export", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers: { "content-disposition": 'attachment; filename="mshwar-data-export.json"' },
+      body: JSON.stringify({
+        profile: { email: "e2e@example.com" },
+        trips: [],
+        favorites: [],
+        reviews: [],
+        bookings: [],
+      }),
+    });
+  });
+  await page.route("**/api/v1/privacy/reset-personalisation", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ok: true, preferences: {}, identity_kept: true, bookings_kept: true }),
+    });
+  });
+  await page.route("**/api/v1/privacy/delete-account", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ok: true, status: "deleted", bookings_kept: 0 }),
+    });
+  });
 }
+
+test.describe("MSHWAR-34 privacy controls", () => {
+  test("settings privacy actions stay usable at 390px", async ({ page }) => {
+    await signInForShell(page);
+    await mockSettingsApis(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/settings");
+    await expect(page.getByText("JSON of your profile, trips, favorites, reviews and bookings.")).toBeVisible();
+    await page.getByRole("button", { name: "Reset personalisation" }).click();
+    await expect(page.getByText("Personalisation signals were cleared.")).toBeVisible();
+    await page.getByLabel("Type DELETE to confirm").fill("DELETE");
+    await expect(page.getByRole("button", { name: "Anonymise my account" })).toBeEnabled();
+    await assertNoHorizontalScroll(page);
+  });
+});
 
 test.describe("MSHWAR-32 language URLs", () => {
   test("Arabic prefix is shareable and renders RTL without a cookie first", async ({ page }) => {
