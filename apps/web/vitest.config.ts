@@ -7,6 +7,8 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "next/link": path.resolve(__dirname, "./src/test-mocks/next-link.tsx"),
+      "next/navigation": path.resolve(__dirname, "./src/test-mocks/next-navigation.ts"),
     },
   },
   test: {
@@ -24,6 +26,7 @@ export default defineConfig({
         "src/styles/generated/**",
         "src/app/**",
         "src/lib/config.ts",
+        "src/test-mocks/**",
       ],
       thresholds: {
         lines: 80,

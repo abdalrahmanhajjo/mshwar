@@ -13,6 +13,8 @@ const config: StorybookConfig = {
     config.resolve.alias = {
       ...(config.resolve.alias as Record<string, string>),
       "@": path.resolve(dirname, "../src"),
+      "next/link": path.resolve(dirname, "../src/test-mocks/next-link.tsx"),
+      "next/navigation": path.resolve(dirname, "../src/test-mocks/next-navigation.ts"),
     };
     return config;
   },
