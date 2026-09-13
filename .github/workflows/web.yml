@@ -80,14 +80,21 @@ jobs:
     environment: preview
     steps:
       - uses: actions/checkout@v4
+      - name: Skip preview when Vercel is not configured
+        if: ${{ secrets.VERCEL_TOKEN == '' }}
+        run: echo "VERCEL_TOKEN is not set; skipping preview deploy"
       - uses: ./.github/actions/setup-node-pnpm
+        if: ${{ secrets.VERCEL_TOKEN != '' }}
         with:
           node-version: ${{ env.NODE_VERSION }}
           pnpm-version: ${{ env.PNPM_VERSION }}
-      - run: pnpm install
-      - run: pnpm run build
+      - if: ${{ secrets.VERCEL_TOKEN != '' }}
+        run: pnpm install
+      - if: ${{ secrets.VERCEL_TOKEN != '' }}
+        run: pnpm run build
       - name: Deploy to Vercel Preview
-        uses: amondnet/vercel-action@v30
+        if: ${{ secrets.VERCEL_TOKEN != '' }}
+        uses: amondnet/vercel-action@v25.2.0
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
@@ -112,7 +119,7 @@ jobs:
       - run: pnpm install
       - run: pnpm run build
       - name: Deploy to Vercel Staging
-        uses: amondnet/vercel-action@v30
+        uses: amondnet/vercel-action@v25.2.0
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
@@ -137,7 +144,7 @@ jobs:
       - run: pnpm install
       - run: pnpm run build
       - name: Deploy to Vercel Production
-        uses: amondnet/vercel-action@v30
+        uses: amondnet/vercel-action@v25.2.0
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
@@ -160,7 +167,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Rollback Vercel to previous version
-        uses: amondnet/vercel-action@v30
+        uses: amondnet/vercel-action@v25.2.0
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}

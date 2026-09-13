@@ -28,6 +28,15 @@ def test_defaults() -> None:
     assert settings.sentry_dsn_public == settings.sentry_dsn
 
 
+def test_reads_database_url_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv(
+        "DATABASE_URL",
+        "postgresql+asyncpg://ci:ci@db:5432/mshwar_test",
+    )
+    loaded = Settings()
+    assert loaded.database_url == "postgresql+asyncpg://ci:ci@db:5432/mshwar_test"
+
+
 def test_environment_flags() -> None:
     staging = Settings(environment="staging")
     assert staging.is_staging is True
