@@ -40,10 +40,11 @@ describe("auth form", () => {
     vi.unstubAllGlobals();
   });
 
-  it("links guests to sign-up", () => {
+  it("links guests to sign-up and forgot-password", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
     renderSignIn();
     expect(screen.getByRole("link", { name: "Sign up" })).toHaveAttribute("href", "/signup?next=%2F");
+    expect(screen.getByRole("link", { name: "Forgot password?" })).toHaveAttribute("href", "/forgot-password");
     vi.unstubAllGlobals();
   });
 });

@@ -33,6 +33,13 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60 * 24 * 8
     session_cookie_name: str = "mshwar_session"
     session_ttl_seconds: int = 60 * 60 * 24 * 7  # 7 days; refresh extends when < half remains
+    password_reset_ttl_seconds: int = 30 * 60  # 30 minutes; single-use; revoked on consume
+    password_reset_min_ms: int = 80
+    forgot_ip_limit: int = 20
+    forgot_email_limit: int = 5
+    rate_limit_window_seconds: int = 3600
+    mailer_backend: str = "console"  # console | notification
+    public_web_origin: str = "http://localhost:3000"
 
     # Connection pool
     pool_size: int = 20
