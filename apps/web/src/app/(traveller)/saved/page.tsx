@@ -1,5 +1,5 @@
-import { ShellPage } from "@/components/shell/shell-page";
+import { SavedView } from "@/components/browse/saved-view";
 
 export default function SavedPage() {
-  return <ShellPage title="Saved" description="Places you keep for a later trip." />;
+  return <SavedView />;
 }

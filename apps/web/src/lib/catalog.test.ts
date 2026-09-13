@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { DESTINATIONS, EXPERIENCES, filterExperiences, getDestination, relatedExperiences } from "./catalog";
+import {
+  DESTINATIONS,
+  EXPERIENCES,
+  browseExperiences,
+  filterExperiences,
+  getDestination,
+  parseExperienceFilters,
+  relatedExperiences,
+  serializeExperienceFilters,
+} from "./catalog";
 
 describe("Lebanon catalog seed", () => {
   it("covers the six destination cards from the marketing screens", () => {
@@ -26,6 +35,26 @@ describe("Lebanon catalog seed", () => {
     const related = relatedExperiences("slow-day-byblos");
     expect(related.every((item) => item.slug !== "slow-day-byblos")).toBe(true);
     expect(getDestination("byblos")?.name).toBe("Byblos");
-    expect(EXPERIENCES).toHaveLength(6);
+    expect(EXPERIENCES.length).toBeGreaterThanOrEqual(10);
+  });
+
+  it("applies rail filters and paginates from URL state", () => {
+    expect(filterExperiences({ kind: "restaurant" }).every((item) => item.kind === "restaurant")).toBe(true);
+    expect(filterExperiences({ available: true }).every((item) => item.available !== false)).toBe(true);
+    expect(filterExperiences({ priceMax: 25 }).every((item) => item.priceFrom <= 25)).toBe(true);
+    expect(filterExperiences({ distance: 10 }).every((item) => (item.distanceKm ?? 45) <= 10)).toBe(true);
+    expect(filterExperiences({ rating: 4.5 }).every((item) => (item.rating ?? 0) >= 4.5)).toBe(true);
+    const parsed = parseExperienceFilters({
+      category: "coast",
+      available: "1",
+      priceMax: "40",
+      page: "2",
+    });
+    expect(parsed.available).toBe(true);
+    expect(serializeExperienceFilters(parsed)).toContain("category=coast");
+    const page = browseExperiences({ page: 2, pageSize: 6 });
+    expect(page.page).toBe(2);
+    expect(page.items.length).toBeGreaterThan(0);
+    expect(page.total).toBe(EXPERIENCES.length);
   });
 });

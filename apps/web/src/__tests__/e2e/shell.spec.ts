@@ -67,7 +67,9 @@ test.describe("MSHWAR-26 responsive app shell", () => {
     await assertNoHorizontalScroll(page);
     await expect(page.getByRole("button", { name: "Open menu" })).toBeHidden();
     await expect(page.getByRole("navigation", { name: "Menu" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Plan a trip" })).toBeVisible();
+    await expect(
+      page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "Plan a trip" }),
+    ).toBeVisible();
   });
 
   test("business and admin shells share chrome but differ in navigation", async ({ page }) => {
@@ -285,20 +287,37 @@ test.describe("MSHWAR-36 / MSHWAR-39 marketing browse", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/destinations");
     await expect(page.getByRole("heading", { name: "Where will you wander?" })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Byblos/ })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Batroun/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Byblos" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Batroun" })).toBeVisible();
     await assertNoHorizontalScroll(page);
   });
 
   test("experience filters stay in the URL and listing detail states booking mode", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/experiences?category=coast&sort=price");
+    await page.goto("/experiences?category=coast&sort=price&available=1");
     await expect(page).toHaveURL(/category=coast/);
+    await expect(page).toHaveURL(/available=1/);
     await expect(page.getByRole("heading", { name: "A whole country. Your next discovery." })).toBeVisible();
+    await expect(page.getByLabel("Price")).toBeVisible();
+    await expect(page.getByLabel("Distance from Beirut")).toBeVisible();
     await page.goto("/experiences/slow-day-byblos");
     await expect(page.getByRole("heading", { name: "A slow day in Byblos" })).toBeVisible();
-    await expect(page.getByText("Request to book")).toBeVisible();
-    await expect(page.getByText("Estimated from")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Request to book · Preview" })).toBeVisible();
+    await expect(page.getByText("Estimated from", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Cancellation")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+
+  test("discover hub and inspiration stay usable at 390px", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/discover");
+    await expect(page.getByRole("heading", { name: "Find your kind of somewhere." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Attractions" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Restaurants" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+    await page.goto("/ideas");
+    await expect(page.getByRole("heading", { name: "A little inspiration, ready to go." })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Explore this day" }).first()).toBeVisible();
     await assertNoHorizontalScroll(page);
   });
 });

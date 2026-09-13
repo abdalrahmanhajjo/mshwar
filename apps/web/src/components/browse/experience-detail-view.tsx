@@ -7,13 +7,30 @@ import { CatalogImage } from "@/components/browse/catalog-image";
 import { ExperienceCard } from "@/components/browse/experience-card";
 import { SaveExperienceButton } from "@/components/browse/save-button";
 import { useBrowseCopy } from "@/lib/browse-copy";
-import { bookingModeLabel, type Experience } from "@/lib/catalog";
+import {
+  bookingModeLabel,
+  listingAvailabilityNote,
+  listingAvailable,
+  listingDistance,
+  listingGallery,
+  listingKind,
+  listingPolicies,
+  listingRating,
+  priceKindLabel,
+  type Experience,
+} from "@/lib/catalog";
 import { CATEGORIES } from "@/lib/catalog";
+import { Rating } from "@/components/ui/rating";
 
 export function ExperienceDetailView({ experience, related }: { experience: Experience; related: Experience[] }) {
   const copy = useBrowseCopy();
   const category = CATEGORIES.find((item) => item.slug === experience.category)?.label ?? experience.category;
   const mapsQuery = encodeURIComponent(experience.placeLabel);
+  const gallery = listingGallery(experience);
+  const policies = listingPolicies(experience);
+  const available = listingAvailable(experience);
+  const rating = listingRating(experience);
+  const kind = listingKind(experience);
 
   return (
     <div>
@@ -22,11 +39,23 @@ export function ExperienceDetailView({ experience, related }: { experience: Expe
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "TouristAttraction",
+            "@type": kind === "restaurant" ? "Restaurant" : "TouristAttraction",
             name: experience.title,
             description: experience.body,
-            image: experience.image,
+            image: gallery,
             url: `/experiences/${experience.slug}`,
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: experience.placeLabel,
+              addressCountry: "LB",
+            },
+            offers: {
+              "@type": "Offer",
+              priceCurrency: "USD",
+              price: experience.priceFrom,
+              availability: available ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
+              description: `${priceKindLabel(experience.priceLabel)}. ${bookingModeLabel(experience.bookingMode)}.`,
+            },
           }),
         }}
       />
@@ -51,31 +80,24 @@ export function ExperienceDetailView({ experience, related }: { experience: Expe
             <Clock className="me-1 inline size-4" aria-hidden />
             {experience.hours} {copy.hoursLabel}
           </span>
+          <span>
+            {listingDistance(experience)} km {copy.fromBeirut}
+          </span>
         </p>
+        {rating ? <Rating value={Math.round(rating)} readOnly label={`${rating.toFixed(1)}`} /> : null}
       </div>
 
-      <div className="shell-frame grid gap-6 pb-10 lg:grid-cols-[1.4fr_0.8fr]">
-        <div className="overflow-hidden rounded-card">
-          <div className="aspect-[16/10]">
-            <CatalogImage src={experience.image} alt={experience.imageAlt} priority />
-          </div>
-        </div>
-        <div className="flex flex-col justify-between rounded-card bg-brand p-8 text-brand-foreground">
-          <div>
-            <p className="text-xs uppercase tracking-[0.16em] text-brand-foreground/70">{experience.placeLabel}</p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight">{experience.summary}</h2>
-            <p className="mt-3 text-sm text-brand-foreground/80">{experience.tags.join(" · ")}</p>
-          </div>
-          <a
-            href={`https://www.google.com/maps/search/?api=1&query=${mapsQuery}`}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-8 inline-flex items-center gap-2 text-sm"
+      <div className="shell-frame grid gap-3 pb-10 md:grid-cols-3">
+        {gallery.map((src, index) => (
+          <div
+            key={`${src}-${index}`}
+            className={index === 0 ? "overflow-hidden rounded-card md:col-span-2" : "overflow-hidden rounded-card"}
           >
-            {copy.seeArea}
-            <ArrowUpRight className="size-4" aria-hidden />
-          </a>
-        </div>
+            <div className={index === 0 ? "aspect-[16/10]" : "aspect-[4/3]"}>
+              <CatalogImage src={src} alt={experience.imageAlt} priority={index === 0} />
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="shell-frame grid gap-10 pb-16 lg:grid-cols-[1.3fr_0.9fr] lg:items-start">
@@ -99,20 +121,49 @@ export function ExperienceDetailView({ experience, related }: { experience: Expe
               </div>
             ))}
           </section>
+          <section className="rounded-card border border-border bg-surface-raised p-6">
+            <h3 className="font-semibold">{copy.availabilityStatus}</h3>
+            <p className="mt-2 text-sm font-medium">
+              {bookingModeLabel(experience.bookingMode)} · {copy.preview}
+            </p>
+            <p className="mt-2 text-sm text-text-muted">
+              {available ? listingAvailabilityNote(experience) : copy.availabilityUnknown}
+            </p>
+            <p className="mt-3 text-sm text-text-muted">{priceKindLabel(experience.priceLabel)}</p>
+          </section>
+          <section>
+            <h3 className="font-semibold">{copy.policies}</h3>
+            <dl className="mt-4 grid gap-4">
+              {policies.map((policy) => (
+                <div key={policy.title}>
+                  <dt className="text-sm font-medium">{policy.title}</dt>
+                  <dd className="mt-1 text-sm text-text-muted">{policy.body}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
           <section>
             <h3 className="font-semibold">{copy.keepExploring.replace(".", "")}</h3>
             <p className="mt-2 text-sm text-text-muted">{copy.noReviews}</p>
           </section>
           <p className="text-sm text-text-muted">{copy.sampleOffer}</p>
-          <p className="text-sm font-medium">
-            {bookingModeLabel(experience.bookingMode)} · {copy.preview}
-          </p>
         </div>
         <BookingWidget experience={experience} />
       </div>
 
       <div className="shell-frame grid gap-6 pb-16">
-        <h2 className="text-3xl font-semibold tracking-tight">{copy.keepExploring}</h2>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h2 className="text-3xl font-semibold tracking-tight">{copy.keepExploring}</h2>
+          <Link
+            href={`https://www.google.com/maps/search/?api=1&query=${mapsQuery}`}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 text-sm"
+          >
+            {copy.seeArea}
+            <ArrowUpRight className="size-4" aria-hidden />
+          </Link>
+        </div>
         <div className="grid gap-8 md:grid-cols-3">
           {related.map((item) => (
             <ExperienceCard key={item.slug} experience={item} />
