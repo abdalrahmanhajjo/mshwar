@@ -7,37 +7,36 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useBusinessCopy } from "@/lib/business-copy";
-import { fileToBase64, submitVerification, updateContacts, uploadPortalFile } from "@/lib/portal";
+import {
+  fileToBase64,
+  submitVerification,
+  updateContacts,
+  uploadPortalFile,
+  type PortalOrganization,
+} from "@/lib/portal";
 import { usePortal } from "@/components/business/portal-provider";
 
 export function SettingsView() {
-  const copy = useBusinessCopy();
-  const { org, refresh } = usePortal();
-  const [publicEmail, setPublicEmail] = React.useState("");
-  const [internalEmail, setInternalEmail] = React.useState("");
-  const [fulfilment, setFulfilment] = React.useState("");
-  const [legalName, setLegalName] = React.useState("");
-  const [registration, setRegistration] = React.useState("");
-  const [status, setStatus] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    if (!org) {
-      return;
-    }
-    setPublicEmail(org.public_contact.email ?? "");
-    setInternalEmail(org.internal_contact?.email ?? "");
-    setFulfilment(org.fulfilment_instructions ?? "");
-    setLegalName(org.name);
-  }, [org]);
-
+  const { org } = usePortal();
   if (!org) {
     return null;
   }
-  const current = org;
+  return <SettingsForm key={org.id} org={org} />;
+}
+
+function SettingsForm({ org }: { org: PortalOrganization }) {
+  const copy = useBusinessCopy();
+  const { refresh } = usePortal();
+  const [publicEmail, setPublicEmail] = React.useState(org.public_contact.email ?? "");
+  const [internalEmail, setInternalEmail] = React.useState(org.internal_contact?.email ?? "");
+  const [fulfilment, setFulfilment] = React.useState(org.fulfilment_instructions ?? "");
+  const [legalName, setLegalName] = React.useState(org.name);
+  const [registration, setRegistration] = React.useState("");
+  const [status, setStatus] = React.useState<string | null>(null);
 
   async function onSave(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await updateContacts(current.id, {
+    await updateContacts(org.id, {
       public_contact: { email: publicEmail },
       internal_contact: { email: internalEmail },
       fulfilment_instructions: fulfilment,
@@ -48,7 +47,7 @@ export function SettingsView() {
 
   async function onVerify(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await submitVerification(current.id, { legal_name: legalName, registration_number: registration });
+    await submitVerification(org.id, { legal_name: legalName, registration_number: registration });
     await refresh();
     setStatus(copy.submitVerification);
   }
@@ -58,7 +57,7 @@ export function SettingsView() {
     if (!file) {
       return;
     }
-    await uploadPortalFile(current.id, {
+    await uploadPortalFile(org.id, {
       filename: file.name,
       content_type: file.type || "application/pdf",
       content_base64: await fileToBase64(file),

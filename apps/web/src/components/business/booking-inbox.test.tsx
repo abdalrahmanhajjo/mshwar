@@ -6,7 +6,7 @@ import { LocaleProvider } from "@/components/shell/locale-provider";
 
 describe("booking inbox", () => {
   it("confirms a request with a reason", async () => {
-    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+    const fetchMock = vi.fn(async (url: string) => {
       if (String(url).includes("/portal/organizations") && !String(url).includes("/bookings")) {
         return {
           ok: true,

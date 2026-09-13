@@ -27,8 +27,25 @@ export function ListingsView() {
   }, [org]);
 
   React.useEffect(() => {
-    void reload();
-  }, [reload]);
+    if (!org) {
+      return;
+    }
+    let cancelled = false;
+    void listExperiences(org.id)
+      .then((next) => {
+        if (!cancelled) {
+          setItems(next);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setItems([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [org]);
 
   async function toggle(item: PortalExperience) {
     if (!org) {

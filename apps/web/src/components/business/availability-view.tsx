@@ -39,8 +39,26 @@ export function AvailabilityView({ experienceId }: { experienceId: string }) {
   }, [experienceId, org]);
 
   React.useEffect(() => {
-    void reload().catch(() => undefined);
-  }, [reload]);
+    if (!org) {
+      return;
+    }
+    let cancelled = false;
+    void getExperience(org.id, experienceId)
+      .then(async (listing) => {
+        if (cancelled) {
+          return;
+        }
+        setVenueId(listing.venue_id);
+        const availability = await getAvailability(org.id, experienceId);
+        if (!cancelled) {
+          setSlots(availability.slots);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [experienceId, org]);
 
   async function onHours() {
     if (!org || !venueId) {

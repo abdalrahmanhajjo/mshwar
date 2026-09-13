@@ -32,8 +32,25 @@ export function BookingInbox() {
   }, [org]);
 
   React.useEffect(() => {
-    void reload();
-  }, [reload]);
+    if (!org) {
+      return;
+    }
+    let cancelled = false;
+    void listBookings(org.id)
+      .then((next) => {
+        if (!cancelled) {
+          setRows(next);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setRows([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [org]);
 
   const filtered = filterBookings(rows, { status: status || undefined, query: query || undefined });
 

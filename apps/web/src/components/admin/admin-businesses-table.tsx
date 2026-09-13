@@ -30,8 +30,22 @@ export function AdminBusinessesTable() {
   }, []);
 
   React.useEffect(() => {
-    void reload();
-  }, [reload]);
+    let cancelled = false;
+    void listAdminOrganizations()
+      .then((next) => {
+        if (!cancelled) {
+          setRows(next);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setRows([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <Card>

@@ -345,15 +345,20 @@ $$;
 
 CREATE OR REPLACE FUNCTION app.list_my_organizations(p_user uuid)
 RETURNS jsonb
-LANGUAGE sql
+LANGUAGE plpgsql
 STABLE
 SECURITY DEFINER
 SET search_path = app, public
 AS $$
-    SELECT coalesce(jsonb_agg(app.get_organization_portal(p_user, m.organization_id) ORDER BY o.created_at), '[]'::jsonb)
-    FROM app.organization_members m
-    JOIN app.organizations o ON o.id = m.organization_id
-    WHERE m.user_id = p_user AND m.active
+BEGIN
+    -- plpgsql so this can call get_organization_portal defined later in the file.
+    RETURN (
+        SELECT coalesce(jsonb_agg(app.get_organization_portal(p_user, m.organization_id) ORDER BY o.created_at), '[]'::jsonb)
+        FROM app.organization_members m
+        JOIN app.organizations o ON o.id = m.organization_id
+        WHERE m.user_id = p_user AND m.active
+    );
+END;
 $$;
 
 CREATE OR REPLACE FUNCTION app.onboarding_checklist(p_org uuid)
