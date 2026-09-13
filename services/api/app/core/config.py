@@ -58,6 +58,8 @@ class Settings(BaseSettings):
 
     # External services
     google_maps_api_key: str = ""
+    catalogue_embedding_provider: str = "stub"
+    catalogue_routing_provider: str = "stub"
     open_meteo_api_key: str = ""
     stripe_secret_key: str = ""
     stripe_webhook_secret: str = ""

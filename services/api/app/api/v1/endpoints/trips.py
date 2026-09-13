@@ -1,31 +1,43 @@
 from __future__ import annotations
 
 import json
-from typing import Any
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.endpoints.auth import _load_session
-from app.core.sessions import COOKIE_NAME
+from app.api.v1.hub_query import page_args, raise_hub_error
+from app.api.v1.session import require_session
 from app.dependencies import get_auth_db
+from app.schemas.hub import TripListOut, TripSummary
 from app.schemas.preferences import PreferenceValues, TripCreate, TripOut, merge_plan_defaults
 
 router = APIRouter()
 
 
-async def _require_session(request: Request, db: AsyncSession) -> dict[str, Any]:
-    session = await _load_session(db, request.cookies.get(COOKIE_NAME))
-    if session is None or session["status"] != "active":
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
-    return session
-
-
-@router.get("")
-async def list_trips() -> list[dict[str, object]]:
-    return []
+@router.get("", response_model=TripListOut)
+async def list_trips(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+    paging: tuple[int, int, int] = Depends(page_args),
+) -> TripListOut:
+    session = await require_session(request, db)
+    page, page_size, offset = paging
+    rows = (
+        await db.execute(
+            text("SELECT id, title, status, created_at, total FROM app.list_my_trips(:user_id, :lim, :off)"),
+            {"user_id": str(session["user_id"]), "lim": page_size, "off": offset},
+        )
+    ).all()
+    total = int(rows[0][4]) if rows else 0
+    return TripListOut(
+        items=[TripSummary(id=row[0], name=row[1], status=row[2], created_at=row[3]) for row in rows],
+        page=page,
+        page_size=page_size,
+        total=total,
+    )
 
 
 @router.post("", response_model=TripOut)
@@ -34,7 +46,7 @@ async def create_trip(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> TripOut:
-    session = await _require_session(request, db)
+    session = await require_session(request, db)
     overrides = (
         trip.preference_overrides.model_dump(mode="json", exclude_unset=True) if trip.preference_overrides else {}
     )
@@ -71,3 +83,25 @@ async def create_trip(
         preference_overrides=stored_overrides,
         effective_defaults=merge_plan_defaults(profile_prefs, stored_overrides),
     )
+
+
+@router.post("/{trip_id}/archive", response_model=TripSummary)
+async def archive_trip(
+    trip_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> TripSummary:
+    session = await require_session(request, db)
+    try:
+        row = (
+            await db.execute(
+                text("SELECT id, title, status, created_at FROM app.archive_my_trip(:user_id, :trip_id)"),
+                {"user_id": str(session["user_id"]), "trip_id": str(trip_id)},
+            )
+        ).first()
+    except DBAPIError as exc:
+        raise_hub_error(exc, "Trip not found")
+        raise
+    if row is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trip not found")
+    return TripSummary(id=row[0], name=row[1], status=row[2], created_at=row[3])

@@ -52,8 +52,7 @@ def test_session_middleware_ignores_invalid_ids(client: TestClient) -> None:
 
 def test_list_and_create_bookings(client: TestClient) -> None:
     listed = client.get("/api/v1/bookings")
-    assert listed.status_code == 200
-    assert listed.json() == []
+    assert listed.status_code == 401
     created = client.post("/api/v1/bookings", json={"business_id": 9})
     assert created.status_code == 401
 
@@ -76,7 +75,6 @@ def test_list_create_and_get_businesses(client: TestClient) -> None:
 
 def test_list_and_create_trips(client: TestClient) -> None:
     listed = client.get("/api/v1/trips")
-    assert listed.status_code == 200
-    assert listed.json() == []
+    assert listed.status_code == 401
     created = client.post("/api/v1/trips", json={"name": "Weekend"})
     assert created.status_code == 401
