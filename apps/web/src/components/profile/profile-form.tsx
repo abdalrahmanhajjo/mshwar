@@ -82,7 +82,12 @@ export function ProfileForm() {
         }
         setDisplayName(profile.display_name);
         setLocaleState(profile.locale as Locale);
-        setPrefs({ ...EMPTY_PREFERENCES, ...profile.preferences, source: "explicit" });
+        setPrefs({
+          ...EMPTY_PREFERENCES,
+          ...profile.preferences,
+          home_area_id: profile.preferences.home_area_id ?? profile.home_area?.id ?? null,
+          source: "explicit",
+        });
         setAreas(catalog.areas);
         setVocab(vocabulary);
       })
@@ -107,7 +112,12 @@ export function ProfileForm() {
         locale,
         preferences: { ...prefs, source: "explicit" },
       });
-      setPrefs({ ...EMPTY_PREFERENCES, ...next.preferences, source: "explicit" });
+      setPrefs({
+        ...EMPTY_PREFERENCES,
+        ...next.preferences,
+        home_area_id: next.preferences.home_area_id ?? next.home_area?.id ?? null,
+        source: "explicit",
+      });
       setLocale(locale);
       await refresh();
       setSaved(true);
