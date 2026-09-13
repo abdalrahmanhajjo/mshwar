@@ -56,5 +56,7 @@ describe("Lebanon catalog seed", () => {
     expect(page.page).toBe(2);
     expect(page.items.length).toBeGreaterThan(0);
     expect(page.total).toBe(EXPERIENCES.length);
+    const coastImages = filterExperiences({ category: "coast" }).map((item) => item.image);
+    expect(new Set(coastImages).size).toBe(coastImages.length);
   });
 });
