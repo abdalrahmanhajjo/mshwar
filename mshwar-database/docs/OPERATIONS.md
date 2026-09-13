@@ -45,17 +45,17 @@ Perform a scheduled restore drill into an isolated database. Record restore dura
 
 Define legal retention with the actual jurisdiction, merchant contract and privacy policy; the values below are proposed engineering defaults only.
 
-| Data | Proposed treatment |
-|---|---|
-| User contacts and preferences | Remove/anonymize after an approved deletion request; revoke sessions first |
-| Precise trip start location | Minimize API visibility; generalize/remove when no longer needed, with an authorized retention migration |
-| Raw prompt text | Do not store by default; use redacted structured constraints |
-| Product analytics | 90-day detailed retention initially, then aggregate |
-| Weather and external cache data | Expire according to provider terms and operational need |
-| Verification evidence | Private object storage; restrict reviewers; approved retention schedule |
-| Financial contracts and audits | Jurisdiction/provider-defined retention; restricted access and eventual controlled purge |
-| Training feedback | Only consented/de-identified data; remove disallowed rows from training exports |
-| Evaluation sets | Synthetic, versioned and stable |
+| Data                            | Proposed treatment                                                                                       |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| User contacts and preferences   | Remove/anonymize after an approved deletion request; revoke sessions first                               |
+| Precise trip start location     | Minimize API visibility; generalize/remove when no longer needed, with an authorized retention migration |
+| Raw prompt text                 | Do not store by default; use redacted structured constraints                                             |
+| Product analytics               | 90-day detailed retention initially, then aggregate                                                      |
+| Weather and external cache data | Expire according to provider terms and operational need                                                  |
+| Verification evidence           | Private object storage; restrict reviewers; approved retention schedule                                  |
+| Financial contracts and audits  | Jurisdiction/provider-defined retention; restricted access and eventual controlled purge                 |
+| Training feedback               | Only consented/de-identified data; remove disallowed rows from training exports                          |
+| Evaluation sets                 | Synthetic, versioned and stable                                                                          |
 
 Immutable history conflicts with ordinary account cascades. A dedicated authorized anonymization/retention migration must remove identifying data while preserving necessary transaction records. Do not disable all integrity triggers during normal API requests. This package intentionally grants no general financial-history deletion to the backend role. The retention scheduler and deletion workflow are application/operations work still required before launch.
 

@@ -4,20 +4,20 @@ The schema makes relational records authoritative for identity, inventory, money
 
 ## Domain model
 
-| Domain | Principal records | Design purpose |
-|---|---|---|
-| Identity and privacy | users, user_private, consent_events | Separate public identity mapping from contacts and sensitive preferences |
-| Supply ownership | organizations, organization_members, staff_invitations, verification_events | Organization boundaries, operational roles and verification evidence |
-| Discovery | destinations, venues, experiences, taxonomy, translations, media | Published inventory, multilingual content, location and suitability |
-| Commercial inventory | opening_hours, opening_exceptions, blackouts, slots, price_rules, policies | Hours, dated capacity, price validity and cancellation terms |
-| Planning | trips, trip_versions, trip_stops, trip_legs, trip_cost_items | Versioned constraints and derived costs; sealed historical plans |
-| Groups | trip_members, trip_share_links, votes, favorites | Permission-bearing invitations and durable preferences |
-| Transactions | bookings, booking_events, payments, refunds, webhook_inbox | Independent reservation and financial lifecycles |
-| Trust and operations | reviews, review_responses, support_cases, audit_log, outbox, notifications | Evidence, moderation and retryable delivery |
-| Knowledge | knowledge_documents, knowledge_chunks, retrieval_sources | Approved source versions, model-specific vectors and retrieval evidence |
-| Learning | recommendation_runs, recommendation_candidates, feedback_events | Original proposals, edits and outcomes retained separately |
-| Evaluation | evaluation_datasets, evaluation_cases, evaluation_runs, evaluation_results | Versioned test data and comparable model results |
-| Weather and metrics | weather_snapshots, weather_warnings, analytics_events, data_quality_issues | Expiring external evidence and operational signals |
+| Domain               | Principal records                                                           | Design purpose                                                           |
+| -------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Identity and privacy | users, user_private, consent_events                                         | Separate public identity mapping from contacts and sensitive preferences |
+| Supply ownership     | organizations, organization_members, staff_invitations, verification_events | Organization boundaries, operational roles and verification evidence     |
+| Discovery            | destinations, venues, experiences, taxonomy, translations, media            | Published inventory, multilingual content, location and suitability      |
+| Commercial inventory | opening_hours, opening_exceptions, blackouts, slots, price_rules, policies  | Hours, dated capacity, price validity and cancellation terms             |
+| Planning             | trips, trip_versions, trip_stops, trip_legs, trip_cost_items                | Versioned constraints and derived costs; sealed historical plans         |
+| Groups               | trip_members, trip_share_links, votes, favorites                            | Permission-bearing invitations and durable preferences                   |
+| Transactions         | bookings, booking_events, payments, refunds, webhook_inbox                  | Independent reservation and financial lifecycles                         |
+| Trust and operations | reviews, review_responses, support_cases, audit_log, outbox, notifications  | Evidence, moderation and retryable delivery                              |
+| Knowledge            | knowledge_documents, knowledge_chunks, retrieval_sources                    | Approved source versions, model-specific vectors and retrieval evidence  |
+| Learning             | recommendation_runs, recommendation_candidates, feedback_events             | Original proposals, edits and outcomes retained separately               |
+| Evaluation           | evaluation_datasets, evaluation_cases, evaluation_runs, evaluation_results  | Versioned test data and comparable model results                         |
+| Weather and metrics  | weather_snapshots, weather_warnings, analytics_events, data_quality_issues  | Expiring external evidence and operational signals                       |
 
 ## Key decisions
 
