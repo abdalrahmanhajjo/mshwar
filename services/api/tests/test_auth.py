@@ -342,7 +342,14 @@ async def test_new_account_is_unverified_until_emailed_link_is_used(api: AsyncCl
     assert me.status_code == 200
     assert me.json()["email_verified"] is False
 
-    browsed = await api.get("/api/v1/businesses")
+    # Listing inventory uses RLS context, not verification. Booking is gated separately.
+    browsed = await api.get(
+        "/api/v1/businesses",
+        headers={
+            "x-user-id": me.json()["id"],
+            "x-organization-id": "00000000-0000-0000-0000-000000000001",
+        },
+    )
     assert browsed.status_code == 200
 
     blocked = await api.post("/api/v1/bookings", json={"business_id": 3})
