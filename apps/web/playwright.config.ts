@@ -12,7 +12,7 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_BASE_URL
     ? undefined
     : {
-        command: "pnpm start -- -p 3001",
+        command: "./node_modules/.bin/next start -p 3001",
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 120000,
