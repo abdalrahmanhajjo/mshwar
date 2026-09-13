@@ -1,18 +1,20 @@
 # 54-screen Figma inventory (MSHWAR-27)
 
-This is the **code-side source of truth** for the 54-frame Figma file. It is derived from the Next.js App Router pages and shells on this branch (`apps/web/src/app`, traveller / business / admin layouts, auth, settings, hub, browse, privacy). Designers can import and arrange frames from this checklist **without guessing** route names or grid coordinates.
+Live file: [Mshwar — Complete UI — Clickable Prototype](https://www.figma.com/design/CTLlkbyldx557zamdshjd5/Mshwar--Complete-UI--Clickable-Prototype) · page **`54 screens`**.
 
-**The live Figma file was not edited.** There is no Figma API access in this repository. Publishing Variables and placing frames remains a manual designer step (see [FIGMA-IMPORT.md](./FIGMA-IMPORT.md)). Machine-readable copy: [generated/figma-54-screens.json](./generated/figma-54-screens.json) (hand-authored inventory, not `pnpm tokens:generate` output).
+This is the **code-side companion** to that file. It is derived from the Next.js App Router pages and shells on this branch (`apps/web/src/app`, traveller / business / admin layouts, auth, settings, hub, browse, privacy). Use it to name, place, and capture frames **without guessing** route names or grid coordinates.
+
+**Structural grid is in Figma** (54 desktop + 20 mobile + 4 handoffs on page `54 screens`). Live slots are **named empty frames awaiting capture paste**. Gap/state slots are **stamped**. This repository still has no Figma API access and does not write the live file from CI (see [FIGMA-IMPORT.md](./FIGMA-IMPORT.md)). Machine-readable copy: [generated/figma-54-screens.json](./generated/figma-54-screens.json) (hand-authored inventory, not `pnpm tokens:generate` output).
 
 ## MSHWAR-27 acceptance checklist
 
-Use this as the import punch-list. Check items in Figma when the matching frame exists on the canvas.
+Structural ACs are **done in Figma**. Remaining work is screenshot paste into the named live frames.
 
-- [ ] **AC1.** All 54 core slots exist as **1440×1600** desktop frames (32 live product surfaces + 22 documented gap/state slots).
-- [ ] **AC2.** A **390×844** mobile pass exists for the **20** highest-traffic live routes marked below.
-- [ ] **AC3.** Every frame sits on the journey-band grid: `x = slot * 1600`, `y` from the six bands in [Grid](#grid-six-journey-bands).
-- [ ] **AC4.** The [four cross-surface handoffs](#four-cross-surface-handoffs) are sticky-note annotated on the canvas.
-- [ ] **AC5.** Layer names follow the convention below; Tokens Studio / Variables imported from [FIGMA-IMPORT.md](./FIGMA-IMPORT.md); file published for review.
+- [x] **AC1.** All 54 core slots exist as **1440×1600** desktop frames (32 live product surfaces + 22 documented gap/state slots). Live frames are named and empty pending capture; gaps/states are stamped.
+- [x] **AC2.** A **390×844** mobile pass exists for the **20** highest-traffic live routes marked below (named frames, capture pending).
+- [x] **AC3.** Every frame sits on the journey-band grid: `x = slot * 1600`, `y` from the six bands in [Grid](#grid-six-journey-bands).
+- [x] **AC4.** The [four cross-surface handoffs](#four-cross-surface-handoffs) are sticky-note annotated on the canvas.
+- [x] **AC5.** Layer names follow the convention below; Tokens Studio / Variables imported from [FIGMA-IMPORT.md](./FIGMA-IMPORT.md); file published for review.
 
 Subtasks: MSHWAR-185 (remaining traveller/account desktop frames), MSHWAR-186 (390px pass), MSHWAR-187 (grid), MSHWAR-188 (handoffs), MSHWAR-189 (layer names + publish).
 
@@ -297,7 +299,7 @@ Place these as Figma sticky notes / connectors. They are **annotations**, not ex
 
 ## Publish-for-review checklist (MSHWAR-189)
 
-Do this in Figma after arranging frames. This repo still cannot publish the file.
+Structural items below are done on page `54 screens`. This repo still cannot publish the file. Re-check after capture paste.
 
 1. **Tokens Studio import** — follow [FIGMA-IMPORT.md](./FIGMA-IMPORT.md): load `generated/tokens-studio.json`, confirm `core` + `semantic/light` + `semantic/dark`, export to Figma Variables.
 2. **Variables** — collections `Mshwar / Color`, `Radius`, `Spacing`, `Motion`, `Type`, `Elevation`. Color and Elevation have `light` and `dark`. Bind frames to **semantic** names, not cedar/orange primitives.
@@ -316,4 +318,4 @@ Until a Figma plugin or API exists:
 3. Screenshot into the matching frame. Prefer `byblos` / seeded catalogue slugs for `[slug]` templates.
 4. Leave **gap** frames empty except for the stamp. Leave **state** frames as overlays on a dimmed live sibling if the state is not URL-addressable.
 
-When the live Figma file is updated in the browser later, tick the AC boxes here. Do not back-port invented routes into the app from gap labels.
+The structural grid is already on page `54 screens`. Paste captures into the named **live** frames only. Do not back-port invented routes into the app from gap labels.

@@ -8,8 +8,22 @@ const inventoryPath = path.join(path.dirname(fileURLToPath(import.meta.url)), ".
 const inventory = JSON.parse(readFileSync(inventoryPath, "utf8"));
 
 describe("figma 54-screen inventory", () => {
-  it("does not claim the live Figma file was edited", () => {
-    assert.equal(inventory.liveFigmaEdited, false);
+  it("records the live Figma file and that CI does not write it", () => {
+    assert.equal(
+      inventory.liveFigmaFile,
+      "https://www.figma.com/design/CTLlkbyldx557zamdshjd5/Mshwar--Complete-UI--Clickable-Prototype",
+    );
+    assert.equal(inventory.liveFigmaPage, "54 screens");
+    assert.equal(inventory.repoWritesFigma, false);
+    assert.equal(inventory.structuralGridComplete, true);
+    assert.equal(inventory.liveCapturePending, true);
+    assert.deepEqual(inventory.acceptanceCriteria, {
+      ac1Desktop54: true,
+      ac2Mobile20: true,
+      ac3JourneyGrid: true,
+      ac4Handoffs: true,
+      ac5NamingAndPublish: true,
+    });
   });
 
   it("documents exactly 54 desktop slots with unique ids", () => {
