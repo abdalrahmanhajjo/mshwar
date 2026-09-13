@@ -12,7 +12,7 @@ permissions:
 
 env:
   NODE_VERSION: "20"
-  PNPM_VERSION: "9"
+  PNPM_VERSION: "11.15.1"
 
 jobs:
   lint-format-typecheck:
@@ -20,11 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-      - run: corepack enable pnpm
+          pnpm-version: ${{ env.PNPM_VERSION }}
       - run: pnpm install
       - run: pnpm run format:check
       - run: pnpm run lint
@@ -54,11 +53,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-      - run: corepack enable pnpm
+          pnpm-version: ${{ env.PNPM_VERSION }}
       - run: pnpm install
       - run: pnpm run build
       - name: Verify no secrets in build output
@@ -82,11 +80,10 @@ jobs:
     environment: preview
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-      - run: corepack enable pnpm
+          pnpm-version: ${{ env.PNPM_VERSION }}
       - run: pnpm install
       - run: pnpm run build
       - name: Deploy to Vercel Preview
@@ -108,11 +105,10 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-      - run: corepack enable pnpm
+          pnpm-version: ${{ env.PNPM_VERSION }}
       - run: pnpm install
       - run: pnpm run build
       - name: Deploy to Vercel Staging
@@ -134,11 +130,10 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-      - run: corepack enable pnpm
+          pnpm-version: ${{ env.PNPM_VERSION }}
       - run: pnpm install
       - run: pnpm run build
       - name: Deploy to Vercel Production
