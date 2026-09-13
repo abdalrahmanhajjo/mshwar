@@ -2,3 +2,9 @@ packages:
   - "apps/web"
   - "services/api"
   - "packages/shared"
+
+onlyBuiltDependencies:
+  - esbuild
+  - unrs-resolver
+  - pre-commit
+  - spawn-sync
