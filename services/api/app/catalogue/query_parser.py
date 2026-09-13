@@ -34,6 +34,7 @@ STOPWORDS = {
     "of",
     "and",
     "or",
+    "not",
     "to",
     "at",
     "on",
@@ -72,8 +73,13 @@ class ParsedQuery:
 
 def search_tokens(raw: str) -> list[str]:
     """Split a query into significant tokens, dropping punctuation and stopwords."""
-    parts = re.split(r"[\s\W]+", (raw or "").casefold(), flags=re.UNICODE)
-    return [part for part in parts if len(part) >= 2 and part not in STOPWORDS]
+    parts = re.split(r"\s+", (raw or "").casefold())
+    cleaned: list[str] = []
+    for part in parts:
+        token = part.strip(".,;:!?\"'()[]{}")
+        if len(token) >= 2 and token not in STOPWORDS:
+            cleaned.append(token)
+    return cleaned
 
 
 def _strip_whole_alias(text: str, alias: str) -> str:

@@ -17,9 +17,9 @@ AS $$
     FROM unnest(regexp_split_to_array(lower(btrim(coalesce(p_q, ''))), '[[:space:][:punct:]]+')) AS tok
     WHERE length(tok) >= 2
       AND tok NOT IN (
-          'in', 'the', 'a', 'an', 'of', 'and', 'or', 'to', 'at', 'on', 'for',
-          'with', 'from', 'by', 'near', 'around', 'dans', 'de', 'et', 'la',
-          'le', 'les', 'un', 'une', 'du', 'des',
+          'in', 'the', 'a', 'an', 'of', 'and', 'or', 'not', 'to', 'at', 'on',
+          'for', 'with', 'from', 'by', 'near', 'around', 'dans', 'de', 'et',
+          'la', 'le', 'les', 'un', 'une', 'du', 'des',
           'في', 'من', 'إلى', 'و'
       );
 $$;
@@ -33,13 +33,11 @@ AS $$
         btrim(coalesce(p_q, '')) = ''
         OR strpos(lower(coalesce(p_search_text, '')), lower(btrim(p_q))) > 0
         OR (
-            SELECT coalesce(bool_and(strpos(lower(coalesce(p_search_text, '')), tok) > 0), true)
-            FROM unnest(app.catalogue_search_tokens(p_q)) AS tok
-        )
-        OR (
-            btrim(coalesce(p_q, '')) <> ''
-            AND to_tsvector('simple', coalesce(p_search_text, ''))
-                @@ websearch_to_tsquery('simple', btrim(p_q))
+            cardinality(app.catalogue_search_tokens(p_q)) > 0
+            AND (
+                SELECT bool_and(strpos(lower(coalesce(p_search_text, '')), tok) > 0)
+                FROM unnest(app.catalogue_search_tokens(p_q)) AS tok
+            )
         );
 $$;
 
@@ -148,10 +146,7 @@ BEGIN
         JOIN app.destinations d ON d.id = v.destination_id AND d.status = 'published'
         WHERE e.status = 'published'
           AND e.embedding IS NOT NULL
-          AND (
-            app.catalogue_text_matches(e.search_text, v_q)
-            OR (v_q <> '' AND (e.embedding <=> app.stub_embedding(v_q)) < 0.55)
-          )
+          AND app.catalogue_text_matches(e.search_text, v_q)
           AND (p_category IS NULL OR p_category IN ('', 'all') OR EXISTS (
                 SELECT 1 FROM app.experience_taxonomy et
                 JOIN app.taxonomy t ON t.id = et.term_id

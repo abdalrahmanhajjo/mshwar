@@ -25,6 +25,10 @@ def test_nl_parser_extracts_filters() -> None:
     assert cedars.category == "nature"
     assert cedars.q == "cedars"
 
+    unknown = parse_search_query("zzzz-not-a-real-listing-999")
+    assert unknown.destination is None
+    assert "zzzz-not-a-real-listing-999" in unknown.q
+
 
 def test_travel_stub_scales_with_distance() -> None:
     short = estimate_travel(800)
