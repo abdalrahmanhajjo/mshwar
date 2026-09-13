@@ -1,0 +1,173 @@
+name: Web CI/CD
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  NODE_VERSION: "20"
+  PNPM_VERSION: "9"
+
+jobs:
+  lint-format-typecheck:
+    name: Web Lint, Format & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+      - run: corepack enable pnpm
+      - run: pnpm install
+      - run: pnpm run format:check
+      - run: pnpm run lint
+      - run: pnpm run typecheck
+      - name: Scan for secrets in web source
+        run: |
+          if grep -rnE '(sk_live_|sk_test_|pk_live_|pk_test_|password=|secret_key=|api_key=)' apps/web/src/ --include='*.ts' --include='*.tsx' 2>/dev/null; then
+            echo "ERROR: Potential secrets found in web source code"
+            exit 1
+          fi
+      - name: Verify NEXT_PUBLIC_ only env vars in client bundle
+        run: |
+          echo "Verifying only NEXT_PUBLIC_ prefixed env vars reach client bundle..."
+          grep -rn 'process.env.' apps/web/src/ --include='*.ts' --include='*.tsx' | grep -v 'NEXT_PUBLIC_' && {
+            echo "ERROR: Non-NEXT_PUBLIC_ env vars found in client source"
+            exit 1
+          } || echo "All client env vars are properly prefixed"
+
+  build:
+    name: Web Build
+    needs: [lint-format-typecheck]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+      - run: corepack enable pnpm
+      - run: pnpm install
+      - run: pnpm run build
+      - name: Verify no secrets in build output
+        run: |
+          if grep -rnE '(sk_live_|sk_test_|pk_live_|pk_test_|password=|secret_key=)' .next/ --include='*.js' --include='*.css' --include='*.html' 2>/dev/null; then
+            echo "ERROR: Potential secrets found in build output"
+            exit 1
+          fi
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: .next/
+          retention-days: 7
+
+  deploy-preview:
+    name: Deploy Vercel Preview
+    needs: [build]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    environment: preview
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+      - run: corepack enable pnpm
+      - run: pnpm install
+      - run: pnpm run build
+      - name: Deploy to Vercel Preview
+        uses: amondnet/vercel-action@v30
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: "--preview"
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+          github-comment: true
+          github-comment-delete: true
+
+  deploy-staging:
+    name: Deploy Vercel Staging
+    needs: [build]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+      - run: corepack enable pnpm
+      - run: pnpm install
+      - run: pnpm run build
+      - name: Deploy to Vercel Staging
+        uses: amondnet/vercel-action@v30
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: "--staging"
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+          github-comment: true
+          github-comment-delete: true
+
+  deploy-production-gate:
+    name: Deploy Vercel Production (Manual Gate)
+    needs: [deploy-staging]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+      - run: corepack enable pnpm
+      - run: pnpm install
+      - run: pnpm run build
+      - name: Deploy to Vercel Production
+        uses: amondnet/vercel-action@v30
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: "--prod"
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+          github-comment: true
+          github-comment-delete: true
+      - name: Verify production deployment
+        run: |
+          curl -f https://mshwar.app || exit 1
+          echo "Production deployment verified"
+
+  rollback:
+    name: Rollback Web Deployment
+    runs-on: ubuntu-latest
+    if: failure() && github.ref == 'refs/heads/main'
+    needs: [deploy-preview, deploy-staging, deploy-production-gate]
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rollback Vercel to previous version
+        uses: amondnet/vercel-action@v30
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: "--rollback"
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+      - name: Verify rollback
+        run: |
+          curl -f https://mshwar.app || exit 1
+          echo "Web rollback verified"

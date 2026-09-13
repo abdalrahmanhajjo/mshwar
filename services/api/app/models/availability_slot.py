@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import datetime
+import uuid
 
-from sqlalchemy import DateTime, Date, ForeignKey, Integer, String, func
+from sqlalchemy import Date, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.dependencies import Base
@@ -11,8 +13,8 @@ from app.dependencies import Base
 class AvailabilitySlot(Base):
     __tablename__ = "availability_slots"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    experience_id: Mapped[int] = mapped_column(Integer, ForeignKey("experiences.id"), nullable=False)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid())
+    experience_id: Mapped[int] = mapped_column(Integer, ForeignKey("app.experiences.id"), nullable=False)
     date: Mapped[datetime.date] = mapped_column(Date, nullable=False)
     start_time: Mapped[str] = mapped_column(String(5), nullable=False)
     end_time: Mapped[str] = mapped_column(String(5), nullable=False)

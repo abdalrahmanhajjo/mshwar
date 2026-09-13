@@ -5,7 +5,6 @@ Creates postgis (geospatial), pgvector (vector similarity), and btree_gist
 """
 
 from alembic import op
-import sqlalchemy as sa
 
 # revision identifiers, used by Alembic
 revision = "000"

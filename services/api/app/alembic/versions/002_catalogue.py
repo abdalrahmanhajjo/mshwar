@@ -1,12 +1,15 @@
-"""Migration 002: Catalogue tables (businesses, categories, experiences, price_rules, operating_hours).
+"""Alembic migration 002: Catalogue tables.
 
-Creates the business listings, categories, experiences, pricing and hours.
-Re-runnable: Uses DROP TABLE cascade and recreates from empty.
+Creates taxonomy, media, opening_hours, opening_exceptions, blackouts,
+currencies, price_rules, policies.
 """
 
-from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import SMALLINT, TIME, TSRANGE, UUID
 
+from alembic import op
+
+# revision identifiers, used by Alembic
 revision = "002"
 down_revision = "001"
 branch_labels = None
@@ -15,96 +18,157 @@ depends_on = None
 
 def upgrade() -> None:
     op.create_table(
-        "businesses",
-        sa.Column("id", sa.Integer(), nullable=False, primary_key=True),
-        sa.Column("name", sa.String(255), nullable=False),
-        sa.Column("category", sa.String(100), nullable=True),
-        sa.Column("location", sa.String(255), nullable=True),
-        sa.Column("verified", sa.Boolean(), nullable=False, server_default=sa.false()),
-        sa.Column("status", sa.String(50), nullable=False, server_default="active"),
-        sa.Column("latitude", sa.Float(), nullable=True),
-        sa.Column("longitude", sa.Float(), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        "experience_taxonomy",
+        sa.Column("experience_id", UUID(as_uuid=True), nullable=False),
+        sa.Column("term_id", UUID(as_uuid=True), nullable=False),
+        sa.PrimaryKeyConstraint("experience_id", "term_id", name="pk_experience_taxonomy"),
+        sa.ForeignKeyConstraint(["experience_id"], ["app.experiences.id"]),
+        sa.ForeignKeyConstraint(["term_id"], ["app.taxonomy.id"]),
+        schema="app",
     )
 
     op.create_table(
-        "categories",
-        sa.Column("id", sa.Integer(), nullable=False, primary_key=True),
-        sa.Column("name", sa.String(100), nullable=False, unique=True),
-        sa.Column("slug", sa.String(100), nullable=False, unique=True),
-        sa.Column("description", sa.Text(), nullable=True),
-        sa.Column("icon", sa.String(100), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        "experience_translations",
+        sa.Column("experience_id", UUID(as_uuid=True), nullable=False),
+        sa.Column("locale", sa.Text(), nullable=False),
+        sa.Column("title", sa.Text(), nullable=False),
+        sa.Column("description", sa.Text(), nullable=False, server_default=""),
+        sa.PrimaryKeyConstraint("experience_id", "locale", name="pk_experience_translations"),
+        sa.ForeignKeyConstraint(["experience_id"], ["app.experiences.id"]),
+        schema="app",
     )
 
     op.create_table(
-        "experiences",
-        sa.Column("id", sa.Integer(), nullable=False, primary_key=True),
-        sa.Column("business_id", sa.Integer(), sa.ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("category_id", sa.Integer(), sa.ForeignKey("categories.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("name", sa.String(255), nullable=False),
-        sa.Column("description", sa.Text(), nullable=True),
-        sa.Column("duration_minutes", sa.Integer(), nullable=True),
-        sa.Column("price_type", sa.String(50), nullable=False, server_default="fixed"),
-        sa.Column("price_amount", sa.Float(), nullable=True),
-        sa.Column("price_currency", sa.String(3), nullable=False, server_default="LBP"),
-        sa.Column("suitable_for_groups", sa.Boolean(), nullable=False, server_default=sa.true()),
-        sa.Column("indoor_outdoor", sa.String(20), nullable=False, server_default="indoor"),
-        sa.Column("verified", sa.Boolean(), nullable=False, server_default=sa.false()),
-        sa.Column("status", sa.String(50), nullable=False, server_default="active"),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        "destination_translations",
+        sa.Column("destination_id", UUID(as_uuid=True), nullable=False),
+        sa.Column("locale", sa.Text(), nullable=False),
+        sa.Column("title", sa.Text(), nullable=False),
+        sa.Column("description", sa.Text(), nullable=False, server_default=""),
+        sa.PrimaryKeyConstraint("destination_id", "locale", name="pk_destination_translations"),
+        sa.ForeignKeyConstraint(["destination_id"], ["app.destinations.id"]),
+        schema="app",
+    )
+
+    op.create_table(
+        "taxonomy_translations",
+        sa.Column("taxonomy_id", UUID(as_uuid=True), nullable=False),
+        sa.Column("locale", sa.Text(), nullable=False),
+        sa.Column("title", sa.Text(), nullable=False),
+        sa.Column("description", sa.Text(), nullable=False, server_default=""),
+        sa.PrimaryKeyConstraint("taxonomy_id", "locale", name="pk_taxonomy_translations"),
+        sa.ForeignKeyConstraint(["taxonomy_id"], ["app.taxonomy.id"]),
+        schema="app",
+    )
+
+    op.create_table(
+        "media",
+        sa.Column("id", UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
+        sa.Column("experience_id", UUID(as_uuid=True), nullable=False),
+        sa.Column("provider", sa.Text(), nullable=False, server_default="imagekit"),
+        sa.Column("object_key", sa.Text(), nullable=False),
+        sa.Column("alt_text", sa.Text(), nullable=False),
+        sa.Column("sort_order", sa.Integer(), nullable=False, server_default="0"),
+        sa.Column("moderation", sa.Text(), nullable=False, server_default="pending"),
+        sa.ForeignKeyConstraint(["experience_id"], ["app.experiences.id"]),
+        schema="app",
+    )
+
+    op.create_table(
+        "opening_hours",
+        sa.Column("id", UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
+        sa.Column("venue_id", UUID(as_uuid=True), nullable=False),
+        sa.Column("weekday", SMALLINT(), nullable=False),
+        sa.Column("opens", TIME(), nullable=False),
+        sa.Column("closes", TIME(), nullable=False),
+        sa.ForeignKeyConstraint(["venue_id"], ["app.venues.id"]),
+        schema="app",
+    )
+
+    op.create_table(
+        "opening_exceptions",
+        sa.Column("id", UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
+        sa.Column("venue_id", UUID(as_uuid=True), nullable=False),
+        sa.Column("local_date", sa.Date(), nullable=False),
+        sa.Column("closed", sa.Boolean(), nullable=False, server_default=sa.false()),
+        sa.Column("opens", TIME()),
+        sa.Column("closes", TIME()),
+        sa.ForeignKeyConstraint(["venue_id"], ["app.venues.id"]),
+        schema="app",
+    )
+
+    op.create_table(
+        "blackouts",
+        sa.Column("id", UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
+        sa.Column("experience_id", UUID(as_uuid=True), nullable=False),
+        sa.Column("period", TSRANGE(), nullable=False),
+        sa.Column("reason", sa.Text(), nullable=False),
+        sa.ForeignKeyConstraint(["experience_id"], ["app.experiences.id"]),
+        schema="app",
+    )
+
+    op.create_table(
+        "currencies",
+        sa.Column("code", sa.Text(), primary_key=True),
+        sa.Column("minor_digits", SMALLINT(), nullable=False),
+        schema="app",
     )
 
     op.create_table(
         "price_rules",
-        sa.Column("id", sa.Integer(), nullable=False, primary_key=True),
-        sa.Column("experience_id", sa.Integer(), sa.ForeignKey("experiences.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("currency", sa.String(3), nullable=False, server_default="LBP"),
-        sa.Column("price_type", sa.String(50), nullable=False),
-        sa.Column("amount", sa.Float(), nullable=True),
-        sa.Column("min_group_size", sa.Integer(), nullable=True),
-        sa.Column("max_group_size", sa.Integer(), nullable=True),
-        sa.Column("effective_from", sa.DateTime(timezone=True), nullable=True),
-        sa.Column("effective_until", sa.DateTime(timezone=True), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        sa.Column("id", UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
+        sa.Column("experience_id", UUID(as_uuid=True), nullable=False),
+        sa.Column("currency", sa.Text(), nullable=False),
+        sa.Column("price_type", sa.Text(), nullable=False),
+        sa.Column("unit", sa.Text(), nullable=False),
+        sa.Column("amount_minor", sa.BigInteger()),
+        sa.Column("max_amount_minor", sa.BigInteger()),
+        sa.Column("valid_during", TSRANGE(), nullable=False),
+        sa.Column("source", sa.Text(), nullable=False),
+        sa.Column("verified_at", sa.DateTime(timezone=True)),
+        sa.ForeignKeyConstraint(["experience_id"], ["app.experiences.id"]),
+        sa.ForeignKeyConstraint(["currency"], ["app.currencies.code"]),
+        schema="app",
     )
 
     op.create_table(
-        "operating_hours",
-        sa.Column("id", sa.Integer(), nullable=False, primary_key=True),
-        sa.Column("business_id", sa.Integer(), sa.ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("day_of_week", sa.Integer(), nullable=False),
-        sa.Column("open_time", sa.String(5), nullable=True),
-        sa.Column("close_time", sa.String(5), nullable=True),
-        sa.Column("is_closed", sa.Boolean(), nullable=False, server_default=sa.false()),
-        sa.Column("exception_date", sa.Date(), nullable=True),
+        "policies",
+        sa.Column("id", UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
+        sa.Column("experience_id", UUID(as_uuid=True), nullable=False),
+        sa.Column("version", sa.Integer(), nullable=False),
+        sa.Column("cancellation_rules", sa.JSON(), nullable=False),
+        sa.Column("terms_text", sa.Text(), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        sa.ForeignKeyConstraint(["experience_id"], ["app.experiences.id"]),
+        schema="app",
     )
 
-    op.create_index("ix_businesses_category", "businesses", ["category"])
-    op.create_index("ix_businesses_status", "businesses", ["status"])
-    op.create_index("ix_experiences_business_id", "experiences", ["business_id"])
-    op.create_index("ix_experiences_category_id", "experiences", ["category_id"])
-    op.create_index("ix_experiences_status", "experiences", ["status"])
-    op.create_index("ix_price_rules_experience_id", "price_rules", ["experience_id"])
-    op.create_index("ix_operating_hours_business_id", "operating_hours", ["business_id"])
+    op.create_table(
+        "slots",
+        sa.Column("id", UUID(as_uuid=True), primary_key=True, server_default=sa.func.gen_random_uuid()),
+        sa.Column("experience_id", UUID(as_uuid=True), nullable=False),
+        sa.Column("starts_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("ends_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("capacity", sa.Integer(), nullable=False),
+        sa.Column("reserved", sa.Integer(), nullable=False, server_default="0"),
+        sa.Column("authoritative", sa.Boolean(), nullable=False, server_default=sa.false()),
+        sa.Column("source", sa.Text(), nullable=False),
+        sa.Column("observed_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("status", sa.Text(), nullable=False, server_default="open"),
+        sa.ForeignKeyConstraint(["experience_id"], ["app.experiences.id"]),
+        schema="app",
+    )
 
 
 def downgrade() -> None:
-    op.drop_index("ix_operating_hours_business_id", table_name="operating_hours")
-    op.drop_index("ix_price_rules_experience_id", table_name="price_rules")
-    op.drop_index("ix_experiences_status", table_name="experiences")
-    op.drop_index("ix_experiences_category_id", table_name="experiences")
-    op.drop_index("ix_experiences_business_id", table_name="experiences")
-    op.drop_index("ix_businesses_status", table_name="businesses")
-    op.drop_index("ix_businesses_category", table_name="businesses")
-    op.drop_table("operating_hours")
-    op.drop_table("price_rules")
-    op.drop_table("experiences")
-    op.drop_table("categories")
-    op.drop_table("businesses")
+    op.drop_table("slots", schema="app")
+    op.drop_table("policies", schema="app")
+    op.drop_table("price_rules", schema="app")
+    op.drop_table("currencies", schema="app")
+    op.drop_table("blackouts", schema="app")
+    op.drop_table("opening_exceptions", schema="app")
+    op.drop_table("opening_hours", schema="app")
+    op.drop_table("media", schema="app")
+    op.drop_table("taxonomy_translations", schema="app")
+    op.drop_table("destination_translations", schema="app")
+    op.drop_table("experience_translations", schema="app")
+    op.drop_table("experience_taxonomy", schema="app")

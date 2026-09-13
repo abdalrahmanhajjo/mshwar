@@ -24,9 +24,9 @@ from .user_preference import UserPreference
 from .vote import Vote
 
 __all__ = [
-    "Base",
     "AuditLog",
     "AvailabilitySlot",
+    "Base",
     "Booking",
     "Business",
     "BusinessMember",
