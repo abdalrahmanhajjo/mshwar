@@ -51,6 +51,10 @@ function writeSaved(next: string[]) {
   window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 
+export function peekSavedExperiences() {
+  return readSaved();
+}
+
 export function useSavedExperiences() {
   const raw = React.useSyncExternalStore(subscribe, snapshot, () => "[]");
   const slugs = React.useMemo(() => JSON.parse(raw) as string[], [raw]);

@@ -3,6 +3,8 @@
 import * as React from "react";
 import { fetchCurrentUser, signOutAccount, type AuthUser } from "@/lib/auth";
 import type { AuthState } from "@/components/shell/auth-status";
+import { mergeFavorites } from "@/lib/hub";
+import { peekSavedExperiences } from "@/lib/saved-experiences";
 
 type AuthContextValue = {
   auth: AuthState;
@@ -32,6 +34,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     void fetchCurrentUser().then((next) => {
       if (!cancelled) {
         applyUser(next);
+        if (next) {
+          const slugs = peekSavedExperiences();
+          if (slugs.length) {
+            void mergeFavorites(slugs);
+          }
+        }
       }
     });
     return () => {

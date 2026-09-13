@@ -212,6 +212,9 @@ test.describe("MSHWAR-31 settings routes", () => {
     await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
     await expect(page.getByLabel("Display name")).toBeVisible();
     await expect(page.getByRole("button", { name: "Save profile" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Your data" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Download my data" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Anonymise my account" })).toBeDisabled();
     await assertNoHorizontalScroll(page);
 
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -278,7 +281,50 @@ async function mockSettingsApis(page: Page) {
       }),
     });
   });
+  await page.route("**/api/v1/privacy/export", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers: { "content-disposition": 'attachment; filename="mshwar-data-export.json"' },
+      body: JSON.stringify({
+        profile: { email: "e2e@example.com" },
+        trips: [],
+        favorites: [],
+        reviews: [],
+        bookings: [],
+      }),
+    });
+  });
+  await page.route("**/api/v1/privacy/reset-personalisation", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ok: true, preferences: {}, identity_kept: true, bookings_kept: true }),
+    });
+  });
+  await page.route("**/api/v1/privacy/delete-account", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ok: true, status: "deleted", bookings_kept: 0 }),
+    });
+  });
 }
+
+test.describe("MSHWAR-34 privacy controls", () => {
+  test("settings privacy actions stay usable at 390px", async ({ page }) => {
+    await signInForShell(page);
+    await mockSettingsApis(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/settings");
+    await expect(page.getByText("JSON of your profile, trips, favorites, reviews and bookings.")).toBeVisible();
+    await page.getByRole("button", { name: "Reset personalisation" }).click();
+    await expect(page.getByText("Personalisation signals were cleared.")).toBeVisible();
+    await page.getByLabel("Type DELETE to confirm").fill("DELETE");
+    await expect(page.getByRole("button", { name: "Anonymise my account" })).toBeEnabled();
+    await assertNoHorizontalScroll(page);
+  });
+});
 
 test.describe("MSHWAR-32 language URLs", () => {
   test("Arabic prefix is shareable and renders RTL without a cookie first", async ({ page }) => {
@@ -362,6 +408,136 @@ test.describe("MSHWAR-36 / MSHWAR-39 marketing browse", () => {
     await page.goto("/ideas");
     await expect(page.getByRole("heading", { name: "A little inspiration, ready to go." })).toBeVisible();
     await expect(page.getByRole("link", { name: "Explore this day" }).first()).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+});
+
+async function mockHubApis(
+  page: Page,
+  data?: {
+    trips?: object[];
+    favorites?: object[];
+    bookings?: object[];
+    notifications?: object[];
+  },
+) {
+  const empty = { items: [], page: 1, page_size: 6, total: 0 };
+  await page.route("**/api/v1/trips**", async (route) => {
+    const items = data?.trips ?? [];
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ...empty, items, total: items.length }),
+    });
+  });
+  await page.route("**/api/v1/favorites**", async (route) => {
+    if (route.request().method() === "DELETE") {
+      await route.fulfill({ status: 204, body: "" });
+      return;
+    }
+    const items = data?.favorites ?? [];
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ...empty, items, total: items.length }),
+    });
+  });
+  await page.route("**/api/v1/bookings**", async (route) => {
+    if (route.request().url().includes("/cancel")) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          id: "book-1",
+          listing_slug: "slow-day-byblos",
+          business_id: 3,
+          status: "cancelled",
+          policy_summary: "Preview booking. Cancel requires a reason. Bookings are never deleted.",
+          reason: "Change of dates",
+          created_at: "2026-09-01T00:00:00Z",
+        }),
+      });
+      return;
+    }
+    const items = data?.bookings ?? [];
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ...empty, items, total: items.length }),
+    });
+  });
+  await page.route("**/api/v1/notifications**", async (route) => {
+    const items = data?.notifications ?? [];
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ...empty, items, total: items.length }),
+    });
+  });
+}
+
+test.describe("MSHWAR-33 account hub", () => {
+  test("unauthenticated hub routes return the user to sign-in", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/trips");
+    await expect(page).toHaveURL(/\/signin\?next=/);
+    await page.goto("/ar/favorites");
+    await expect(page).toHaveURL(/\/ar\/signin\?next=/);
+  });
+
+  test("empty hub pages explain the section and stay usable at 390px", async ({ page }) => {
+    await signInForShell(page);
+    await mockHubApis(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/trips");
+    await expect(page.getByRole("heading", { name: "Your trips" })).toBeVisible();
+    await expect(page.getByText("No trips yet.")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Plan a trip" }).last()).toBeVisible();
+    await assertNoHorizontalScroll(page);
+
+    await page.goto("/saved");
+    await expect(page).toHaveURL(/\/favorites$/);
+    await expect(page.getByRole("heading", { name: "Favorites" })).toBeVisible();
+    await expect(page.getByText("Nothing saved yet.")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Explore experiences" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+
+    await page.goto("/bookings");
+    await expect(page.getByRole("heading", { name: "Bookings" }).first()).toBeVisible();
+    await expect(page.getByText("No bookings yet.")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+
+    await page.goto("/notifications");
+    await expect(page.getByRole("heading", { name: "Notifications" }).first()).toBeVisible();
+    await expect(page.getByText("No notifications.")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+
+  test("bookings show policy and cancel only with a reason", async ({ page }) => {
+    await signInForShell(page);
+    await mockHubApis(page, {
+      bookings: [
+        {
+          id: "book-1",
+          listing_slug: "slow-day-byblos",
+          business_id: 3,
+          status: "confirmed",
+          policy_summary: "Preview booking. Cancel requires a reason. Bookings are never deleted.",
+          reason: null,
+          created_at: "2026-09-01T00:00:00Z",
+        },
+      ],
+    });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/bookings");
+    await expect(
+      page.getByText("Preview booking. Cancel requires a reason. Bookings are never deleted."),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Cancel this booking" })).toBeDisabled();
+    await page.getByLabel("Why are you cancelling?").fill("Change of dates");
+    await page.getByRole("button", { name: "Cancel this booking" }).click();
+    await expect(page.getByText("Cancelled")).toBeVisible();
+    await expect(page.getByText("Change of dates")).toBeVisible();
     await assertNoHorizontalScroll(page);
   });
 });

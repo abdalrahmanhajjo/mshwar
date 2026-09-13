@@ -1,6 +1,6 @@
 # Generated token artifacts
 
-Do not edit these files. They are produced from `../design-tokens.json`.
+Do not edit the token files in this folder. They are produced from `../design-tokens.json`. The exception is `figma-54-screens.json`, which is a hand-authored MSHWAR-27 inventory (see `../FIGMA-54-SCREENS.md`).
 
 ```bash
 pnpm tokens:generate
@@ -15,5 +15,8 @@ pnpm tokens:generate
 | `figma-variables.json` | Manual Figma Variables collection |
 | `w3c-tokens.json` | W3C Design Tokens export |
 | `contrast-report.json` | Recomputed luminance and contrast for every in-use pairing |
+| `figma-54-screens.json` | Hand-authored MSHWAR-27 frame inventory (not `tokens:generate`) |
 
-See `../FIGMA-IMPORT.md` and `../TOKEN-NAMING.md`.
+`figma-54-screens.json` is the machine-readable copy of `../FIGMA-54-SCREENS.md`. Edit that pair together; do not regenerate it from `design-tokens.json`.
+
+See `../FIGMA-IMPORT.md`, `../FIGMA-54-SCREENS.md`, and `../TOKEN-NAMING.md`.

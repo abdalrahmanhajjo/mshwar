@@ -54,6 +54,7 @@ export type Experience = {
   facts: { title: string; body: string }[];
   kind?: ListingKind;
   distanceKm?: number;
+  travelSeconds?: number;
   rating?: number | null;
   groupMin?: number;
   groupMax?: number;
@@ -469,6 +470,7 @@ export type ExperienceFilters = {
   party?: number;
   rating?: number;
   available?: boolean;
+  view?: string;
   page?: number;
   pageSize?: number;
 };
@@ -563,6 +565,7 @@ export function parseExperienceFilters(
     party: optionalNumber(read("party") || read("group")),
     rating: optionalNumber(read("rating")),
     available: availableValue === "1" || availableValue === "true" ? true : undefined,
+    view: read("view") || undefined,
     page: optionalNumber(read("page")),
     pageSize: optionalNumber(read("pageSize")),
   };
@@ -595,6 +598,9 @@ export function serializeExperienceFilters(filters: ExperienceFilters): string {
   set("rating", filters.rating);
   if (filters.available) {
     search.set("available", "1");
+  }
+  if (filters.view === "map") {
+    search.set("view", "map");
   }
   if (filters.page && filters.page > 1) {
     set("page", filters.page);

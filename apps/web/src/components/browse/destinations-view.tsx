@@ -2,9 +2,9 @@
 
 import { DestinationCard } from "@/components/browse/destination-card";
 import { useBrowseCopy } from "@/lib/browse-copy";
-import { DESTINATIONS } from "@/lib/catalog";
+import type { Destination } from "@/lib/catalog";
 
-export function DestinationsView() {
+export function DestinationsView({ destinations }: { destinations: Destination[] }) {
   const copy = useBrowseCopy();
   return (
     <div className="shell-frame grid gap-10 py-12 md:py-16">
@@ -14,7 +14,7 @@ export function DestinationsView() {
         <p className="mt-4 text-text-muted">{copy.destinationsBody}</p>
       </header>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {DESTINATIONS.map((destination) => (
+        {destinations.map((destination) => (
           <DestinationCard key={destination.slug} destination={destination} />
         ))}
       </div>
