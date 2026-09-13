@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from typing import Any
+
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1.endpoints.auth import require_verified_user
 from app.dependencies import get_db
 
 router = APIRouter()
@@ -25,5 +28,8 @@ async def list_bookings(db: AsyncSession = Depends(get_db)) -> list[Booking]:  #
 
 
 @router.post("", response_model=Booking)
-async def create_booking(booking: BookingCreate, db: AsyncSession = Depends(get_db)) -> Booking:  # noqa: B008
+async def create_booking(
+    booking: BookingCreate,
+    _user: dict[str, Any] = Depends(require_verified_user),  # noqa: B008
+) -> Booking:
     return Booking(id=1, business_id=booking.business_id, status="confirmed")

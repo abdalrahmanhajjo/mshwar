@@ -1,5 +1,10 @@
-import { ShellPage } from "@/components/shell/shell-page";
+import { ShellMain } from "@/components/shell/app-shell";
+import { BookingGate } from "@/components/auth/booking-gate";
 
 export default function BookingsPage() {
-  return <ShellPage title="Bookings" description="Confirmed holds and estimates in one list." />;
+  return (
+    <ShellMain>
+      <BookingGate />
+    </ShellMain>
+  );
 }

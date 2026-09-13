@@ -17,3 +17,6 @@ pnpm-lock.yaml
 mshwar-brand-foundation/generated
 apps/web/src/styles/generated
 mshwar-brand-foundation/brand.css
+apps/web/test-results
+**/.pytest_cache
+.coverage
