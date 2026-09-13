@@ -41,7 +41,8 @@ export function AuthStatus({ auth }: { auth?: AuthState }) {
     pathname.startsWith("/signin") ||
     pathname.startsWith("/signup") ||
     pathname.startsWith("/forgot-password") ||
-    pathname.startsWith("/reset-password")
+    pathname.startsWith("/reset-password") ||
+    pathname.startsWith("/verify-email")
       ? "/"
       : pathname;
 

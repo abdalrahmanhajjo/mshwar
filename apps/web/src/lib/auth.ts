@@ -5,6 +5,7 @@ export type AuthUser = {
   email: string;
   display_name: string;
   locale: string;
+  email_verified?: boolean;
 };
 
 export const PROTECTED_PATHS = [
@@ -75,6 +76,31 @@ export async function requestPasswordReset(email: string): Promise<void> {
     credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email }),
+  });
+  if (!response.ok) {
+    throw new Error(await readAuthError(response));
+  }
+}
+
+export async function verifyEmail(token: string): Promise<AuthUser> {
+  const response = await fetch("/api/v1/auth/verify-email", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+  });
+  if (!response.ok) {
+    throw new Error(await readAuthError(response));
+  }
+  return (await response.json()) as AuthUser;
+}
+
+export async function resendVerification(email?: string): Promise<void> {
+  const response = await fetch("/api/v1/auth/resend-verification", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(email ? { email } : {}),
   });
   if (!response.ok) {
     throw new Error(await readAuthError(response));

@@ -64,6 +64,11 @@ class RecordingMailer:
     def reset_tokens_for(self, email: str) -> list[str]:
         return [msg.token for msg in self.messages if msg.to == email and msg.purpose == "password_reset" and msg.token]
 
+    def verification_tokens_for(self, email: str) -> list[str]:
+        return [
+            msg.token for msg in self.messages if msg.to == email and msg.purpose == "email_verification" and msg.token
+        ]
+
 
 def _email_domain(address: str) -> str:
     if "@" not in address:

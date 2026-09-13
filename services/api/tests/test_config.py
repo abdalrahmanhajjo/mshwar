@@ -29,6 +29,8 @@ def test_defaults() -> None:
     assert settings.password_reset_ttl_seconds == 1800
     assert settings.forgot_email_limit == 5
     assert settings.mailer_backend == "console"
+    assert settings.email_verification_ttl_seconds == 86400
+    assert settings.verify_email_limit == 3
 
 
 def test_reads_database_url_env(monkeypatch: pytest.MonkeyPatch) -> None:

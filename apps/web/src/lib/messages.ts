@@ -25,6 +25,16 @@ export type MessageKey =
   | "invalidReset"
   | "updatePassword"
   | "backToSignIn"
+  | "verifyEmail"
+  | "verifyEmailHint"
+  | "emailVerified"
+  | "invalidVerify"
+  | "resendVerification"
+  | "verificationSent"
+  | "unverifiedBanner"
+  | "verifyToBook"
+  | "verified"
+  | "unverified"
   | "signedInAs"
   | "discover"
   | "plan"
@@ -77,6 +87,16 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     invalidReset: "This reset link is invalid or has expired.",
     updatePassword: "Update password",
     backToSignIn: "Back to sign in",
+    verifyEmail: "Verify email",
+    verifyEmailHint: "Open the link we sent, or resend it. Booking stays locked until the address is confirmed.",
+    emailVerified: "Your email is verified. You can book.",
+    invalidVerify: "This verification link is invalid or has expired.",
+    resendVerification: "Resend verification email",
+    verificationSent: "If this address still needs verification, a new link has been sent.",
+    unverifiedBanner: "Verify your email to book. You can still browse.",
+    verifyToBook: "Unverified accounts can browse but cannot book.",
+    verified: "Verified",
+    unverified: "Unverified",
     signedInAs: "Signed in as",
     discover: "Discover",
     plan: "Plan",
@@ -128,6 +148,16 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     invalidReset: "رابط إعادة التعيين غير صالح أو منتهٍ.",
     updatePassword: "تحديث كلمة المرور",
     backToSignIn: "العودة لتسجيل الدخول",
+    verifyEmail: "تأكيد البريد",
+    verifyEmailHint: "افتح الرابط الذي أرسلناه أو أعد الإرسال. يبقى الحجز مقفلاً حتى تأكيد العنوان.",
+    emailVerified: "تم تأكيد بريدك. يمكنك الحجز.",
+    invalidVerify: "رابط التأكيد غير صالح أو منتهٍ.",
+    resendVerification: "إعادة إرسال رسالة التأكيد",
+    verificationSent: "إذا كان هذا العنوان ما زال يحتاج تأكيداً، فقد أُرسل رابط جديد.",
+    unverifiedBanner: "أكّد بريدك لتتمكن من الحجز. يمكنك التصفح.",
+    verifyToBook: "الحسابات غير المؤكدة تتصفح ولا تحجز.",
+    verified: "مؤكّد",
+    unverified: "غير مؤكّد",
     signedInAs: "مسجّل الدخول باسم",
     discover: "اكتشف",
     plan: "خطّط",
@@ -179,6 +209,17 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     invalidReset: "Ce lien de réinitialisation est invalide ou a expiré.",
     updatePassword: "Mettre à jour le mot de passe",
     backToSignIn: "Retour à la connexion",
+    verifyEmail: "Vérifier l’e-mail",
+    verifyEmailHint:
+      "Ouvrez le lien envoyé ou renvoyez-le. La réservation reste bloquée tant que l’adresse n’est pas confirmée.",
+    emailVerified: "Votre e-mail est vérifié. Vous pouvez réserver.",
+    invalidVerify: "Ce lien de vérification est invalide ou a expiré.",
+    resendVerification: "Renvoyer l’e-mail de vérification",
+    verificationSent: "Si cette adresse doit encore être vérifiée, un nouveau lien a été envoyé.",
+    unverifiedBanner: "Vérifiez votre e-mail pour réserver. Vous pouvez encore parcourir.",
+    verifyToBook: "Les comptes non vérifiés peuvent parcourir mais pas réserver.",
+    verified: "Vérifié",
+    unverified: "Non vérifié",
     signedInAs: "Connecté en tant que",
     discover: "Découvrir",
     plan: "Planifier",

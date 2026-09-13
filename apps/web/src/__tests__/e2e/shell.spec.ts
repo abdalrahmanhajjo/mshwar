@@ -142,6 +142,35 @@ test.describe("MSHWAR-29 recovery routes", () => {
   });
 });
 
+test.describe("MSHWAR-30 verification routes", () => {
+  test("verify-email is usable at 390px and 1440px", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/verify-email");
+    await expect(page.getByRole("heading", { name: "Verify email" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Resend verification email" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/verify-email");
+    await expect(page.getByLabel("Email")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+
+  test("verify-email shows the same success copy after resend", async ({ page }) => {
+    await page.route("**/api/v1/auth/resend-verification", async (route) => {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) });
+    });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/verify-email");
+    await page.getByLabel("Email").fill("ada@example.com");
+    await page.getByRole("button", { name: "Resend verification email" }).click();
+    await expect(page.getByRole("status")).toHaveText(
+      "If this address still needs verification, a new link has been sent.",
+    );
+    await expect(page).toHaveURL(/\/verify-email$/);
+  });
+});
+
 test.describe("MSHWAR-28 auth routes", () => {
   test("unauthenticated /plan returns the user to sign-in with next", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
