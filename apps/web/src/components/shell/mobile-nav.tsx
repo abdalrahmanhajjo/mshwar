@@ -19,7 +19,7 @@ export function MobileNav({ items, pathname, auth }: { items: ShellNavItem[]; pa
           <Menu className="size-5" aria-hidden />
         </Button>
       </SheetTrigger>
-      <SheetContent side="start" className="lg:hidden">
+      <SheetContent side="start">
         <SheetHeader>
           <SheetTitle>{t("menu")}</SheetTitle>
         </SheetHeader>

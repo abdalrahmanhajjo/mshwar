@@ -28,10 +28,7 @@ export function AppShell({ surface, children, auth, currentPath }: AppShellProps
   const isSidebar = surface !== "traveller";
 
   return (
-    <div
-      data-shell={surface}
-      className="flex min-h-dvh min-w-0 max-w-full flex-col overflow-x-clip bg-surface text-text"
-    >
+    <div data-shell={surface} className="flex min-h-dvh min-w-0 max-w-full flex-col bg-surface text-text">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded-control focus:bg-surface-raised focus:px-3 focus:py-2"
@@ -64,9 +61,11 @@ export function AppShell({ surface, children, auth, currentPath }: AppShellProps
                     )}
                   </span>
                 </div>
-                <div className="hidden items-center gap-3 lg:flex">
+                <div className="flex items-center gap-2">
                   <LanguageSwitcher compact />
-                  <AuthStatus auth={auth} />
+                  <div className="hidden lg:block">
+                    <AuthStatus auth={auth} />
+                  </div>
                 </div>
               </div>
             </header>
@@ -89,9 +88,11 @@ export function AppShell({ surface, children, auth, currentPath }: AppShellProps
                   <NavLink key={item.href} item={item} pathname={activePath} />
                 ))}
               </nav>
-              <div className="hidden items-center gap-3 lg:flex">
+              <div className="flex items-center gap-2">
                 <LanguageSwitcher compact />
-                <AuthStatus auth={auth} />
+                <div className="hidden lg:block">
+                  <AuthStatus auth={auth} />
+                </div>
               </div>
             </div>
           </header>
