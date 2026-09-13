@@ -8,4 +8,5 @@
 export { messages } from "@/lib/messages";
 export { browseCopy } from "@/lib/browse-copy";
 export { hubCopy } from "@/lib/hub-copy";
+export { privacyCopy } from "@/lib/privacy-copy";
 export { LOCALES, type Locale } from "@/lib/locale";
