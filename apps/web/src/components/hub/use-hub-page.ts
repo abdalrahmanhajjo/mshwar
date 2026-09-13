@@ -27,8 +27,27 @@ export function useHubPage<T>(loader: (page: number) => Promise<HubPage<T>>) {
   );
 
   React.useEffect(() => {
-    void load(1);
-  }, [load]);
+    let cancelled = false;
+    loader(1)
+      .then((result) => {
+        if (cancelled) {
+          return;
+        }
+        setData(result);
+        setPage(result.page);
+        setPending(false);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) {
+          return;
+        }
+        setError(err instanceof Error ? err.message : "error");
+        setPending(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [loader]);
 
   return { page, data, error, pending, load, setData, setError };
 }

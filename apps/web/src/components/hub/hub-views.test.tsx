@@ -95,7 +95,7 @@ describe("account hub views", () => {
   });
 
   it("cancels a booking with a reason and never offers a silent delete", async () => {
-    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+    const fetchMock = vi.fn(async (url: string) => {
       if (String(url).includes("/auth/me")) {
         return jsonResponse({
           id: "1",

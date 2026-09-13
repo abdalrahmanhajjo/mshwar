@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -18,15 +19,15 @@ router = APIRouter()
 _DEFAULT_POLICY = "Preview booking. Cancel requires a reason. Bookings are never deleted."
 
 
-def _booking_out(row: tuple[object, ...]) -> BookingOut:
+def _booking_out(row: Any) -> BookingOut:
     return BookingOut(
-        id=row[0],  # type: ignore[arg-type]
+        id=row[0],
         listing_slug=str(row[1]),
-        business_id=row[2],  # type: ignore[arg-type]
+        business_id=row[2],
         status=str(row[3]),
         policy_summary=str(row[4]),
-        reason=row[5],  # type: ignore[arg-type]
-        created_at=row[6],  # type: ignore[arg-type]
+        reason=row[5],
+        created_at=row[6],
     )
 
 
@@ -34,7 +35,7 @@ def _booking_out(row: tuple[object, ...]) -> BookingOut:
 async def list_bookings(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
-    paging: tuple[int, int, int] = Depends(page_args),  # noqa: B008
+    paging: tuple[int, int, int] = Depends(page_args),
 ) -> BookingListOut:
     session = await require_session(request, db)
     page, page_size, offset = paging
