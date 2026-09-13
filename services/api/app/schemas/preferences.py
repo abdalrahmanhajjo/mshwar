@@ -129,7 +129,7 @@ def merge_plan_defaults(profile: PreferenceValues, overrides: dict[str, Any]) ->
     """Overrides replace individual defaults. They are never hard constraints."""
     payload = profile.model_dump()
     for key, value in overrides.items():
-        if key == "source":
+        if key in {"source", "collection_slug"}:
             continue
         if value is None:
             continue

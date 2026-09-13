@@ -11,7 +11,10 @@ export type AuthUser = {
 export const PROTECTED_PATHS = [
   /^\/plan(?:\/|$)/,
   /^\/saved(?:\/|$)/,
+  /^\/trips(?:\/|$)/,
+  /^\/favorites(?:\/|$)/,
   /^\/bookings(?:\/|$)/,
+  /^\/notifications(?:\/|$)/,
   /^\/settings(?:\/|$)/,
   /^\/business(?:\/|$)/,
   /^\/admin(?:\/|$)/,

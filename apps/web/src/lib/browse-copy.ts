@@ -115,7 +115,18 @@ export type BrowseKey =
   | "savedEmpty"
   | "quoteRequired"
   | "availabilityStatus"
-  | "fromBeirut";
+  | "fromBeirut"
+  | "mapView"
+  | "listView"
+  | "searchThisArea"
+  | "mapUnavailable"
+  | "clusterLabel"
+  | "collectionsEyebrow"
+  | "collectionsTitle"
+  | "collectionsBody"
+  | "openAsTrip"
+  | "minutesLabel"
+  | "nearbyTitle";
 
 export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
   en: {
@@ -235,6 +246,18 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     quoteRequired: "Quote required",
     availabilityStatus: "Availability",
     fromBeirut: "from Beirut",
+    mapView: "Map",
+    listView: "List",
+    searchThisArea: "Search this area",
+    mapUnavailable:
+      "Map is unavailable. Showing the list pins instead. Set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY for Google Maps.",
+    clusterLabel: "Cluster",
+    collectionsEyebrow: "Ready-made days",
+    collectionsTitle: "Collections",
+    collectionsBody: "Assembled from published experiences. Paused inventory never appears here.",
+    openAsTrip: "Open as a trip",
+    minutesLabel: "min",
+    nearbyTitle: "Nearby and related",
   },
   ar: {
     heroTitle: "اترك مساحة لمشوار صغير.",
@@ -352,6 +375,17 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     quoteRequired: "يتطلب عرض سعر",
     availabilityStatus: "التوفر",
     fromBeirut: "من بيروت",
+    mapView: "خريطة",
+    listView: "قائمة",
+    searchThisArea: "ابحث في هذه المنطقة",
+    mapUnavailable: "الخريطة غير متاحة. تُعرض الدبابيس في القائمة.",
+    clusterLabel: "تجمّع",
+    collectionsEyebrow: "أيام جاهزة",
+    collectionsTitle: "مجموعات",
+    collectionsBody: "مختارة من تجارب منشورة. المخزون المتوقف لا يظهر هنا.",
+    openAsTrip: "افتح كرحلة",
+    minutesLabel: "د",
+    nearbyTitle: "قريب وذو صلة",
   },
   fr: {
     heroTitle: "Faites une place à un petit mshwar.",
@@ -470,6 +504,17 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     quoteRequired: "Devis requis",
     availabilityStatus: "Disponibilité",
     fromBeirut: "depuis Beyrouth",
+    mapView: "Carte",
+    listView: "Liste",
+    searchThisArea: "Chercher dans cette zone",
+    mapUnavailable: "Carte indisponible. Les épingles s’affichent en liste.",
+    clusterLabel: "Groupe",
+    collectionsEyebrow: "Journées prêtes",
+    collectionsTitle: "Collections",
+    collectionsBody: "Assemblées à partir d’expériences publiées.",
+    openAsTrip: "Ouvrir comme voyage",
+    minutesLabel: "min",
+    nearbyTitle: "À proximité et liés",
   },
 };
 

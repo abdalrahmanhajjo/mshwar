@@ -5,10 +5,10 @@ import { LocaleLink } from "@/components/shell/locale-link";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useBrowseCopy } from "@/lib/browse-copy";
-import { IDEAS } from "@/lib/catalog";
+import type { Idea } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 
-export function IdeasView() {
+export function IdeasView({ ideas }: { ideas: Idea[] }) {
   const copy = useBrowseCopy();
   return (
     <div className="shell-frame grid gap-12 py-12 md:py-16">
@@ -18,7 +18,7 @@ export function IdeasView() {
         <p className="mt-4 text-text-muted">{copy.ideasBody}</p>
       </header>
       <div className="grid gap-10">
-        {IDEAS.map((idea, index) => {
+        {ideas.map((idea, index) => {
           const flip = index % 2 === 1;
           return (
             <article
@@ -40,7 +40,7 @@ export function IdeasView() {
                 <Progress value={(idea.stops / 3) * 100} label={`${idea.stops} / 3`} />
                 <div>
                   <Button asChild className={cn("rounded-pill", idea.accent && "bg-accent text-accent-foreground")}>
-                    <LocaleLink href={`/experiences/${idea.experienceSlugs[0]}`}>{copy.exploreDay}</LocaleLink>
+                    <LocaleLink href={`/collections/${idea.slug}`}>{copy.exploreDay}</LocaleLink>
                   </Button>
                 </div>
               </div>

@@ -191,14 +191,28 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v4
+      - name: Check staging API configuration
+        id: staging
+        env:
+          STAGING_API_URL: ${{ secrets.STAGING_API_URL }}
+        run: |
+          if [ -n "$STAGING_API_URL" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::STAGING_API_URL is not set; skipping API staging deploy and health check"
+          fi
       - name: Deploy API to Staging
+        if: steps.staging.outputs.configured == 'true'
         run: |
           echo "Deploying API to staging..."
-          # Deploy to staging environment (Vercel, Railway, etc.)
           echo "Staging deployment complete"
       - name: Verify staging health
+        if: steps.staging.outputs.configured == 'true'
+        env:
+          STAGING_API_URL: ${{ secrets.STAGING_API_URL }}
         run: |
-          curl -f https://api-staging.mshwar.app/health || exit 1
+          curl -f "${STAGING_API_URL}/health"
           echo "Staging API verified"
 
   deploy-production-gate:
@@ -209,37 +223,71 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v4
+      - name: Check production API configuration
+        id: production
+        env:
+          PRODUCTION_API_URL: ${{ secrets.PRODUCTION_API_URL }}
+        run: |
+          if [ -n "$PRODUCTION_API_URL" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::PRODUCTION_API_URL is not set; skipping API production deploy and health check"
+          fi
       - name: Deploy API to Production
+        if: steps.production.outputs.configured == 'true'
         run: |
           echo "Deploying API to production..."
-          # Requires manual approval via GitHub Environments
           echo "Production deployment complete"
       - name: Verify production health
+        if: steps.production.outputs.configured == 'true'
+        env:
+          PRODUCTION_API_URL: ${{ secrets.PRODUCTION_API_URL }}
         run: |
-          curl -f https://api.mshwar.app/health || exit 1
+          curl -f "${PRODUCTION_API_URL}/health"
           echo "Production API verified"
 
   rollback:
     name: Rollback API Deployment
     runs-on: ubuntu-latest
-    if: failure() && github.ref == 'refs/heads/main'
+    if: failure() && github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: [deploy-staging, deploy-production-gate]
     environment: production
     steps:
       - uses: actions/checkout@v4
+      - name: Check production rollback configuration
+        id: rollback
+        env:
+          PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          PRODUCTION_API_URL: ${{ secrets.PRODUCTION_API_URL }}
+        run: |
+          if [ -n "$PRODUCTION_DATABASE_URL" ] && [ -n "$PRODUCTION_API_URL" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Production rollback secrets are not set; skipping destructive alembic/curl"
+          fi
       - name: Rollback database migrations
+        if: steps.rollback.outputs.configured == 'true'
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
         run: |
           echo "Rolling back database migrations..."
           cd services/api
-          export DATABASE_URL=${{ secrets.PRODUCTION_DATABASE_URL }}
           alembic downgrade -1
           echo "Database migration rolled back one step"
       - name: Rollback deployment
+        if: steps.rollback.outputs.configured == 'true'
         run: |
           echo "Rolling back API deployment..."
-          # Redeploy previous version
           echo "Deployment rolled back"
       - name: Verify rollback
+        if: steps.rollback.outputs.configured == 'true'
+        env:
+          PRODUCTION_API_URL: ${{ secrets.PRODUCTION_API_URL }}
         run: |
-          curl -f https://api.mshwar.app/health || exit 1
+          curl -f "${PRODUCTION_API_URL}/health"
           echo "Rollback verified"
+      - name: Rollback check complete
+        if: always()
+        run: echo "::notice::API rollback finished; destructive steps ran only when secrets were configured"

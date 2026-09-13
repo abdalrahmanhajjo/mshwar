@@ -1,7 +1,7 @@
 SET search_path = app, public;
 
 -- ============================================================
--- Migration 011: Business portal (Epic 5 / BIZ.1–BIZ.10)
+-- Migration 015: Business portal (Epic 5 / BIZ.1–BIZ.10)
 -- ============================================================
 -- Organisations, verification submissions, staff RBAC, listing
 -- publish gates, availability provenance, booking inbox helpers,
