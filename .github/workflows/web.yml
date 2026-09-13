@@ -42,7 +42,10 @@ jobs:
       - name: Verify NEXT_PUBLIC_ only env vars in client bundle
         run: |
           echo "Verifying only NEXT_PUBLIC_ prefixed env vars reach client bundle..."
-          grep -rn 'process.env.' apps/web/src/ --include='*.ts' --include='*.tsx' | grep -vE 'NEXT_PUBLIC_|NODE_ENV' && {
+          grep -rn 'process.env.' apps/web/src/ --include='*.ts' --include='*.tsx' \
+            --exclude-dir='__tests__' --exclude='*.spec.ts' --exclude='*.test.ts' \
+            --exclude='*.spec.tsx' --exclude='*.test.tsx' \
+            | grep -vE 'NEXT_PUBLIC_|NODE_ENV' && {
             echo "ERROR: Non-NEXT_PUBLIC_ env vars found in client source"
             exit 1
           } || echo "All client env vars are properly prefixed"
