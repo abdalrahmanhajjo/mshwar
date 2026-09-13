@@ -16,7 +16,7 @@ function renderSignIn() {
 
 describe("auth form", () => {
   it("submits sign-in and does not include plaintext password in the heading", async () => {
-    const fetchMock = vi.fn(async (url: string) => {
+    const fetchMock = vi.fn(async (url: string, _init?: RequestInit) => {
       if (String(url).includes("/me")) {
         return { ok: false, json: async () => ({}) };
       }
@@ -33,8 +33,8 @@ describe("auth form", () => {
     fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
-    const [, init] = fetchMock.mock.calls.find((call) => String(call[0]).includes("/signin")) ?? [];
-    expect(init).toMatchObject({ credentials: "include" });
+    const signInCall = fetchMock.mock.calls.find((call) => String(call[0]).includes("/signin"));
+    expect(signInCall?.[1]).toMatchObject({ credentials: "include" });
     expect(screen.queryByText("long-enough-secret")).not.toBeInTheDocument();
 
     vi.unstubAllGlobals();

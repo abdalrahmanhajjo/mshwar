@@ -93,7 +93,7 @@ class TestBtreeGiSTExtension:
                 )
             )
             await db_session.commit()
+        await db_session.rollback()
 
-        # Clean up
-        await db_session.execute(text("DROP TABLE booking_slots"))
+        await db_session.execute(text("DROP TABLE IF EXISTS booking_slots"))
         await db_session.commit()

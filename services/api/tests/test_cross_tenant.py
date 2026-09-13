@@ -10,7 +10,7 @@ import uuid
 import pytest
 from sqlalchemy import text
 
-from app.core.context import clear_session_context, set_session_context
+from app.core.context import clear_session_context, set_local_gucs, set_session_context
 
 
 class TestCrossTenantIsolation:
@@ -24,8 +24,7 @@ class TestCrossTenantIsolation:
         user_a = uuid.UUID("22222222-2222-2222-2222-222222222222")
 
         set_session_context(user_id=user_a, organization_id=org_a)
-        await db_session.execute(text("SET LOCAL app.user_id = :uid"), {"uid": str(user_a)})
-        await db_session.execute(text("SET LOCAL app.organization_id = :oid"), {"oid": str(org_a)})
+        await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
 
         result = await db_session.execute(
             text("SELECT id FROM app.bookings WHERE organization_id = :org_id"),
@@ -46,8 +45,7 @@ class TestCrossTenantIsolation:
         user_a = uuid.UUID("22222222-2222-2222-2222-222222222222")
 
         set_session_context(user_id=user_a, organization_id=org_a)
-        await db_session.execute(text("SET LOCAL app.user_id = :uid"), {"uid": str(user_a)})
-        await db_session.execute(text("SET LOCAL app.organization_id = :oid"), {"oid": str(org_a)})
+        await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
 
         result = await db_session.execute(
             text("SELECT id FROM app.experiences WHERE organization_id = :org_id"),
@@ -68,8 +66,7 @@ class TestCrossTenantIsolation:
         user_a = uuid.UUID("22222222-2222-2222-2222-222222222222")
 
         set_session_context(user_id=user_a, organization_id=org_a)
-        await db_session.execute(text("SET LOCAL app.user_id = :uid"), {"uid": str(user_a)})
-        await db_session.execute(text("SET LOCAL app.organization_id = :oid"), {"oid": str(org_a)})
+        await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
 
         result = await db_session.execute(
             text("SELECT id FROM app.venues WHERE organization_id = :org_id"),
@@ -90,8 +87,7 @@ class TestCrossTenantIsolation:
         org_a = uuid.UUID("00000000-0000-0000-0000-000000000001")
 
         set_session_context(user_id=user_a, organization_id=org_a)
-        await db_session.execute(text("SET LOCAL app.user_id = :uid"), {"uid": str(user_a)})
-        await db_session.execute(text("SET LOCAL app.organization_id = :oid"), {"oid": str(org_a)})
+        await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
 
         result = await db_session.execute(
             text("SELECT id FROM app.trips WHERE owner_id = :uid"),
@@ -112,8 +108,7 @@ class TestCrossTenantIsolation:
         org_a = uuid.UUID("00000000-0000-0000-0000-000000000001")
 
         set_session_context(user_id=user_a, organization_id=org_a)
-        await db_session.execute(text("SET LOCAL app.user_id = :uid"), {"uid": str(user_a)})
-        await db_session.execute(text("SET LOCAL app.organization_id = :oid"), {"oid": str(org_a)})
+        await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
 
         result = await db_session.execute(
             text("SELECT id FROM app.favorites WHERE user_id = :uid"),
@@ -133,8 +128,7 @@ class TestCrossTenantIsolation:
         org_id = uuid.UUID("00000000-0000-0000-0000-000000000001")
 
         set_session_context(user_id=user_id, organization_id=org_id)
-        await db_session.execute(text("SET LOCAL app.user_id = :uid"), {"uid": str(user_id)})
-        await db_session.execute(text("SET LOCAL app.organization_id = :oid"), {"oid": str(org_id)})
+        await set_local_gucs(db_session, user_id=str(user_id), organization_id=str(org_id))
 
         result = await db_session.execute(text("SELECT app.actor_id()"))
         actor_id = result.scalar()
@@ -195,8 +189,7 @@ class TestCrossTenantIsolation:
         user_a = uuid.UUID("22222222-2222-2222-2222-222222222222")
 
         set_session_context(user_id=user_a, organization_id=org_a)
-        await db_session.execute(text("SET LOCAL app.user_id = :uid"), {"uid": str(user_a)})
-        await db_session.execute(text("SET LOCAL app.organization_id = :oid"), {"oid": str(org_a)})
+        await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
 
         result = await db_session.execute(
             text("SELECT COUNT(*) FROM app.bookings WHERE organization_id = :org_id"),

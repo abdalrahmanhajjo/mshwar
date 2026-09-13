@@ -1,16 +1,22 @@
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
 from datetime import datetime, timedelta, timezone
 
+import pytest
 from fastapi import Response
-from fastapi.testclient import TestClient
+from httpx import ASGITransport, AsyncClient
 
 from app.api.v1.endpoints.auth import RegisterRequest
 from app.core.passwords import hash_password, verify_password
 from app.core.sessions import COOKIE_NAME, hash_session_token, set_session_cookie, should_refresh
 from app.main import app
 
-client = TestClient(app)
+
+@pytest.fixture
+async def api() -> AsyncGenerator[AsyncClient, None]:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        yield client
 
 
 def test_password_hash_is_not_plaintext() -> None:
@@ -27,12 +33,13 @@ def test_should_refresh_when_under_half_life() -> None:
     assert should_refresh(now + timedelta(days=6), now) is False
 
 
-def test_register_signin_me_refresh_signout() -> None:
+@pytest.mark.asyncio
+async def test_register_signin_me_refresh_signout(api: AsyncClient) -> None:
     email = "traveller@example.com"
-    password = "long-enough-secret"
-    created = client.post(
+    secret = "long-enough-secret"
+    created = await api.post(
         "/api/v1/auth/register",
-        json={"email": email, "password": password, "display_name": "Lina", "locale": "en"},
+        json={"email": email, "password": secret, "display_name": "Lina", "locale": "en"},
     )
     assert created.status_code == 201, created.text
     body = created.json()
@@ -49,31 +56,31 @@ def test_register_signin_me_refresh_signout() -> None:
     assert "SameSite=lax" in set_cookie or "SameSite=Lax" in set_cookie
     assert "mshwar_session=" in set_cookie
 
-    me = client.get("/api/v1/auth/me")
+    me = await api.get("/api/v1/auth/me")
     assert me.status_code == 200
     assert me.json()["email"] == email
 
-    refreshed = client.post("/api/v1/auth/refresh")
+    refreshed = await api.post("/api/v1/auth/refresh")
     assert refreshed.status_code == 200
     assert refreshed.json()["id"] == body["id"]
 
-    signed_in = client.post("/api/v1/auth/signin", json={"email": email.upper(), "password": password})
+    signed_in = await api.post("/api/v1/auth/signin", json={"email": email.upper(), "password": secret})
     assert signed_in.status_code == 200
     assert signed_in.json()["display_name"] == "Lina"
 
-    bad = client.post("/api/v1/auth/signin", json={"email": email, "password": "definitely-wrong"})
+    bad = await api.post("/api/v1/auth/signin", json={"email": email, "password": "definitely-wrong"})
     assert bad.status_code == 401
     assert "password" not in bad.text.lower() or "Invalid email or password" in bad.text
 
-    conflict = client.post(
+    conflict = await api.post(
         "/api/v1/auth/register",
-        json={"email": email, "password": password, "display_name": "Other", "locale": "en"},
+        json={"email": email, "password": secret, "display_name": "Other", "locale": "en"},
     )
     assert conflict.status_code == 409
 
-    signed_out = client.post("/api/v1/auth/signout")
+    signed_out = await api.post("/api/v1/auth/signout")
     assert signed_out.status_code == 204
-    assert client.get("/api/v1/auth/me").status_code == 401
+    assert (await api.get("/api/v1/auth/me")).status_code == 401
 
 
 def test_password_is_omitted_from_request_repr() -> None:
@@ -98,17 +105,19 @@ def test_session_cookie_is_httponly_samesite_and_path_scoped() -> None:
     assert "SameSite=lax" in header or "SameSite=Lax" in header
 
 
-def test_unauthenticated_me_and_refresh_are_rejected() -> None:
-    fresh = TestClient(app)
-    assert fresh.get("/api/v1/auth/me").status_code == 401
-    assert fresh.post("/api/v1/auth/refresh").status_code == 401
-    assert fresh.post("/api/v1/auth/signout").status_code == 204
-    fresh.cookies.set(COOKIE_NAME, "not-a-real-session")
-    assert fresh.get("/api/v1/auth/me").status_code == 401
+@pytest.mark.asyncio
+async def test_unauthenticated_me_and_refresh_are_rejected() -> None:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as fresh:
+        assert (await fresh.get("/api/v1/auth/me")).status_code == 401
+        assert (await fresh.post("/api/v1/auth/refresh")).status_code == 401
+        assert (await fresh.post("/api/v1/auth/signout")).status_code == 204
+        fresh.cookies.set(COOKIE_NAME, "not-a-real-session")
+        assert (await fresh.get("/api/v1/auth/me")).status_code == 401
 
 
-def test_register_rejects_invalid_locale() -> None:
-    response = client.post(
+@pytest.mark.asyncio
+async def test_register_rejects_invalid_locale(api: AsyncClient) -> None:
+    response = await api.post(
         "/api/v1/auth/register",
         json={
             "email": "locale@example.com",
@@ -120,13 +129,14 @@ def test_register_rejects_invalid_locale() -> None:
     assert response.status_code == 422
 
 
-def test_register_rejects_short_password_and_bad_email() -> None:
-    short = client.post(
+@pytest.mark.asyncio
+async def test_register_rejects_short_password_and_bad_email(api: AsyncClient) -> None:
+    short = await api.post(
         "/api/v1/auth/register",
         json={"email": "ok@example.com", "password": "short", "display_name": "A", "locale": "en"},
     )
     assert short.status_code == 422
-    bad_email = client.post(
+    bad_email = await api.post(
         "/api/v1/auth/register",
         json={"email": "not-an-email", "password": "long-enough-secret", "display_name": "A", "locale": "en"},
     )

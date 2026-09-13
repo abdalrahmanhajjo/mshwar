@@ -15,8 +15,8 @@ engine = create_async_engine(
     pool_recycle=settings.pool_recycle,
     pool_pre_ping=settings.pool_pre_ping,
     connect_args={
-        "connect_timeout": settings.connect_timeout,
-        "options": f"-c statement_timeout={settings.statement_timeout_ms}",
+        "timeout": settings.connect_timeout,
+        "server_settings": {"statement_timeout": str(settings.statement_timeout_ms)},
     },
 )
 
