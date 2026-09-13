@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useBrowseCopy } from "@/lib/browse-copy";
 import { getExperience } from "@/lib/catalog";
 import { useSavedExperiences } from "@/lib/saved-experiences";
-import Link from "next/link";
+import { LocaleLink } from "@/components/shell/locale-link";
 
 export function SavedView() {
   const copy = useBrowseCopy();
@@ -32,7 +32,7 @@ export function SavedView() {
           title={copy.savedEmpty}
           action={
             <Button asChild>
-              <Link href="/experiences">{copy.exploreAll}</Link>
+              <LocaleLink href="/experiences">{copy.exploreAll}</LocaleLink>
             </Button>
           }
         />

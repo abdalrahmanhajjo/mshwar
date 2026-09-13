@@ -3,6 +3,7 @@ import { cookies, headers } from "next/headers";
 import { Manrope, Noto_Sans_Arabic } from "next/font/google";
 import { AuthProvider } from "@/components/shell/auth-provider";
 import { LocaleProvider } from "@/components/shell/locale-provider";
+import { SignedInLocaleSync } from "@/components/shell/locale-sync";
 import { LOCALE_COOKIE, LOCALE_HEADER, localeDirection, parseLocale } from "@/lib/locale";
 import "./globals.css";
 
@@ -32,7 +33,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={locale} dir={localeDirection(locale)} suppressHydrationWarning>
       <body className={`${manrope.variable} ${notoSansArabic.variable}`}>
         <LocaleProvider initialLocale={locale}>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <SignedInLocaleSync />
+            {children}
+          </AuthProvider>
         </LocaleProvider>
       </body>
     </html>

@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { LocaleLink } from "@/components/shell/locale-link";
+import { withLocalePrefix } from "@/lib/locale";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -39,7 +40,7 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
         await signInAccount({ email, password });
       }
       await refresh();
-      router.replace(nextPath);
+      router.replace(withLocalePrefix(locale, nextPath));
     } catch (err) {
       const message = err instanceof Error ? err.message : t("authError");
       setError(message === "authError" ? t("authError") : message);
@@ -96,9 +97,9 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
           </div>
           {mode === "signin" ? (
             <p className="text-sm">
-              <Link className="text-brand underline-offset-4 hover:underline" href="/forgot-password">
+              <LocaleLink className="text-brand underline-offset-4 hover:underline" href="/forgot-password">
                 {t("forgotPassword")}
-              </Link>
+              </LocaleLink>
             </p>
           ) : null}
           {error ? (
@@ -115,22 +116,22 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
         {mode === "signup" ? (
           <p>
             {t("haveAccount")}{" "}
-            <Link
+            <LocaleLink
               className="text-brand underline-offset-4 hover:underline"
               href={`/signin?next=${encodeURIComponent(nextPath)}`}
             >
               {t("signIn")}
-            </Link>
+            </LocaleLink>
           </p>
         ) : (
           <p>
             {t("noAccount")}{" "}
-            <Link
+            <LocaleLink
               className="text-brand underline-offset-4 hover:underline"
               href={`/signup?next=${encodeURIComponent(nextPath)}`}
             >
               {t("signUp")}
-            </Link>
+            </LocaleLink>
           </p>
         )}
       </CardFooter>

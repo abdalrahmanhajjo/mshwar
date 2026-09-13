@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { DestinationCard } from "@/components/browse/destination-card";
 import { ExperienceCard } from "@/components/browse/experience-card";
 import { SoftPlanCta } from "@/components/browse/plan-cta";
@@ -26,7 +26,7 @@ export function DiscoverView() {
         <div className="flex items-end justify-between gap-3">
           <h2 className="text-3xl font-semibold tracking-tight">{copy.destinations}</h2>
           <Button asChild variant="ghost" size="sm">
-            <Link href="/destinations">{copy.exploreAll}</Link>
+            <LocaleLink href="/destinations">{copy.exploreAll}</LocaleLink>
           </Button>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -40,7 +40,7 @@ export function DiscoverView() {
         <div className="flex items-end justify-between gap-3">
           <h2 className="text-3xl font-semibold tracking-tight">{copy.kindExperiences}</h2>
           <Button asChild variant="ghost" size="sm">
-            <Link href="/experiences?kind=experience">{copy.exploreAll}</Link>
+            <LocaleLink href="/experiences?kind=experience">{copy.exploreAll}</LocaleLink>
           </Button>
         </div>
         <div className="grid gap-8 md:grid-cols-3">
@@ -54,7 +54,7 @@ export function DiscoverView() {
         <div className="flex items-end justify-between gap-3">
           <h2 className="text-3xl font-semibold tracking-tight">{copy.kindAttractions}</h2>
           <Button asChild variant="ghost" size="sm">
-            <Link href="/experiences?kind=attraction">{copy.exploreAll}</Link>
+            <LocaleLink href="/experiences?kind=attraction">{copy.exploreAll}</LocaleLink>
           </Button>
         </div>
         <div className="grid gap-8 md:grid-cols-2">
@@ -68,7 +68,7 @@ export function DiscoverView() {
         <div className="flex items-end justify-between gap-3">
           <h2 className="text-3xl font-semibold tracking-tight">{copy.kindRestaurants}</h2>
           <Button asChild variant="ghost" size="sm">
-            <Link href="/experiences?kind=restaurant">{copy.exploreAll}</Link>
+            <LocaleLink href="/experiences?kind=restaurant">{copy.exploreAll}</LocaleLink>
           </Button>
         </div>
         <div className="grid gap-8 md:grid-cols-2">
@@ -84,15 +84,18 @@ export function DiscoverView() {
         <ul className="grid gap-2 text-sm">
           {IDEAS.map((idea) => (
             <li key={idea.slug}>
-              <Link href={`/experiences/${idea.experienceSlugs[0]}`} className="underline-offset-4 hover:underline">
+              <LocaleLink
+                href={`/experiences/${idea.experienceSlugs[0]}`}
+                className="underline-offset-4 hover:underline"
+              >
                 {idea.title}
-              </Link>
+              </LocaleLink>
             </li>
           ))}
         </ul>
         <div>
           <Button asChild className="rounded-pill">
-            <Link href="/ideas">{copy.exploreDay}</Link>
+            <LocaleLink href="/ideas">{copy.exploreDay}</LocaleLink>
           </Button>
         </div>
       </section>

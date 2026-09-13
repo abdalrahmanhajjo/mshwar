@@ -6,15 +6,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/shell/auth-provider";
 import { useLocale } from "@/components/shell/locale-provider";
-import { LOCALES, LOCALE_LABELS, type Locale } from "@/lib/locale";
+import { LOCALES, LOCALE_LABELS, withLocalePrefix, type Locale } from "@/lib/locale";
 import {
   EMPTY_PREFERENCES,
   fetchAreas,
   fetchProfile,
   fetchVocabularies,
   hydratePreferences,
+  persistSignedInLocale,
   saveProfile,
   type HomeArea,
   type PreferenceTerm,
@@ -65,6 +67,8 @@ function ChipGroup({
 export function ProfileForm() {
   const { t, setLocale } = useLocale();
   const { refresh } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname() ?? "/settings";
   const [displayName, setDisplayName] = React.useState("");
   const [locale, setLocaleState] = React.useState<Locale>("en");
   const [prefs, setPrefs] = React.useState<PreferenceValues>(EMPTY_PREFERENCES);
@@ -110,6 +114,7 @@ export function ProfileForm() {
       });
       setPrefs(hydratePreferences(next));
       setLocale(locale);
+      router.push(withLocalePrefix(locale, pathname));
       await refresh();
       setSaved(true);
     } catch (err) {
@@ -139,7 +144,16 @@ export function ProfileForm() {
           </div>
           <div className="grid gap-2">
             <Label htmlFor="language">{t("language")}</Label>
-            <Select value={locale} onValueChange={(value) => setLocaleState(value as Locale)}>
+            <Select
+              value={locale}
+              onValueChange={(value) => {
+                const next = value as Locale;
+                setLocaleState(next);
+                setLocale(next);
+                router.push(withLocalePrefix(next, pathname));
+                void persistSignedInLocale(next);
+              }}
+            >
               <SelectTrigger id="language" aria-label={t("language")}>
                 <SelectValue />
               </SelectTrigger>

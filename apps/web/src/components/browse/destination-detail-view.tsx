@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { ArrowLeft, Clock, MapPin } from "lucide-react";
 import { CatalogImage } from "@/components/browse/catalog-image";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useBrowseCopy } from "@/lib/browse-copy";
@@ -25,10 +25,10 @@ export function DestinationDetailView({
         <CatalogImage src={destination.image} alt={destination.imageAlt} className="absolute inset-0" priority />
         <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/20 to-transparent" />
         <div className="shell-frame relative flex min-h-[28rem] flex-col justify-end pb-10 pt-24 md:min-h-[34rem]">
-          <Link href="/destinations" className="mb-6 inline-flex items-center gap-2 text-sm text-text">
+          <LocaleLink href="/destinations" className="mb-6 inline-flex items-center gap-2 text-sm text-text">
             <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
             {copy.backDestinations}
-          </Link>
+          </LocaleLink>
           <p className="text-xs uppercase tracking-[0.18em] text-text-muted">
             {destination.region} · {destination.country}
           </p>
@@ -89,12 +89,12 @@ export function DestinationDetailView({
               <p className="text-sm text-text-muted">{copy.oneStopBody}</p>
               <div>
                 <Button asChild className="rounded-pill">
-                  <Link href={`/plan?add=${featured.slug}`}>{copy.startPlan}</Link>
+                  <LocaleLink href={`/plan?add=${featured.slug}`}>{copy.startPlan}</LocaleLink>
                 </Button>
               </div>
-              <Link href={`/experiences/${featured.slug}`} className="text-sm underline-offset-4 hover:underline">
+              <LocaleLink href={`/experiences/${featured.slug}`} className="text-sm underline-offset-4 hover:underline">
                 {featured.title}
-              </Link>
+              </LocaleLink>
             </div>
           </div>
         </div>

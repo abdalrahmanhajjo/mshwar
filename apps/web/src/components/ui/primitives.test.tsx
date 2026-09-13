@@ -15,6 +15,7 @@ import {
 import { EmptyState } from "./empty-state";
 import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 import { Price } from "./price";
+import { Progress } from "./progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
 import { Separator } from "./separator";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "./sheet";
@@ -100,6 +101,13 @@ describe("content and overlay primitives", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Open dialog" }));
     expect(screen.getByRole("heading", { name: "Confirm" })).toBeInTheDocument();
+  });
+
+  it("fills progress from inline-start so RTL mirrors the bar", () => {
+    render(<Progress value={40} label="Day stops" />);
+    const bar = screen.getByRole("progressbar", { name: "Day stops" });
+    expect(bar).toHaveAttribute("aria-valuenow", "40");
+    expect(bar.firstElementChild).toHaveClass("start-0");
   });
 
   it("opens a sheet from inline-start", () => {
