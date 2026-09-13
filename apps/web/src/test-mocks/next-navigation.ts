@@ -1,11 +1,21 @@
+export const navigationMocks = {
+  pathname: "/",
+  replace: (_href?: string) => undefined,
+  push: (_href?: string) => undefined,
+};
+
 export function usePathname() {
-  return "/";
+  return navigationMocks.pathname;
 }
 
 export function useRouter() {
   return {
-    push: () => undefined,
-    replace: () => undefined,
+    push: navigationMocks.push,
+    replace: navigationMocks.replace,
     prefetch: () => undefined,
   };
+}
+
+export function useSearchParams() {
+  return new URLSearchParams();
 }

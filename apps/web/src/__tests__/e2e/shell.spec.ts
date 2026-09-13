@@ -9,6 +9,24 @@
  */
 import { expect, test, type Page } from "@playwright/test";
 
+const E2E_ORIGIN = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3001";
+
+async function signInForShell(page: Page) {
+  await page.context().addCookies([{ name: "mshwar_session", value: "e2e-placeholder", url: E2E_ORIGIN }]);
+  await page.route("**/api/v1/auth/me", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        id: "00000000-0000-0000-0000-000000000001",
+        email: "e2e@example.com",
+        display_name: "Operator",
+        locale: "en",
+      }),
+    });
+  });
+}
+
 async function assertNoHorizontalScroll(page: Page) {
   const metrics = await page.evaluate(() => ({
     client: document.documentElement.clientWidth,
@@ -53,6 +71,7 @@ test.describe("MSHWAR-26 responsive app shell", () => {
   });
 
   test("business and admin shells share chrome but differ in navigation", async ({ page }) => {
+    await signInForShell(page);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/business");
     await expect(page.locator("[data-shell='business']")).toBeVisible();
@@ -76,6 +95,31 @@ test.describe("MSHWAR-26 responsive app shell", () => {
     await expect(page.getByRole("link", { name: "Moderation" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Listings" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Discover" })).toHaveCount(0);
+    await assertNoHorizontalScroll(page);
+  });
+});
+
+test.describe("MSHWAR-28 auth routes", () => {
+  test("unauthenticated /plan returns the user to sign-in with next", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/plan");
+    await expect(page).toHaveURL(/\/signin\?next=/);
+    await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
+    await expect(page.getByLabel("Email")).toBeVisible();
+    await expect(page.getByLabel("Password")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+
+  test("sign-up is usable at 390px and 1440px", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/signup");
+    await expect(page.getByRole("heading", { name: "Sign up" })).toBeVisible();
+    await expect(page.getByLabel("Display name")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/signup");
+    await expect(page.getByRole("button", { name: "Create account" })).toBeVisible();
     await assertNoHorizontalScroll(page);
   });
 });

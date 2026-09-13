@@ -6,6 +6,16 @@ export type MessageKey =
   | "closeMenu"
   | "language"
   | "signIn"
+  | "signUp"
+  | "signOut"
+  | "email"
+  | "password"
+  | "displayName"
+  | "createAccount"
+  | "haveAccount"
+  | "noAccount"
+  | "authError"
+  | "passwordHint"
   | "signedInAs"
   | "discover"
   | "plan"
@@ -39,6 +49,16 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     closeMenu: "Close menu",
     language: "Language",
     signIn: "Sign in",
+    signUp: "Sign up",
+    signOut: "Sign out",
+    email: "Email",
+    password: "Password",
+    displayName: "Display name",
+    createAccount: "Create account",
+    haveAccount: "Already have an account?",
+    noAccount: "New to Mshwar?",
+    authError: "Something went wrong. Try again.",
+    passwordHint: "At least 10 characters. Stored as an Argon2id hash — never logged.",
     signedInAs: "Signed in as",
     discover: "Discover",
     plan: "Plan",
@@ -71,6 +91,16 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     closeMenu: "إغلاق القائمة",
     language: "اللغة",
     signIn: "تسجيل الدخول",
+    signUp: "إنشاء حساب",
+    signOut: "تسجيل الخروج",
+    email: "البريد الإلكتروني",
+    password: "كلمة المرور",
+    displayName: "الاسم الظاهر",
+    createAccount: "إنشاء الحساب",
+    haveAccount: "لديك حساب؟",
+    noAccount: "جديد على مشوار؟",
+    authError: "حدث خطأ. حاول مرة أخرى.",
+    passwordHint: "عشرة أحرف على الأقل. تُحفظ كتجزئة Argon2id ولا تُسجَّل كنص.",
     signedInAs: "مسجّل الدخول باسم",
     discover: "اكتشف",
     plan: "خطّط",
@@ -103,6 +133,16 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     closeMenu: "Fermer le menu",
     language: "Langue",
     signIn: "Connexion",
+    signUp: "Créer un compte",
+    signOut: "Déconnexion",
+    email: "E-mail",
+    password: "Mot de passe",
+    displayName: "Nom affiché",
+    createAccount: "Créer le compte",
+    haveAccount: "Vous avez déjà un compte ?",
+    noAccount: "Nouveau sur Mshwar ?",
+    authError: "Une erreur s’est produite. Réessayez.",
+    passwordHint: "Au moins 10 caractères. Stocké en Argon2id — jamais consigné en clair.",
     signedInAs: "Connecté en tant que",
     discover: "Découvrir",
     plan: "Planifier",
