@@ -204,6 +204,10 @@ pnpm tokens:check
 pnpm tokens:contrast
 pnpm tokens:test
 
+# Component library (Storybook — Theme and Direction toolbars, axe-core on every story)
+pnpm --filter web storybook
+pnpm --filter web build-storybook
+
 # Backend tests (including extension smoke tests)
 cd services/api && PYTHONPATH=services/api python3 -m pytest tests/ -v
 ```
