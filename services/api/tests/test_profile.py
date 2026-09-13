@@ -89,8 +89,12 @@ async def test_profile_update_persists_without_new_session(api: AsyncClient) -> 
     assert me.json()["locale"] == "ar"
 
     again = await api.get("/api/v1/profile")
-    assert again.json()["preferences"]["dietary"] == ["vegetarian"]
-    assert again.json()["preferences"]["interests"] == ["food", "nature"]
+    loaded = again.json()
+    assert loaded["preferences"]["dietary"] == ["vegetarian"]
+    assert loaded["preferences"]["interests"] == ["food", "nature"]
+    assert loaded["preferences"]["home_area_id"] == beirut["id"]
+    assert loaded["preferences"]["default_group_size"] == 4
+    assert loaded["home_area"]["slug"] == "beirut"
 
 
 @pytest.mark.asyncio

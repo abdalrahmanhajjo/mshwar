@@ -20,20 +20,14 @@ export function VerifyEmailForm() {
   const [error, setError] = React.useState<string | null>(null);
   const [verified, setVerified] = React.useState(false);
   const [sent, setSent] = React.useState(false);
-  const [pending, setPending] = React.useState(false);
-
-  React.useEffect(() => {
-    if (user?.email) {
-      setEmail((current) => current || user.email);
-    }
-  }, [user]);
+  const [pending, setPending] = React.useState(() => Boolean(token));
+  const emailValue = email || user?.email || "";
 
   React.useEffect(() => {
     if (!token) {
       return;
     }
     let cancelled = false;
-    setPending(true);
     void verifyEmail(token)
       .then(async () => {
         if (cancelled) {
@@ -64,7 +58,7 @@ export function VerifyEmailForm() {
     setError(null);
     setPending(true);
     try {
-      await resendVerification(email || user?.email);
+      await resendVerification(emailValue);
       setSent(true);
     } catch (err) {
       const message = err instanceof Error ? err.message : t("authError");
@@ -92,7 +86,7 @@ export function VerifyEmailForm() {
                 name="email"
                 type="email"
                 autoComplete="email"
-                value={email}
+                value={emailValue}
                 onChange={(event) => setEmail(event.target.value)}
               />
             </div>

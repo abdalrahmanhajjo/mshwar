@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -26,7 +27,7 @@ router = APIRouter()
 async def _require_session(
     request: Request,
     db: AsyncSession,
-) -> dict:
+) -> dict[str, Any]:
     session = await _load_session(db, request.cookies.get(COOKIE_NAME))
     if session is None or session["status"] != "active":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")

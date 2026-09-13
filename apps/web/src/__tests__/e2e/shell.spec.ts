@@ -210,10 +210,19 @@ test.describe("MSHWAR-31 settings routes", () => {
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
-          dietary: [],
-          accessibility: [],
-          interest: [],
-          activity_intensity: [{ kind: "activity_intensity", slug: "moderate", label: "Moderate" }],
+          dietary: [
+            { kind: "dietary", slug: "vegetarian", label: "Vegetarian" },
+            { kind: "dietary", slug: "halal", label: "Halal" },
+          ],
+          accessibility: [{ kind: "accessibility", slug: "step-free", label: "Step-free access" }],
+          interest: [
+            { kind: "interest", slug: "food", label: "Food" },
+            { kind: "interest", slug: "heritage", label: "Heritage" },
+          ],
+          activity_intensity: [
+            { kind: "activity_intensity", slug: "relaxed", label: "Relaxed" },
+            { kind: "activity_intensity", slug: "moderate", label: "Moderate" },
+          ],
         }),
       });
     });

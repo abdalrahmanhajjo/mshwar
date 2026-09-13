@@ -25,7 +25,10 @@ describe("profile form", () => {
         return jsonResponse({
           dietary: [{ kind: "dietary", slug: "vegetarian", label: "Vegetarian" }],
           accessibility: [],
-          interest: [{ kind: "interest", slug: "food", label: "Food" }],
+          interest: [
+            { kind: "interest", slug: "food", label: "Food" },
+            { kind: "interest", slug: "heritage", label: "Heritage" },
+          ],
           activity_intensity: [{ kind: "activity_intensity", slug: "moderate", label: "Moderate" }],
         });
       }
@@ -78,6 +81,7 @@ describe("profile form", () => {
     fireEvent.change(screen.getByLabelText("Display name"), { target: { value: "Ada Lovelace" } });
     fireEvent.change(screen.getByLabelText("Default group size"), { target: { value: "3" } });
     fireEvent.click(screen.getByRole("button", { name: "Vegetarian" }));
+    fireEvent.click(screen.getByRole("button", { name: "Heritage" }));
     fireEvent.click(screen.getByRole("button", { name: "Save profile" }));
 
     await waitFor(() =>
@@ -88,6 +92,7 @@ describe("profile form", () => {
     expect(payload.display_name).toBe("Ada Lovelace");
     expect(payload.preferences.source).toBe("explicit");
     expect(payload.preferences.dietary).toEqual(["vegetarian"]);
+    expect(payload.preferences.interests).toEqual(["heritage"]);
     expect(payload.preferences.default_group_size).toBe(3);
   });
 });
