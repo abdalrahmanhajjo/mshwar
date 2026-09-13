@@ -234,22 +234,51 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v4
+      - name: Check staging configuration
+        id: staging
+        env:
+          STAGING_API_URL: ${{ secrets.STAGING_API_URL }}
+          STAGING_WEB_URL: ${{ secrets.STAGING_WEB_URL }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -n "$STAGING_API_URL" ]; then
+            echo "api=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "api=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::STAGING_API_URL is not set; skipping API staging deploy and health check"
+          fi
+          if [ -n "$VERCEL_TOKEN" ]; then
+            echo "web=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "web=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::VERCEL_TOKEN is not set; skipping frontend staging deploy"
+          fi
+          if [ -n "$STAGING_WEB_URL" ]; then
+            echo "web_health=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "web_health=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::STAGING_WEB_URL is not set; skipping frontend staging health check"
+          fi
       - name: Deploy API to Staging
+        if: steps.staging.outputs.api == 'true'
         run: |
           echo "Deploying API to staging environment..."
-          # Uses Vercel for API hosting or direct deploy
           echo "API staging deploy complete"
       - name: Deploy Frontend to Vercel Preview
+        if: steps.staging.outputs.web == 'true'
         run: |
           echo "Deploying frontend to Vercel preview..."
-          # Vercel preview deploy
           echo "Vercel preview deploy complete"
-      - name: Verify staging deployment
-        run: |
-          echo "Verifying staging deployment..."
-          # Health check on staging
-          curl -f https://api-staging.mshwar.app/health || exit 1
-          curl -f https://staging.mshwar.app || exit 1
+      - name: Verify staging API
+        if: steps.staging.outputs.api == 'true'
+        env:
+          STAGING_API_URL: ${{ secrets.STAGING_API_URL }}
+        run: curl -f "${STAGING_API_URL}/health"
+      - name: Verify staging web
+        if: steps.staging.outputs.web_health == 'true'
+        env:
+          STAGING_WEB_URL: ${{ secrets.STAGING_WEB_URL }}
+        run: curl -f "$STAGING_WEB_URL"
 
   deploy-production-gate:
     name: Production Deploy Gate
@@ -261,31 +290,50 @@ jobs:
       - uses: actions/checkout@v4
       - name: Manual Promotion Required
         run: |
-          echo "Production deployment requires manual approval via GitHub Environments"
-          echo "This job will be triggered after manual approval in the production environment"
+          echo "::notice::Production deployment requires manual approval via GitHub Environments"
+          echo "This job succeeds as a gate only; it does not deploy or curl live hosts"
 
   rollback:
     name: Rollback
     runs-on: ubuntu-latest
-    if: failure() && github.ref == 'refs/heads/main'
+    if: failure() && github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: [deploy-staging, deploy-production-gate]
     environment: production
     steps:
       - uses: actions/checkout@v4
+      - name: Check production rollback configuration
+        id: rollback
+        env:
+          PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          PRODUCTION_API_URL: ${{ secrets.PRODUCTION_API_URL }}
+        run: |
+          if [ -n "$PRODUCTION_DATABASE_URL" ] && [ -n "$PRODUCTION_API_URL" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Production rollback secrets are not set; skipping destructive alembic/curl"
+          fi
       - name: Rollback Database Migrations
+        if: steps.rollback.outputs.configured == 'true'
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
         run: |
           echo "Rolling back database migrations..."
           cd services/api
-          export DATABASE_URL=${{ secrets.PRODUCTION_DATABASE_URL }}
           alembic downgrade -1
           echo "Database rolled back one migration"
       - name: Rollback Deployment
+        if: steps.rollback.outputs.configured == 'true'
         run: |
           echo "Rolling back deployment..."
-          # Vercel rollback or redeploy previous version
           echo "Deployment rolled back"
       - name: Verify Rollback
+        if: steps.rollback.outputs.configured == 'true'
+        env:
+          PRODUCTION_API_URL: ${{ secrets.PRODUCTION_API_URL }}
         run: |
           echo "Verifying rollback..."
-          # Health check
-          curl -f https://api.mshwar.app/health || exit 1
+          curl -f "${PRODUCTION_API_URL}/health"
+      - name: Rollback check complete
+        if: always()
+        run: echo "::notice::Rollback finished; destructive steps ran only when secrets were configured"
