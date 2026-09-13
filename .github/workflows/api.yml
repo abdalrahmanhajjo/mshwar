@@ -13,7 +13,7 @@ permissions:
 env:
   NODE_VERSION: "20"
   PYTHON_VERSION: "3.11"
-  PNPM_VERSION: "9"
+  PNPM_VERSION: "11.15.1"
 
 jobs:
   gitleaks:
@@ -66,11 +66,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-      - run: corepack enable pnpm
+          pnpm-version: ${{ env.PNPM_VERSION }}
       - run: pnpm install
       - run: pip install -r services/api/requirements.txt
       - run: pip install alembic psycopg[binary] pytest-cov
