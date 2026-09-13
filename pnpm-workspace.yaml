@@ -3,8 +3,8 @@ packages:
   - "services/api"
   - "packages/shared"
 
-onlyBuiltDependencies:
-  - esbuild
-  - unrs-resolver
-  - pre-commit
-  - spawn-sync
+allowBuilds:
+  esbuild: true
+  unrs-resolver: true
+  pre-commit: true
+  spawn-sync: true
