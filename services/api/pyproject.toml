@@ -30,6 +30,8 @@ build-backend = "setuptools.backends._legacy:_Backend"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
 addopts = "--cov=app --cov-report=xml --cov-report=term-missing --cov-fail-under=80"
 
 [tool.coverage.run]

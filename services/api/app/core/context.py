@@ -36,6 +36,20 @@ def get_current_organization_id() -> uuid.UUID | None:
     return _current_organization_id.get()
 
 
+async def set_local_gucs(
+    db: AsyncSession,
+    *,
+    user_id: str,
+    organization_id: str,
+    request_id: str = "",
+) -> None:
+    """Apply transaction-local GUCs. ``SET LOCAL`` cannot take bind parameters."""
+    await db.execute(text("SELECT set_config('app.user_id', :value, true)"), {"value": user_id})
+    await db.execute(text("SELECT set_config('app.organization_id', :value, true)"), {"value": organization_id})
+    if request_id:
+        await db.execute(text("SELECT set_config('app.request_id', :value, true)"), {"value": request_id})
+
+
 async def set_db_session_context(db: AsyncSession) -> None:
     """Set the PostgreSQL session context for RLS enforcement. Uses SET LOCAL so it's transaction-scoped."""
     user_id = _current_user_id.get()
@@ -43,9 +57,12 @@ async def set_db_session_context(db: AsyncSession) -> None:
     request_id = _request_id.get() or ""
 
     if user_id and org_id:
-        await db.execute(text("SET LOCAL app.user_id = :user_id"), {"user_id": str(user_id)})
-        await db.execute(text("SET LOCAL app.organization_id = :org_id"), {"org_id": str(org_id)})
-        await db.execute(text("SET LOCAL app.request_id = :request_id"), {"request_id": request_id})
+        await set_local_gucs(
+            db,
+            user_id=str(user_id),
+            organization_id=str(org_id),
+            request_id=request_id,
+        )
     else:
         raise PermissionError("Session context not set: user_id and organization_id are required")
 
