@@ -17,7 +17,13 @@ def test_nl_parser_extracts_filters() -> None:
     assert parsed.destination == "byblos"
     assert parsed.kind == "restaurant"
     assert parsed.price_max == 30
+    assert parsed.q == ""
     assert relaxation_steps(parsed)
+
+    cedars = parse_search_query("cedars in Bsharri")
+    assert cedars.destination == "bsharri"
+    assert cedars.category == "nature"
+    assert cedars.q == "cedars"
 
 
 def test_travel_stub_scales_with_distance() -> None:

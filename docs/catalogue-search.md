@@ -11,6 +11,8 @@ CI and local default use a deterministic stub:
 
 Set `CATALOGUE_EMBEDDING_PROVIDER` to a real provider name when an API credential exists. The stub stays the fallback so search tests do not invent listings.
 
+Natural-language queries are tokenized: stopwords (`in`, `the`, Arabic/French equivalents) are dropped, and remaining keywords must all appear in `search_text`. That is why `cedars in Bsharri` still returns the published cedar listing even though the phrase is not stored verbatim. The parser also lifts destination, category, and kind into the same filters as the browse page.
+
 ## Routing / travel time
 
 Related cards show PostGIS distance plus `app.catalogue.routing.estimate_travel`. Set `CATALOGUE_ROUTING_PROVIDER` when a real router is wired. CI uses the stub.

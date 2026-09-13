@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 
 DESTINATION_ALIASES = {
@@ -25,6 +26,39 @@ KIND_ALIASES = {
     "experience": {"experience", "tour", "تجربة"},
 }
 
+STOPWORDS = {
+    "in",
+    "the",
+    "a",
+    "an",
+    "of",
+    "and",
+    "or",
+    "to",
+    "at",
+    "on",
+    "for",
+    "with",
+    "from",
+    "by",
+    "near",
+    "around",
+    "dans",
+    "de",
+    "et",
+    "la",
+    "le",
+    "les",
+    "un",
+    "une",
+    "du",
+    "des",
+    "في",
+    "من",
+    "إلى",
+    "و",
+}
+
 
 @dataclass
 class ParsedQuery:
@@ -36,29 +70,52 @@ class ParsedQuery:
     filters: dict[str, str] = field(default_factory=dict)
 
 
+def search_tokens(raw: str) -> list[str]:
+    """Split a query into significant tokens, dropping punctuation and stopwords."""
+    parts = re.split(r"[\s\W]+", (raw or "").casefold(), flags=re.UNICODE)
+    return [part for part in parts if len(part) >= 2 and part not in STOPWORDS]
+
+
+def _strip_whole_alias(text: str, alias: str) -> str:
+    return re.sub(rf"(?<!\w){re.escape(alias)}(?!\w)", " ", text, flags=re.IGNORECASE)
+
+
 def parse_search_query(raw: str) -> ParsedQuery:
     """Map a natural-language string onto the same catalogue filters as keyword search."""
     text = (raw or "").strip()
     lowered = text.casefold()
     parsed = ParsedQuery(q=text)
+    matched_aliases: list[str] = []
     for slug, aliases in DESTINATION_ALIASES.items():
-        if any(alias in lowered for alias in aliases):
+        hit = next((alias for alias in aliases if alias in lowered), None)
+        if hit is not None:
             parsed.destination = slug
             parsed.filters["destination"] = slug
+            matched_aliases.append(hit)
             break
     for slug, aliases in CATEGORY_ALIASES.items():
-        if any(alias in lowered for alias in aliases):
+        hit = next((alias for alias in aliases if alias in lowered), None)
+        if hit is not None:
             parsed.category = slug
             parsed.filters["category"] = slug
+            matched_aliases.append(hit)
             break
     for slug, aliases in KIND_ALIASES.items():
-        if any(alias in lowered for alias in aliases):
+        hit = next((alias for alias in aliases if alias in lowered), None)
+        if hit is not None:
             parsed.kind = slug
             parsed.filters["kind"] = slug
+            matched_aliases.append(hit)
             break
-    if any(token in lowered for token in ("cheap", "budget", "رخيص", "pas cher")):
+    price_cues = ("cheap", "budget", "رخيص", "pas cher")
+    if any(token in lowered for token in price_cues):
         parsed.price_max = 30
         parsed.filters["price_max"] = "30"
+        matched_aliases.extend(price_cues)
+    remainder = lowered
+    for alias in sorted(set(matched_aliases), key=len, reverse=True):
+        remainder = _strip_whole_alias(remainder, alias)
+    parsed.q = " ".join(search_tokens(remainder))
     return parsed
 
 

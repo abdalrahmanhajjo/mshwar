@@ -148,7 +148,7 @@ async def search_catalogue(
         await db.execute(
             text("SELECT app.public_catalogue_search(:q, :locale, :category, :destination, :kind, :lim)"),
             {
-                "q": parsed.q or q,
+                "q": parsed.q,
                 "locale": locale,
                 "category": cat,
                 "destination": dest,
@@ -166,7 +166,7 @@ async def search_catalogue(
     relaxations = [SearchRelaxation(**step) for step in relaxation_steps(parsed)] if not listings else []
     return CatalogueSearchOut(
         items=listings,
-        query=str(body.get("query") or q),
+        query=q,
         locale=str(body.get("locale") or locale),
         filters=parsed.filters,
         relaxations=relaxations,
