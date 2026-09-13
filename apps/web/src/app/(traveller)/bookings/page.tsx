@@ -1,10 +1,10 @@
 import { ShellMain } from "@/components/shell/app-shell";
-import { BookingGate } from "@/components/auth/booking-gate";
+import { BookingsView } from "@/components/hub/bookings-view";
 
 export default function BookingsPage() {
   return (
     <ShellMain>
-      <BookingGate />
+      <BookingsView />
     </ShellMain>
   );
 }

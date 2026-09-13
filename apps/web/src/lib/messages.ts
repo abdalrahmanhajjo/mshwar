@@ -61,6 +61,8 @@ export type MessageKey =
   | "forBusinesses"
   | "plan"
   | "saved"
+  | "favorites"
+  | "notifications"
   | "bookings"
   | "dashboard"
   | "listings"
@@ -145,6 +147,8 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     forBusinesses: "For businesses",
     plan: "Plan",
     saved: "Saved",
+    favorites: "Favorites",
+    notifications: "Notifications",
     bookings: "Bookings",
     dashboard: "Dashboard",
     listings: "Listings",
@@ -228,6 +232,8 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     forBusinesses: "للأعمال",
     plan: "خطّط",
     saved: "المحفوظات",
+    favorites: "المفضلة",
+    notifications: "الإشعارات",
     bookings: "الحجوزات",
     dashboard: "لوحة التحكم",
     listings: "العروض",
@@ -313,6 +319,8 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     forBusinesses: "Pour les entreprises",
     plan: "Planifier",
     saved: "Enregistrés",
+    favorites: "Favoris",
+    notifications: "Notifications",
     bookings: "Réservations",
     dashboard: "Tableau de bord",
     listings: "Annonces",

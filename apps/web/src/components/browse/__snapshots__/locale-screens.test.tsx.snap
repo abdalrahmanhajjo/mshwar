@@ -8724,7 +8724,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
           </a>
           <a
             class="inline-flex items-center gap-2 rounded-control px-3 text-sm font-medium min-h-[var(--layout-min-target)] outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
-            href="/ar/saved"
+            href="/ar/trips"
           >
             <svg
               aria-hidden="true"
@@ -9166,7 +9166,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
           </a>
           <a
             class="inline-flex items-center gap-2 rounded-control px-3 text-sm font-medium min-h-[var(--layout-min-target)] outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
-            href="/saved"
+            href="/trips"
           >
             <svg
               aria-hidden="true"
@@ -9608,7 +9608,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
           </a>
           <a
             class="inline-flex items-center gap-2 rounded-control px-3 text-sm font-medium min-h-[var(--layout-min-target)] outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
-            href="/fr/saved"
+            href="/fr/trips"
           >
             <svg
               aria-hidden="true"

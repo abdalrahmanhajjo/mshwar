@@ -7,4 +7,5 @@
  */
 export { messages } from "@/lib/messages";
 export { browseCopy } from "@/lib/browse-copy";
+export { hubCopy } from "@/lib/hub-copy";
 export { LOCALES, type Locale } from "@/lib/locale";

@@ -2,12 +2,15 @@
 
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/components/shell/auth-provider";
 import { useBrowseCopy } from "@/lib/browse-copy";
+import { addFavorite } from "@/lib/hub";
 import { useSavedExperiences } from "@/lib/saved-experiences";
 import { cn } from "@/lib/utils";
 
 export function SaveExperienceButton({ slug, compact = false }: { slug: string; compact?: boolean }) {
   const copy = useBrowseCopy();
+  const { user } = useAuth();
   const { has, toggle } = useSavedExperiences();
   const saved = has(slug);
 
@@ -23,6 +26,9 @@ export function SaveExperienceButton({ slug, compact = false }: { slug: string; 
         event.preventDefault();
         event.stopPropagation();
         toggle(slug);
+        if (user && !saved) {
+          void addFavorite(slug);
+        }
       }}
     >
       <Heart className={cn("size-4", saved && "fill-accent text-accent")} aria-hidden />
