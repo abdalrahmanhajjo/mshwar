@@ -119,3 +119,12 @@ async def cancel_booking(
     if row is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Booking not found")
     return _booking_out(row)
+
+
+@router.delete("/{booking_id}")
+async def reject_delete_booking(booking_id: UUID) -> None:
+    raise HTTPException(
+        status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+        detail="Bookings cannot be deleted",
+        headers={"Allow": "GET, POST"},
+    )
