@@ -1,12 +1,7 @@
 module.exports = {
   root: true,
   env: { browser: true, es2022: true, node: true },
-  extends: [
-    "next/core-web-vitals",
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "prettier",
-  ],
+  extends: ["next/core-web-vitals", "eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
   ignorePatterns: ["dist/", "build/", "node_modules/", ".next/", "*.config.js", "*.config.mjs"],
   rules: {
     "react/jsx-uses-react": "off",
@@ -28,4 +23,4 @@ module.exports = {
       rules: {},
     },
   ],
-}
+};
