@@ -195,3 +195,72 @@ test.describe("MSHWAR-28 auth routes", () => {
     await assertNoHorizontalScroll(page);
   });
 });
+
+test.describe("MSHWAR-31 settings routes", () => {
+  test("unauthenticated /settings returns the user to sign-in", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/settings");
+    await expect(page).toHaveURL(/\/signin\?next=/);
+  });
+
+  test("settings is usable at 390px and 1440px when signed in", async ({ page }) => {
+    await signInForShell(page);
+    await page.route("**/api/v1/profile/vocabularies", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          dietary: [],
+          accessibility: [],
+          interest: [],
+          activity_intensity: [{ kind: "activity_intensity", slug: "moderate", label: "Moderate" }],
+        }),
+      });
+    });
+    await page.route("**/api/v1/locations/areas", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          source: "catalog",
+          picker: "stub",
+          replace_with: "map location picker",
+          areas: [{ id: "area-1", slug: "beirut", name: "Beirut", country_code: "LB" }],
+        }),
+      });
+    });
+    await page.route("**/api/v1/profile", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          id: "00000000-0000-0000-0000-000000000001",
+          email: "e2e@example.com",
+          display_name: "Operator",
+          locale: "en",
+          preferences: {
+            source: "explicit",
+            home_area_id: null,
+            default_group_size: null,
+            activity_intensity: null,
+            dietary: [],
+            accessibility: [],
+            interests: [],
+          },
+          home_area: null,
+        }),
+      });
+    });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/settings");
+    await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
+    await expect(page.getByLabel("Display name")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Save profile" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/settings");
+    await expect(page.getByRole("heading", { name: "Preferences" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+});

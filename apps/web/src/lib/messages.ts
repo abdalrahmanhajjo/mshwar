@@ -35,6 +35,22 @@ export type MessageKey =
   | "verifyToBook"
   | "verified"
   | "unverified"
+  | "profile"
+  | "profileHint"
+  | "preferences"
+  | "preferencesHint"
+  | "explicitOnly"
+  | "homeArea"
+  | "groupSize"
+  | "dietary"
+  | "accessibility"
+  | "activityIntensity"
+  | "interests"
+  | "saveProfile"
+  | "profileSaved"
+  | "notSet"
+  | "nextPlanUsesDefaults"
+  | "homeAreaStub"
   | "signedInAs"
   | "discover"
   | "plan"
@@ -97,6 +113,22 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     verifyToBook: "Unverified accounts can browse but cannot book.",
     verified: "Verified",
     unverified: "Unverified",
+    profile: "Profile",
+    profileHint: "Name, language, start area and group size for the next plan.",
+    preferences: "Preferences",
+    preferencesHint: "Optional. Only what you choose is stored — nothing is inferred.",
+    explicitOnly: "Every preference is an explicit choice. Clear a chip to leave it unset.",
+    homeArea: "Home or start area",
+    groupSize: "Default group size",
+    dietary: "Dietary",
+    accessibility: "Accessibility",
+    activityIntensity: "Activity intensity",
+    interests: "Interests",
+    saveProfile: "Save profile",
+    profileSaved: "Saved. The next plan will use these defaults.",
+    notSet: "Not set",
+    nextPlanUsesDefaults: "These are defaults, not constraints. A trip can override any of them.",
+    homeAreaStub: "Area catalog stub. A map picker can replace this list and keep the same home area id.",
     signedInAs: "Signed in as",
     discover: "Discover",
     plan: "Plan",
@@ -158,6 +190,22 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     verifyToBook: "الحسابات غير المؤكدة تتصفح ولا تحجز.",
     verified: "مؤكّد",
     unverified: "غير مؤكّد",
+    profile: "الملف",
+    profileHint: "الاسم واللغة ومنطقة الانطلاق وحجم المجموعة للخطة التالية.",
+    preferences: "التفضيلات",
+    preferencesHint: "اختيارية. يُحفظ ما تختاره فقط — لا يُستنتج شيء.",
+    explicitOnly: "كل تفضيل اختيار صريح. أزل الشارة لتركه فارغاً.",
+    homeArea: "منطقة السكن أو الانطلاق",
+    groupSize: "حجم المجموعة الافتراضي",
+    dietary: "الغذاء",
+    accessibility: "إمكانية الوصول",
+    activityIntensity: "شدة النشاط",
+    interests: "الاهتمامات",
+    saveProfile: "حفظ الملف",
+    profileSaved: "تم الحفظ. ستستخدمها الخطة التالية كافتراضيات.",
+    notSet: "غير محدد",
+    nextPlanUsesDefaults: "هذه افتراضيات وليست قيوداً. يمكن لأي رحلة تجاوزها.",
+    homeAreaStub: "كتالوج مناطق مؤقت. يمكن لملتقط الخريطة استبداله مع الإبقاء على المعرّف.",
     signedInAs: "مسجّل الدخول باسم",
     discover: "اكتشف",
     plan: "خطّط",
@@ -220,6 +268,23 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     verifyToBook: "Les comptes non vérifiés peuvent parcourir mais pas réserver.",
     verified: "Vérifié",
     unverified: "Non vérifié",
+    profile: "Profil",
+    profileHint: "Nom, langue, zone de départ et taille du groupe pour le prochain plan.",
+    preferences: "Préférences",
+    preferencesHint: "Facultatives. Seul ce que vous choisissez est enregistré — rien n’est déduit.",
+    explicitOnly: "Chaque préférence est un choix explicite. Retirez une puce pour la laisser vide.",
+    homeArea: "Zone de domicile ou de départ",
+    groupSize: "Taille de groupe par défaut",
+    dietary: "Régime",
+    accessibility: "Accessibilité",
+    activityIntensity: "Intensité",
+    interests: "Intérêts",
+    saveProfile: "Enregistrer le profil",
+    profileSaved: "Enregistré. Le prochain plan utilisera ces valeurs par défaut.",
+    notSet: "Non défini",
+    nextPlanUsesDefaults: "Ce sont des valeurs par défaut, pas des contraintes. Un voyage peut les remplacer.",
+    homeAreaStub:
+      "Catalogue de zones provisoire. Un sélecteur carte pourra le remplacer en gardant le même identifiant.",
     signedInAs: "Connecté en tant que",
     discover: "Découvrir",
     plan: "Planifier",

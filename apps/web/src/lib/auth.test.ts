@@ -6,6 +6,7 @@ describe("auth helpers", () => {
     expect(isProtectedPath("/plan")).toBe(true);
     expect(isProtectedPath("/saved/list")).toBe(true);
     expect(isProtectedPath("/bookings")).toBe(true);
+    expect(isProtectedPath("/settings")).toBe(true);
     expect(isProtectedPath("/business/listings")).toBe(true);
     expect(isProtectedPath("/admin/users")).toBe(true);
     expect(isProtectedPath("/")).toBe(false);
