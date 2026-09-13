@@ -168,7 +168,17 @@ export function ExperienceDetailView({ experience, related }: { experience: Expe
         </div>
         <div className="grid gap-8 md:grid-cols-3">
           {related.map((item) => (
-            <ExperienceCard key={item.slug} experience={item} />
+            <div key={item.slug} className="grid gap-2">
+              <ExperienceCard experience={item} />
+              {item.distanceKm != null ? (
+                <p className="text-sm text-text-muted">
+                  {item.distanceKm} km
+                  {item.travelSeconds
+                    ? ` · ${Math.max(1, Math.round(item.travelSeconds / 60))} ${copy.minutesLabel}`
+                    : ""}
+                </p>
+              ) : null}
+            </div>
           ))}
         </div>
       </div>

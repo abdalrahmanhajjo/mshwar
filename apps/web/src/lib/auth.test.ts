@@ -5,7 +5,11 @@ describe("auth helpers", () => {
   it("marks traveller account routes and portals as protected", () => {
     expect(isProtectedPath("/plan")).toBe(true);
     expect(isProtectedPath("/saved/list")).toBe(true);
+    expect(isProtectedPath("/trips")).toBe(true);
+    expect(isProtectedPath("/favorites")).toBe(true);
     expect(isProtectedPath("/bookings")).toBe(true);
+    expect(isProtectedPath("/notifications")).toBe(true);
+    expect(isProtectedPath("/ar/favorites")).toBe(true);
     expect(isProtectedPath("/settings")).toBe(true);
     expect(isProtectedPath("/business/listings")).toBe(true);
     expect(isProtectedPath("/admin/users")).toBe(true);
