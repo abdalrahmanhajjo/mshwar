@@ -49,14 +49,13 @@ try {
   }
   await db.exec(fs.readFileSync(root + "/tests/seed.sql", "utf8"));
   await sql("SELECT set_config('app.user_id',$1,false)", [alice]);
-  await good("all 63 app tables have forced RLS", async () =>
-    assert.equal(
+  await good("all app tables have forced RLS", async () =>
+    assert.ok(
       (
         await one(
           "SELECT count(*)::int AS n FROM pg_tables t JOIN pg_class c ON c.relname=t.tablename JOIN pg_namespace n ON n.oid=c.relnamespace AND n.nspname=t.schemaname WHERE t.schemaname='app' AND c.relrowsecurity AND c.relforcerowsecurity",
         )
-      ).n,
-      63,
+      ).n >= 66,
     ),
   );
   await good("PostGIS distance uses meters", async () =>

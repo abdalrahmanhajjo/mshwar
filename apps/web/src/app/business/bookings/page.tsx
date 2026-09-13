@@ -1,5 +1,10 @@
-import { ShellPage } from "@/components/shell/shell-page";
+import { BookingInbox } from "@/components/business/booking-inbox";
+import { ShellMain } from "@/components/shell/app-shell";
 
 export default function BusinessBookingsPage() {
-  return <ShellPage title="Bookings" description="Incoming requests stay on structured records." />;
+  return (
+    <ShellMain>
+      <BookingInbox />
+    </ShellMain>
+  );
 }

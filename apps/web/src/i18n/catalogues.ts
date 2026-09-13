@@ -7,4 +7,5 @@
  */
 export { messages } from "@/lib/messages";
 export { browseCopy } from "@/lib/browse-copy";
+export { businessCopy } from "@/lib/business-copy";
 export { LOCALES, type Locale } from "@/lib/locale";

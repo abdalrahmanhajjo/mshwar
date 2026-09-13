@@ -1,5 +1,10 @@
-import { ShellPage } from "@/components/shell/shell-page";
+import { ListingsView } from "@/components/business/listings-view";
+import { ShellMain } from "@/components/shell/app-shell";
 
 export default function BusinessListingsPage() {
-  return <ShellPage title="Listings" description="Inventory the traveller app can actually book." />;
+  return (
+    <ShellMain>
+      <ListingsView />
+    </ShellMain>
+  );
 }
