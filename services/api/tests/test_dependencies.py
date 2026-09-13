@@ -48,6 +48,7 @@ async def test_get_db_and_read_db_with_context() -> None:
         assert session is not None
         await agen.aclose()
 
+        set_session_context(user_id, org_id, "req-db")
         read_agen = get_read_db()
         read_session = await read_agen.__anext__()
         assert read_session is not None

@@ -76,8 +76,9 @@ describe("recovery form", () => {
     );
     expect(screen.queryByText("replacement-secret")).not.toBeInTheDocument();
     const resetCall = fetchMock.mock.calls.find((call) => String(call[0]).includes("/reset-password"));
-    expect(String(resetCall?.[1]?.body)).toContain("reset-token-value");
-    expect(String(resetCall?.[1]?.body)).not.toMatch(/password=/);
+    const body = JSON.parse(String(resetCall?.[1]?.body)) as { token: string; password: string };
+    expect(body.token).toBe("reset-token-value");
+    expect(body).toHaveProperty("password");
 
     navigationMocks.search = "";
     vi.unstubAllGlobals();
