@@ -12,6 +12,8 @@ out/
 # Testing
 coverage/
 .nyc_output
+coverage.xml
+htmlcov/
 
 # Misc
 .DS_Store
@@ -23,9 +25,14 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Local env files
-.env*.local
+# Local env files - NEVER commit real secrets
 .env
+.env.local
+.env.staging
+.env.production
+.env*.local
+.env*.staging
+.env*.production
 
 # Vercel
 .vercel
@@ -69,4 +76,34 @@ docker-compose.override.yml
 
 # Misc
 *.lock
-EOF
+
+# Secrets and credentials
+*.secret
+*.key
+*.p12
+*.pfx
+*.pem
+credentials.json
+service-account.json
+
+# Coverage artifacts
+coverage.xml
+gitleaks-results.sarif
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# API specific
+services/api/.env
+services/api/.env.local
+services/api/.env.staging
+services/api/.env.production
+
+# Pre-built artifacts
+services/api/coverage/
+services/api/htmlcov/
+services/api/.coverage
+services/api/coverage.xml
+services/api/*.egg-info/

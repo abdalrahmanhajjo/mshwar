@@ -16,12 +16,7 @@ class TestPostGISExtension:
     async def test_st_within(self, db_session):
         """ST_DWithin returns true for points within 1 degree of each other."""
         result = await db_session.execute(
-            text(
-                "SELECT ST_DWithin("
-                "ST_MakePoint(0, 0)::geography, "
-                "ST_MakePoint(0.01, 0.01)::geography, "
-                "2000)"
-            )
+            text("SELECT ST_DWithin(ST_MakePoint(0, 0)::geography, ST_MakePoint(0.01, 0.01)::geography, 2000)")
         )
         value = result.scalar()
         assert value is True, "ST_DWithin should return true for nearby points"
@@ -29,9 +24,7 @@ class TestPostGISExtension:
     @pytest.mark.asyncio
     async def test_postgis_extension_exists(self, db_session):
         """Confirm postgis is listed in pg_extension."""
-        result = await db_session.execute(
-            text("SELECT extname FROM pg_extension WHERE extname = 'postgis'")
-        )
+        result = await db_session.execute(text("SELECT extname FROM pg_extension WHERE extname = 'postgis'"))
         assert result.scalar() == "postgis", "postgis extension must exist"
 
 
@@ -41,11 +34,7 @@ class TestPgVectorExtension:
     @pytest.mark.asyncio
     async def test_vector_inner_product_operator(self, db_session):
         """pgvector <-> operator computes Euclidean distance between vectors."""
-        result = await db_session.execute(
-            text(
-                "SELECT '[1,2,3]'::vector <-> '[4,5,6]'::vector"
-            )
-        )
+        result = await db_session.execute(text("SELECT '[1,2,3]'::vector <-> '[4,5,6]'::vector"))
         value = result.scalar()
         assert value is not None, "<-> operator must return a distance"
         assert isinstance(value, float), "Distance must be a float"
@@ -54,9 +43,7 @@ class TestPgVectorExtension:
     @pytest.mark.asyncio
     async def test_pgvector_extension_exists(self, db_session):
         """Confirm pgvector is listed in pg_extension."""
-        result = await db_session.execute(
-            text("SELECT extname FROM pg_extension WHERE extname = 'pgvector'")
-        )
+        result = await db_session.execute(text("SELECT extname FROM pg_extension WHERE extname = 'pgvector'"))
         assert result.scalar() == "pgvector", "pgvector extension must exist"
 
 
@@ -66,9 +53,7 @@ class TestBtreeGiSTExtension:
     @pytest.mark.asyncio
     async def test_btree_gist_extension_exists(self, db_session):
         """Confirm btree_gist is listed in pg_extension."""
-        result = await db_session.execute(
-            text("SELECT extname FROM pg_extension WHERE extname = 'btree_gist'")
-        )
+        result = await db_session.execute(text("SELECT extname FROM pg_extension WHERE extname = 'btree_gist'"))
         assert result.scalar() == "btree_gist", "btree_gist extension must exist"
 
     @pytest.mark.asyncio
@@ -78,14 +63,16 @@ class TestBtreeGiSTExtension:
         Creates a temp table with an EXCLUDE constraint, inserts one row,
         then verifies that an overlapping insert is rejected.
         """
-        await db_session.execute(text("""
+        await db_session.execute(
+            text("""
             CREATE TEMP TABLE booking_slots (
                 id SERIAL PRIMARY KEY,
                 business_id INTEGER NOT NULL,
                 slot_ts TSTZRANGE NOT NULL,
                 EXCLUDE USING gist (business_id WITH =, slot_ts WITH &&)
             )
-        """))
+        """)
+        )
         await db_session.commit()
 
         # Insert first booking slot
@@ -98,7 +85,7 @@ class TestBtreeGiSTExtension:
         await db_session.commit()
 
         # Attempt overlapping insert — should fail
-        with pytest.raises(Exception):
+        with pytest.raises(Exception):  # noqa: B017
             await db_session.execute(
                 text(
                     "INSERT INTO booking_slots (business_id, slot_ts) "

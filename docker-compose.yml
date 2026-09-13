@@ -7,9 +7,11 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    env_file:
+      - apps/web/.env.local
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
-      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      - NODE_ENV=${NODE_ENV:-development}
     volumes:
       - ./apps/web:/app
       - /app/node_modules
@@ -22,10 +24,12 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    env_file:
+      - services/api/.env.local
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/mshwar
-      - REDIS_URL=redis://redis:6379/0
-      - ENVIRONMENT=development
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://postgres:postgres@db:5432/mshwar}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
     volumes:
       - ./services/api:/app
     depends_on:
@@ -39,14 +43,16 @@ services:
     image: mshwar-postgres:17
     ports:
       - "5432:5432"
+    env_file:
+      - services/api/.env.local
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=mshwar
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-mshwar}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d mshwar"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-mshwar}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -59,6 +65,8 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s

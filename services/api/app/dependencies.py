@@ -1,11 +1,11 @@
 from collections.abc import AsyncGenerator
-from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
 from app.core.config import settings
+from app.core.context import clear_db_session_context, set_db_session_context
 
 engine = create_async_engine(
     settings.database_url,
@@ -24,18 +24,20 @@ async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit
 
 
 class Base(DeclarativeBase):
-    pass
+    __table_args__ = {"schema": "app"}  # noqa: RUF012
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with async_session() as session:
         try:
+            await set_db_session_context(session)
             yield session
             await session.commit()
         except Exception:
             await session.rollback()
             raise
         finally:
+            await clear_db_session_context(session)
             await session.close()
 
 
@@ -43,8 +45,10 @@ async def get_read_db() -> AsyncGenerator[AsyncSession, None]:
     """Read-only session that does not auto-commit."""
     async with async_session() as session:
         try:
+            await set_db_session_context(session)
             yield session
         finally:
+            await clear_db_session_context(session)
             await session.close()
 
 
@@ -54,5 +58,5 @@ async def check_connection() -> bool:
         async with async_session() as session:
             await session.execute(text("SELECT 1"))
             return True
-    except Exception:
+    except Exception:  # noqa: BLE001
         return False

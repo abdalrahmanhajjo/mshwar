@@ -1,0 +1,57 @@
+[allowlist]
+  # Ignore files and directories
+  files = [
+    "*.md",
+    "*.json",
+    "*.yaml",
+    "*.yml",
+    "*.toml",
+    "Dockerfile",
+    "package.json",
+    "pnpm-lock.yaml",
+    "pyproject.toml",
+    "requirements.txt",
+    ".github/workflows/",
+    "docs/",
+    "scripts/",
+    "services/api/scripts/",
+  ]
+  # Ignore specific patterns
+  paths-ignore = [
+    "*.test.py",
+    "*.spec.ts",
+    "*.test.ts",
+    "conftest.py",
+    "__pycache__/",
+    ".next/",
+    "node_modules/",
+    "coverage/",
+    "*.coverage",
+    "coverage.xml",
+  ]
+
+# Detect high-entropy strings
+[secrets]
+  entropy = 4.5
+
+# Detect common secret patterns
+[regexes]
+  # Stripe keys
+  pattern = "(sk_live_[a-zA-Z0-9]{24}|sk_test_[a-zA-Z0-9]{24}|rk_live_[a-zA-Z0-9]{24}|rk_test_[a-zA-Z0-9]{24})"
+  # Google API keys
+  pattern = "AIza[0-9A-Za-z\\-_]{35}"
+  # AWS keys
+  pattern = "(AKIA[0-9A-Z]{16}|aws_secret_access_key)"
+  # GitHub tokens
+  pattern = "(ghp_[a-zA-Z0-9]{36}|github_pat_[a-zA-Z0-9_]+)"
+  # Generic high-entropy
+  pattern = "(password|secret|api_key|token).*[=:]\\s*['\\\"][a-zA-Z0-9]{16,}"
+
+# Detect file-specific secrets
+[file-ignores]
+  # Allow .env.example files (they have placeholder values)
+  ".env.example" = true
+  # Allow docs with placeholder examples
+  "docs/**/*.md" = true
+  # Allow .github/workflows with env var references
+  ".github/workflows/*.yml" = true

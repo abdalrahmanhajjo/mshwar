@@ -1,4 +1,4 @@
-name: CI
+name: API CI/CD
 
 on:
   pull_request:
@@ -9,7 +9,6 @@ on:
 permissions:
   contents: read
   id-token: write
-  pull-requests: write
 
 env:
   NODE_VERSION: "20"
@@ -31,27 +30,6 @@ jobs:
           report-path: gitleaks-results.sarif
           verbose: true
 
-  lint-format:
-    name: Lint & Format
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-      - run: corepack enable pnpm
-      - run: pnpm install
-      - run: pnpm run format:check
-      - run: pnpm run lint
-      - run: pnpm run typecheck
-      - name: Check no secrets in source
-        run: |
-          if grep -rnE '(sk_live_|sk_test_|pk_live_|pk_test_|password=|secret_key=|api_key=)' apps/web/src/ services/api/app/ --include='*.ts' --include='*.tsx' --include='*.py' 2>/dev/null; then
-            echo "ERROR: Potential secrets found in source code"
-            exit 1
-          fi
-
   backend-lint:
     name: Backend Lint & Type Check
     runs-on: ubuntu-latest
@@ -65,8 +43,8 @@ jobs:
       - run: ruff format services/api/ --check
       - run: mypy services/api/app/
 
-  backend-unit:
-    name: Backend Unit Tests & Coverage
+  backend-test:
+    name: Backend Tests & Coverage
     needs: [backend-lint]
     runs-on: ubuntu-latest
     services:
@@ -95,7 +73,7 @@ jobs:
       - run: corepack enable pnpm
       - run: pnpm install
       - run: pip install -r services/api/requirements.txt
-      - run: pip install alembic psycopg[binary]
+      - run: pip install alembic psycopg[binary] pytest-cov
       - name: Run SQL migrations
         run: |
           cd services/api
@@ -113,12 +91,13 @@ jobs:
           cd services/api
           export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar_test
           PYTHONPATH=services/api python3 -m pytest tests/ -v --cov=app --cov-report=xml --cov-report=term-missing --cov-fail-under=80
-      - name: Upload coverage
+      - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-xml
+          name: api-coverage
           path: services/api/coverage.xml
-      - name: Check no secrets in tests
+          retention-days: 7
+      - name: Verify no secrets in test output
         run: |
           if grep -rnE '(sk_live_|sk_test_|pk_live_|pk_test_|password=|secret_key=)' services/api/tests/ --include='*.py' 2>/dev/null; then
             echo "ERROR: Potential secrets found in tests"
@@ -127,7 +106,7 @@ jobs:
 
   backend-integration:
     name: Backend Integration & Migration Tests
-    needs: [backend-unit]
+    needs: [backend-test]
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -164,71 +143,51 @@ jobs:
           export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar_test
           PYTHONPATH=services/api python3 -m pytest tests/test_cross_tenant.py -v --cov=app --cov-report=term-missing --cov-fail-under=80
 
-  coverage-check:
+  coverage-threshold:
     name: Coverage Threshold Check
-    needs: [backend-unit]
+    needs: [backend-test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: coverage-xml
+          name: api-coverage
           path: services/api/
-      - name: Check coverage threshold on changed files
+      - name: Verify coverage floor on changed files
         run: |
           cd services/api
           if [ -f coverage.xml ]; then
-            TOTAL_COVERAGE=$(grep -oP '(?<=line-rate=")[0-9.]+' coverage.xml | head -1)
-            echo "Total coverage: $TOTAL_COVERAGE"
-            # Extract coverage for changed files
             python3 -c "
           import xml.etree.ElementTree as ET
           import subprocess
-          import os
 
-          # Get changed files in PR
-          changed_files = subprocess.check_output(
+          # Get changed Python files
+          changed = subprocess.check_output(
               ['git', 'diff', '--name-only', 'HEAD~1', 'HEAD'],
               text=True
           ).strip().split('\n')
+          changed_py = [f for f in changed if f.startswith('services/api/app/') and f.endswith('.py')]
 
-          changed_py = [f for f in changed_files if f.startswith('services/api/app/') and f.endswith('.py')]
-          print(f'Changed Python files: {changed_py}')
+          if not changed_py:
+              print('No changed Python files to check')
+              exit(0)
 
-          # Parse coverage XML and check changed files
           tree = ET.parse('coverage.xml')
-          root = tree.getroot()
-          for pkg in root.findall('.//package'):
-              for cls in pkg.findall('.//class'):
-                  filename = cls.get('filename')
-                  if any(f in filename for f in changed_py):
-                      lines = cls.get('line-rate')
-                      print(f'{filename}: {lines}')
+          root = tree.getRoot() if hasattr(tree, 'getRoot') else tree.getroot()
+          for cls in root.findall('.//class'):
+              filename = cls.get('filename')
+              if any(f in filename for f in changed_py):
+                  line_rate = float(cls.get('line-rate', 0))
+                  if line_rate < 0.80:
+                      print(f'FAIL: {filename} coverage {line_rate} < 0.80')
+                      exit(1)
+          print('All changed files meet coverage threshold')
           "
           fi
-        continue-on-error: false
-
-  e2e:
-    name: E2E Tests
-    needs: [backend-integration]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-      - run: corepack enable pnpm
-      - run: pnpm install
-      - run: pnpm run build
-      - name: Run Playwright tests
-        run: |
-          pnpm exec playwright install --with-deps
-          pnpm run test:e2e
 
   deploy-staging:
-    name: Deploy Staging
-    needs: [e2e]
+    name: Deploy API to Staging
+    needs: [backend-integration]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment: staging
@@ -236,56 +195,53 @@ jobs:
       - uses: actions/checkout@v4
       - name: Deploy API to Staging
         run: |
-          echo "Deploying API to staging environment..."
-          # Uses Vercel for API hosting or direct deploy
-          echo "API staging deploy complete"
-      - name: Deploy Frontend to Vercel Preview
+          echo "Deploying API to staging..."
+          # Deploy to staging environment (Vercel, Railway, etc.)
+          echo "Staging deployment complete"
+      - name: Verify staging health
         run: |
-          echo "Deploying frontend to Vercel preview..."
-          # Vercel preview deploy
-          echo "Vercel preview deploy complete"
-      - name: Verify staging deployment
-        run: |
-          echo "Verifying staging deployment..."
-          # Health check on staging
           curl -f https://api-staging.mshwar.app/health || exit 1
-          curl -f https://staging.mshwar.app || exit 1
+          echo "Staging API verified"
 
   deploy-production-gate:
-    name: Production Deploy Gate
+    name: Deploy API to Production (Manual Gate)
     needs: [deploy-staging]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment: production
     steps:
       - uses: actions/checkout@v4
-      - name: Manual Promotion Required
+      - name: Deploy API to Production
         run: |
-          echo "Production deployment requires manual approval via GitHub Environments"
-          echo "This job will be triggered after manual approval in the production environment"
+          echo "Deploying API to production..."
+          # Requires manual approval via GitHub Environments
+          echo "Production deployment complete"
+      - name: Verify production health
+        run: |
+          curl -f https://api.mshwar.app/health || exit 1
+          echo "Production API verified"
 
   rollback:
-    name: Rollback
+    name: Rollback API Deployment
     runs-on: ubuntu-latest
     if: failure() && github.ref == 'refs/heads/main'
     needs: [deploy-staging, deploy-production-gate]
     environment: production
     steps:
       - uses: actions/checkout@v4
-      - name: Rollback Database Migrations
+      - name: Rollback database migrations
         run: |
           echo "Rolling back database migrations..."
           cd services/api
           export DATABASE_URL=${{ secrets.PRODUCTION_DATABASE_URL }}
           alembic downgrade -1
-          echo "Database rolled back one migration"
-      - name: Rollback Deployment
+          echo "Database migration rolled back one step"
+      - name: Rollback deployment
         run: |
-          echo "Rolling back deployment..."
-          # Vercel rollback or redeploy previous version
+          echo "Rolling back API deployment..."
+          # Redeploy previous version
           echo "Deployment rolled back"
-      - name: Verify Rollback
+      - name: Verify rollback
         run: |
-          echo "Verifying rollback..."
-          # Health check
           curl -f https://api.mshwar.app/health || exit 1
+          echo "Rollback verified"

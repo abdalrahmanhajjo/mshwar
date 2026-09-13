@@ -46,7 +46,10 @@ pnpm run typecheck       # TypeScript + mypy
 cd services/api && ruff check . && ruff format . && mypy app/
 
 # Database migrations
-cd services/api && alembic revision --autogenerate -m "msg" && alembic upgrade head
+
+cd services/api && alembic upgrade head
+cd services/api && alembic downgrade base
+python scripts/migrate.py  # Apply SQL migrations from mshwar-database/migrations/
 ```
 
 ## Ports
@@ -75,3 +78,8 @@ cd services/api && alembic revision --autogenerate -m "msg" && alembic upgrade h
 - `apps/web/components.json` - shadcn/ui configuration
 - `services/api/pyproject.toml` - Python project config
 - `services/api/alembic.ini` - Alembic configuration
+- `mshwar-database/` - Canonical database project with SQL migrations
+- `mshwar-database/scripts/migrate.py` - Checksum-verified SQL migration runner
+- `mshwar-database/migrations/` - 5 ordered SQL migration files (001-005)
+- `mshwar-database/requirements.txt` - psycopg[binary]==3.3.5
+- `services/api/scripts/migrate.py` - Delegates to mshwar-database/scripts/migrate.py

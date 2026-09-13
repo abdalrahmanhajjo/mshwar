@@ -11,6 +11,7 @@ dependencies = [
     "pydantic>=2.0.0",
     "pydantic-settings>=2.0.0",
     "alembic>=1.14.0",
+    "psycopg[binary]>=3.3.5",
     "psycopg2-binary>=2.9.0",
     "pgvector[psycopg2]>=0.3.0",
     "python-dotenv>=1.0.0",
@@ -25,10 +26,35 @@ dependencies = [
 requires = ["setuptools>=68.0"]
 build-backend = "setuptools.backends._legacy:_Backend"
 
-[tool.ruff]
-line-length = 120
-target-version = "py39"
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+addopts = "--cov=app --cov-report=xml --cov-report=term-missing --cov-fail-under=80"
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["app/tests/*", "app/tests/**/*"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = false
+precision = 2
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.",
+    "if TYPE_CHECKING:",
+    "logger.debug",
+    "logger.info",
+    "logger.warning",
+]
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"

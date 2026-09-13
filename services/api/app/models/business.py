@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import datetime
+import uuid
 
-from sqlalchemy import Boolean, DateTime, Float, Integer, String, func
+from sqlalchemy import Boolean, DateTime, Float, String, func
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.dependencies import Base
@@ -11,7 +13,7 @@ from app.dependencies import Base
 class Business(Base):
     __tablename__ = "businesses"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid())
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     category: Mapped[str] = mapped_column(String(100))
     location: Mapped[str] = mapped_column(String(255))
