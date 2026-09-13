@@ -38,16 +38,30 @@ END $$;
 -- Org-scoped policies (must filter by organization_id)
 -- ============================================================
 
--- venues, experiences, slots, blackouts, price_rules, policies, media
+-- venues and experiences have organization_id
 DO $$ DECLARE n text; BEGIN
   FOR n IN SELECT tablename FROM pg_tables WHERE schemaname = 'app' AND tablename IN (
-    'venues', 'experiences', 'slots', 'blackouts', 'price_rules', 'policies', 'media'
+    'venues', 'experiences'
   ) LOOP
     EXECUTE format(
       'CREATE POLICY org_access ON app.%I FOR ALL TO mshwar_backend '
       'USING (organization_id = app.current_organization_id()) '
       'WITH CHECK (organization_id = app.current_organization_id())',
       n
+    );
+  END LOOP;
+END $$;
+
+-- slots, blackouts, price_rules, policies, media are scoped via experience_id
+DO $$ DECLARE n text; BEGIN
+  FOR n IN SELECT tablename FROM pg_tables WHERE schemaname = 'app' AND tablename IN (
+    'slots', 'blackouts', 'price_rules', 'policies', 'media'
+  ) LOOP
+    EXECUTE format(
+      'CREATE POLICY org_access ON app.%I FOR ALL TO mshwar_backend '
+      'USING (EXISTS (SELECT 1 FROM app.experiences e WHERE e.id = %I.experience_id AND e.organization_id = app.current_organization_id())) '
+      'WITH CHECK (EXISTS (SELECT 1 FROM app.experiences e WHERE e.id = %I.experience_id AND e.organization_id = app.current_organization_id()))',
+      n, n, n
     );
   END LOOP;
 END $$;
@@ -132,8 +146,7 @@ CREATE POLICY user_trip_member_access ON app.trip_members FOR ALL TO mshwar_back
 
 -- user_private, consent_events: user_id
 CREATE POLICY user_private_access ON app.user_private FOR SELECT TO mshwar_backend
-  USING (user_id = app.current_user_id())
-  WITH CHECK (user_id = app.current_user_id());
+  USING (user_id = app.current_user_id());
 
 CREATE POLICY user_consent_access ON app.consent_events FOR ALL TO mshwar_backend
   USING (user_id = app.current_user_id())
