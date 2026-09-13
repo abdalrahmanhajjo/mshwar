@@ -29,16 +29,45 @@ export function TeamView({ inviteToken }: { inviteToken?: string }) {
   }, [org]);
 
   React.useEffect(() => {
-    void reload();
-  }, [reload]);
+    if (!org) {
+      return;
+    }
+    let cancelled = false;
+    void listStaff(org.id)
+      .then((next) => {
+        if (!cancelled) {
+          setStaff(next);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setStaff({ members: [], invitations: [] });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [org]);
 
   React.useEffect(() => {
     if (!inviteToken) {
       return;
     }
+    let cancelled = false;
     void acceptInvite(inviteToken)
-      .then(() => refresh())
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : copy.inviteStaff));
+      .then(() => {
+        if (!cancelled) {
+          return refresh();
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : copy.inviteStaff);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [copy.inviteStaff, inviteToken, refresh]);
 
   async function onInvite(event: React.FormEvent<HTMLFormElement>) {

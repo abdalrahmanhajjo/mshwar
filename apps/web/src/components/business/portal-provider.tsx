@@ -18,24 +18,47 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
   const [orgId, setOrgId] = React.useState<string | null>(null);
   const [ready, setReady] = React.useState(false);
 
+  const applyRows = React.useCallback((rows: PortalOrganization[]) => {
+    setOrgs(rows);
+    setOrgId((current) => current ?? rows[0]?.id ?? null);
+    if (rows[0]?.id) {
+      writeActiveOrgId(rows[0].id);
+    }
+  }, []);
+
   const refresh = React.useCallback(async () => {
     try {
-      const rows = await listOrganizations();
-      setOrgs(rows);
-      setOrgId((current) => current ?? rows[0]?.id ?? null);
-      if (rows[0]?.id) {
-        writeActiveOrgId(rows[0].id);
-      }
+      applyRows(await listOrganizations());
     } catch {
       setOrgs([]);
     } finally {
       setReady(true);
     }
-  }, []);
+  }, [applyRows]);
 
   React.useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    let cancelled = false;
+    void listOrganizations()
+      .then((rows) => {
+        if (cancelled) {
+          return;
+        }
+        applyRows(rows);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setOrgs([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setReady(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [applyRows]);
 
   const org = orgs.find((item) => item.id === orgId) ?? orgs[0] ?? null;
 
