@@ -59,7 +59,7 @@ export const DESTINATIONS: Destination[] = [
     country: "Lebanon",
     blurb: "Wander stone lanes, pause by the old harbour, and make time for a long lunch beside the Mediterranean.",
     tags: ["Old town", "By the sea", "Easy walking"],
-    image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1600&q=80",
+    image: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80",
     imageAlt: "Fishing boats in a stone harbour",
   },
   {
@@ -69,7 +69,7 @@ export const DESTINATIONS: Destination[] = [
     country: "Lebanon",
     blurb: "A friendly coastal town for a slower day by the water.",
     tags: ["Coast", "Friendly", "Relaxed pace"],
-    image: "https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?auto=format&fit=crop&w=1600&q=80",
+    image: "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80",
     imageAlt: "Stone church by the coast",
   },
   {
@@ -99,7 +99,7 @@ export const DESTINATIONS: Destination[] = [
     country: "Lebanon",
     blurb: "Give Lebanon’s history a day of your own.",
     tags: ["Heritage", "Architecture", "History"],
-    image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1600&q=80",
+    image: "https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80",
     imageAlt: "Ancient stone columns",
   },
   {
@@ -123,7 +123,7 @@ export const EXPERIENCES: Experience[] = [
     placeLabel: "Byblos · Mount Lebanon",
     hours: 3,
     priceFrom: 35,
-    image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1600&q=80",
+    image: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80",
     imageAlt: "Harbour boats in Byblos",
     summary: "Byblos. A little closer.",
     body: "Wander stone lanes, pause by the old harbour, and make time for a long lunch beside the Mediterranean. A day for taking the scenic route.",
@@ -157,7 +157,7 @@ export const EXPERIENCES: Experience[] = [
     placeLabel: "Batroun · North Lebanon",
     hours: 4,
     priceFrom: 45,
-    image: "https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?auto=format&fit=crop&w=1600&q=80",
+    image: "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80",
     imageAlt: "Coastal church in Batroun",
     summary: "Salt air and a friendly town.",
     body: "A coastal day with room to linger — swim, walk the old town, and eat when you are ready.",
@@ -226,7 +226,7 @@ export const EXPERIENCES: Experience[] = [
     placeLabel: "Baalbek · Bekaa",
     hours: 3,
     priceFrom: 30,
-    image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1600&q=80",
+    image: "https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80",
     imageAlt: "Ancient columns in Baalbek",
     summary: "Following the stories.",
     body: "Give Lebanon’s history a day of your own — columns, courtyards, and time to stand still.",
@@ -272,7 +272,7 @@ export const IDEAS: Idea[] = [
     description: "Harbour lanes, old streets and a little sea air.",
     stops: 2,
     priceFrom: 80,
-    image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1600&q=80",
+    image: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80",
     imageAlt: "Harbour boats along the coast",
     experienceSlugs: ["slow-day-byblos", "coastal-escapes-batroun"],
   },
@@ -295,14 +295,14 @@ export const IDEAS: Idea[] = [
     description: "Give Lebanon’s history a day of your own.",
     stops: 1,
     priceFrom: 30,
-    image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1600&q=80",
+    image: "https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80",
     imageAlt: "Ancient columns",
     experienceSlugs: ["journey-through-baalbek"],
   },
 ];
 
 export const HOME_HERO_IMAGE =
-  "https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=2000&q=80";
+  "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80";
 
 export type ExperienceFilters = {
   q?: string;
