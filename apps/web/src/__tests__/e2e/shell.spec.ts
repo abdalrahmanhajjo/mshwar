@@ -365,3 +365,133 @@ test.describe("MSHWAR-36 / MSHWAR-39 marketing browse", () => {
     await assertNoHorizontalScroll(page);
   });
 });
+
+async function mockHubApis(
+  page: Page,
+  data?: {
+    trips?: object[];
+    favorites?: object[];
+    bookings?: object[];
+    notifications?: object[];
+  },
+) {
+  const empty = { items: [], page: 1, page_size: 6, total: 0 };
+  await page.route("**/api/v1/trips**", async (route) => {
+    const items = data?.trips ?? [];
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ...empty, items, total: items.length }),
+    });
+  });
+  await page.route("**/api/v1/favorites**", async (route) => {
+    if (route.request().method() === "DELETE") {
+      await route.fulfill({ status: 204, body: "" });
+      return;
+    }
+    const items = data?.favorites ?? [];
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ...empty, items, total: items.length }),
+    });
+  });
+  await page.route("**/api/v1/bookings**", async (route) => {
+    if (route.request().url().includes("/cancel")) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          id: "book-1",
+          listing_slug: "slow-day-byblos",
+          business_id: 3,
+          status: "cancelled",
+          policy_summary: "Preview booking. Cancel requires a reason. Bookings are never deleted.",
+          reason: "Change of dates",
+          created_at: "2026-09-01T00:00:00Z",
+        }),
+      });
+      return;
+    }
+    const items = data?.bookings ?? [];
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ...empty, items, total: items.length }),
+    });
+  });
+  await page.route("**/api/v1/notifications**", async (route) => {
+    const items = data?.notifications ?? [];
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ...empty, items, total: items.length }),
+    });
+  });
+}
+
+test.describe("MSHWAR-33 account hub", () => {
+  test("unauthenticated hub routes return the user to sign-in", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/trips");
+    await expect(page).toHaveURL(/\/signin\?next=/);
+    await page.goto("/ar/favorites");
+    await expect(page).toHaveURL(/\/ar\/signin\?next=/);
+  });
+
+  test("empty hub pages explain the section and stay usable at 390px", async ({ page }) => {
+    await signInForShell(page);
+    await mockHubApis(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/trips");
+    await expect(page.getByRole("heading", { name: "Your trips" })).toBeVisible();
+    await expect(page.getByText("No trips yet.")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Plan a trip" }).last()).toBeVisible();
+    await assertNoHorizontalScroll(page);
+
+    await page.goto("/saved");
+    await expect(page).toHaveURL(/\/favorites$/);
+    await expect(page.getByRole("heading", { name: "Favorites" })).toBeVisible();
+    await expect(page.getByText("Nothing saved yet.")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Explore experiences" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+
+    await page.goto("/bookings");
+    await expect(page.getByRole("heading", { name: "Bookings" }).first()).toBeVisible();
+    await expect(page.getByText("No bookings yet.")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+
+    await page.goto("/notifications");
+    await expect(page.getByRole("heading", { name: "Notifications" }).first()).toBeVisible();
+    await expect(page.getByText("No notifications.")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+
+  test("bookings show policy and cancel only with a reason", async ({ page }) => {
+    await signInForShell(page);
+    await mockHubApis(page, {
+      bookings: [
+        {
+          id: "book-1",
+          listing_slug: "slow-day-byblos",
+          business_id: 3,
+          status: "confirmed",
+          policy_summary: "Preview booking. Cancel requires a reason. Bookings are never deleted.",
+          reason: null,
+          created_at: "2026-09-01T00:00:00Z",
+        },
+      ],
+    });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/bookings");
+    await expect(
+      page.getByText("Preview booking. Cancel requires a reason. Bookings are never deleted."),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Cancel this booking" })).toBeDisabled();
+    await page.getByLabel("Why are you cancelling?").fill("Change of dates");
+    await page.getByRole("button", { name: "Cancel this booking" }).click();
+    await expect(page.getByText("Cancelled")).toBeVisible();
+    await expect(page.getByText("Change of dates")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+});

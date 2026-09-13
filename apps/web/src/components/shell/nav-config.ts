@@ -30,7 +30,7 @@ export const TRAVELLER_NAV: ShellNavItem[] = [
   { href: "/destinations", labelKey: "destinations", icon: MapPin },
   { href: "/experiences", labelKey: "experiences", icon: Sparkles },
   { href: "/plan", labelKey: "planATrip", icon: Route },
-  { href: "/saved", labelKey: "myTrips", icon: Heart },
+  { href: "/trips", labelKey: "myTrips", icon: Heart },
 ];
 
 export const BUSINESS_NAV: ShellNavItem[] = [

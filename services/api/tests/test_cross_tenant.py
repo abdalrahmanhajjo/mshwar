@@ -101,6 +101,41 @@ class TestCrossTenantIsolation:
         clear_session_context()
 
     @pytest.mark.asyncio
+    async def test_user_cannot_read_another_users_account_hub(self, db_session):
+        """User A must not see another user's hub favorites, bookings or notifications."""
+        user_a = uuid.UUID("22222222-2222-2222-2222-222222222222")
+        user_b = uuid.UUID("33333333-3333-3333-3333-333333333333")
+        org_a = uuid.UUID("00000000-0000-0000-0000-000000000001")
+
+        set_session_context(user_id=user_a, organization_id=org_a)
+        await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
+
+        favs = (
+            await db_session.execute(
+                text("SELECT id FROM app.account_favorites WHERE user_id = :uid"),
+                {"uid": str(user_b)},
+            )
+        ).fetchall()
+        books = (
+            await db_session.execute(
+                text("SELECT id FROM app.account_bookings WHERE customer_id = :uid"),
+                {"uid": str(user_b)},
+            )
+        ).fetchall()
+        notes = (
+            await db_session.execute(
+                text("SELECT id FROM app.account_notifications WHERE user_id = :uid"),
+                {"uid": str(user_b)},
+            )
+        ).fetchall()
+        assert favs == []
+        assert books == []
+        assert notes == []
+
+        await db_session.execute(text("RESET app.user_id"))
+        await db_session.execute(text("RESET app.organization_id"))
+        clear_session_context()
+
     async def test_user_cannot_read_another_users_favorites(self, db_session):
         """User A must not be able to read favorites of User B."""
         user_a = uuid.UUID("22222222-2222-2222-2222-222222222222")
