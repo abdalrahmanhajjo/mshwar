@@ -54,6 +54,15 @@ export const EMPTY_PREFERENCES: PreferenceValues = {
   interests: [],
 };
 
+export function hydratePreferences(profile: Profile): PreferenceValues {
+  return {
+    ...EMPTY_PREFERENCES,
+    ...profile.preferences,
+    home_area_id: profile.preferences.home_area_id ?? profile.home_area?.id ?? null,
+    source: "explicit",
+  };
+}
+
 async function readError(response: Response): Promise<string> {
   try {
     const body = (await response.json()) as { detail?: string };

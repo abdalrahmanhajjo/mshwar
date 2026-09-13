@@ -14,6 +14,7 @@ import {
   fetchAreas,
   fetchProfile,
   fetchVocabularies,
+  hydratePreferences,
   saveProfile,
   type HomeArea,
   type PreferenceTerm,
@@ -82,12 +83,7 @@ export function ProfileForm() {
         }
         setDisplayName(profile.display_name);
         setLocaleState(profile.locale as Locale);
-        setPrefs({
-          ...EMPTY_PREFERENCES,
-          ...profile.preferences,
-          home_area_id: profile.preferences.home_area_id ?? profile.home_area?.id ?? null,
-          source: "explicit",
-        });
+        setPrefs(hydratePreferences(profile));
         setAreas(catalog.areas);
         setVocab(vocabulary);
       })
@@ -112,12 +108,7 @@ export function ProfileForm() {
         locale,
         preferences: { ...prefs, source: "explicit" },
       });
-      setPrefs({
-        ...EMPTY_PREFERENCES,
-        ...next.preferences,
-        home_area_id: next.preferences.home_area_id ?? next.home_area?.id ?? null,
-        source: "explicit",
-      });
+      setPrefs(hydratePreferences(next));
       setLocale(locale);
       await refresh();
       setSaved(true);
@@ -163,24 +154,28 @@ export function ProfileForm() {
           </div>
           <div className="grid gap-2">
             <Label htmlFor="home-area">{t("homeArea")}</Label>
-            <Select
-              value={prefs.home_area_id ?? "none"}
-              onValueChange={(value) =>
-                setPrefs((current) => ({ ...current, home_area_id: value === "none" ? null : value }))
-              }
-            >
-              <SelectTrigger id="home-area" aria-label={t("homeArea")}>
-                <SelectValue placeholder={t("notSet")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{t("notSet")}</SelectItem>
-                {areas.map((area) => (
-                  <SelectItem key={area.id} value={area.id}>
-                    {area.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {areas.length > 0 ? (
+              <Select
+                value={prefs.home_area_id ?? "none"}
+                onValueChange={(value) =>
+                  setPrefs((current) => ({ ...current, home_area_id: value === "none" ? null : value }))
+                }
+              >
+                <SelectTrigger id="home-area" aria-label={t("homeArea")}>
+                  <SelectValue placeholder={t("notSet")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t("notSet")}</SelectItem>
+                  {areas.map((area) => (
+                    <SelectItem key={area.id} value={area.id}>
+                      {area.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <p className="text-sm text-text-muted">{t("notSet")}</p>
+            )}
             <p className="text-xs text-text-muted">{t("homeAreaStub")}</p>
           </div>
           <div className="grid gap-2">

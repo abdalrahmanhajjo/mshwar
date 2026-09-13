@@ -95,4 +95,57 @@ describe("profile form", () => {
     expect(payload.preferences.interests).toEqual(["heritage"]);
     expect(payload.preferences.default_group_size).toBe(3);
   });
+
+  it("shows the saved home area after the catalog loads", async () => {
+    const fetchMock = vi.fn(async (url: string) => {
+      if (String(url).includes("/auth/me")) {
+        return jsonResponse({ id: "1", email: "a@b.com", display_name: "Ada", locale: "en" });
+      }
+      if (String(url).includes("/vocabularies")) {
+        return jsonResponse({
+          dietary: [],
+          accessibility: [],
+          interest: [],
+          activity_intensity: [{ kind: "activity_intensity", slug: "moderate", label: "Moderate" }],
+        });
+      }
+      if (String(url).includes("/locations/areas")) {
+        return jsonResponse({
+          source: "catalog",
+          picker: "stub",
+          replace_with: "map location picker",
+          areas: [{ id: "area-1", slug: "beirut", name: "Beirut", country_code: "LB" }],
+        });
+      }
+      return jsonResponse({
+        id: "1",
+        email: "a@b.com",
+        display_name: "Ada",
+        locale: "en",
+        preferences: {
+          source: "explicit",
+          home_area_id: "area-1",
+          default_group_size: 4,
+          activity_intensity: "moderate",
+          dietary: [],
+          accessibility: [],
+          interests: [],
+        },
+        home_area: { id: "area-1", slug: "beirut", name: "Beirut", country_code: "LB" },
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <LocaleProvider>
+        <AuthProvider>
+          <ProfileForm />
+        </AuthProvider>
+      </LocaleProvider>,
+    );
+
+    await waitFor(() => expect(screen.getByLabelText("Home or start area")).toHaveTextContent("Beirut"));
+    expect(screen.getByLabelText("Default group size")).toHaveValue(4);
+    expect(screen.getByLabelText("Activity intensity")).toHaveTextContent("Moderate");
+  });
 });
