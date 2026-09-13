@@ -1,16 +1,11 @@
 import type { Metadata } from "next";
-import { ShellPage } from "@/components/shell/shell-page";
+import { HomeView } from "@/components/browse/home-view";
 
 export const metadata: Metadata = {
-  title: "Mshwar",
-  description: "AI-Powered Lebanon Trip & Experience Platform",
+  title: "Mshwar — Make room for a little mshwar",
+  description: "From the mountain air to the sea, find your next day at your own pace.",
 };
 
 export default function Home() {
-  return (
-    <ShellPage
-      title="Discover Lebanon"
-      description="Start from a destination, dates and party size. We will not invent businesses."
-    />
-  );
+  return <HomeView />;
 }

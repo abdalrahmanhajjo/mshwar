@@ -53,6 +53,12 @@ export type MessageKey =
   | "homeAreaStub"
   | "signedInAs"
   | "discover"
+  | "destinations"
+  | "experiences"
+  | "planATrip"
+  | "myTrips"
+  | "ideas"
+  | "forBusinesses"
   | "plan"
   | "saved"
   | "bookings"
@@ -131,6 +137,12 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     homeAreaStub: "Area catalog stub. A map picker can replace this list and keep the same home area id.",
     signedInAs: "Signed in as",
     discover: "Discover",
+    destinations: "Destinations",
+    experiences: "Experiences",
+    planATrip: "Plan a trip",
+    myTrips: "My trips",
+    ideas: "Ideas",
+    forBusinesses: "For businesses",
     plan: "Plan",
     saved: "Saved",
     bookings: "Bookings",
@@ -208,6 +220,12 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     homeAreaStub: "كتالوج مناطق مؤقت. يمكن لملتقط الخريطة استبداله مع الإبقاء على المعرّف.",
     signedInAs: "مسجّل الدخول باسم",
     discover: "اكتشف",
+    destinations: "الوجهات",
+    experiences: "التجارب",
+    planATrip: "خطّط لرحلة",
+    myTrips: "رحلاتي",
+    ideas: "أفكار",
+    forBusinesses: "للأعمال",
     plan: "خطّط",
     saved: "المحفوظات",
     bookings: "الحجوزات",
@@ -287,6 +305,12 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
       "Catalogue de zones provisoire. Un sélecteur carte pourra le remplacer en gardant le même identifiant.",
     signedInAs: "Connecté en tant que",
     discover: "Découvrir",
+    destinations: "Destinations",
+    experiences: "Expériences",
+    planATrip: "Planifier un voyage",
+    myTrips: "Mes voyages",
+    ideas: "Idées",
+    forBusinesses: "Pour les entreprises",
     plan: "Planifier",
     saved: "Enregistrés",
     bookings: "Réservations",

@@ -33,7 +33,7 @@ export function NavLink({
         active ? "bg-surface-sunken text-text" : "text-text-muted hover:bg-surface-sunken hover:text-text",
       )}
     >
-      <Icon className="size-4 shrink-0" aria-hidden />
+      <Icon className={cn("size-4 shrink-0", variant === "inline" && "lg:hidden")} aria-hidden />
       {t(item.labelKey)}
     </Link>
   );
