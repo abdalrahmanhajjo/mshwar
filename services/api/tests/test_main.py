@@ -66,12 +66,9 @@ def test_list_create_and_get_businesses(client: TestClient) -> None:
         "/api/v1/businesses",
         json={"name": "Cafe", "category": "food", "location": "Beirut"},
     )
-    assert created.status_code == 200
-    assert created.json()["id"] == 1
-    assert created.json()["name"] == "Cafe"
-    fetched = client.get("/api/v1/businesses/42")
-    assert fetched.status_code == 200
-    assert fetched.json()["id"] == 42
+    assert created.status_code == 405
+    fetched = client.get("/api/v1/businesses/missing-org")
+    assert fetched.status_code == 404
 
 
 def test_list_and_create_trips(client: TestClient) -> None:

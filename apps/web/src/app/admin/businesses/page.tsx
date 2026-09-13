@@ -1,5 +1,10 @@
-import { ShellPage } from "@/components/shell/shell-page";
+import { AdminBusinessesTable } from "@/components/admin/admin-businesses-table";
+import { ShellMain } from "@/components/shell/app-shell";
 
 export default function AdminBusinessesPage() {
-  return <ShellPage title="Businesses" description="Verified organisations on the inventory." />;
+  return (
+    <ShellMain>
+      <AdminBusinessesTable />
+    </ShellMain>
+  );
 }

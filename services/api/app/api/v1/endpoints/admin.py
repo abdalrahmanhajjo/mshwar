@@ -1,16 +1,20 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 from sqlalchemy import text
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.endpoints.auth import _load_session
+from app.core.portal_auth import fetch_json, raise_from_db, require_session
 from app.core.sessions import COOKIE_NAME
 from app.dependencies import get_auth_db
+from app.schemas.portal import AdminVerificationAction
 
 router = APIRouter()
 
@@ -30,7 +34,6 @@ async def list_users(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> list[AdminUserOut]:
-    # Phase-0 stub: any signed-in operator can read verification state.
     session = await _load_session(db, request.cookies.get(COOKIE_NAME))
     if session is None or session["status"] != "active":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
@@ -54,3 +57,70 @@ async def list_users(
         )
         for row in rows
     ]
+
+
+@router.get("/organizations")
+async def list_organizations(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    session = await require_session(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.list_admin_organizations(:admin_id)",
+        {"admin_id": str(session["user_id"])},
+    )
+
+
+@router.post("/organizations/{org_id}/verify")
+async def verify_organization(
+    org_id: UUID,
+    payload: AdminVerificationAction,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    return await _transition(request, db, org_id, "verified", payload.reason)
+
+
+@router.post("/organizations/{org_id}/reject")
+async def reject_organization(
+    org_id: UUID,
+    payload: AdminVerificationAction,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    return await _transition(request, db, org_id, "rejected", payload.reason)
+
+
+@router.post("/organizations/{org_id}/revoke")
+async def revoke_organization(
+    org_id: UUID,
+    payload: AdminVerificationAction,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    return await _transition(request, db, org_id, "revoked", payload.reason)
+
+
+async def _transition(
+    request: Request,
+    db: AsyncSession,
+    org_id: UUID,
+    decision: str,
+    reason: str,
+) -> Any:
+    session = await require_session(request, db)
+    try:
+        result = await db.execute(
+            text("SELECT app.admin_transition_verification(:admin_id, :org_id, :decision, :reason)"),
+            {
+                "admin_id": str(session["user_id"]),
+                "org_id": str(org_id),
+                "decision": decision,
+                "reason": reason,
+            },
+        )
+        return result.scalar_one()
+    except DBAPIError as exc:
+        raise_from_db(exc)
+        raise
