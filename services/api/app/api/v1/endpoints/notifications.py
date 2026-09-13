@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -15,14 +16,14 @@ from app.schemas.hub import NotificationListOut, NotificationOut
 router = APIRouter()
 
 
-def _notification_out(row: tuple[object, ...]) -> NotificationOut:
+def _notification_out(row: Any) -> NotificationOut:
     return NotificationOut(
-        id=row[0],  # type: ignore[arg-type]
+        id=row[0],
         title=str(row[1]),
         body=str(row[2]),
         category=str(row[3]),
-        read_at=row[4],  # type: ignore[arg-type]
-        created_at=row[5],  # type: ignore[arg-type]
+        read_at=row[4],
+        created_at=row[5],
     )
 
 
@@ -30,7 +31,7 @@ def _notification_out(row: tuple[object, ...]) -> NotificationOut:
 async def list_notifications(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
-    paging: tuple[int, int, int] = Depends(page_args),  # noqa: B008
+    paging: tuple[int, int, int] = Depends(page_args),
 ) -> NotificationListOut:
     session = await require_session(request, db)
     page, page_size, offset = paging

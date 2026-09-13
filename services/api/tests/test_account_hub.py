@@ -112,7 +112,10 @@ async def test_bookings_cancel_is_explicit_and_cross_user_blocked(api: AsyncClie
     assert created.json()["business_id"] == 3
     assert created.json()["status"] == "confirmed"
     booking_id = created.json()["id"]
-    assert "never deleted" in created.json()["policy_summary"].lower() or "reason" in created.json()["policy_summary"].lower()
+    assert (
+        "never deleted" in created.json()["policy_summary"].lower()
+        or "reason" in created.json()["policy_summary"].lower()
+    )
 
     listed = await api.get("/api/v1/bookings")
     assert listed.status_code == 200

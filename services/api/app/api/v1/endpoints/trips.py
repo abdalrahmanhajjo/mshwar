@@ -21,7 +21,7 @@ router = APIRouter()
 async def list_trips(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
-    paging: tuple[int, int, int] = Depends(page_args),  # noqa: B008
+    paging: tuple[int, int, int] = Depends(page_args),
 ) -> TripListOut:
     session = await require_session(request, db)
     page, page_size, offset = paging

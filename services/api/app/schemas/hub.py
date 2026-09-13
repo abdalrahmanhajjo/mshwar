@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -41,17 +40,17 @@ class FavoriteListOut(HubPage):
 class BookingOut(BaseModel):
     id: UUID
     listing_slug: str
-    business_id: Optional[int] = None
+    business_id: int | None = None
     status: str
     policy_summary: str
-    reason: Optional[str] = None
+    reason: str | None = None
     created_at: datetime
 
 
 class BookingCreate(BaseModel):
-    listing_slug: Optional[str] = Field(default=None, max_length=120)
-    business_id: Optional[int] = None
-    policy_summary: Optional[str] = Field(default=None, max_length=400)
+    listing_slug: str | None = Field(default=None, max_length=120)
+    business_id: int | None = None
+    policy_summary: str | None = Field(default=None, max_length=400)
 
 
 class BookingCancel(BaseModel):
@@ -67,7 +66,7 @@ class NotificationOut(BaseModel):
     title: str
     body: str
     category: str
-    read_at: Optional[datetime] = None
+    read_at: datetime | None = None
     created_at: datetime
 
 
