@@ -265,7 +265,8 @@ async def test_expired_reset_token_is_rejected(api: AsyncClient, db_session) -> 
         text(
             """
             UPDATE app.password_reset_tokens t
-            SET expires_at = now() - interval '1 minute'
+            SET created_at = now() - interval '2 minutes',
+                expires_at = now() - interval '1 minute'
             FROM app.user_private p
             WHERE t.user_id = p.user_id AND p.email = :email
             """
