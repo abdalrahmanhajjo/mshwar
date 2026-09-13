@@ -34,7 +34,9 @@ describe("booking gate", () => {
       }),
     );
     renderGate();
-    await waitFor(() => expect(screen.getByText("Unverified accounts can browse but cannot book.")).toBeInTheDocument());
+    await waitFor(() => {
+      expect(screen.getByText("Unverified accounts can browse but cannot book.")).toBeInTheDocument();
+    });
     expect(screen.getByRole("link", { name: "Verify email" })).toHaveAttribute("href", "/verify-email");
   });
 });
