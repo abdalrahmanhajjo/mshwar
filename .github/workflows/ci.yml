@@ -46,6 +46,7 @@ jobs:
       - run: pnpm run lint
       - run: pnpm run typecheck
       - run: pnpm tokens:check
+      - run: pnpm tokens:contrast
       - run: pnpm tokens:test
       - name: Check no secrets in source
         run: |

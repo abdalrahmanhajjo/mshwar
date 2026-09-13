@@ -14,5 +14,6 @@ pnpm tokens:generate
 | `tokens-studio.json` | Tokens Studio → Figma Variables |
 | `figma-variables.json` | Manual Figma Variables collection |
 | `w3c-tokens.json` | W3C Design Tokens export |
+| `contrast-report.json` | Recomputed luminance and contrast for every in-use pairing |
 
 See `../FIGMA-IMPORT.md` and `../TOKEN-NAMING.md`.

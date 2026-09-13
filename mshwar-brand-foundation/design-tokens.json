@@ -5,7 +5,7 @@
     "wordmark": "mshwar",
     "arabic": "مشوار",
     "status": "proposed",
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "primitive": {
     "color": {
@@ -16,11 +16,11 @@
       "orange": "#F3653E",
       "canvas": "#FCFCF8",
       "canvasSunken": "#F3F5F2",
-      "slate": "#66756E",
+      "slate": "#5E6D66",
       "slateLight": "#A8B5AF",
       "white": "#FFFFFF",
-      "border": "#D8E0DC",
-      "borderDark": "#2A4A44",
+      "border": "#7F8984",
+      "borderDark": "#6A8A84",
       "error": "#B42318",
       "errorBright": "#F97066",
       "errorSubtleLight": "#F8E4E2",
