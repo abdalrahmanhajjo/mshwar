@@ -10,7 +10,15 @@ import subprocess
 import sys
 from pathlib import Path
 
-_db_root = Path(__file__).resolve().parents[2] / "mshwar-database"
+_here = Path(__file__).resolve()
+_db_root = next(
+    (
+        candidate / "mshwar-database"
+        for candidate in _here.parents
+        if (candidate / "mshwar-database" / "scripts" / "migrate.py").is_file()
+    ),
+    _here.parents[3] / "mshwar-database",
+)
 sys.path.insert(0, str(_db_root))
 
 if __name__ == "__main__":

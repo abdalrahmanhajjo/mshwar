@@ -11,8 +11,8 @@ permissions:
   id-token: write
 
 env:
-  NODE_VERSION: "20"
-  PNPM_VERSION: "9"
+  NODE_VERSION: "22"
+  PNPM_VERSION: "11.15.1"
 
 jobs:
   lint-format-typecheck:
@@ -20,15 +20,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-      - run: corepack enable pnpm
+          pnpm-version: ${{ env.PNPM_VERSION }}
       - run: pnpm install
       - run: pnpm run format:check
       - run: pnpm run lint
       - run: pnpm run typecheck
+      - run: pnpm tokens:check
+      - run: pnpm tokens:contrast
+      - run: pnpm tokens:test
+      - run: pnpm --filter web test
+      - run: pnpm --filter web build-storybook
       - name: Scan for secrets in web source
         run: |
           if grep -rnE '(sk_live_|sk_test_|pk_live_|pk_test_|password=|secret_key=|api_key=)' apps/web/src/ --include='*.ts' --include='*.tsx' 2>/dev/null; then
@@ -38,7 +42,7 @@ jobs:
       - name: Verify NEXT_PUBLIC_ only env vars in client bundle
         run: |
           echo "Verifying only NEXT_PUBLIC_ prefixed env vars reach client bundle..."
-          grep -rn 'process.env.' apps/web/src/ --include='*.ts' --include='*.tsx' | grep -v 'NEXT_PUBLIC_' && {
+          grep -rn 'process.env.' apps/web/src/ --include='*.ts' --include='*.tsx' | grep -vE 'NEXT_PUBLIC_|NODE_ENV' && {
             echo "ERROR: Non-NEXT_PUBLIC_ env vars found in client source"
             exit 1
           } || echo "All client env vars are properly prefixed"
@@ -49,11 +53,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-      - run: corepack enable pnpm
+          pnpm-version: ${{ env.PNPM_VERSION }}
       - run: pnpm install
       - run: pnpm run build
       - name: Verify no secrets in build output
@@ -77,15 +80,21 @@ jobs:
     environment: preview
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Skip preview when Vercel is not configured
+        if: ${{ secrets.VERCEL_TOKEN == '' }}
+        run: echo "VERCEL_TOKEN is not set; skipping preview deploy"
+      - uses: ./.github/actions/setup-node-pnpm
+        if: ${{ secrets.VERCEL_TOKEN != '' }}
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-      - run: corepack enable pnpm
-      - run: pnpm install
-      - run: pnpm run build
+          pnpm-version: ${{ env.PNPM_VERSION }}
+      - if: ${{ secrets.VERCEL_TOKEN != '' }}
+        run: pnpm install
+      - if: ${{ secrets.VERCEL_TOKEN != '' }}
+        run: pnpm run build
       - name: Deploy to Vercel Preview
-        uses: amondnet/vercel-action@v30
+        if: ${{ secrets.VERCEL_TOKEN != '' }}
+        uses: amondnet/vercel-action@v25.2.0
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
@@ -103,15 +112,14 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-      - run: corepack enable pnpm
+          pnpm-version: ${{ env.PNPM_VERSION }}
       - run: pnpm install
       - run: pnpm run build
       - name: Deploy to Vercel Staging
-        uses: amondnet/vercel-action@v30
+        uses: amondnet/vercel-action@v25.2.0
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
@@ -129,15 +137,14 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-      - run: corepack enable pnpm
+          pnpm-version: ${{ env.PNPM_VERSION }}
       - run: pnpm install
       - run: pnpm run build
       - name: Deploy to Vercel Production
-        uses: amondnet/vercel-action@v30
+        uses: amondnet/vercel-action@v25.2.0
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
@@ -160,7 +167,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Rollback Vercel to previous version
-        uses: amondnet/vercel-action@v30
+        uses: amondnet/vercel-action@v25.2.0
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}

@@ -43,8 +43,8 @@ class TestPgVectorExtension:
     @pytest.mark.asyncio
     async def test_pgvector_extension_exists(self, db_session):
         """Confirm pgvector is listed in pg_extension."""
-        result = await db_session.execute(text("SELECT extname FROM pg_extension WHERE extname = 'pgvector'"))
-        assert result.scalar() == "pgvector", "pgvector extension must exist"
+        result = await db_session.execute(text("SELECT extname FROM pg_extension WHERE extname = 'vector'"))
+        assert result.scalar() == "vector", "pgvector extension must exist as 'vector'"
 
 
 class TestBtreeGiSTExtension:

@@ -14,12 +14,12 @@ hotfix/*    ─┘        │
 
 ## Branch Definitions
 
-| Branch | Purpose | Protection | Deploy Target |
-|--------|---------|------------|---------------|
-| `main` | Production-ready code | Required PR reviews, status checks, branch protection | Staging (auto) → Production (manual) |
-| `feature/*` | New features | Must pass CI before merge | Preview only |
-| `bugfix/*` | Bug fixes | Must pass CI before merge | Preview only |
-| `hotfix/*` | Critical production fixes | Fast-track review | Production (auto) |
+| Branch      | Purpose                   | Protection                                            | Deploy Target                        |
+| ----------- | ------------------------- | ----------------------------------------------------- | ------------------------------------ |
+| `main`      | Production-ready code     | Required PR reviews, status checks, branch protection | Staging (auto) → Production (manual) |
+| `feature/*` | New features              | Must pass CI before merge                             | Preview only                         |
+| `bugfix/*`  | Bug fixes                 | Must pass CI before merge                             | Preview only                         |
+| `hotfix/*`  | Critical production fixes | Fast-track review                                     | Production (auto)                    |
 
 ## Release Strategy
 
@@ -80,11 +80,11 @@ require_conversation_resolution: true
 
 ## Environment Strategy
 
-| Environment | Purpose | Deploy Trigger | Rollback |
-|-------------|---------|---------------|----------|
-| **Preview** | PR previews | PR opened/updated | Automatic |
-| **Staging** | Integration testing | Merge to `main` | Automatic (< 2 min) |
-| **Production** | Live users | Manual approval | Manual or automatic on health failure |
+| Environment    | Purpose             | Deploy Trigger    | Rollback                              |
+| -------------- | ------------------- | ----------------- | ------------------------------------- |
+| **Preview**    | PR previews         | PR opened/updated | Automatic                             |
+| **Staging**    | Integration testing | Merge to `main`   | Automatic (< 2 min)                   |
+| **Production** | Live users          | Manual approval   | Manual or automatic on health failure |
 
 ## Versioning
 

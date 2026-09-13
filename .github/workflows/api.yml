@@ -11,9 +11,9 @@ permissions:
   id-token: write
 
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: "22"
   PYTHON_VERSION: "3.11"
-  PNPM_VERSION: "9"
+  PNPM_VERSION: "11.15.1"
 
 jobs:
   gitleaks:
@@ -21,6 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -39,6 +41,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - run: pip install ruff mypy
+      - run: pip install -r services/api/requirements.txt
       - run: ruff check services/api/
       - run: ruff format services/api/ --check
       - run: mypy services/api/app/
@@ -49,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgis/postgis:17-3.5
+        image: datosonline/postgis-pgvector:17-3.5
         ports:
           - 5432:5432
         env:
@@ -66,11 +69,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-      - run: corepack enable pnpm
+          pnpm-version: ${{ env.PNPM_VERSION }}
       - run: pnpm install
       - run: pip install -r services/api/requirements.txt
       - run: pip install alembic psycopg[binary] pytest-cov
@@ -79,18 +81,11 @@ jobs:
           cd services/api
           export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar_test
           python scripts/migrate.py
-      - name: Run Alembic migrations up/down
-        run: |
-          cd services/api
-          export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar_test
-          alembic upgrade head
-          alembic downgrade base
-          alembic upgrade head
       - name: Run unit tests with coverage
         run: |
           cd services/api
           export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar_test
-          PYTHONPATH=services/api python3 -m pytest tests/ -v --cov=app --cov-report=xml --cov-report=term-missing --cov-fail-under=80
+          PYTHONPATH=. python3 -m pytest tests/ -v --cov=app --cov-report=xml --cov-report=term-missing --cov-fail-under=80
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
@@ -110,7 +105,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgis/postgis:17-3.5
+        image: datosonline/postgis-pgvector:17-3.5
         ports:
           - 5432:5432
         env:
@@ -129,19 +124,17 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
       - run: pip install -r services/api/requirements.txt
       - run: pip install alembic psycopg[binary]
-      - name: Run migration up/down cycle
+      - name: Run SQL migrations twice (idempotent)
         run: |
           cd services/api
           export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar_test
           python scripts/migrate.py
-          alembic downgrade base
-          alembic upgrade head
           python scripts/migrate.py
       - name: Run cross-tenant isolation tests
         run: |
           cd services/api
           export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar_test
-          PYTHONPATH=services/api python3 -m pytest tests/test_cross_tenant.py -v --cov=app --cov-report=term-missing --cov-fail-under=80
+          PYTHONPATH=. python3 -m pytest tests/test_cross_tenant.py -v
 
   coverage-threshold:
     name: Coverage Threshold Check

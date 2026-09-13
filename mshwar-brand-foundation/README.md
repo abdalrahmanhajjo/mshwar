@@ -7,11 +7,27 @@ Proposed visual identity for the Lebanon-wide travel discovery and itinerary pla
 - Primary bilingual logo concept, with the Latin wordmark `mshwar` and Arabic `مشوار`.
 - App icon master concept, using the same journey symbol.
 - Visual brand direction board.
-- Exact editable design tokens in JSON and a CSS foundation.
+- Exact editable design tokens in JSON — the single source of truth for colour, type, spacing, radius, elevation and motion.
+- Generated Tailwind theme, CSS custom properties, and Figma import payloads (`pnpm tokens:generate`).
 - Typography, icon, photography and responsive-interface guidance.
 - Calculated contrast checks for the proposed palette.
+- [Token naming convention](./TOKEN-NAMING.md) and [Figma Variables import](./FIGMA-IMPORT.md).
 
 The images are raster artwork. They are not editable SVG masters, and typography shown in the generated board is a visual approximation. The definitive application type choices are listed below. Raster app-icon adaptation may vary slightly from the original logo; final production should export both from one approved vector master. Platform-specific app icon/favicons are not claimed as finished exports here.
+
+## Design tokens (single source of truth)
+
+`design-tokens.json` is the only file that may define product colour, type, spacing, radius, elevation or motion. Light and dark palettes share the same semantic keys (`surface`, `accent`, `danger`, …). Primitive names such as `cedar` and `orange` stay in `primitive.color` for brand reference and are not Tailwind utilities.
+
+```bash
+# From the repo root
+pnpm tokens:generate   # write CSS, Tailwind theme, Figma exports, contrast report
+pnpm tokens:check      # CI: fail if generated files are stale or contrast fails
+pnpm tokens:contrast   # WCAG AA assertion over contrast-checks.json
+pnpm tokens:test       # node:test coverage for the generator and contrast math
+```
+
+`apps/web` imports the generated CSS and extends Tailwind from the generated theme object. Do not hand-edit `generated/` or `apps/web/src/styles/generated/`. Figma publish is manual (no API access); see `FIGMA-IMPORT.md`.
 
 ## Logo concept
 
@@ -21,17 +37,48 @@ Do not imply that the logo is an official emblem, government asset, verified sup
 
 ## Color roles
 
-| Role | Exact value | Use |
-|---|---|---|
-| Cedar | #12352F | Primary text, navigation, primary buttons |
-| Orange | #F3653E | Brand accent, selected details and endpoint dot |
-| Canvas | #FCFCF8 | Main page background |
-| White | #FFFFFF | Cards, dialogs and input surfaces |
-| Slate | #66756E | Secondary text on canvas |
-| Border | #D8E0DC | Dividers and secondary boundaries |
-| Accent text | #0C241F | Small text on orange-filled controls |
+Product UI uses the **semantic** names. Primitive pigments are listed so the brand package stays reviewable.
 
-Canvas/cedar contrast is 12.96:1. Slate/canvas is 4.71:1. White/orange is only 3.11:1 and cedar/orange is 4.28:1, so neither is the default small-text pairing on orange. The CSS uses the darker accent text instead. These calculations cover these color pairs only; full interface accessibility still requires component and interaction checks.
+| Semantic token   | Primitive (light) | Exact value | Use                                              |
+| ---------------- | ----------------- | ----------- | ------------------------------------------------ |
+| `text` / `brand` | Cedar             | #12352F     | Primary text, navigation, primary buttons        |
+| `accent`         | Orange            | #F3653E     | Brand accent fill, selected details, endpoint    |
+| `surface`        | Canvas            | #FCFCF8     | Main page background                             |
+| `surface-raised` | White             | #FFFFFF     | Cards, dialogs and input surfaces                |
+| `text-muted`     | Slate             | #5E6D66     | Secondary text on canvas, cards and sunken wells |
+| `border`         | Border            | #7F8984     | Control boundaries and dividers (WCAG 1.4.11)    |
+| `text-on-accent` | Accent text       | #0C241F     | Small text on orange-filled controls             |
+| `danger`         | Error             | #B42318     | Destructive status                               |
+| `success`        | Success           | #256D47     | Positive status                                  |
+| `warning`        | Warning           | #855200     | Caution status                                   |
+
+Dark-mode values for the same semantic keys live in `color.dark` — they are not defined only inside a CSS media query. Dark muted text is `#A8B5AF`. Dark default borders are `#6A8A84`.
+
+## Contrast (WCAG 2.2 AA)
+
+`pnpm tokens:contrast` recomputes relative luminance for every pairing in `contrast-checks.json` and fails CI on regression. Live ratios live in `generated/contrast-report.json`.
+
+Corrected after the brand review (MSHWAR-24):
+
+| Pairing                                | Before                                   | After                                    | Why                                                                   |
+| -------------------------------------- | ---------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------- |
+| Muted text on sunken surface           | Slate `#66756E` / `#F3F5F2` = **4.42:1** | Slate `#5E6D66` / `#F3F5F2` = **4.97:1** | Small-text AA is 4.5:1. Muted copy sits on wells, not only on canvas. |
+| Default border on canvas / card        | `#D8E0DC` = **1.31–1.34:1**              | `#7F8984` = **3.29–3.61:1**              | WCAG 1.4.11 needs 3:1 for control boundaries.                         |
+| Dark default border on canvas / raised | `#2A4A44` = **1.31–1.76:1**              | `#6A8A84` = **3.39–4.54:1**              | Same 1.4.11 requirement in dark mode.                                 |
+
+Accent fill `#F3653E` is unchanged. The review pairings that still fail — white/orange **3.11:1** and cedar/orange **4.28:1** — are **forbidden** for small text. Product UI uses `accent.foreground` `#0C241F` on orange (**5.24:1**). Do not use `text-accent` for body or labels; orange is a fill.
+
+| Approved pairing                   | Ratio   | Threshold    |
+| ---------------------------------- | ------- | ------------ |
+| Cedar text on canvas               | 12.96:1 | 4.5:1 text   |
+| Muted `#5E6D66` on canvas          | 5.30:1  | 4.5:1 text   |
+| Muted `#5E6D66` on sunken          | 4.97:1  | 4.5:1 text   |
+| Accent text on orange              | 5.24:1  | 4.5:1 text   |
+| Focus ring (cedar) on canvas       | 12.96:1 | 3:1 non-text |
+| Focus ring (cedar) on orange       | 4.28:1  | 3:1 non-text |
+| Default border `#7F8984` on canvas | 3.51:1  | 3:1 non-text |
+
+Orange as small text on canvas is only 3.03:1 and is listed as forbidden in `contrast-checks.json`. Full interface accessibility still requires component and interaction checks beyond these token pairs.
 
 ## Typography
 
@@ -45,23 +92,23 @@ Canvas/cedar contrast is 12.96:1. Slate/canvas is 4.71:1. White/orange is only 3
 
 Use [Lucide](https://lucide.dev/) consistently, with 24px default size and 1.75px stroke. Do not mix unrelated icon libraries, emoji or solid icons in the navigation. Keep its [license notices](https://lucide.dev/license) when distributing icon assets. Icons are specified here, not bundled as individual SVG exports.
 
-| Product purpose | Lucide icon |
-|---|---|
-| Discovery | Compass |
-| Location | MapPin |
-| Trip planning | Route |
-| Date | CalendarDays |
-| Party size | Users |
-| Saved places | Heart |
-| Booking | Ticket |
-| Nature | Mountain |
-| Dining | Utensils |
-| Stay | BedDouble |
-| Weather | CloudSun |
-| Search | Search |
-| Filters | SlidersHorizontal |
-| Business portal | Store |
-| Accessibility | Accessibility |
+| Product purpose | Lucide icon       |
+| --------------- | ----------------- |
+| Discovery       | Compass           |
+| Location        | MapPin            |
+| Trip planning   | Route             |
+| Date            | CalendarDays      |
+| Party size      | Users             |
+| Saved places    | Heart             |
+| Booking         | Ticket            |
+| Nature          | Mountain          |
+| Dining          | Utensils          |
+| Stay            | BedDouble         |
+| Weather         | CloudSun          |
+| Search          | Search            |
+| Filters         | SlidersHorizontal |
+| Business portal | Store             |
+| Accessibility   | Accessibility     |
 
 Give icon-only controls accessible names and 44px interaction targets. Mirror directional navigation appropriately in RTL; never mirror logos, photographs or non-directional icons automatically.
 

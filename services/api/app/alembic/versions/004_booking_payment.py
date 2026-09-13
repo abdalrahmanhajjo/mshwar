@@ -6,9 +6,8 @@ notifications, votes, favorites, trip_templates.
 """
 
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import SMALLINT, UUID
-
 from alembic import op
+from sqlalchemy.dialects.postgresql import SMALLINT, UUID
 
 # revision identifiers, used by Alembic
 revision = "004"

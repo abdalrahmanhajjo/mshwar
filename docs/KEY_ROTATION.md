@@ -6,18 +6,18 @@ All secrets and API keys are rotated through the **platform secret store** (Verc
 
 ## Supported Secrets
 
-| Secret Name | Type | Rotation Frequency | Stored In |
-|-------------|------|-------------------|-----------|
-| `SECRET_KEY` | Auth | 90 days | Platform secret store |
-| `DATABASE_URL` | Database | 180 days | Platform secret store |
-| `GOOGLE_MAPS_API_KEY` | Third-party | 180 days | Platform secret store |
-| `STRIPE_SECRET_KEY` | Payment | 180 days | Platform secret store |
-| `STRIPE_WEBHOOK_SECRET` | Payment | 90 days | Platform secret store |
-| `IMAGEKIT_API_KEY` | Third-party | 180 days | Platform secret store |
-| `OPEN_METEO_API_KEY` | Third-party | 365 days | Platform secret store |
-| `SENTRY_DSN` | Monitoring | 365 days | Platform secret store |
-| `POSTHOG_API_KEY` | Analytics | 365 days | Platform secret store |
-| `REDIS_URL` | Cache | 180 days | Platform secret store |
+| Secret Name             | Type        | Rotation Frequency | Stored In             |
+| ----------------------- | ----------- | ------------------ | --------------------- |
+| `SECRET_KEY`            | Auth        | 90 days            | Platform secret store |
+| `DATABASE_URL`          | Database    | 180 days           | Platform secret store |
+| `GOOGLE_MAPS_API_KEY`   | Third-party | 180 days           | Platform secret store |
+| `STRIPE_SECRET_KEY`     | Payment     | 180 days           | Platform secret store |
+| `STRIPE_WEBHOOK_SECRET` | Payment     | 90 days            | Platform secret store |
+| `IMAGEKIT_API_KEY`      | Third-party | 180 days           | Platform secret store |
+| `OPEN_METEO_API_KEY`    | Third-party | 365 days           | Platform secret store |
+| `SENTRY_DSN`            | Monitoring  | 365 days           | Platform secret store |
+| `POSTHOG_API_KEY`       | Analytics   | 365 days           | Platform secret store |
+| `REDIS_URL`             | Cache       | 180 days           | Platform secret store |
 
 ## Rotation Procedures
 
@@ -98,16 +98,19 @@ All secrets and API keys are rotated through the **platform secret store** (Verc
 ## Environment-Specific Rotation
 
 ### Local Development
+
 - Secrets come from `.env.local` or the local secret store
 - Rotate locally using `python-dotenv` or manual `.env.local` update
 - **Never commit** `.env.local` changes
 
 ### Staging
+
 - Secrets come from Vercel Staging Environment Variables
 - Rotate via Vercel CLI or dashboard
 - **Always test** in staging before promoting to production
 
 ### Production
+
 - Secrets come from Vercel Production Environment Variables
 - Requires **manual approval** via GitHub Environments
 - **Always rotate** with both old and new keys active for 24 hours
@@ -115,13 +118,15 @@ All secrets and API keys are rotated through the **platform secret store** (Verc
 ## Automation
 
 ### Scheduled Rotation Check
+
 Add a scheduled GitHub Action to remind about upcoming key expirations:
+
 ```yaml
 # .github/workflows/key-rotation-reminder.yml
 name: Key Rotation Reminder
 on:
   schedule:
-    - cron: "0 9 1 * *"  # 1st of every month at 9 AM
+    - cron: "0 9 1 * *" # 1st of every month at 9 AM
 jobs:
   check-rotation:
     runs-on: ubuntu-latest
@@ -134,7 +139,9 @@ jobs:
 ```
 
 ### Post-Rotation Verification
+
 After any rotation, verify:
+
 - [ ] All services start without errors
 - [ ] Health check passes on all environments
 - [ ] API responses return valid data
@@ -145,6 +152,7 @@ After any rotation, verify:
 ## Audit Trail
 
 Every key rotation is recorded:
+
 - **Who** performed the rotation
 - **When** it was done
 - **Which environment** was updated
@@ -157,6 +165,7 @@ Access the audit log via your platform's secret store history.
 ## Emergency Rotation
 
 If a secret is **compromised**:
+
 1. **Immediately rotate** the compromised key
 2. **Revoke** the old key at the provider
 3. **Deploy** to all environments simultaneously

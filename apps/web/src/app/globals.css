@@ -1,24 +1,51 @@
 @import "tailwindcss";
+@import "../styles/generated/tokens.css";
+@import "../styles/generated/tailwind-theme.css";
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+html {
+  max-width: 100%;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(to bottom, transparent, rgb(var(--background-end-rgb)))
-    rgb(var(--background-start-rgb));
+  color: var(--text);
+  background: var(--surface);
+  font-family: var(--font-latin-face), var(--font-latin);
   min-height: 100vh;
+  max-width: 100%;
+}
+
+html[dir="rtl"] body,
+html[lang="ar"] body {
+  font-family: var(--font-arabic-face), var(--font-arabic);
+}
+
+.shell-gutter {
+  padding-inline: var(--layout-gutter-mobile);
+}
+
+.shell-frame {
+  width: 100%;
+  max-width: min(100%, var(--layout-max-width));
+  margin-inline: auto;
+  padding-inline: var(--layout-gutter-mobile);
+}
+
+@media (min-width: 64rem) {
+  .shell-gutter,
+  .shell-frame {
+    padding-inline: var(--layout-gutter-desktop);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @layer utilities {
