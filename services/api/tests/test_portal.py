@@ -338,8 +338,10 @@ async def test_availability_blackout_and_booking_inbox(api: AsyncClient) -> None
     assert flagged["blacked_out"] is True
     assert len(after.json()["slots"]) == len(slots)
 
-    customer = await _register(api, "traveller-inbox@example.com", "Traveller")
+    traveller = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
+    customer = await _register(traveller, "traveller-inbox@example.com", "Traveller")
     booking_id = await _insert_booking(org["id"], listing, customer["id"], slots[1] if len(slots) > 1 else slots[0])
+    await traveller.aclose()
 
     inbox = await api.get(f"/api/v1/portal/organizations/{org['id']}/bookings")
     assert inbox.status_code == 200
