@@ -6,6 +6,7 @@ from uuid import uuid4
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from app.core.mailer import RecordingMailer, get_mailer, set_mailer
 from app.core.rate_limit import limiter
 from app.main import app
 
@@ -13,9 +14,11 @@ from app.main import app
 @pytest.fixture
 async def api() -> AsyncGenerator[AsyncClient, None]:
     limiter.reset()
+    set_mailer(RecordingMailer())
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client
     limiter.reset()
+    set_mailer(None)
 
 
 def _email(prefix: str) -> str:
@@ -31,8 +34,6 @@ async def _register(client: AsyncClient, email: str) -> None:
 
 
 async def _register_verified(client: AsyncClient, email: str) -> None:
-    from app.core.mailer import RecordingMailer, get_mailer
-
     created = await client.post(
         "/api/v1/auth/register",
         json={"email": email, "password": "long-enough-secret", "display_name": "Lina", "locale": "en"},
