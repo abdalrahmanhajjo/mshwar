@@ -26,5 +26,8 @@
     "pre-commit": "^1.2.2",
     "prettier": "^3.5.3"
   },
-  "packageManager": "pnpm@11.15.1"
+  "packageManager": "pnpm@11.15.1",
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "unrs-resolver", "pre-commit", "spawn-sync"]
+  }
 }
