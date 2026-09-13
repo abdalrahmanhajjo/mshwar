@@ -78,18 +78,12 @@ export function VerifyEmailForm() {
     <Card className="mx-auto w-full max-w-md">
       <CardHeader>
         <CardTitle>{t("verifyEmail")}</CardTitle>
-        <CardDescription>{verified ? t("emailVerified") : t("verifyEmailHint")}</CardDescription>
+        <CardDescription role={verified || sent ? "status" : undefined}>
+          {verified ? t("emailVerified") : sent ? t("verificationSent") : t("verifyEmailHint")}
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        {verified ? (
-          <p role="status" className="text-sm text-text">
-            {t("emailVerified")}
-          </p>
-        ) : sent ? (
-          <p role="status" className="text-sm text-text">
-            {t("verificationSent")}
-          </p>
-        ) : (
+        {verified || sent ? null : (
           <form className="grid gap-4" onSubmit={(event) => void onResend(event)}>
             <div className="grid gap-2">
               <Label htmlFor="email">{t("email")}</Label>
