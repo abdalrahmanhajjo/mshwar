@@ -11,6 +11,7 @@ import { NavLink } from "@/components/shell/nav-link";
 import { NAV_BY_SURFACE, type ShellSurface } from "@/components/shell/nav-config";
 import { ShellFooter } from "@/components/shell/shell-footer";
 import { useLocale } from "@/components/shell/locale-provider";
+import { localeDirection } from "@/lib/locale";
 
 export interface AppShellProps {
   surface: ShellSurface;
@@ -22,13 +23,18 @@ export interface AppShellProps {
 export function AppShell({ surface, children, auth, currentPath }: AppShellProps) {
   const pathname = usePathname() ?? "/";
   const activePath = currentPath ?? pathname;
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const items = NAV_BY_SURFACE[surface];
   const homeHref = items[0]?.href ?? "/";
   const isSidebar = surface !== "traveller";
 
   return (
-    <div data-shell={surface} className="flex min-h-dvh min-w-0 max-w-full flex-col bg-surface text-text">
+    <div
+      data-shell={surface}
+      lang={locale}
+      dir={localeDirection(locale)}
+      className="flex min-h-dvh min-w-0 max-w-full flex-col bg-surface text-text"
+    >
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded-control focus:bg-surface-raised focus:px-3 focus:py-2"
