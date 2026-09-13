@@ -100,6 +100,20 @@ test.describe("MSHWAR-26 responsive app shell", () => {
 });
 
 test.describe("MSHWAR-29 recovery routes", () => {
+  test("forgot-password shows the same success copy after submit", async ({ page }) => {
+    await page.route("**/api/v1/auth/forgot-password", async (route) => {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) });
+    });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/forgot-password");
+    await page.getByLabel("Email").fill("ada@example.com");
+    await page.getByRole("button", { name: "Send reset link" }).click();
+    await expect(page.getByRole("status")).toHaveText(
+      "If an account exists for this address, a reset link has been sent.",
+    );
+    await expect(page).toHaveURL(/\/forgot-password$/);
+  });
+
   test("forgot-password is usable at 390px and 1440px", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/forgot-password");
