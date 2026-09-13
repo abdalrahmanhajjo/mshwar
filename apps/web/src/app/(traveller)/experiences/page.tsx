@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ExperiencesSkeleton } from "@/components/browse/experiences-skeleton";
 import { ExperiencesView } from "@/components/browse/experiences-view";
-import { browseExperiences, parseExperienceFilters } from "@/lib/catalog";
+import { loadExperiencePage, loadMapListings } from "@/lib/catalogue-api";
+import { parseExperienceFilters } from "@/lib/catalog";
 
 export const metadata: Metadata = {
   title: "Experiences — A whole country. Your next discovery.",
@@ -16,11 +17,12 @@ export default async function ExperiencesPage({
 }) {
   const params = await searchParams;
   const filters = parseExperienceFilters(params);
-  const page = browseExperiences(filters);
+  const page = await loadExperiencePage(filters);
+  const mapItems = filters.view === "map" ? await loadMapListings(filters) : page.items;
 
   return (
     <Suspense fallback={<ExperiencesSkeleton />}>
-      <ExperiencesView filters={filters} page={page} />
+      <ExperiencesView filters={filters} page={page} mapItems={mapItems} />
     </Suspense>
   );
 }

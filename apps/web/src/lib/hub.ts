@@ -83,6 +83,22 @@ export function addFavorite(listingSlug: string) {
   });
 }
 
+export function toggleFavorite(listingSlug: string) {
+  return request<FavoriteRecord & { saved: boolean }>("/api/v1/favorites/toggle", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ listing_slug: listingSlug }),
+  });
+}
+
+export function mergeFavorites(listingSlugs: string[]) {
+  return request<{ merged: number }>("/api/v1/favorites/merge", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ listing_slugs: listingSlugs }),
+  });
+}
+
 export function removeFavorite(id: string) {
   return request<void>(`/api/v1/favorites/${id}`, { method: "DELETE" });
 }

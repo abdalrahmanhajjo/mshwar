@@ -3461,7 +3461,7 @@ exports[`MSHWAR-32 locale snapshots > renders ideas in ar 1`] = `
           <div>
             <a
               class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] bg-brand text-brand-foreground hover:bg-brand/90 px-4 py-2 rounded-pill"
-              href="/ar/experiences/slow-day-byblos"
+              href="/ar/collections/coast-calling"
             >
               استكشف هذا اليوم
             </a>
@@ -3539,7 +3539,7 @@ exports[`MSHWAR-32 locale snapshots > renders ideas in ar 1`] = `
           <div>
             <a
               class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] hover:bg-brand/90 px-4 py-2 rounded-pill bg-accent text-accent-foreground"
-              href="/ar/experiences/among-ancient-cedars"
+              href="/ar/collections/day-above"
             >
               استكشف هذا اليوم
             </a>
@@ -3617,7 +3617,7 @@ exports[`MSHWAR-32 locale snapshots > renders ideas in ar 1`] = `
           <div>
             <a
               class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] bg-brand text-brand-foreground hover:bg-brand/90 px-4 py-2 rounded-pill"
-              href="/ar/experiences/journey-through-baalbek"
+              href="/ar/collections/following-stories"
             >
               استكشف هذا اليوم
             </a>
@@ -3727,7 +3727,7 @@ exports[`MSHWAR-32 locale snapshots > renders ideas in en 1`] = `
           <div>
             <a
               class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] bg-brand text-brand-foreground hover:bg-brand/90 px-4 py-2 rounded-pill"
-              href="/experiences/slow-day-byblos"
+              href="/collections/coast-calling"
             >
               Explore this day
             </a>
@@ -3805,7 +3805,7 @@ exports[`MSHWAR-32 locale snapshots > renders ideas in en 1`] = `
           <div>
             <a
               class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] hover:bg-brand/90 px-4 py-2 rounded-pill bg-accent text-accent-foreground"
-              href="/experiences/among-ancient-cedars"
+              href="/collections/day-above"
             >
               Explore this day
             </a>
@@ -3883,7 +3883,7 @@ exports[`MSHWAR-32 locale snapshots > renders ideas in en 1`] = `
           <div>
             <a
               class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] bg-brand text-brand-foreground hover:bg-brand/90 px-4 py-2 rounded-pill"
-              href="/experiences/journey-through-baalbek"
+              href="/collections/following-stories"
             >
               Explore this day
             </a>
@@ -3993,7 +3993,7 @@ exports[`MSHWAR-32 locale snapshots > renders ideas in fr 1`] = `
           <div>
             <a
               class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] bg-brand text-brand-foreground hover:bg-brand/90 px-4 py-2 rounded-pill"
-              href="/fr/experiences/slow-day-byblos"
+              href="/fr/collections/coast-calling"
             >
               Explorer cette journée
             </a>
@@ -4071,7 +4071,7 @@ exports[`MSHWAR-32 locale snapshots > renders ideas in fr 1`] = `
           <div>
             <a
               class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] hover:bg-brand/90 px-4 py-2 rounded-pill bg-accent text-accent-foreground"
-              href="/fr/experiences/among-ancient-cedars"
+              href="/fr/collections/day-above"
             >
               Explorer cette journée
             </a>
@@ -4149,7 +4149,7 @@ exports[`MSHWAR-32 locale snapshots > renders ideas in fr 1`] = `
           <div>
             <a
               class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] bg-brand text-brand-foreground hover:bg-brand/90 px-4 py-2 rounded-pill"
-              href="/fr/experiences/journey-through-baalbek"
+              href="/fr/collections/following-stories"
             >
               Explorer cette journée
             </a>
@@ -4807,69 +4807,24 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
       <div
         class="grid gap-8 md:grid-cols-3"
       >
-        <article
-          class="group relative flex h-full flex-col"
+        <div
+          class="grid gap-2"
         >
-          <span
-            class="absolute end-3 top-3 z-10"
+          <article
+            class="group relative flex h-full flex-col"
           >
-            <button
-              aria-label="حفظ التجربة"
-              aria-pressed="false"
-              class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] text-text hover:bg-surface-sunken/80 size-[var(--layout-min-target)] p-0 rounded-full bg-surface/95"
-              type="button"
+            <span
+              class="absolute end-3 top-3 z-10"
             >
-              <svg
-                aria-hidden="true"
-                class="lucide lucide-heart size-4"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-                />
-              </svg>
-            </button>
-          </span>
-          <a
-            class="flex h-full flex-col"
-            href="/ar/experiences/coastal-escapes-batroun"
-          >
-            <div
-              class="relative overflow-hidden rounded-card"
-            >
-              <div
-                class="aspect-[4/3]"
-              >
-                <img
-                  alt="Coastal church in Batroun"
-                  class="h-full w-full object-cover"
-                  fetchpriority="auto"
-                  src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80"
-                />
-              </div>
-              <span
-                class="absolute start-3 top-3 rounded-pill bg-surface/95 px-2.5 py-1 text-xs font-medium text-text"
-              >
-                Coast
-              </span>
-            </div>
-            <div
-              class="flex flex-1 flex-col gap-2 pt-3"
-            >
-              <p
-                class="text-xs text-text-muted"
+              <button
+                aria-label="حفظ التجربة"
+                aria-pressed="false"
+                class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] text-text hover:bg-surface-sunken/80 size-[var(--layout-min-target)] p-0 rounded-full bg-surface/95"
+                type="button"
               >
                 <svg
                   aria-hidden="true"
-                  class="lucide lucide-map-pin me-1 inline size-3"
+                  class="lucide lucide-heart size-4"
                   fill="none"
                   height="24"
                   stroke="currentColor"
@@ -4881,28 +4836,43 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
-                  />
-                  <circle
-                    cx="12"
-                    cy="10"
-                    r="3"
+                    d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
                   />
                 </svg>
-                Batroun · North Lebanon
-              </p>
-              <h3
-                class="text-title font-semibold tracking-tight text-text group-hover:underline"
-              >
-                Coastal escapes in Batroun
-              </h3>
+              </button>
+            </span>
+            <a
+              class="flex h-full flex-col"
+              href="/ar/experiences/coastal-escapes-batroun"
+            >
               <div
-                class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
+                class="relative overflow-hidden rounded-card"
               >
-                <span>
+                <div
+                  class="aspect-[4/3]"
+                >
+                  <img
+                    alt="Coastal church in Batroun"
+                    class="h-full w-full object-cover"
+                    fetchpriority="auto"
+                    src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80"
+                  />
+                </div>
+                <span
+                  class="absolute start-3 top-3 rounded-pill bg-surface/95 px-2.5 py-1 text-xs font-medium text-text"
+                >
+                  Coast
+                </span>
+              </div>
+              <div
+                class="flex flex-1 flex-col gap-2 pt-3"
+              >
+                <p
+                  class="text-xs text-text-muted"
+                >
                   <svg
                     aria-hidden="true"
-                    class="lucide lucide-clock me-1 inline size-3.5"
+                    class="lucide lucide-map-pin me-1 inline size-3"
                     fill="none"
                     height="24"
                     stroke="currentColor"
@@ -4913,93 +4883,88 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
                     width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
+                    <path
+                      d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+                    />
                     <circle
                       cx="12"
-                      cy="12"
-                      r="10"
-                    />
-                    <polyline
-                      points="12 6 12 12 16 14"
+                      cy="10"
+                      r="3"
                     />
                   </svg>
-                  4
-                   
-                  ساعات
-                </span>
-                <span
-                  class="font-medium text-text"
+                  Batroun · North Lebanon
+                </p>
+                <h3
+                  class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  من
-                   $
-                  45
-                </span>
+                  Coastal escapes in Batroun
+                </h3>
+                <div
+                  class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
+                >
+                  <span>
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-clock me-1 inline size-3.5"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                      />
+                      <polyline
+                        points="12 6 12 12 16 14"
+                      />
+                    </svg>
+                    4
+                     
+                    ساعات
+                  </span>
+                  <span
+                    class="font-medium text-text"
+                  >
+                    من
+                     $
+                    45
+                  </span>
+                </div>
               </div>
-            </div>
-          </a>
-        </article>
-        <article
-          class="group relative flex h-full flex-col"
+            </a>
+          </article>
+          <p
+            class="text-sm text-text-muted"
+          >
+            54
+             km
+          </p>
+        </div>
+        <div
+          class="grid gap-2"
         >
-          <span
-            class="absolute end-3 top-3 z-10"
+          <article
+            class="group relative flex h-full flex-col"
           >
-            <button
-              aria-label="حفظ التجربة"
-              aria-pressed="false"
-              class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] text-text hover:bg-surface-sunken/80 size-[var(--layout-min-target)] p-0 rounded-full bg-surface/95"
-              type="button"
+            <span
+              class="absolute end-3 top-3 z-10"
             >
-              <svg
-                aria-hidden="true"
-                class="lucide lucide-heart size-4"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-                />
-              </svg>
-            </button>
-          </span>
-          <a
-            class="flex h-full flex-col"
-            href="/ar/experiences/among-ancient-cedars"
-          >
-            <div
-              class="relative overflow-hidden rounded-card"
-            >
-              <div
-                class="aspect-[4/3]"
-              >
-                <img
-                  alt="Cedar tree in mountain light"
-                  class="h-full w-full object-cover"
-                  fetchpriority="auto"
-                  src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80"
-                />
-              </div>
-              <span
-                class="absolute start-3 top-3 rounded-pill bg-surface/95 px-2.5 py-1 text-xs font-medium text-text"
-              >
-                Nature
-              </span>
-            </div>
-            <div
-              class="flex flex-1 flex-col gap-2 pt-3"
-            >
-              <p
-                class="text-xs text-text-muted"
+              <button
+                aria-label="حفظ التجربة"
+                aria-pressed="false"
+                class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] text-text hover:bg-surface-sunken/80 size-[var(--layout-min-target)] p-0 rounded-full bg-surface/95"
+                type="button"
               >
                 <svg
                   aria-hidden="true"
-                  class="lucide lucide-map-pin me-1 inline size-3"
+                  class="lucide lucide-heart size-4"
                   fill="none"
                   height="24"
                   stroke="currentColor"
@@ -5011,28 +4976,43 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
-                  />
-                  <circle
-                    cx="12"
-                    cy="10"
-                    r="3"
+                    d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
                   />
                 </svg>
-                Bsharri · North Lebanon
-              </p>
-              <h3
-                class="text-title font-semibold tracking-tight text-text group-hover:underline"
-              >
-                Among the ancient cedars
-              </h3>
+              </button>
+            </span>
+            <a
+              class="flex h-full flex-col"
+              href="/ar/experiences/among-ancient-cedars"
+            >
               <div
-                class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
+                class="relative overflow-hidden rounded-card"
               >
-                <span>
+                <div
+                  class="aspect-[4/3]"
+                >
+                  <img
+                    alt="Cedar tree in mountain light"
+                    class="h-full w-full object-cover"
+                    fetchpriority="auto"
+                    src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80"
+                  />
+                </div>
+                <span
+                  class="absolute start-3 top-3 rounded-pill bg-surface/95 px-2.5 py-1 text-xs font-medium text-text"
+                >
+                  Nature
+                </span>
+              </div>
+              <div
+                class="flex flex-1 flex-col gap-2 pt-3"
+              >
+                <p
+                  class="text-xs text-text-muted"
+                >
                   <svg
                     aria-hidden="true"
-                    class="lucide lucide-clock me-1 inline size-3.5"
+                    class="lucide lucide-map-pin me-1 inline size-3"
                     fill="none"
                     height="24"
                     stroke="currentColor"
@@ -5043,93 +5023,88 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
                     width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
+                    <path
+                      d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+                    />
                     <circle
                       cx="12"
-                      cy="12"
-                      r="10"
-                    />
-                    <polyline
-                      points="12 6 12 12 16 14"
+                      cy="10"
+                      r="3"
                     />
                   </svg>
-                  2
-                   
-                  ساعات
-                </span>
-                <span
-                  class="font-medium text-text"
+                  Bsharri · North Lebanon
+                </p>
+                <h3
+                  class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  من
-                   $
-                  25
-                </span>
+                  Among the ancient cedars
+                </h3>
+                <div
+                  class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
+                >
+                  <span>
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-clock me-1 inline size-3.5"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                      />
+                      <polyline
+                        points="12 6 12 12 16 14"
+                      />
+                    </svg>
+                    2
+                     
+                    ساعات
+                  </span>
+                  <span
+                    class="font-medium text-text"
+                  >
+                    من
+                     $
+                    25
+                  </span>
+                </div>
               </div>
-            </div>
-          </a>
-        </article>
-        <article
-          class="group relative flex h-full flex-col"
+            </a>
+          </article>
+          <p
+            class="text-sm text-text-muted"
+          >
+            110
+             km
+          </p>
+        </div>
+        <div
+          class="grid gap-2"
         >
-          <span
-            class="absolute end-3 top-3 z-10"
+          <article
+            class="group relative flex h-full flex-col"
           >
-            <button
-              aria-label="حفظ التجربة"
-              aria-pressed="false"
-              class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] text-text hover:bg-surface-sunken/80 size-[var(--layout-min-target)] p-0 rounded-full bg-surface/95"
-              type="button"
+            <span
+              class="absolute end-3 top-3 z-10"
             >
-              <svg
-                aria-hidden="true"
-                class="lucide lucide-heart size-4"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-                />
-              </svg>
-            </button>
-          </span>
-          <a
-            class="flex h-full flex-col"
-            href="/ar/experiences/take-the-valley-road"
-          >
-            <div
-              class="relative overflow-hidden rounded-card"
-            >
-              <div
-                class="aspect-[4/3]"
-              >
-                <img
-                  alt="Valley road through the mountains"
-                  class="h-full w-full object-cover"
-                  fetchpriority="auto"
-                  src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80"
-                />
-              </div>
-              <span
-                class="absolute start-3 top-3 rounded-pill bg-surface/95 px-2.5 py-1 text-xs font-medium text-text"
-              >
-                Adventure
-              </span>
-            </div>
-            <div
-              class="flex flex-1 flex-col gap-2 pt-3"
-            >
-              <p
-                class="text-xs text-text-muted"
+              <button
+                aria-label="حفظ التجربة"
+                aria-pressed="false"
+                class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] text-text hover:bg-surface-sunken/80 size-[var(--layout-min-target)] p-0 rounded-full bg-surface/95"
+                type="button"
               >
                 <svg
                   aria-hidden="true"
-                  class="lucide lucide-map-pin me-1 inline size-3"
+                  class="lucide lucide-heart size-4"
                   fill="none"
                   height="24"
                   stroke="currentColor"
@@ -5141,28 +5116,43 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
-                  />
-                  <circle
-                    cx="12"
-                    cy="10"
-                    r="3"
+                    d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
                   />
                 </svg>
-                Qadisha Valley · North Lebanon
-              </p>
-              <h3
-                class="text-title font-semibold tracking-tight text-text group-hover:underline"
-              >
-                Take the valley road
-              </h3>
+              </button>
+            </span>
+            <a
+              class="flex h-full flex-col"
+              href="/ar/experiences/take-the-valley-road"
+            >
               <div
-                class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
+                class="relative overflow-hidden rounded-card"
               >
-                <span>
+                <div
+                  class="aspect-[4/3]"
+                >
+                  <img
+                    alt="Valley road through the mountains"
+                    class="h-full w-full object-cover"
+                    fetchpriority="auto"
+                    src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80"
+                  />
+                </div>
+                <span
+                  class="absolute start-3 top-3 rounded-pill bg-surface/95 px-2.5 py-1 text-xs font-medium text-text"
+                >
+                  Adventure
+                </span>
+              </div>
+              <div
+                class="flex flex-1 flex-col gap-2 pt-3"
+              >
+                <p
+                  class="text-xs text-text-muted"
+                >
                   <svg
                     aria-hidden="true"
-                    class="lucide lucide-clock me-1 inline size-3.5"
+                    class="lucide lucide-map-pin me-1 inline size-3"
                     fill="none"
                     height="24"
                     stroke="currentColor"
@@ -5173,30 +5163,70 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
                     width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
+                    <path
+                      d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+                    />
                     <circle
                       cx="12"
-                      cy="12"
-                      r="10"
-                    />
-                    <polyline
-                      points="12 6 12 12 16 14"
+                      cy="10"
+                      r="3"
                     />
                   </svg>
-                  5
-                   
-                  ساعات
-                </span>
-                <span
-                  class="font-medium text-text"
+                  Qadisha Valley · North Lebanon
+                </p>
+                <h3
+                  class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  من
-                   $
-                  40
-                </span>
+                  Take the valley road
+                </h3>
+                <div
+                  class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
+                >
+                  <span>
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-clock me-1 inline size-3.5"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                      />
+                      <polyline
+                        points="12 6 12 12 16 14"
+                      />
+                    </svg>
+                    5
+                     
+                    ساعات
+                  </span>
+                  <span
+                    class="font-medium text-text"
+                  >
+                    من
+                     $
+                    40
+                  </span>
+                </div>
               </div>
-            </div>
-          </a>
-        </article>
+            </a>
+          </article>
+          <p
+            class="text-sm text-text-muted"
+          >
+            95
+             km
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -5849,69 +5879,24 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
       <div
         class="grid gap-8 md:grid-cols-3"
       >
-        <article
-          class="group relative flex h-full flex-col"
+        <div
+          class="grid gap-2"
         >
-          <span
-            class="absolute end-3 top-3 z-10"
+          <article
+            class="group relative flex h-full flex-col"
           >
-            <button
-              aria-label="Save experience"
-              aria-pressed="false"
-              class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] text-text hover:bg-surface-sunken/80 size-[var(--layout-min-target)] p-0 rounded-full bg-surface/95"
-              type="button"
+            <span
+              class="absolute end-3 top-3 z-10"
             >
-              <svg
-                aria-hidden="true"
-                class="lucide lucide-heart size-4"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-                />
-              </svg>
-            </button>
-          </span>
-          <a
-            class="flex h-full flex-col"
-            href="/experiences/coastal-escapes-batroun"
-          >
-            <div
-              class="relative overflow-hidden rounded-card"
-            >
-              <div
-                class="aspect-[4/3]"
-              >
-                <img
-                  alt="Coastal church in Batroun"
-                  class="h-full w-full object-cover"
-                  fetchpriority="auto"
-                  src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80"
-                />
-              </div>
-              <span
-                class="absolute start-3 top-3 rounded-pill bg-surface/95 px-2.5 py-1 text-xs font-medium text-text"
-              >
-                Coast
-              </span>
-            </div>
-            <div
-              class="flex flex-1 flex-col gap-2 pt-3"
-            >
-              <p
-                class="text-xs text-text-muted"
+              <button
+                aria-label="Save experience"
+                aria-pressed="false"
+                class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] text-text hover:bg-surface-sunken/80 size-[var(--layout-min-target)] p-0 rounded-full bg-surface/95"
+                type="button"
               >
                 <svg
                   aria-hidden="true"
-                  class="lucide lucide-map-pin me-1 inline size-3"
+                  class="lucide lucide-heart size-4"
                   fill="none"
                   height="24"
                   stroke="currentColor"
@@ -5923,28 +5908,43 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
-                  />
-                  <circle
-                    cx="12"
-                    cy="10"
-                    r="3"
+                    d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
                   />
                 </svg>
-                Batroun · North Lebanon
-              </p>
-              <h3
-                class="text-title font-semibold tracking-tight text-text group-hover:underline"
-              >
-                Coastal escapes in Batroun
-              </h3>
+              </button>
+            </span>
+            <a
+              class="flex h-full flex-col"
+              href="/experiences/coastal-escapes-batroun"
+            >
               <div
-                class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
+                class="relative overflow-hidden rounded-card"
               >
-                <span>
+                <div
+                  class="aspect-[4/3]"
+                >
+                  <img
+                    alt="Coastal church in Batroun"
+                    class="h-full w-full object-cover"
+                    fetchpriority="auto"
+                    src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80"
+                  />
+                </div>
+                <span
+                  class="absolute start-3 top-3 rounded-pill bg-surface/95 px-2.5 py-1 text-xs font-medium text-text"
+                >
+                  Coast
+                </span>
+              </div>
+              <div
+                class="flex flex-1 flex-col gap-2 pt-3"
+              >
+                <p
+                  class="text-xs text-text-muted"
+                >
                   <svg
                     aria-hidden="true"
-                    class="lucide lucide-clock me-1 inline size-3.5"
+                    class="lucide lucide-map-pin me-1 inline size-3"
                     fill="none"
                     height="24"
                     stroke="currentColor"
@@ -5955,93 +5955,88 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
                     width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
+                    <path
+                      d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+                    />
                     <circle
                       cx="12"
-                      cy="12"
-                      r="10"
-                    />
-                    <polyline
-                      points="12 6 12 12 16 14"
+                      cy="10"
+                      r="3"
                     />
                   </svg>
-                  4
-                   
-                  hours
-                </span>
-                <span
-                  class="font-medium text-text"
+                  Batroun · North Lebanon
+                </p>
+                <h3
+                  class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  From
-                   $
-                  45
-                </span>
+                  Coastal escapes in Batroun
+                </h3>
+                <div
+                  class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
+                >
+                  <span>
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-clock me-1 inline size-3.5"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                      />
+                      <polyline
+                        points="12 6 12 12 16 14"
+                      />
+                    </svg>
+                    4
+                     
+                    hours
+                  </span>
+                  <span
+                    class="font-medium text-text"
+                  >
+                    From
+                     $
+                    45
+                  </span>
+                </div>
               </div>
-            </div>
-          </a>
-        </article>
-        <article
-          class="group relative flex h-full flex-col"
+            </a>
+          </article>
+          <p
+            class="text-sm text-text-muted"
+          >
+            54
+             km
+          </p>
+        </div>
+        <div
+          class="grid gap-2"
         >
-          <span
-            class="absolute end-3 top-3 z-10"
+          <article
+            class="group relative flex h-full flex-col"
           >
-            <button
-              aria-label="Save experience"
-              aria-pressed="false"
-              class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] text-text hover:bg-surface-sunken/80 size-[var(--layout-min-target)] p-0 rounded-full bg-surface/95"
-              type="button"
+            <span
+              class="absolute end-3 top-3 z-10"
             >
-              <svg
-                aria-hidden="true"
-                class="lucide lucide-heart size-4"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-                />
-              </svg>
-            </button>
-          </span>
-          <a
-            class="flex h-full flex-col"
-            href="/experiences/among-ancient-cedars"
-          >
-            <div
-              class="relative overflow-hidden rounded-card"
-            >
-              <div
-                class="aspect-[4/3]"
-              >
-                <img
-                  alt="Cedar tree in mountain light"
-                  class="h-full w-full object-cover"
-                  fetchpriority="auto"
-                  src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80"
-                />
-              </div>
-              <span
-                class="absolute start-3 top-3 rounded-pill bg-surface/95 px-2.5 py-1 text-xs font-medium text-text"
-              >
-                Nature
-              </span>
-            </div>
-            <div
-              class="flex flex-1 flex-col gap-2 pt-3"
-            >
-              <p
-                class="text-xs text-text-muted"
+              <button
+                aria-label="Save experience"
+                aria-pressed="false"
+                class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] text-text hover:bg-surface-sunken/80 size-[var(--layout-min-target)] p-0 rounded-full bg-surface/95"
+                type="button"
               >
                 <svg
                   aria-hidden="true"
-                  class="lucide lucide-map-pin me-1 inline size-3"
+                  class="lucide lucide-heart size-4"
                   fill="none"
                   height="24"
                   stroke="currentColor"
@@ -6053,28 +6048,43 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
-                  />
-                  <circle
-                    cx="12"
-                    cy="10"
-                    r="3"
+                    d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
                   />
                 </svg>
-                Bsharri · North Lebanon
-              </p>
-              <h3
-                class="text-title font-semibold tracking-tight text-text group-hover:underline"
-              >
-                Among the ancient cedars
-              </h3>
+              </button>
+            </span>
+            <a
+              class="flex h-full flex-col"
+              href="/experiences/among-ancient-cedars"
+            >
               <div
-                class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
+                class="relative overflow-hidden rounded-card"
               >
-                <span>
+                <div
+                  class="aspect-[4/3]"
+                >
+                  <img
+                    alt="Cedar tree in mountain light"
+                    class="h-full w-full object-cover"
+                    fetchpriority="auto"
+                    src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80"
+                  />
+                </div>
+                <span
+                  class="absolute start-3 top-3 rounded-pill bg-surface/95 px-2.5 py-1 text-xs font-medium text-text"
+                >
+                  Nature
+                </span>
+              </div>
+              <div
+                class="flex flex-1 flex-col gap-2 pt-3"
+              >
+                <p
+                  class="text-xs text-text-muted"
+                >
                   <svg
                     aria-hidden="true"
-                    class="lucide lucide-clock me-1 inline size-3.5"
+                    class="lucide lucide-map-pin me-1 inline size-3"
                     fill="none"
                     height="24"
                     stroke="currentColor"
@@ -6085,93 +6095,88 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
                     width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
+                    <path
+                      d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+                    />
                     <circle
                       cx="12"
-                      cy="12"
-                      r="10"
-                    />
-                    <polyline
-                      points="12 6 12 12 16 14"
+                      cy="10"
+                      r="3"
                     />
                   </svg>
-                  2
-                   
-                  hours
-                </span>
-                <span
-                  class="font-medium text-text"
+                  Bsharri · North Lebanon
+                </p>
+                <h3
+                  class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  From
-                   $
-                  25
-                </span>
+                  Among the ancient cedars
+                </h3>
+                <div
+                  class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
+                >
+                  <span>
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-clock me-1 inline size-3.5"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                      />
+                      <polyline
+                        points="12 6 12 12 16 14"
+                      />
+                    </svg>
+                    2
+                     
+                    hours
+                  </span>
+                  <span
+                    class="font-medium text-text"
+                  >
+                    From
+                     $
+                    25
+                  </span>
+                </div>
               </div>
-            </div>
-          </a>
-        </article>
-        <article
-          class="group relative flex h-full flex-col"
+            </a>
+          </article>
+          <p
+            class="text-sm text-text-muted"
+          >
+            110
+             km
+          </p>
+        </div>
+        <div
+          class="grid gap-2"
         >
-          <span
-            class="absolute end-3 top-3 z-10"
+          <article
+            class="group relative flex h-full flex-col"
           >
-            <button
-              aria-label="Save experience"
-              aria-pressed="false"
-              class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] text-text hover:bg-surface-sunken/80 size-[var(--layout-min-target)] p-0 rounded-full bg-surface/95"
-              type="button"
+            <span
+              class="absolute end-3 top-3 z-10"
             >
-              <svg
-                aria-hidden="true"
-                class="lucide lucide-heart size-4"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-                />
-              </svg>
-            </button>
-          </span>
-          <a
-            class="flex h-full flex-col"
-            href="/experiences/take-the-valley-road"
-          >
-            <div
-              class="relative overflow-hidden rounded-card"
-            >
-              <div
-                class="aspect-[4/3]"
-              >
-                <img
-                  alt="Valley road through the mountains"
-                  class="h-full w-full object-cover"
-                  fetchpriority="auto"
-                  src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80"
-                />
-              </div>
-              <span
-                class="absolute start-3 top-3 rounded-pill bg-surface/95 px-2.5 py-1 text-xs font-medium text-text"
-              >
-                Adventure
-              </span>
-            </div>
-            <div
-              class="flex flex-1 flex-col gap-2 pt-3"
-            >
-              <p
-                class="text-xs text-text-muted"
+              <button
+                aria-label="Save experience"
+                aria-pressed="false"
+                class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] text-text hover:bg-surface-sunken/80 size-[var(--layout-min-target)] p-0 rounded-full bg-surface/95"
+                type="button"
               >
                 <svg
                   aria-hidden="true"
-                  class="lucide lucide-map-pin me-1 inline size-3"
+                  class="lucide lucide-heart size-4"
                   fill="none"
                   height="24"
                   stroke="currentColor"
@@ -6183,28 +6188,43 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
-                  />
-                  <circle
-                    cx="12"
-                    cy="10"
-                    r="3"
+                    d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
                   />
                 </svg>
-                Qadisha Valley · North Lebanon
-              </p>
-              <h3
-                class="text-title font-semibold tracking-tight text-text group-hover:underline"
-              >
-                Take the valley road
-              </h3>
+              </button>
+            </span>
+            <a
+              class="flex h-full flex-col"
+              href="/experiences/take-the-valley-road"
+            >
               <div
-                class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
+                class="relative overflow-hidden rounded-card"
               >
-                <span>
+                <div
+                  class="aspect-[4/3]"
+                >
+                  <img
+                    alt="Valley road through the mountains"
+                    class="h-full w-full object-cover"
+                    fetchpriority="auto"
+                    src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80"
+                  />
+                </div>
+                <span
+                  class="absolute start-3 top-3 rounded-pill bg-surface/95 px-2.5 py-1 text-xs font-medium text-text"
+                >
+                  Adventure
+                </span>
+              </div>
+              <div
+                class="flex flex-1 flex-col gap-2 pt-3"
+              >
+                <p
+                  class="text-xs text-text-muted"
+                >
                   <svg
                     aria-hidden="true"
-                    class="lucide lucide-clock me-1 inline size-3.5"
+                    class="lucide lucide-map-pin me-1 inline size-3"
                     fill="none"
                     height="24"
                     stroke="currentColor"
@@ -6215,30 +6235,70 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
                     width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
+                    <path
+                      d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+                    />
                     <circle
                       cx="12"
-                      cy="12"
-                      r="10"
-                    />
-                    <polyline
-                      points="12 6 12 12 16 14"
+                      cy="10"
+                      r="3"
                     />
                   </svg>
-                  5
-                   
-                  hours
-                </span>
-                <span
-                  class="font-medium text-text"
+                  Qadisha Valley · North Lebanon
+                </p>
+                <h3
+                  class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  From
-                   $
-                  40
-                </span>
+                  Take the valley road
+                </h3>
+                <div
+                  class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
+                >
+                  <span>
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-clock me-1 inline size-3.5"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                      />
+                      <polyline
+                        points="12 6 12 12 16 14"
+                      />
+                    </svg>
+                    5
+                     
+                    hours
+                  </span>
+                  <span
+                    class="font-medium text-text"
+                  >
+                    From
+                     $
+                    40
+                  </span>
+                </div>
               </div>
-            </div>
-          </a>
-        </article>
+            </a>
+          </article>
+          <p
+            class="text-sm text-text-muted"
+          >
+            95
+             km
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -6891,69 +6951,24 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
       <div
         class="grid gap-8 md:grid-cols-3"
       >
-        <article
-          class="group relative flex h-full flex-col"
+        <div
+          class="grid gap-2"
         >
-          <span
-            class="absolute end-3 top-3 z-10"
+          <article
+            class="group relative flex h-full flex-col"
           >
-            <button
-              aria-label="Enregistrer l’expérience"
-              aria-pressed="false"
-              class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] text-text hover:bg-surface-sunken/80 size-[var(--layout-min-target)] p-0 rounded-full bg-surface/95"
-              type="button"
+            <span
+              class="absolute end-3 top-3 z-10"
             >
-              <svg
-                aria-hidden="true"
-                class="lucide lucide-heart size-4"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-                />
-              </svg>
-            </button>
-          </span>
-          <a
-            class="flex h-full flex-col"
-            href="/fr/experiences/coastal-escapes-batroun"
-          >
-            <div
-              class="relative overflow-hidden rounded-card"
-            >
-              <div
-                class="aspect-[4/3]"
-              >
-                <img
-                  alt="Coastal church in Batroun"
-                  class="h-full w-full object-cover"
-                  fetchpriority="auto"
-                  src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80"
-                />
-              </div>
-              <span
-                class="absolute start-3 top-3 rounded-pill bg-surface/95 px-2.5 py-1 text-xs font-medium text-text"
-              >
-                Coast
-              </span>
-            </div>
-            <div
-              class="flex flex-1 flex-col gap-2 pt-3"
-            >
-              <p
-                class="text-xs text-text-muted"
+              <button
+                aria-label="Enregistrer l’expérience"
+                aria-pressed="false"
+                class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] text-text hover:bg-surface-sunken/80 size-[var(--layout-min-target)] p-0 rounded-full bg-surface/95"
+                type="button"
               >
                 <svg
                   aria-hidden="true"
-                  class="lucide lucide-map-pin me-1 inline size-3"
+                  class="lucide lucide-heart size-4"
                   fill="none"
                   height="24"
                   stroke="currentColor"
@@ -6965,28 +6980,43 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
-                  />
-                  <circle
-                    cx="12"
-                    cy="10"
-                    r="3"
+                    d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
                   />
                 </svg>
-                Batroun · North Lebanon
-              </p>
-              <h3
-                class="text-title font-semibold tracking-tight text-text group-hover:underline"
-              >
-                Coastal escapes in Batroun
-              </h3>
+              </button>
+            </span>
+            <a
+              class="flex h-full flex-col"
+              href="/fr/experiences/coastal-escapes-batroun"
+            >
               <div
-                class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
+                class="relative overflow-hidden rounded-card"
               >
-                <span>
+                <div
+                  class="aspect-[4/3]"
+                >
+                  <img
+                    alt="Coastal church in Batroun"
+                    class="h-full w-full object-cover"
+                    fetchpriority="auto"
+                    src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80"
+                  />
+                </div>
+                <span
+                  class="absolute start-3 top-3 rounded-pill bg-surface/95 px-2.5 py-1 text-xs font-medium text-text"
+                >
+                  Coast
+                </span>
+              </div>
+              <div
+                class="flex flex-1 flex-col gap-2 pt-3"
+              >
+                <p
+                  class="text-xs text-text-muted"
+                >
                   <svg
                     aria-hidden="true"
-                    class="lucide lucide-clock me-1 inline size-3.5"
+                    class="lucide lucide-map-pin me-1 inline size-3"
                     fill="none"
                     height="24"
                     stroke="currentColor"
@@ -6997,93 +7027,88 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
                     width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
+                    <path
+                      d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+                    />
                     <circle
                       cx="12"
-                      cy="12"
-                      r="10"
-                    />
-                    <polyline
-                      points="12 6 12 12 16 14"
+                      cy="10"
+                      r="3"
                     />
                   </svg>
-                  4
-                   
-                  heures
-                </span>
-                <span
-                  class="font-medium text-text"
+                  Batroun · North Lebanon
+                </p>
+                <h3
+                  class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  À partir de
-                   $
-                  45
-                </span>
+                  Coastal escapes in Batroun
+                </h3>
+                <div
+                  class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
+                >
+                  <span>
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-clock me-1 inline size-3.5"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                      />
+                      <polyline
+                        points="12 6 12 12 16 14"
+                      />
+                    </svg>
+                    4
+                     
+                    heures
+                  </span>
+                  <span
+                    class="font-medium text-text"
+                  >
+                    À partir de
+                     $
+                    45
+                  </span>
+                </div>
               </div>
-            </div>
-          </a>
-        </article>
-        <article
-          class="group relative flex h-full flex-col"
+            </a>
+          </article>
+          <p
+            class="text-sm text-text-muted"
+          >
+            54
+             km
+          </p>
+        </div>
+        <div
+          class="grid gap-2"
         >
-          <span
-            class="absolute end-3 top-3 z-10"
+          <article
+            class="group relative flex h-full flex-col"
           >
-            <button
-              aria-label="Enregistrer l’expérience"
-              aria-pressed="false"
-              class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] text-text hover:bg-surface-sunken/80 size-[var(--layout-min-target)] p-0 rounded-full bg-surface/95"
-              type="button"
+            <span
+              class="absolute end-3 top-3 z-10"
             >
-              <svg
-                aria-hidden="true"
-                class="lucide lucide-heart size-4"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-                />
-              </svg>
-            </button>
-          </span>
-          <a
-            class="flex h-full flex-col"
-            href="/fr/experiences/among-ancient-cedars"
-          >
-            <div
-              class="relative overflow-hidden rounded-card"
-            >
-              <div
-                class="aspect-[4/3]"
-              >
-                <img
-                  alt="Cedar tree in mountain light"
-                  class="h-full w-full object-cover"
-                  fetchpriority="auto"
-                  src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80"
-                />
-              </div>
-              <span
-                class="absolute start-3 top-3 rounded-pill bg-surface/95 px-2.5 py-1 text-xs font-medium text-text"
-              >
-                Nature
-              </span>
-            </div>
-            <div
-              class="flex flex-1 flex-col gap-2 pt-3"
-            >
-              <p
-                class="text-xs text-text-muted"
+              <button
+                aria-label="Enregistrer l’expérience"
+                aria-pressed="false"
+                class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] text-text hover:bg-surface-sunken/80 size-[var(--layout-min-target)] p-0 rounded-full bg-surface/95"
+                type="button"
               >
                 <svg
                   aria-hidden="true"
-                  class="lucide lucide-map-pin me-1 inline size-3"
+                  class="lucide lucide-heart size-4"
                   fill="none"
                   height="24"
                   stroke="currentColor"
@@ -7095,28 +7120,43 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
-                  />
-                  <circle
-                    cx="12"
-                    cy="10"
-                    r="3"
+                    d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
                   />
                 </svg>
-                Bsharri · North Lebanon
-              </p>
-              <h3
-                class="text-title font-semibold tracking-tight text-text group-hover:underline"
-              >
-                Among the ancient cedars
-              </h3>
+              </button>
+            </span>
+            <a
+              class="flex h-full flex-col"
+              href="/fr/experiences/among-ancient-cedars"
+            >
               <div
-                class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
+                class="relative overflow-hidden rounded-card"
               >
-                <span>
+                <div
+                  class="aspect-[4/3]"
+                >
+                  <img
+                    alt="Cedar tree in mountain light"
+                    class="h-full w-full object-cover"
+                    fetchpriority="auto"
+                    src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80"
+                  />
+                </div>
+                <span
+                  class="absolute start-3 top-3 rounded-pill bg-surface/95 px-2.5 py-1 text-xs font-medium text-text"
+                >
+                  Nature
+                </span>
+              </div>
+              <div
+                class="flex flex-1 flex-col gap-2 pt-3"
+              >
+                <p
+                  class="text-xs text-text-muted"
+                >
                   <svg
                     aria-hidden="true"
-                    class="lucide lucide-clock me-1 inline size-3.5"
+                    class="lucide lucide-map-pin me-1 inline size-3"
                     fill="none"
                     height="24"
                     stroke="currentColor"
@@ -7127,93 +7167,88 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
                     width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
+                    <path
+                      d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+                    />
                     <circle
                       cx="12"
-                      cy="12"
-                      r="10"
-                    />
-                    <polyline
-                      points="12 6 12 12 16 14"
+                      cy="10"
+                      r="3"
                     />
                   </svg>
-                  2
-                   
-                  heures
-                </span>
-                <span
-                  class="font-medium text-text"
+                  Bsharri · North Lebanon
+                </p>
+                <h3
+                  class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  À partir de
-                   $
-                  25
-                </span>
+                  Among the ancient cedars
+                </h3>
+                <div
+                  class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
+                >
+                  <span>
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-clock me-1 inline size-3.5"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                      />
+                      <polyline
+                        points="12 6 12 12 16 14"
+                      />
+                    </svg>
+                    2
+                     
+                    heures
+                  </span>
+                  <span
+                    class="font-medium text-text"
+                  >
+                    À partir de
+                     $
+                    25
+                  </span>
+                </div>
               </div>
-            </div>
-          </a>
-        </article>
-        <article
-          class="group relative flex h-full flex-col"
+            </a>
+          </article>
+          <p
+            class="text-sm text-text-muted"
+          >
+            110
+             km
+          </p>
+        </div>
+        <div
+          class="grid gap-2"
         >
-          <span
-            class="absolute end-3 top-3 z-10"
+          <article
+            class="group relative flex h-full flex-col"
           >
-            <button
-              aria-label="Enregistrer l’expérience"
-              aria-pressed="false"
-              class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] text-text hover:bg-surface-sunken/80 size-[var(--layout-min-target)] p-0 rounded-full bg-surface/95"
-              type="button"
+            <span
+              class="absolute end-3 top-3 z-10"
             >
-              <svg
-                aria-hidden="true"
-                class="lucide lucide-heart size-4"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-                />
-              </svg>
-            </button>
-          </span>
-          <a
-            class="flex h-full flex-col"
-            href="/fr/experiences/take-the-valley-road"
-          >
-            <div
-              class="relative overflow-hidden rounded-card"
-            >
-              <div
-                class="aspect-[4/3]"
-              >
-                <img
-                  alt="Valley road through the mountains"
-                  class="h-full w-full object-cover"
-                  fetchpriority="auto"
-                  src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80"
-                />
-              </div>
-              <span
-                class="absolute start-3 top-3 rounded-pill bg-surface/95 px-2.5 py-1 text-xs font-medium text-text"
-              >
-                Adventure
-              </span>
-            </div>
-            <div
-              class="flex flex-1 flex-col gap-2 pt-3"
-            >
-              <p
-                class="text-xs text-text-muted"
+              <button
+                aria-label="Enregistrer l’expérience"
+                aria-pressed="false"
+                class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] text-text hover:bg-surface-sunken/80 size-[var(--layout-min-target)] p-0 rounded-full bg-surface/95"
+                type="button"
               >
                 <svg
                   aria-hidden="true"
-                  class="lucide lucide-map-pin me-1 inline size-3"
+                  class="lucide lucide-heart size-4"
                   fill="none"
                   height="24"
                   stroke="currentColor"
@@ -7225,28 +7260,43 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
-                  />
-                  <circle
-                    cx="12"
-                    cy="10"
-                    r="3"
+                    d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
                   />
                 </svg>
-                Qadisha Valley · North Lebanon
-              </p>
-              <h3
-                class="text-title font-semibold tracking-tight text-text group-hover:underline"
-              >
-                Take the valley road
-              </h3>
+              </button>
+            </span>
+            <a
+              class="flex h-full flex-col"
+              href="/fr/experiences/take-the-valley-road"
+            >
               <div
-                class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
+                class="relative overflow-hidden rounded-card"
               >
-                <span>
+                <div
+                  class="aspect-[4/3]"
+                >
+                  <img
+                    alt="Valley road through the mountains"
+                    class="h-full w-full object-cover"
+                    fetchpriority="auto"
+                    src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80"
+                  />
+                </div>
+                <span
+                  class="absolute start-3 top-3 rounded-pill bg-surface/95 px-2.5 py-1 text-xs font-medium text-text"
+                >
+                  Adventure
+                </span>
+              </div>
+              <div
+                class="flex flex-1 flex-col gap-2 pt-3"
+              >
+                <p
+                  class="text-xs text-text-muted"
+                >
                   <svg
                     aria-hidden="true"
-                    class="lucide lucide-clock me-1 inline size-3.5"
+                    class="lucide lucide-map-pin me-1 inline size-3"
                     fill="none"
                     height="24"
                     stroke="currentColor"
@@ -7257,30 +7307,70 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
                     width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
+                    <path
+                      d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+                    />
                     <circle
                       cx="12"
-                      cy="12"
-                      r="10"
-                    />
-                    <polyline
-                      points="12 6 12 12 16 14"
+                      cy="10"
+                      r="3"
                     />
                   </svg>
-                  5
-                   
-                  heures
-                </span>
-                <span
-                  class="font-medium text-text"
+                  Qadisha Valley · North Lebanon
+                </p>
+                <h3
+                  class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  À partir de
-                   $
-                  40
-                </span>
+                  Take the valley road
+                </h3>
+                <div
+                  class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
+                >
+                  <span>
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-clock me-1 inline size-3.5"
+                      fill="none"
+                      height="24"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                      />
+                      <polyline
+                        points="12 6 12 12 16 14"
+                      />
+                    </svg>
+                    5
+                     
+                    heures
+                  </span>
+                  <span
+                    class="font-medium text-text"
+                  >
+                    À partir de
+                     $
+                    40
+                  </span>
+                </div>
               </div>
-            </div>
-          </a>
-        </article>
+            </a>
+          </article>
+          <p
+            class="text-sm text-text-muted"
+          >
+            95
+             km
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -8890,7 +8980,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
             </a>
             <a
               class="text-text hover:underline outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/ar/ideas"
+              href="/ar/collections"
             >
               أفكار رحلات
             </a>
@@ -9332,7 +9422,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
             </a>
             <a
               class="text-text hover:underline outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/ideas"
+              href="/collections"
             >
               Trip ideas
             </a>
@@ -9774,7 +9864,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
             </a>
             <a
               class="text-text hover:underline outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/fr/ideas"
+              href="/fr/collections"
             >
               Idées de voyage
             </a>

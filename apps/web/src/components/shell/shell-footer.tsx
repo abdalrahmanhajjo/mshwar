@@ -43,7 +43,7 @@ export function ShellFooter({ surface }: { surface: ShellSurface }) {
     { href: "/destinations", label: copy.exploreLebanon },
     { href: "/plan", label: copy.planATrip },
     { href: "/business", label: copy.partnerWithUs },
-    { href: "/ideas", label: copy.tripIdeas },
+    { href: "/collections", label: copy.tripIdeas },
     { href: "/contact", label: copy.aboutMshwar },
     { href: "/contact", label: copy.helpCenter },
     { href: "/experiences", label: copy.allPages },

@@ -7,7 +7,7 @@ import { HomeView } from "@/components/browse/home-view";
 import { IdeasView } from "@/components/browse/ideas-view";
 import { TravellerShell } from "@/components/shell/app-shell";
 import { LocaleProvider } from "@/components/shell/locale-provider";
-import { EXPERIENCES } from "@/lib/catalog";
+import { DESTINATIONS, EXPERIENCES, IDEAS } from "@/lib/catalog";
 import { LOCALES, type Locale } from "@/lib/locale";
 
 function wrap(locale: Locale, ui: ReactNode) {
@@ -16,7 +16,7 @@ function wrap(locale: Locale, ui: ReactNode) {
 
 describe("MSHWAR-32 locale snapshots", () => {
   it.each(LOCALES)("renders the destinations index in %s", (locale) => {
-    const { container } = render(wrap(locale, <DestinationsView />));
+    const { container } = render(wrap(locale, <DestinationsView destinations={DESTINATIONS} />));
     expect(container).toMatchSnapshot();
   });
 
@@ -26,7 +26,7 @@ describe("MSHWAR-32 locale snapshots", () => {
   });
 
   it.each(LOCALES)("renders ideas in %s", (locale) => {
-    const { container } = render(wrap(locale, <IdeasView />));
+    const { container } = render(wrap(locale, <IdeasView ideas={IDEAS} />));
     expect(container).toMatchSnapshot();
   });
 
@@ -50,7 +50,7 @@ describe("MSHWAR-32 locale snapshots", () => {
   });
 
   it("prefixes destination cards for a shareable Arabic URL", () => {
-    render(wrap("ar", <DestinationsView />));
+    render(wrap("ar", <DestinationsView destinations={DESTINATIONS} />));
     expect(screen.getByRole("link", { name: "Byblos" })).toHaveAttribute("href", "/ar/destinations/byblos");
   });
 });
