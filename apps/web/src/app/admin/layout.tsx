@@ -1,5 +1,10 @@
+import { RequireAuth } from "@/components/auth/require-auth";
 import { AdminShell } from "@/components/shell/app-shell";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <AdminShell>{children}</AdminShell>;
+  return (
+    <AdminShell>
+      <RequireAuth>{children}</RequireAuth>
+    </AdminShell>
+  );
 }

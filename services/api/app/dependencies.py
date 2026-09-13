@@ -27,6 +27,19 @@ class Base(DeclarativeBase):
     __table_args__ = {"schema": "app"}  # noqa: RUF012
 
 
+async def get_auth_db() -> AsyncGenerator[AsyncSession, None]:
+    """Session without RLS context — used by register/signin via SECURITY DEFINER."""
+    async with async_session() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            await session.close()
+
+
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with async_session() as session:
         try:

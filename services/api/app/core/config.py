@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     secret_key: str = "change-me-in-production"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24 * 8
+    session_cookie_name: str = "mshwar_session"
+    session_ttl_seconds: int = 60 * 60 * 24 * 7  # 7 days; refresh extends when < half remains
 
     # Connection pool
     pool_size: int = 20
