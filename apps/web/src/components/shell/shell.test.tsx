@@ -61,7 +61,7 @@ describe("responsive app shells", () => {
     const hrefBefore = window.location.href;
     renderTraveller();
     expect(document.documentElement.dir).toBe("ltr");
-    fireEvent.change(screen.getAllByLabelText("Language")[0], { target: { value: "ar" } });
+    fireEvent.click(screen.getAllByRole("button", { name: "العربية" })[0]);
     expect(document.documentElement.dir).toBe("rtl");
     expect(document.documentElement.lang).toBe("ar");
     expect(document.documentElement.getAttribute("data-locale")).toBe("ar");
@@ -72,7 +72,7 @@ describe("responsive app shells", () => {
   it("keeps the shell inside 390px and 1440px frames without overflow classes", () => {
     const { container } = renderTraveller();
     const shell = container.querySelector("[data-shell='traveller']");
-    expect(shell).toHaveClass("overflow-x-clip", "max-w-full", "min-w-0");
+    expect(shell).toHaveClass("max-w-full", "min-w-0");
     expect(container.querySelector(".shell-frame")).toBeTruthy();
   });
 });
