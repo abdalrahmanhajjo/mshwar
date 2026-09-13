@@ -47,19 +47,20 @@ def resolve_org_id(request: Request, explicit: str | None = None) -> str | None:
     return explicit or request.headers.get(ORG_HEADER)
 
 
-def raise_from_db(exc: DBAPIError) -> None:
+def raise_from_db(exc: object) -> None:
     orig = getattr(exc, "orig", None)
     sqlstate = getattr(orig, "sqlstate", None) or getattr(orig, "pgcode", None)
     diag = getattr(orig, "diag", None)
     primary = getattr(diag, "message_primary", None)
     message = str(primary or orig or exc)
+    cause = exc if isinstance(exc, BaseException) else None
     if sqlstate == "42501":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=message) from exc
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=message) from cause
     if sqlstate == "P0002":
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=message) from exc
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=message) from cause
     if sqlstate == "23505":
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=message) from exc
-    raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=message) from exc
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=message) from cause
+    raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=message) from cause
 
 
 async def fetch_json(db: AsyncSession, sql: str, params: dict[str, Any]) -> Any:

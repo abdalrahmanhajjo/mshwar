@@ -19,10 +19,12 @@ async def test_backend_role_cannot_read_foreign_org_portal_rows(db_session) -> N
         text(
             """
             INSERT INTO app.users (id, auth_issuer, auth_subject, display_name)
-            VALUES (:a, 'test', :a, 'A'), (:b, 'test', :b, 'B')
+            VALUES
+                (CAST(:id_a AS uuid), 'test', :sub_a, 'A'),
+                (CAST(:id_b AS uuid), 'test', :sub_b, 'B')
             """
         ),
-        {"a": user_a, "b": user_b},
+        {"id_a": user_a, "sub_a": user_a, "id_b": user_b, "sub_b": user_b},
     )
     await db_session.execute(
         text(

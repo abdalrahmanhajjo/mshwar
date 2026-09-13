@@ -405,7 +405,7 @@ async def _insert_booking(org_id: str, listing: dict[str, Any], customer_id: str
                 ) VALUES (
                     :id, :customer_id, :org_id, :experience_id, :slot_id, 2, 'pending', 'request',
                     now() + interval '12 hours', true, 'USD', 9000, false,
-                    '{"schema_version":1}'::jsonb, '{"schema_version":1}'::jsonb,
+                    CAST(:price_snapshot AS jsonb), CAST(:policy_snapshot AS jsonb),
                     :request_key, :request_hash, 'Window seat if possible'
                 )
                 """
@@ -416,6 +416,8 @@ async def _insert_booking(org_id: str, listing: dict[str, Any], customer_id: str
                 "org_id": org_id,
                 "experience_id": listing["id"],
                 "slot_id": slot["id"],
+                "price_snapshot": '{"schema_version":1}',
+                "policy_snapshot": '{"schema_version":1}',
                 "request_key": f"req-{uuid4().hex[:12]}",
                 "request_hash": uuid4().hex,
             },

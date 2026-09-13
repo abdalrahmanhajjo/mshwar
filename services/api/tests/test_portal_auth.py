@@ -16,7 +16,8 @@ def test_role_matrix_is_independent() -> None:
     assert role_allows("finance", "finance") is True
     assert role_allows("finance", "settings") is False
     assert role_allows("owner", "settings") is True
-    assert "listings" in roles_for("listings")
+    assert "inventory" in roles_for("listings")
+    assert "bookings" not in roles_for("listings")
 
 
 def test_resolve_org_prefers_explicit() -> None:
