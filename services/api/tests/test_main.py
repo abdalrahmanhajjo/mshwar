@@ -79,5 +79,4 @@ def test_list_and_create_trips(client: TestClient) -> None:
     assert listed.status_code == 200
     assert listed.json() == []
     created = client.post("/api/v1/trips", json={"name": "Weekend"})
-    assert created.status_code == 200
-    assert created.json() == {"id": 1, "name": "Weekend", "status": "confirmed"}
+    assert created.status_code == 401

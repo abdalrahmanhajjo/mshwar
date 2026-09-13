@@ -28,6 +28,7 @@ export const TRAVELLER_NAV: ShellNavItem[] = [
   { href: "/plan", labelKey: "plan", icon: Route },
   { href: "/saved", labelKey: "saved", icon: Heart },
   { href: "/bookings", labelKey: "bookings", icon: Ticket },
+  { href: "/settings", labelKey: "settings", icon: Settings },
 ];
 
 export const BUSINESS_NAV: ShellNavItem[] = [

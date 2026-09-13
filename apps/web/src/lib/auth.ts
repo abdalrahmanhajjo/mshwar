@@ -12,6 +12,7 @@ export const PROTECTED_PATHS = [
   /^\/plan(?:\/|$)/,
   /^\/saved(?:\/|$)/,
   /^\/bookings(?:\/|$)/,
+  /^\/settings(?:\/|$)/,
   /^\/business(?:\/|$)/,
   /^\/admin(?:\/|$)/,
 ];
