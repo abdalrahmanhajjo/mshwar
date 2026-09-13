@@ -131,16 +131,18 @@ export function ExperienceDetailView({ experience, related }: { experience: Expe
             </p>
             <p className="mt-3 text-sm text-text-muted">{priceKindLabel(experience.priceLabel)}</p>
           </section>
-          <section>
-            <h3 className="font-semibold">{copy.policies}</h3>
-            <dl className="mt-4 grid gap-4">
+          <section aria-labelledby="listing-policies-heading">
+            <h3 id="listing-policies-heading" className="font-semibold">
+              {copy.policies}
+            </h3>
+            <ul className="mt-4 grid gap-4">
               {policies.map((policy) => (
-                <div key={policy.title}>
-                  <dt className="text-sm font-medium">{policy.title}</dt>
-                  <dd className="mt-1 text-sm text-text-muted">{policy.body}</dd>
-                </div>
+                <li key={policy.title}>
+                  <p className="text-sm font-medium">{policy.title}</p>
+                  <p className="mt-1 text-sm text-text-muted">{policy.body}</p>
+                </li>
               ))}
-            </dl>
+            </ul>
           </section>
           <section>
             <h3 className="font-semibold">{copy.keepExploring.replace(".", "")}</h3>

@@ -305,7 +305,7 @@ test.describe("MSHWAR-36 / MSHWAR-39 marketing browse", () => {
     await expect(page.getByRole("button", { name: "Request to book · Preview" })).toBeVisible();
     await expect(page.getByText("Estimated from", { exact: true }).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: "Policies" })).toBeVisible();
-    await expect(page.getByRole("term", { name: "Cancellation" })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Policies" }).getByText("Cancellation", { exact: true })).toBeVisible();
     await assertNoHorizontalScroll(page);
   });
 
