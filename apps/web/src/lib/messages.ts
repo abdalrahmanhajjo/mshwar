@@ -58,6 +58,7 @@ export type MessageKey =
   | "planATrip"
   | "myTrips"
   | "ideas"
+  | "collections"
   | "forBusinesses"
   | "plan"
   | "saved"
@@ -144,6 +145,7 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     planATrip: "Plan a trip",
     myTrips: "My trips",
     ideas: "Ideas",
+    collections: "Collections",
     forBusinesses: "For businesses",
     plan: "Plan",
     saved: "Saved",
@@ -229,6 +231,7 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     planATrip: "خطّط لرحلة",
     myTrips: "رحلاتي",
     ideas: "أفكار",
+    collections: "مجموعات",
     forBusinesses: "للأعمال",
     plan: "خطّط",
     saved: "المحفوظات",
@@ -316,6 +319,7 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     planATrip: "Planifier un voyage",
     myTrips: "Mes voyages",
     ideas: "Idées",
+    collections: "Collections",
     forBusinesses: "Pour les entreprises",
     plan: "Planifier",
     saved: "Enregistrés",

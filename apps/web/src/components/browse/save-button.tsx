@@ -4,7 +4,7 @@ import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/shell/auth-provider";
 import { useBrowseCopy } from "@/lib/browse-copy";
-import { addFavorite } from "@/lib/hub";
+import { toggleFavorite } from "@/lib/hub";
 import { useSavedExperiences } from "@/lib/saved-experiences";
 import { cn } from "@/lib/utils";
 
@@ -26,8 +26,8 @@ export function SaveExperienceButton({ slug, compact = false }: { slug: string; 
         event.preventDefault();
         event.stopPropagation();
         toggle(slug);
-        if (user && !saved) {
-          void addFavorite(slug);
+        if (user) {
+          void toggleFavorite(slug).catch(() => toggle(slug));
         }
       }}
     >

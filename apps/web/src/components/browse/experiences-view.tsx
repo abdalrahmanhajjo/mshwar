@@ -12,15 +12,25 @@ import { Button } from "@/components/ui/button";
 import { useBrowseCopy } from "@/lib/browse-copy";
 import { withLocalePrefix } from "@/lib/locale";
 import { useLocale } from "@/components/shell/locale-provider";
+import { ExperiencesMap } from "@/components/browse/experiences-map";
 import {
   DESTINATIONS,
   LISTING_KINDS,
   serializeExperienceFilters,
+  type Experience,
   type ExperienceFilters,
   type ExperiencePage,
 } from "@/lib/catalog";
 
-export function ExperiencesView({ filters, page }: { filters: ExperienceFilters; page: ExperiencePage }) {
+export function ExperiencesView({
+  filters,
+  page,
+  mapItems,
+}: {
+  filters: ExperienceFilters;
+  page: ExperiencePage;
+  mapItems: Experience[];
+}) {
   const copy = useBrowseCopy();
   const { locale } = useLocale();
   const router = useRouter();
@@ -113,6 +123,24 @@ export function ExperiencesView({ filters, page }: { filters: ExperienceFilters;
             <p className="text-sm text-text-muted">
               {page.total} {copy.placesCount}
             </p>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant={filters.view === "map" ? "outline" : "default"}
+                onClick={() => patch({ view: undefined })}
+              >
+                {copy.listView}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={filters.view === "map" ? "default" : "outline"}
+                onClick={() => patch({ view: "map" })}
+              >
+                {copy.mapView}
+              </Button>
+            </div>
             <label className="flex items-center gap-2 text-sm">
               <span className="text-text-muted">{copy.recommended}</span>
               <select
@@ -131,7 +159,9 @@ export function ExperiencesView({ filters, page }: { filters: ExperienceFilters;
             </label>
           </div>
 
-          {page.items.length ? (
+          {filters.view === "map" ? (
+            <ExperiencesMap items={mapItems} onSearchArea={(destination) => patch({ destination, page: 1 })} />
+          ) : page.items.length ? (
             <div className="grid gap-8 sm:grid-cols-2 xl:grid-cols-3">
               {page.items.map((experience) => (
                 <ExperienceCard key={experience.slug} experience={experience} />

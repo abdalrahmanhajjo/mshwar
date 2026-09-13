@@ -47,6 +47,7 @@ export const ADMIN_NAV: ShellNavItem[] = [
   { href: "/admin/businesses", labelKey: "businesses", icon: Building2 },
   { href: "/admin/moderation", labelKey: "moderation", icon: Shield },
   { href: "/admin/settings", labelKey: "settings", icon: Settings },
+  { href: "/admin/collections", labelKey: "collections", icon: Sparkles },
 ];
 
 export const NAV_BY_SURFACE: Record<ShellSurface, ShellNavItem[]> = {
