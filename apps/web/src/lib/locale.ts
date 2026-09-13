@@ -12,7 +12,7 @@ export const LOCALE_LABELS: Record<Locale, string> = {
 
 export const LOCALE_SHORT_LABELS: Record<Locale, string> = {
   en: "EN",
-  ar: "ع",
+  ar: "AR",
   fr: "FR",
 };
 

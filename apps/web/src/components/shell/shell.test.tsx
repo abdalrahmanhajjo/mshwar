@@ -51,7 +51,7 @@ describe("responsive app shells", () => {
   it("collapses navigation behind a menu control on the mobile pattern", () => {
     renderTraveller();
     const toggle = screen.getByRole("button", { name: "Open menu" });
-    expect(toggle).toHaveClass("lg:hidden");
+    expect(toggle.closest("div")).toHaveClass("lg:hidden");
     fireEvent.click(toggle);
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByRole("link", { name: "Plan" })).toBeInTheDocument();
