@@ -54,7 +54,7 @@ describe("responsive app shells", () => {
     expect(toggle.closest("div")).toHaveClass("lg:hidden");
     fireEvent.click(toggle);
     const dialog = screen.getByRole("dialog");
-    expect(within(dialog).getByRole("link", { name: "Plan" })).toBeInTheDocument();
+    expect(within(dialog).getByRole("link", { name: "Plan a trip" })).toBeInTheDocument();
   });
 
   it("flips document direction from the language switcher without a reload", () => {

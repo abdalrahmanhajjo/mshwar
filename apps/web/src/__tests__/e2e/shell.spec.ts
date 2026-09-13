@@ -48,7 +48,7 @@ test.describe("MSHWAR-26 responsive app shell", () => {
     await page.getByRole("button", { name: "Open menu" }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByRole("link", { name: "Plan" })).toBeVisible();
+    await expect(dialog.getByRole("link", { name: "Plan a trip" })).toBeVisible();
     await expect(dialog.getByRole("link", { name: "Listings" })).toHaveCount(0);
     await page.keyboard.press("Escape");
 
@@ -67,7 +67,7 @@ test.describe("MSHWAR-26 responsive app shell", () => {
     await assertNoHorizontalScroll(page);
     await expect(page.getByRole("button", { name: "Open menu" })).toBeHidden();
     await expect(page.getByRole("navigation", { name: "Menu" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Plan" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Plan a trip" })).toBeVisible();
   });
 
   test("business and admin shells share chrome but differ in navigation", async ({ page }) => {
@@ -270,6 +270,35 @@ test.describe("MSHWAR-31 settings routes", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/settings");
     await expect(page.getByRole("heading", { name: "Preferences" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+});
+
+test.describe("MSHWAR-36 / MSHWAR-39 marketing browse", () => {
+  test("home and destinations match the marketing hierarchy at 390 and 1440", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await expect(page.getByRole("heading", { name: "Make room for a little mshwar." })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Find my next place" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/destinations");
+    await expect(page.getByRole("heading", { name: "Where will you wander?" })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Byblos/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Batroun/ })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+
+  test("experience filters stay in the URL and listing detail states booking mode", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/experiences?category=coast&sort=price");
+    await expect(page).toHaveURL(/category=coast/);
+    await expect(page.getByRole("heading", { name: "A whole country. Your next discovery." })).toBeVisible();
+    await page.goto("/experiences/slow-day-byblos");
+    await expect(page.getByRole("heading", { name: "A slow day in Byblos" })).toBeVisible();
+    await expect(page.getByText("Request to book")).toBeVisible();
+    await expect(page.getByText("Estimated from")).toBeVisible();
     await assertNoHorizontalScroll(page);
   });
 });

@@ -26,10 +26,14 @@ export function AuthStatus({ auth }: { auth?: AuthState }) {
   if (resolved.status === "signed-in") {
     return (
       <div className="flex items-center gap-2">
-        <p className="max-w-[10rem] truncate text-sm text-text" title={resolved.name}>
+        <Link
+          href="/settings"
+          className="max-w-[10rem] truncate text-sm text-text hover:underline"
+          title={resolved.name}
+        >
           <span className="sr-only">{t("signedInAs")} </span>
           {resolved.name}
-        </p>
+        </Link>
         <Button type="button" variant="ghost" size="sm" onClick={() => void handleSignOut()}>
           {t("signOut")}
         </Button>
