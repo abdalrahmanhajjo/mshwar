@@ -1,11 +1,11 @@
-import Link from "next/link";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { ArrowUpRight } from "lucide-react";
 import { CatalogImage } from "@/components/browse/catalog-image";
 import type { Destination } from "@/lib/catalog";
 
 export function DestinationCard({ destination }: { destination: Destination }) {
   return (
-    <Link href={`/destinations/${destination.slug}`} aria-label={destination.name} className="group block">
+    <LocaleLink href={`/destinations/${destination.slug}`} aria-label={destination.name} className="group block">
       <article className="relative overflow-hidden rounded-card">
         <div className="aspect-[4/3] md:aspect-[5/4]">
           <CatalogImage src={destination.image} alt={destination.imageAlt} />
@@ -18,6 +18,6 @@ export function DestinationCard({ destination }: { destination: Destination }) {
           <p className="mt-2 text-sm opacity-90">{destination.tags.join(" · ")}</p>
         </div>
       </article>
-    </Link>
+    </LocaleLink>
   );
 }

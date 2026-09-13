@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { cn, controlSize, focusRing } from "@/lib/utils";
 import { isNavActive, type ShellNavItem } from "@/components/shell/nav-config";
 import { useLocale } from "@/components/shell/locale-provider";
@@ -21,7 +21,7 @@ export function NavLink({
   const Icon = item.icon;
 
   return (
-    <Link
+    <LocaleLink
       href={item.href}
       aria-current={active ? "page" : undefined}
       onClick={onNavigate}
@@ -35,6 +35,6 @@ export function NavLink({
     >
       <Icon className={cn("size-4 shrink-0", variant === "inline" && "lg:hidden")} aria-hidden />
       {t(item.labelKey)}
-    </Link>
+    </LocaleLink>
   );
 }

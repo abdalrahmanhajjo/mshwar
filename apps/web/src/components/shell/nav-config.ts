@@ -56,8 +56,9 @@ export const NAV_BY_SURFACE: Record<ShellSurface, ShellNavItem[]> = {
 };
 
 export function isNavActive(pathname: string, item: ShellNavItem) {
+  const current = pathname.replace(/^\/(en|ar|fr)(?=\/|$)/, "") || "/";
   if (item.exact) {
-    return pathname === item.href;
+    return current === item.href;
   }
-  return pathname === item.href || pathname.startsWith(`${item.href}/`);
+  return current === item.href || current.startsWith(`${item.href}/`);
 }

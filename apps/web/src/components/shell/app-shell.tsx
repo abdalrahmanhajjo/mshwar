@@ -1,13 +1,13 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { VerificationBanner } from "@/components/auth/verification-banner";
 import { AuthStatus, type AuthState } from "@/components/shell/auth-status";
 import { BrandMark } from "@/components/shell/brand-mark";
 import { LanguageSwitcher } from "@/components/shell/language-switcher";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { MobileNav } from "@/components/shell/mobile-nav";
 import { NavLink } from "@/components/shell/nav-link";
 import { NAV_BY_SURFACE, type ShellSurface } from "@/components/shell/nav-config";
@@ -97,9 +97,9 @@ export function AppShell({ surface, children, auth, currentPath }: AppShellProps
                 ))}
               </nav>
               <div className="flex items-center gap-2">
-                <Link href="/business" className="hidden text-sm text-text-muted hover:text-text lg:inline">
+                <LocaleLink href="/business" className="hidden text-sm text-text-muted hover:text-text lg:inline">
                   {t("forBusinesses")}
-                </Link>
+                </LocaleLink>
                 <LanguageSwitcher compact />
                 <div className="hidden lg:block">
                   <AuthStatus auth={auth} />

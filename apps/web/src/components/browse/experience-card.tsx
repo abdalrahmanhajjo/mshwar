@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { Clock, MapPin } from "lucide-react";
 import { CatalogImage } from "@/components/browse/catalog-image";
 import { SaveExperienceButton } from "@/components/browse/save-button";
@@ -17,7 +17,7 @@ export function ExperienceCard({ experience, compact = false }: { experience: Ex
       <span className="absolute end-3 top-3 z-10">
         <SaveExperienceButton slug={experience.slug} compact />
       </span>
-      <Link href={`/experiences/${experience.slug}`} className="flex h-full flex-col">
+      <LocaleLink href={`/experiences/${experience.slug}`} className="flex h-full flex-col">
         <div className="relative overflow-hidden rounded-card">
           <div className={compact ? "aspect-[5/4]" : "aspect-[4/3]"}>
             <CatalogImage src={experience.image} alt={experience.imageAlt} />
@@ -44,7 +44,7 @@ export function ExperienceCard({ experience, compact = false }: { experience: Ex
             </span>
           </div>
         </div>
-      </Link>
+      </LocaleLink>
     </article>
   );
 }

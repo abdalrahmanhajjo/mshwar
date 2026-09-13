@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { Button } from "@/components/ui/button";
 import { useBrowseCopy } from "@/lib/browse-copy";
 
@@ -13,7 +13,7 @@ export function PlanSplitCta() {
         <h2 className="max-w-md text-4xl font-semibold tracking-tight md:text-5xl">{copy.onePlanTitle}</h2>
         <p className="max-w-md text-sm text-brand-foreground/80">{copy.onePlanBody}</p>
         <Button asChild variant="secondary" className="w-fit rounded-pill bg-surface text-text">
-          <Link href="/plan">{copy.buildTrip}</Link>
+          <LocaleLink href="/plan">{copy.buildTrip}</LocaleLink>
         </Button>
       </div>
       <div className="bg-surface-raised p-8 text-text md:p-12">
@@ -42,7 +42,7 @@ export function SoftPlanCta() {
         <p className="mt-1 text-sm text-text-muted">{copy.cantDecideBody}</p>
       </div>
       <Button asChild className="rounded-pill">
-        <Link href="/plan">{copy.planMyTrip}</Link>
+        <LocaleLink href="/plan">{copy.planMyTrip}</LocaleLink>
       </Button>
     </section>
   );

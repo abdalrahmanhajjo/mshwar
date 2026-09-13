@@ -52,12 +52,11 @@ test.describe("MSHWAR-26 responsive app shell", () => {
     await expect(dialog.getByRole("link", { name: "Listings" })).toHaveCount(0);
     await page.keyboard.press("Escape");
 
-    const hrefBefore = page.url();
     await page.getByRole("button", { name: "العربية" }).first().click();
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.locator("[data-shell='traveller']")).toHaveAttribute("dir", "rtl");
     await expect(page.getByRole("button", { name: "فتح القائمة" })).toBeVisible();
-    expect(page.url()).toBe(hrefBefore);
+    await expect(page).toHaveURL(/\/ar\/?/);
     await assertNoHorizontalScroll(page);
   });
 
@@ -276,6 +275,19 @@ test.describe("MSHWAR-31 settings routes", () => {
   });
 });
 
+test.describe("MSHWAR-32 language URLs", () => {
+  test("Arabic prefix is shareable and renders RTL without a cookie first", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/ar");
+    await expect(page).toHaveURL(/\/ar\/?/);
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(page.getByRole("heading", { name: "اترك مساحة لمشوار صغير." })).toBeVisible();
+    await page.goto("/fr/destinations");
+    await expect(page.getByRole("heading", { name: "Où allez-vous flâner ?" })).toBeVisible();
+    await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+  });
+});
+
 test.describe("MSHWAR-36 / MSHWAR-39 marketing browse", () => {
   test("home and destinations match the marketing hierarchy at 390 and 1440", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -305,7 +317,9 @@ test.describe("MSHWAR-36 / MSHWAR-39 marketing browse", () => {
     await expect(page.getByRole("button", { name: "Request to book · Preview" })).toBeVisible();
     await expect(page.getByText("Estimated from", { exact: true }).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: "Policies" })).toBeVisible();
-    await expect(page.getByRole("region", { name: "Policies" }).getByText("Cancellation", { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "Policies" }).getByText("Cancellation", { exact: true }),
+    ).toBeVisible();
     await assertNoHorizontalScroll(page);
   });
 

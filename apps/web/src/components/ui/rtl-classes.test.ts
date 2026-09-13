@@ -2,7 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
-const SCAN_DIRS = [path.join(process.cwd(), "src/components/ui"), path.join(process.cwd(), "src/components/shell")];
+const SCAN_DIRS = [
+  path.join(process.cwd(), "src/components/ui"),
+  path.join(process.cwd(), "src/components/shell"),
+  path.join(process.cwd(), "src/components/browse"),
+];
 
 const FORBIDDEN =
   /\b(?:ml|mr|pl|pr|text-left|text-right|float-left|float-right|rounded-l|rounded-r|border-l|border-r|inset-x-start)-|\b(?:left|right)-(?!1\/2\b)/;

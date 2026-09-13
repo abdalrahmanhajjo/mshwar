@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { CategoryPills } from "@/components/browse/category-pills";
 import { ExperienceCard } from "@/components/browse/experience-card";
 import { FilterRail } from "@/components/browse/filter-rail";
@@ -10,6 +10,8 @@ import { SoftPlanCta } from "@/components/browse/plan-cta";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { useBrowseCopy } from "@/lib/browse-copy";
+import { withLocalePrefix } from "@/lib/locale";
+import { useLocale } from "@/components/shell/locale-provider";
 import {
   DESTINATIONS,
   LISTING_KINDS,
@@ -20,11 +22,12 @@ import {
 
 export function ExperiencesView({ filters, page }: { filters: ExperienceFilters; page: ExperiencePage }) {
   const copy = useBrowseCopy();
+  const { locale } = useLocale();
   const router = useRouter();
 
   function pushFilters(next: ExperienceFilters) {
     const query = serializeExperienceFilters(next);
-    router.push(query ? `/experiences?${query}` : "/experiences");
+    router.push(withLocalePrefix(locale, query ? `/experiences?${query}` : "/experiences"));
   }
 
   function patch(partial: Partial<ExperienceFilters>) {
@@ -95,7 +98,12 @@ export function ExperiencesView({ filters, page }: { filters: ExperienceFilters;
                   {chip.label}
                 </span>
               ))}
-              <Button type="button" variant="ghost" size="sm" onClick={() => router.push("/experiences")}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push(withLocalePrefix(locale, "/experiences"))}
+              >
                 {copy.clearFilters}
               </Button>
             </div>
@@ -133,7 +141,7 @@ export function ExperiencesView({ filters, page }: { filters: ExperienceFilters;
             <EmptyState
               title={copy.emptyResults}
               action={
-                <Button type="button" onClick={() => router.push("/experiences")}>
+                <Button type="button" onClick={() => router.push(withLocalePrefix(locale, "/experiences"))}>
                   {copy.clearFilters}
                 </Button>
               }
@@ -170,9 +178,9 @@ export function ExperiencesView({ filters, page }: { filters: ExperienceFilters;
 
       <SoftPlanCta />
       <p className="text-center text-sm">
-        <Link href="/ideas" className="underline-offset-4 hover:underline">
+        <LocaleLink href="/ideas" className="underline-offset-4 hover:underline">
           {copy.ideasTitle}
-        </Link>
+        </LocaleLink>
       </p>
     </div>
   );

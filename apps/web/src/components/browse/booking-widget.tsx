@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,7 +51,7 @@ export function BookingWidget({ experience }: { experience: Experience }) {
           {copy.previewNote}
         </Button>
         <Button asChild variant="outline" className="rounded-pill">
-          <Link href={`/plan?add=${experience.slug}`}>{copy.addToDayPlan}</Link>
+          <LocaleLink href={`/plan?add=${experience.slug}`}>{copy.addToDayPlan}</LocaleLink>
         </Button>
       </div>
     </aside>

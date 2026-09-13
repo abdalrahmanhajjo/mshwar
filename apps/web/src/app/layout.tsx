@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { Manrope, Noto_Sans_Arabic } from "next/font/google";
 import { AuthProvider } from "@/components/shell/auth-provider";
 import { LocaleProvider } from "@/components/shell/locale-provider";
-import { localeDirection, parseLocale } from "@/lib/locale";
+import { LOCALE_COOKIE, LOCALE_HEADER, localeDirection, parseLocale } from "@/lib/locale";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -25,7 +25,8 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
-  const locale = parseLocale(cookieStore.get("mshwar-locale")?.value);
+  const headerStore = await headers();
+  const locale = parseLocale(headerStore.get(LOCALE_HEADER) ?? cookieStore.get(LOCALE_COOKIE)?.value);
 
   return (
     <html lang={locale} dir={localeDirection(locale)} suppressHydrationWarning>
