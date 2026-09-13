@@ -4,20 +4,36 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-from app.dependencies import get_db
+from app.dependencies import get_auth_db, get_db
 from app.main import app
+
+
+class _EmptyResult:
+    def scalar_one_or_none(self) -> Any:
+        return None
+
+
+class _EmptySession:
+    async def execute(self, *_args: Any, **_kwargs: Any) -> _EmptyResult:
+        return _EmptyResult()
 
 
 async def _noop_db() -> AsyncGenerator[Any, None]:
     yield None
 
 
+async def _empty_auth_db() -> AsyncGenerator[Any, None]:
+    yield _EmptySession()
+
+
 @pytest.fixture
 def client() -> Generator[TestClient, None, None]:
     app.dependency_overrides[get_db] = _noop_db
+    app.dependency_overrides[get_auth_db] = _empty_auth_db
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.pop(get_db, None)
+    app.dependency_overrides.pop(get_auth_db, None)
 
 
 def test_health_check(client: TestClient) -> None:

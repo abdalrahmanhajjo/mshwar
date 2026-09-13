@@ -1083,7 +1083,6 @@ DECLARE
     v_venue app.venues;
 BEGIN
     IF NOT app.has_capability(p_user, p_org, 'listings')
-       AND NOT app.has_capability(p_user, p_org, 'bookings')
        AND NOT app.is_platform_admin(p_user) THEN
         RAISE EXCEPTION 'capability denied: listings' USING ERRCODE = '42501';
     END IF;
@@ -1162,7 +1161,6 @@ SET search_path = app, public
 AS $$
 BEGIN
     IF NOT app.has_capability(p_user, p_org, 'listings')
-       AND NOT app.has_capability(p_user, p_org, 'bookings')
        AND NOT app.is_platform_admin(p_user) THEN
         RAISE EXCEPTION 'capability denied: listings' USING ERRCODE = '42501';
     END IF;
