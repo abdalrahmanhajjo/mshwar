@@ -50,3 +50,9 @@ If Tokens Studio is unavailable:
 - It does not claim the Figma library is already published to the org.
 
 When API credentials exist, `figma-variables.json` is the payload to send. Until then, import remains a documented manual publish.
+
+## 54-screen frames (MSHWAR-27)
+
+Token Variables are only half of the Figma source of truth. The **code-side 54-screen inventory** — every live route, the 22 gap/state pads, the 390px mobile-20 list, journey-band coordinates, handoff annotation text, and the publish-for-review checklist — lives in [FIGMA-54-SCREENS.md](./FIGMA-54-SCREENS.md) (JSON: [generated/figma-54-screens.json](./generated/figma-54-screens.json)).
+
+Import Variables first (this page), then place frames from that inventory. This repository still does **not** edit the live Figma file.
