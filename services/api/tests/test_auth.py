@@ -2,21 +2,34 @@ from __future__ import annotations
 
 from collections.abc import AsyncGenerator
 from datetime import datetime, timedelta, timezone
+from uuid import uuid4
 
 import pytest
 from fastapi import Response
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
 
-from app.api.v1.endpoints.auth import RegisterRequest
+from app.api.v1.endpoints.auth import RegisterRequest, ResetPasswordRequest
+from app.core.config import settings
+from app.core.mailer import RecordingMailer, get_mailer, set_mailer
 from app.core.passwords import hash_password, verify_password
+from app.core.rate_limit import limiter
 from app.core.sessions import COOKIE_NAME, hash_session_token, set_session_cookie, should_refresh
 from app.main import app
 
 
 @pytest.fixture
 async def api() -> AsyncGenerator[AsyncClient, None]:
+    limiter.reset()
+    mailer = RecordingMailer()
+    set_mailer(mailer)
+    previous_min_ms = settings.password_reset_min_ms
+    settings.password_reset_min_ms = 0
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client
+    settings.password_reset_min_ms = previous_min_ms
+    limiter.reset()
+    set_mailer(None)
 
 
 def test_password_hash_is_not_plaintext() -> None:
@@ -83,6 +96,13 @@ async def test_register_signin_me_refresh_signout(api: AsyncClient) -> None:
     assert (await api.get("/api/v1/auth/me")).status_code == 401
 
 
+def test_reset_request_hides_token_and_password_from_repr() -> None:
+    payload = ResetPasswordRequest.model_validate({"token": "hidden-reset-token", "password": "long-enough-secret"})
+    rendered = repr(payload)
+    assert "hidden-reset-token" not in rendered
+    assert "long-enough-secret" not in rendered
+
+
 def test_password_is_omitted_from_request_repr() -> None:
     payload = RegisterRequest.model_validate(
         {
@@ -127,6 +147,169 @@ async def test_register_rejects_invalid_locale(api: AsyncClient) -> None:
         },
     )
     assert response.status_code == 422
+
+
+def _unique_email(prefix: str) -> str:
+    return f"{prefix}-{uuid4().hex[:12]}@example.com"
+
+
+async def _register(api: AsyncClient, email: str, secret: str = "long-enough-secret") -> None:
+    created = await api.post(
+        "/api/v1/auth/register",
+        json={"email": email, "password": secret, "display_name": "Lina", "locale": "en"},
+    )
+    assert created.status_code == 201, created.text
+
+
+@pytest.mark.asyncio
+async def test_forgot_password_response_is_identical_for_known_and_unknown_emails(api: AsyncClient) -> None:
+    known = _unique_email("known")
+    unknown = _unique_email("unknown")
+    await _register(api, known)
+
+    existing = await api.post("/api/v1/auth/forgot-password", json={"email": known})
+    missing = await api.post("/api/v1/auth/forgot-password", json={"email": unknown})
+
+    assert existing.status_code == 200
+    assert missing.status_code == 200
+    assert existing.json() == missing.json() == {"ok": True}
+    assert existing.content == missing.content
+    assert existing.headers.get("content-type") == missing.headers.get("content-type")
+    assert COOKIE_NAME not in existing.headers.get("set-cookie", "")
+    assert COOKIE_NAME not in missing.headers.get("set-cookie", "")
+
+    mailer = get_mailer()
+    assert isinstance(mailer, RecordingMailer)
+    assert len(mailer.reset_tokens_for(known)) == 1
+    assert mailer.reset_tokens_for(unknown) == []
+    assert any(msg.purpose == "password_reset_suppressed" and msg.to == unknown for msg in mailer.messages)
+
+
+@pytest.mark.asyncio
+async def test_reset_token_is_single_use_and_revokes_other_sessions(api: AsyncClient) -> None:
+    email = _unique_email("reset")
+    old_secret = "long-enough-secret"
+    new_secret = "replacement-secret"
+    await _register(api, email, old_secret)
+    first_cookie = api.cookies[COOKIE_NAME]
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as other:
+        signed_in = await other.post("/api/v1/auth/signin", json={"email": email, "password": old_secret})
+        assert signed_in.status_code == 200
+        second_cookie = other.cookies[COOKIE_NAME]
+
+    forgot = await api.post("/api/v1/auth/forgot-password", json={"email": email})
+    assert forgot.status_code == 200
+    mailer = get_mailer()
+    assert isinstance(mailer, RecordingMailer)
+    token = mailer.reset_tokens_for(email)[0]
+
+    reset = await api.post("/api/v1/auth/reset-password", json={"token": token, "password": new_secret})
+    assert reset.status_code == 200
+    assert reset.json()["email"] == email
+    new_cookie = reset.cookies[COOKIE_NAME]
+    assert new_cookie
+    assert new_cookie != first_cookie
+
+    reuse = await api.post("/api/v1/auth/reset-password", json={"token": token, "password": new_secret})
+    assert reuse.status_code == 400
+    assert reuse.json()["detail"] == "Invalid or expired reset link"
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as check:
+        check.cookies.set(COOKIE_NAME, first_cookie)
+        assert (await check.get("/api/v1/auth/me")).status_code == 401
+        check.cookies.set(COOKIE_NAME, second_cookie)
+        assert (await check.get("/api/v1/auth/me")).status_code == 401
+        check.cookies.set(COOKIE_NAME, new_cookie)
+        me = await check.get("/api/v1/auth/me")
+        assert me.status_code == 200
+        assert me.json()["email"] == email
+
+    old_signin = await api.post("/api/v1/auth/signin", json={"email": email, "password": old_secret})
+    assert old_signin.status_code == 401
+    new_signin = await api.post("/api/v1/auth/signin", json={"email": email, "password": new_secret})
+    assert new_signin.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_new_reset_token_invalidates_unused_previous_token(api: AsyncClient) -> None:
+    email = _unique_email("rotate")
+    await _register(api, email)
+    await api.post("/api/v1/auth/forgot-password", json={"email": email})
+    await api.post("/api/v1/auth/forgot-password", json={"email": email})
+    mailer = get_mailer()
+    assert isinstance(mailer, RecordingMailer)
+    tokens = mailer.reset_tokens_for(email)
+    assert len(tokens) == 2
+    stale = await api.post(
+        "/api/v1/auth/reset-password",
+        json={"token": tokens[0], "password": "replacement-secret"},
+    )
+    assert stale.status_code == 400
+    fresh = await api.post(
+        "/api/v1/auth/reset-password",
+        json={"token": tokens[1], "password": "replacement-secret"},
+    )
+    assert fresh.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_expired_reset_token_is_rejected(api: AsyncClient, db_session) -> None:
+    email = _unique_email("expired")
+    await _register(api, email)
+    await api.post("/api/v1/auth/forgot-password", json={"email": email})
+    mailer = get_mailer()
+    assert isinstance(mailer, RecordingMailer)
+    token = mailer.reset_tokens_for(email)[0]
+    await db_session.execute(
+        text(
+            """
+            UPDATE app.password_reset_tokens t
+            SET expires_at = now() - interval '1 minute'
+            FROM app.user_private p
+            WHERE t.user_id = p.user_id AND p.email = :email
+            """
+        ),
+        {"email": email},
+    )
+    await db_session.commit()
+    expired = await api.post(
+        "/api/v1/auth/reset-password",
+        json={"token": token, "password": "replacement-secret"},
+    )
+    assert expired.status_code == 400
+    assert expired.json()["detail"] == "Invalid or expired reset link"
+
+
+@pytest.mark.asyncio
+async def test_forgot_password_rate_limit_is_identical_for_any_email(api: AsyncClient) -> None:
+    known = _unique_email("limited")
+    unknown = _unique_email("unknown-limited")
+    last_known = None
+    for _ in range(settings.forgot_email_limit + 1):
+        last_known = await api.post("/api/v1/auth/forgot-password", json={"email": known})
+    assert last_known is not None
+    assert last_known.status_code == 429
+    assert last_known.json()["detail"] == "Too many requests"
+
+    limiter.reset()
+    last_unknown = None
+    for _ in range(settings.forgot_email_limit + 1):
+        last_unknown = await api.post("/api/v1/auth/forgot-password", json={"email": unknown})
+    assert last_unknown is not None
+    assert last_unknown.status_code == 429
+    assert last_unknown.json() == last_known.json()
+    assert last_unknown.content == last_known.content
+
+
+@pytest.mark.asyncio
+async def test_invalid_reset_token_is_rejected(api: AsyncClient) -> None:
+    response = await api.post(
+        "/api/v1/auth/reset-password",
+        json={"token": "not-a-real-reset-token", "password": "replacement-secret"},
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Invalid or expired reset link"
 
 
 @pytest.mark.asyncio

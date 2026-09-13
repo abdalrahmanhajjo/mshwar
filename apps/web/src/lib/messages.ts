@@ -16,6 +16,15 @@ export type MessageKey =
   | "noAccount"
   | "authError"
   | "passwordHint"
+  | "forgotPassword"
+  | "resetPassword"
+  | "sendResetLink"
+  | "resetSent"
+  | "forgotHint"
+  | "newPassword"
+  | "invalidReset"
+  | "updatePassword"
+  | "backToSignIn"
   | "signedInAs"
   | "discover"
   | "plan"
@@ -59,6 +68,15 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     noAccount: "New to Mshwar?",
     authError: "Something went wrong. Try again.",
     passwordHint: "At least 10 characters. Stored as an Argon2id hash — never logged.",
+    forgotPassword: "Forgot password?",
+    resetPassword: "Reset password",
+    sendResetLink: "Send reset link",
+    resetSent: "If an account exists for this address, a reset link has been sent.",
+    forgotHint: "Enter the email on the account. The next screen is the same whether or not it is registered.",
+    newPassword: "New password",
+    invalidReset: "This reset link is invalid or has expired.",
+    updatePassword: "Update password",
+    backToSignIn: "Back to sign in",
     signedInAs: "Signed in as",
     discover: "Discover",
     plan: "Plan",
@@ -101,6 +119,15 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     noAccount: "جديد على مشوار؟",
     authError: "حدث خطأ. حاول مرة أخرى.",
     passwordHint: "عشرة أحرف على الأقل. تُحفظ كتجزئة Argon2id ولا تُسجَّل كنص.",
+    forgotPassword: "نسيت كلمة المرور؟",
+    resetPassword: "إعادة تعيين كلمة المرور",
+    sendResetLink: "إرسال الرابط",
+    resetSent: "إذا كان هناك حساب لهذا العنوان، فقد أُرسل رابط إعادة التعيين.",
+    forgotHint: "أدخل البريد الإلكتروني للحساب. الرسالة التالية واحدة سواء وُجد الحساب أم لا.",
+    newPassword: "كلمة المرور الجديدة",
+    invalidReset: "رابط إعادة التعيين غير صالح أو منتهٍ.",
+    updatePassword: "تحديث كلمة المرور",
+    backToSignIn: "العودة لتسجيل الدخول",
     signedInAs: "مسجّل الدخول باسم",
     discover: "اكتشف",
     plan: "خطّط",
@@ -143,6 +170,15 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     noAccount: "Nouveau sur Mshwar ?",
     authError: "Une erreur s’est produite. Réessayez.",
     passwordHint: "Au moins 10 caractères. Stocké en Argon2id — jamais consigné en clair.",
+    forgotPassword: "Mot de passe oublié ?",
+    resetPassword: "Réinitialiser le mot de passe",
+    sendResetLink: "Envoyer le lien",
+    resetSent: "Si un compte existe pour cette adresse, un lien de réinitialisation a été envoyé.",
+    forgotHint: "Saisissez l’e-mail du compte. L’écran suivant est identique que l’adresse soit inscrite ou non.",
+    newPassword: "Nouveau mot de passe",
+    invalidReset: "Ce lien de réinitialisation est invalide ou a expiré.",
+    updatePassword: "Mettre à jour le mot de passe",
+    backToSignIn: "Retour à la connexion",
     signedInAs: "Connecté en tant que",
     discover: "Découvrir",
     plan: "Planifier",

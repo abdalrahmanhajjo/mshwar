@@ -1,5 +1,6 @@
 export const navigationMocks = {
   pathname: "/",
+  search: "",
   replace: (_href?: string) => undefined,
   push: (_href?: string) => undefined,
 };
@@ -17,5 +18,5 @@ export function useRouter() {
 }
 
 export function useSearchParams() {
-  return new URLSearchParams();
+  return new URLSearchParams(navigationMocks.search);
 }

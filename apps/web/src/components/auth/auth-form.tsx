@@ -94,6 +94,13 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
               onChange={(event) => setPassword(event.target.value)}
             />
           </div>
+          {mode === "signin" ? (
+            <p className="text-sm">
+              <Link className="text-brand underline-offset-4 hover:underline" href="/forgot-password">
+                {t("forgotPassword")}
+              </Link>
+            </p>
+          ) : null}
           {error ? (
             <p role="alert" className="text-sm text-danger">
               {error}

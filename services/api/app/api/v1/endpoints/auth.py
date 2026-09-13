@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import re
+import time
+from datetime import datetime, timedelta, timezone
 from typing import Any
 from uuid import UUID
 
@@ -10,7 +13,10 @@ from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
+from app.core.mailer import MailMessage, get_mailer
 from app.core.passwords import hash_password, verify_password
+from app.core.rate_limit import limiter
 from app.core.sessions import (
     COOKIE_NAME,
     clear_session_cookie,
@@ -27,6 +33,8 @@ router = APIRouter()
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 _LOCALES = frozenset({"ar", "en", "fr"})
 LOCAL_ISSUER = "mshwar.local"
+_INVALID_RESET = "Invalid or expired reset link"
+_RATE_LIMITED = "Too many requests"
 
 
 class RegisterRequest(BaseModel):
@@ -46,6 +54,19 @@ class UserOut(BaseModel):
     email: str
     display_name: str
     locale: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: str = Field(min_length=3, max_length=254)
+
+
+class ForgotPasswordResponse(BaseModel):
+    ok: bool = True
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(min_length=8, max_length=256, repr=False)
+    password: str = Field(min_length=10, max_length=128, repr=False)
 
 
 def _normalize_email(email: str) -> str:
@@ -213,3 +234,109 @@ async def _me_or_refresh(
         display_name=session["display_name"],
         locale=session["locale"],
     )
+
+
+def _client_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for", "")
+    if forwarded:
+        return forwarded.split(",")[0].strip()[:128]
+    if request.client and request.client.host:
+        return request.client.host
+    return "unknown"
+
+
+async def _pad_forgot_duration(started: float) -> None:
+    minimum = settings.password_reset_min_ms / 1000
+    remaining = minimum - (time.monotonic() - started)
+    if remaining > 0:
+        await asyncio.sleep(remaining)
+
+
+def _reset_expiry() -> datetime:
+    return datetime.now(timezone.utc) + timedelta(seconds=settings.password_reset_ttl_seconds)
+
+
+def _reset_link(token: str) -> str:
+    origin = settings.public_web_origin.rstrip("/")
+    return f"{origin}/reset-password?token={token}"
+
+
+@router.post("/forgot-password", response_model=ForgotPasswordResponse)
+async def forgot_password(
+    payload: ForgotPasswordRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> ForgotPasswordResponse:
+    started = time.monotonic()
+    email = _normalize_email(payload.email)
+    ip = _client_ip(request)
+    if not limiter.allow(f"forgot:ip:{ip}", settings.forgot_ip_limit, settings.rate_limit_window_seconds):
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=_RATE_LIMITED)
+    if not limiter.allow(f"forgot:email:{email}", settings.forgot_email_limit, settings.rate_limit_window_seconds):
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=_RATE_LIMITED)
+
+    token = new_session_token()
+    token_hash = hash_session_token(token)
+    result = await db.execute(
+        text("SELECT app.issue_password_reset(:email, :token_hash, :expires_at)"),
+        {"email": email, "token_hash": token_hash, "expires_at": _reset_expiry()},
+    )
+    user_id = result.scalar_one_or_none()
+    if user_id is not None:
+        await get_mailer().send(
+            MailMessage(
+                to=email,
+                subject="Reset your Mshwar password",
+                text_body=f"Use this link to choose a new password. It expires in 30 minutes.\n{_reset_link(token)}",
+                purpose="password_reset",
+                token=token,
+            )
+        )
+    else:
+        hash_session_token(new_session_token())
+        await get_mailer().send(
+            MailMessage(
+                to=email,
+                subject="Reset your Mshwar password",
+                text_body="If an account exists, a reset link was issued.",
+                purpose="password_reset_suppressed",
+            )
+        )
+    await _pad_forgot_duration(started)
+    return ForgotPasswordResponse()
+
+
+@router.post("/reset-password", response_model=UserOut)
+async def reset_password(
+    payload: ResetPasswordRequest,
+    request: Request,
+    response: Response,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> UserOut:
+    ip = _client_ip(request)
+    if not limiter.allow(f"reset:ip:{ip}", settings.forgot_ip_limit, settings.rate_limit_window_seconds):
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=_RATE_LIMITED)
+    password_hash = hash_password(payload.password)
+    result = await db.execute(
+        text("SELECT app.consume_password_reset(:token_hash, :password_hash)"),
+        {"token_hash": hash_session_token(payload.token), "password_hash": password_hash},
+    )
+    user_id = result.scalar_one_or_none()
+    if user_id is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=_INVALID_RESET)
+    fetched = (
+        await db.execute(
+            text(
+                """
+                SELECT u.id, p.email, u.display_name, u.locale
+                FROM app.users u
+                JOIN app.user_private p ON p.user_id = u.id
+                WHERE u.id = :user_id
+                """
+            ),
+            {"user_id": str(user_id)},
+        )
+    ).one()
+    user = UserOut(id=fetched[0], email=fetched[1], display_name=fetched[2], locale=fetched[3])
+    await _issue_cookie_session(db, response, user.id, request.headers.get("user-agent"))
+    return user

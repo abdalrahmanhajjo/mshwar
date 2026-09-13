@@ -69,6 +69,31 @@ export async function signOutAccount(): Promise<void> {
   await fetch("/api/v1/auth/signout", { method: "POST", credentials: "include" });
 }
 
+export async function requestPasswordReset(email: string): Promise<void> {
+  const response = await fetch("/api/v1/auth/forgot-password", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  if (!response.ok) {
+    throw new Error(await readAuthError(response));
+  }
+}
+
+export async function resetPassword(input: { token: string; password: string }): Promise<AuthUser> {
+  const response = await fetch("/api/v1/auth/reset-password", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    throw new Error(await readAuthError(response));
+  }
+  return (await response.json()) as AuthUser;
+}
+
 async function readAuthError(response: Response): Promise<string> {
   try {
     const body = (await response.json()) as { detail?: string };

@@ -37,7 +37,13 @@ export function AuthStatus({ auth }: { auth?: AuthState }) {
     );
   }
 
-  const next = pathname.startsWith("/signin") || pathname.startsWith("/signup") ? "/" : pathname;
+  const next =
+    pathname.startsWith("/signin") ||
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/reset-password")
+      ? "/"
+      : pathname;
 
   return (
     <Button variant="outline" size="sm" asChild>

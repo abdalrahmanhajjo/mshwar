@@ -99,6 +99,35 @@ test.describe("MSHWAR-26 responsive app shell", () => {
   });
 });
 
+test.describe("MSHWAR-29 recovery routes", () => {
+  test("forgot-password is usable at 390px and 1440px", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/forgot-password");
+    await expect(page.getByRole("heading", { name: "Forgot password?" })).toBeVisible();
+    await expect(page.getByLabel("Email")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Send reset link" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/forgot-password");
+    await expect(page.getByRole("link", { name: "Back to sign in" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+
+  test("reset-password shows invalid state without a token and a form with one", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/reset-password");
+    await expect(page.getByText("This reset link is invalid or has expired.")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/reset-password?token=demo-token");
+    await expect(page.getByLabel("New password")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Update password" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+});
+
 test.describe("MSHWAR-28 auth routes", () => {
   test("unauthenticated /plan returns the user to sign-in with next", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
