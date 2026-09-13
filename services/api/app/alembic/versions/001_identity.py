@@ -4,9 +4,8 @@ Creates the core identity tables with UUID primary keys.
 """
 
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID
-
 from alembic import op
+from sqlalchemy.dialects.postgresql import UUID
 
 # revision identifiers, used by Alembic
 revision = "001"

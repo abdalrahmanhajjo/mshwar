@@ -5,9 +5,8 @@ currencies, price_rules, policies.
 """
 
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import SMALLINT, TIME, TSRANGE, UUID
-
 from alembic import op
+from sqlalchemy.dialects.postgresql import SMALLINT, TIME, TSRANGE, UUID
 
 # revision identifiers, used by Alembic
 revision = "002"

@@ -43,7 +43,7 @@ async def list_businesses(
 
 @router.post("", response_model=Business)
 async def create_business(business: BusinessCreate, db: AsyncSession = Depends(get_db)) -> Business:  # noqa: B008
-    return Business(**business.model_dump())
+    return Business(id=1, **business.model_dump())
 
 
 @router.get("/{business_id}", response_model=Business)

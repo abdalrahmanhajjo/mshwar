@@ -54,13 +54,13 @@ python scripts/migrate.py  # Apply SQL migrations from mshwar-database/migration
 
 ## Ports
 
-| Service | Port |
-|---|---|
-| Web (Next.js) | 3000 |
-| API (FastAPI) | 8000 |
-| API Docs | 8000/docs |
-| PostgreSQL | 5432 |
-| Redis | 6379 |
+| Service       | Port      |
+| ------------- | --------- |
+| Web (Next.js) | 3000      |
+| API (FastAPI) | 8000      |
+| API Docs      | 8000/docs |
+| PostgreSQL    | 5432      |
+| Redis         | 6379      |
 
 ## Testing
 

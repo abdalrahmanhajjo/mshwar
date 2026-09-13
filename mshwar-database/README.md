@@ -17,20 +17,20 @@ An executable database foundation derived from **Mshwar Business Requirements Do
 
 ## Files
 
-| Path | Purpose |
-|---|---|
-| migrations/001_schema.sql | Entities, relationships, constraints and indexes |
-| migrations/002_integrity.sql | Immutable records, audit, payment/refund rules and itinerary sealing |
+| Path                            | Purpose                                                                   |
+| ------------------------------- | ------------------------------------------------------------------------- |
+| migrations/001_schema.sql       | Entities, relationships, constraints and indexes                          |
+| migrations/002_integrity.sql    | Immutable records, audit, payment/refund rules and itinerary sealing      |
 | migrations/003_transactions.sql | Reservation, transition, expiry, capacity consistency and financial views |
-| migrations/004_security.sql | Private schema, backend role and scoped reader policies |
-| migrations/005_hardening.sql | Slot immutability, evaluation freezing and additional checks |
-| docs/DATA_DICTIONARY.md | Table-by-table SQL field definitions |
-| docs/ERD.md | Domain relationship diagrams |
-| docs/REQUIREMENTS.md | BRD mapping and database/application responsibility boundary |
-| docs/TEST_RESULTS.json | Actual embedded integration test results and limits |
-| examples/queries.sql | Geospatial search, RAG, outbox and reconciliation examples |
-| tests/integration.mjs | Repeatable embedded tests with PostGIS and pgvector |
-| tests/concurrency.py | Native multi-connection contention test |
+| migrations/004_security.sql     | Private schema, backend role and scoped reader policies                   |
+| migrations/005_hardening.sql    | Slot immutability, evaluation freezing and additional checks              |
+| docs/DATA_DICTIONARY.md         | Table-by-table SQL field definitions                                      |
+| docs/ERD.md                     | Domain relationship diagrams                                              |
+| docs/REQUIREMENTS.md            | BRD mapping and database/application responsibility boundary              |
+| docs/TEST_RESULTS.json          | Actual embedded integration test results and limits                       |
+| examples/queries.sql            | Geospatial search, RAG, outbox and reconciliation examples                |
+| tests/integration.mjs           | Repeatable embedded tests with PostGIS and pgvector                       |
+| tests/concurrency.py            | Native multi-connection contention test                                   |
 
 ## Security boundary
 

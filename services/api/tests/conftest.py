@@ -4,6 +4,9 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
+import app.models
+import app.models.base
+import app.models.types  # noqa: F401
 from app.core.config import settings
 from app.core.context import clear_session_context, set_session_context
 

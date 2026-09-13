@@ -1,11 +1,13 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import * as SelectPrimitive from "@radix-ui/react-select"
-import { cn } from "@/lib/utils"
-import { ChevronDown } from "lucide-react"
+import * as React from "react";
+import * as SelectPrimitive from "@radix-ui/react-select";
+import { Check, ChevronDown } from "lucide-react";
+import { cn, controlSize, focusRing } from "@/lib/utils";
 
-const Select = SelectPrimitive.Root
+const Select = SelectPrimitive.Root;
+const SelectGroup = SelectPrimitive.Group;
+const SelectValue = SelectPrimitive.Value;
 
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
@@ -14,18 +16,21 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-      className
+      "flex w-full items-center justify-between gap-2 rounded-control border border-border bg-surface-raised px-3 py-2 text-sm text-text",
+      "disabled:cursor-not-allowed disabled:opacity-50 data-[placeholder]:text-text-muted",
+      focusRing,
+      controlSize,
+      className,
     )}
     {...props}
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-50" />
+      <ChevronDown className="size-4 shrink-0 opacity-70" aria-hidden />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
-))
-SelectTrigger.displayName = SelectPrimitive.Trigger.displayName
+));
+SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
@@ -35,21 +40,39 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "relative z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-1/2 data-[state=open]:slide-in-to-left-1/2 data-[state=open]:slide-in-to-top-1/2",
-        position === "popper" && "data-[state=open]:translate-y-1",
-        className
+        "relative z-50 max-h-96 min-w-32 overflow-hidden rounded-control border border-border bg-surface-raised text-text shadow-md",
+        className,
       )}
       position={position}
       {...props}
     >
-      <SelectPrimitive.Viewport className="p-1">
-        {children}
-      </SelectPrimitive.Viewport>
+      <SelectPrimitive.Viewport className="p-1">{children}</SelectPrimitive.Viewport>
     </SelectPrimitive.Content>
   </SelectPrimitive.Portal>
-))
-SelectContent.displayName = SelectPrimitive.Content.displayName
+));
+SelectContent.displayName = SelectPrimitive.Content.displayName;
 
-const SelectValue = SelectPrimitive.Value
+const SelectItem = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
+>(({ className, children, ...props }, ref) => (
+  <SelectPrimitive.Item
+    ref={ref}
+    className={cn(
+      "relative flex w-full cursor-default select-none items-center rounded-control py-2 pe-8 ps-2 text-sm outline-none",
+      "focus:bg-surface-sunken focus:text-text data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      className,
+    )}
+    {...props}
+  >
+    <span className="absolute end-2 flex size-4 items-center justify-center">
+      <SelectPrimitive.ItemIndicator>
+        <Check className="size-4" aria-hidden />
+      </SelectPrimitive.ItemIndicator>
+    </span>
+    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+  </SelectPrimitive.Item>
+));
+SelectItem.displayName = SelectPrimitive.Item.displayName;
 
-export { Select, SelectTrigger, SelectContent, SelectValue }
+export { Select, SelectGroup, SelectValue, SelectTrigger, SelectContent, SelectItem };

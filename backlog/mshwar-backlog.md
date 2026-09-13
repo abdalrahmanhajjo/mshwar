@@ -14,7 +14,7 @@ Stand up the repo, environments, database and CI so every later epic has a place
 
 ### FND.1 Set up the monorepo, package management and code standards
 
-*Highest priority · 5 points · traces to Tech baseline S23*
+_Highest priority · 5 points · traces to Tech baseline S23_
 
 Create the repository layout for the Next.js frontend and FastAPI backend, with shared tooling, formatting and commit conventions so the two stacks stay consistent.
 
@@ -35,7 +35,7 @@ Create the repository layout for the Next.js frontend and FastAPI backend, with 
 
 ### FND.2 Provision PostgreSQL 17 with PostGIS, pgvector and btree_gist
 
-*Highest priority · 5 points · traces to BRD 1.2, migrations 001-005*
+_Highest priority · 5 points · traces to BRD 1.2, migrations 001-005_
 
 Provision the database that the whole product assumes: relational core, geospatial queries for distance and routing inputs, vector search for RAG, and exclusion constraints for slot booking.
 
@@ -56,7 +56,7 @@ Provision the database that the whole product assumes: relational core, geospati
 
 ### FND.3 Land the core schema migrations 001-005
 
-*Highest priority · 8 points · traces to BRD S13, migrations 001-005*
+_Highest priority · 8 points · traces to BRD S13, migrations 001-005_
 
 Apply the five authored migrations (identity, catalogue, availability, booking/payment, AI/ops) and make them re-runnable from an empty database.
 
@@ -77,7 +77,7 @@ Apply the five authored migrations (identity, catalogue, availability, booking/p
 
 ### FND.4 Enforce row-level security and tenant isolation at the database layer
 
-*Highest priority · 8 points · traces to BR-21, FR-060, FR-066*
+_Highest priority · 8 points · traces to BR-21, FR-060, FR-066_
 
 Business staff must never see another organisation's bookings or customers. Enforce that in Postgres with FORCE ROW LEVEL SECURITY rather than relying on application filters alone.
 
@@ -98,7 +98,7 @@ Business staff must never see another organisation's bookings or customers. Enfo
 
 ### FND.5 Build the environment and secrets strategy
 
-*High priority · 3 points · traces to BRD S25, AC-15*
+_High priority · 3 points · traces to BRD S25, AC-15_
 
 Define local, staging and production environments with separate credentials, and make sure no secret can reach the client bundle or a log line.
 
@@ -118,7 +118,7 @@ Define local, staging and production environments with separate credentials, and
 
 ### FND.6 Set up CI/CD with quality gates
 
-*High priority · 5 points · traces to BRD S24, S25*
+_High priority · 5 points · traces to BRD S24, S25_
 
 Every pull request runs the same checks, and merging to main deploys to staging automatically.
 
@@ -139,7 +139,7 @@ Every pull request runs the same checks, and merging to main deploys to staging 
 
 ### FND.7 Build the seed and demo-data toolkit
 
-*High priority · 5 points · traces to AC-02, AC-03, BR-01*
+_High priority · 5 points · traces to AC-02, AC-03, BR-01_
 
 The AI planner can only be demonstrated against real, verified Lebanese inventory. Build a repeatable seeder so any environment can be filled with credible data.
 
@@ -168,7 +168,7 @@ Turn the brand foundation and the imported Figma frames into coded, accessible, 
 
 ### DSN.1 Codify brand tokens as the single source of truth
 
-*Highest priority · 5 points · traces to Brand foundation package*
+_Highest priority · 5 points · traces to Brand foundation package_
 
 Convert the brand package into design tokens consumed by both Figma and Tailwind, so a colour change happens in one place.
 
@@ -189,7 +189,7 @@ Convert the brand package into design tokens consumed by both Figma and Tailwind
 
 ### DSN.2 Fix the contrast failures found in the brand review
 
-*Highest priority · 3 points · traces to Package review findings*
+_Highest priority · 3 points · traces to Package review findings_
 
 Several brand pairings fall below WCAG AA. Correct them at token level before components are built on top of them.
 
@@ -209,7 +209,7 @@ Several brand pairings fall below WCAG AA. Correct them at token level before co
 
 ### DSN.3 Build the core component library
 
-*High priority · 8 points · traces to Screen inventory, FR-005*
+_High priority · 8 points · traces to Screen inventory, FR-005_
 
 Build the shadcn/ui-based components that the 54 screens actually use, each one keyboard-accessible and direction-agnostic.
 
@@ -230,7 +230,7 @@ Build the shadcn/ui-based components that the 54 screens actually use, each one 
 
 ### DSN.4 Implement the responsive app shell
 
-*High priority · 5 points · traces to Screen inventory, FR-005*
+_High priority · 5 points · traces to Screen inventory, FR-005_
 
 One shell that carries header, navigation, language switcher, auth state and footer across all three surfaces at 390px and 1440px.
 
@@ -251,7 +251,7 @@ One shell that carries header, navigation, language switcher, auth state and foo
 
 ### DSN.5 Finish the Figma source of truth for all 54 screens
 
-*Medium priority · 5 points · traces to Figma import checklist*
+_Medium priority · 5 points · traces to Figma import checklist_
 
 34 of 54 core desktop frames are imported. Complete the remaining desktop frames, add the mobile pass, and arrange everything on the documented grid.
 
@@ -280,7 +280,7 @@ Registration, sign-in, recovery, profile, preferences and the language choice th
 
 ### ACC.1 Implement registration, sign-in and sign-out
 
-*Highest priority · 8 points · traces to FR-001, AC-01*
+_Highest priority · 8 points · traces to FR-001, AC-01_
 
 Secure email/password authentication with sessions, plus the groundwork for social sign-in later.
 
@@ -301,7 +301,7 @@ Secure email/password authentication with sessions, plus the groundwork for soci
 
 ### ACC.2 Implement account recovery without account enumeration
 
-*Highest priority · 5 points · traces to FR-001*
+_Highest priority · 5 points · traces to FR-001_
 
 A user can regain access, and an attacker cannot use the flow to learn which emails have accounts.
 
@@ -322,7 +322,7 @@ A user can regain access, and an attacker cannot use the flow to learn which ema
 
 ### ACC.3 Verify email addresses
 
-*High priority · 3 points · traces to FR-001*
+_High priority · 3 points · traces to FR-001_
 
 Confirm the address is reachable before it can receive booking confirmations.
 
@@ -342,7 +342,7 @@ Confirm the address is reachable before it can receive booking confirmations.
 
 ### ACC.4 Build the profile and preferences screen
 
-*High priority · 5 points · traces to FR-002, FR-003, AC-01*
+_High priority · 5 points · traces to FR-002, FR-003, AC-01_
 
 Let users set the basics the planner needs: name, language, home area, and the travel preferences that shape recommendations.
 
@@ -363,7 +363,7 @@ Let users set the basics the planner needs: name, language, home area, and the t
 
 ### ACC.5 Implement language selection with Arabic RTL
 
-*Highest priority · 5 points · traces to FR-005, AC-16*
+_Highest priority · 5 points · traces to FR-005, AC-16_
 
 Arabic, English and French, switchable at any time, with correct direction and no reload.
 
@@ -384,7 +384,7 @@ Arabic, English and French, switchable at any time, with correct direction and n
 
 ### ACC.6 Build the account hub: trips, favorites, bookings and notifications
 
-*High priority · 5 points · traces to FR-004, FR-053*
+_High priority · 5 points · traces to FR-004, FR-053_
 
 One place where a user finds everything they have saved or booked, scoped strictly to them.
 
@@ -405,7 +405,7 @@ One place where a user finds everything they have saved or booked, scoped strict
 
 ### ACC.7 Let users export and delete their data
 
-*Medium priority · 3 points · traces to BR-22, BRD S16*
+_Medium priority · 3 points · traces to BR-22, BRD S16_
 
 Give users a working route to see what is held about them and to remove it, including personalisation signals.
 
@@ -434,7 +434,7 @@ Everything a traveller can do before they ask for a plan: browse, search, filter
 
 ### CAT.1 Model the catalogue: businesses, experiences, categories and media
 
-*Highest priority · 8 points · traces to FR-010, FR-014, BR-01, BR-03*
+_Highest priority · 8 points · traces to FR-010, FR-014, BR-01, BR-03_
 
 The structured entities behind every listing, with the labelling rules that stop estimated prices being shown as firm ones.
 
@@ -455,7 +455,7 @@ The structured entities behind every listing, with the labelling rules that stop
 
 ### CAT.2 Build the browse and explore pages
 
-*Highest priority · 8 points · traces to FR-010, FR-012, AC-02*
+_Highest priority · 8 points · traces to FR-010, FR-012, AC-02_
 
 The /explore surface with its filter rail, result grid and shareable state.
 
@@ -476,7 +476,7 @@ The /explore surface with its filter rail, result grid and shareable state.
 
 ### CAT.3 Implement keyword and natural-language search
 
-*High priority · 8 points · traces to FR-011, BR-01*
+_High priority · 8 points · traces to FR-011, BR-01_
 
 Search that handles a typed keyword and a typed sentence, and never returns something that is not a real listing.
 
@@ -497,7 +497,7 @@ Search that handles a typed keyword and a typed sentence, and never returns some
 
 ### CAT.4 Build the interactive map view
 
-*Highest priority · 8 points · traces to FR-013, AC-02*
+_Highest priority · 8 points · traces to FR-013, AC-02_
 
 A map that stays in sync with the list, so a marker and a card are always the same thing.
 
@@ -518,7 +518,7 @@ A map that stays in sync with the list, so a marker and a card are always the sa
 
 ### CAT.5 Build the listing detail page
 
-*Highest priority · 8 points · traces to FR-014, BR-03, BR-25*
+_Highest priority · 8 points · traces to FR-014, BR-03, BR-25_
 
 The page a traveller decides on: verified data, labelled prices, policies, availability status and the booking mode stated up front.
 
@@ -539,7 +539,7 @@ The page a traveller decides on: verified data, labelled prices, policies, avail
 
 ### CAT.6 Implement favorites
 
-*High priority · 3 points · traces to FR-015, FR-053*
+_High priority · 3 points · traces to FR-015, FR-053_
 
 Save a listing once, see it everywhere, and never end up with duplicates.
 
@@ -559,7 +559,7 @@ Save a listing once, see it everywhere, and never end up with duplicates.
 
 ### CAT.7 Build curated collections and ready-made trips
 
-*Medium priority · 5 points · traces to FR-010, FR-016*
+_Medium priority · 5 points · traces to FR-010, FR-016_
 
 Editorial entry points for users who do not want to describe anything - a weekend in the north, a rainy-day list, a budget day out.
 
@@ -579,7 +579,7 @@ Editorial entry points for users who do not want to describe anything - a weeken
 
 ### CAT.8 Surface related and nearby experiences
 
-*Medium priority · 3 points · traces to FR-016*
+_Medium priority · 3 points · traces to FR-016_
 
 Suggestions that work without invoking the planner, with honest distance and travel-time context.
 
@@ -607,7 +607,7 @@ The supply side: onboarding, verification, listings, availability, the booking i
 
 ### BIZ.1 Build business registration and onboarding
 
-*Highest priority · 5 points · traces to FR-060, AC-09*
+_Highest priority · 5 points · traces to FR-060, AC-09_
 
 A business can create an organisation account and start preparing listings while verification is pending.
 
@@ -628,7 +628,7 @@ A business can create an organisation account and start preparing listings while
 
 ### BIZ.2 Build verification document submission
 
-*High priority · 5 points · traces to FR-060, BR-02*
+_High priority · 5 points · traces to FR-060, BR-02_
 
 Collect what admin needs to verify a business, and make clear the badge is granted by Mshwar, never self-assigned.
 
@@ -648,7 +648,7 @@ Collect what admin needs to verify a business, and make clear the badge is grant
 
 ### BIZ.3 Implement staff invitations and role-based permissions
 
-*Medium priority · 5 points · traces to FR-061, BR-21*
+_Medium priority · 5 points · traces to FR-061, BR-21_
 
 An owner can bring in staff without handing over finance and settings access.
 
@@ -669,7 +669,7 @@ An owner can bring in staff without handing over finance and settings access.
 
 ### BIZ.4 Build the listing and experience editor
 
-*Highest priority · 8 points · traces to FR-062, AC-09, BR-03*
+_Highest priority · 8 points · traces to FR-062, AC-09, BR-03_
 
 The form a business fills in to create sellable inventory, with validation strict enough that the planner can trust the output.
 
@@ -690,7 +690,7 @@ The form a business fills in to create sellable inventory, with validation stric
 
 ### BIZ.5 Build opening hours, slots, capacity and blackout management
 
-*Highest priority · 8 points · traces to FR-063, FR-041, BR-08*
+_Highest priority · 8 points · traces to FR-063, FR-041, BR-08_
 
 The availability model the booking engine and the planner both read from.
 
@@ -711,7 +711,7 @@ The availability model the booking engine and the planner both read from.
 
 ### BIZ.6 Build the booking inbox
 
-*Highest priority · 8 points · traces to FR-064, FR-066, AC-09*
+_Highest priority · 8 points · traces to FR-064, FR-066, AC-09_
 
 Where a business sees requests and answers them, with the answer flowing straight back to the traveller's itinerary.
 
@@ -732,7 +732,7 @@ Where a business sees requests and answers them, with the answer flowing straigh
 
 ### BIZ.7 Build the booking calendar and list views
 
-*High priority · 5 points · traces to FR-066*
+_High priority · 5 points · traces to FR-066_
 
 A business needs both a day-by-day operational view and a filterable list.
 
@@ -752,7 +752,7 @@ A business needs both a day-by-day operational view and a filterable list.
 
 ### BIZ.8 Implement pause and unpublish without data loss
 
-*High priority · 3 points · traces to FR-068, BR-24*
+_High priority · 3 points · traces to FR-068, BR-24_
 
 A business must be able to stop taking bookings tomorrow without erasing last month.
 
@@ -772,7 +772,7 @@ A business must be able to stop taking bookings tomorrow without erasing last mo
 
 ### BIZ.9 Build the business performance dashboard
 
-*Medium priority · 5 points · traces to FR-067*
+_Medium priority · 5 points · traces to FR-067_
 
 Views, saves, itinerary inclusions, booking requests, confirmations and revenue - all derived from auditable events, not estimates.
 
@@ -792,7 +792,7 @@ Views, saves, itinerary inclusions, booking requests, confirmations and revenue 
 
 ### BIZ.10 Separate public and internal business contact details
 
-*Medium priority · 3 points · traces to FR-069*
+_Medium priority · 3 points · traces to FR-069_
 
 The phone number on the listing and the number operations calls at 8am are not the same number.
 
@@ -820,7 +820,7 @@ The operations surface that stands between supply and demand: verification, mode
 
 ### ADM.1 Build the admin authentication and permission model
 
-*Highest priority · 5 points · traces to FR-070, FR-073, BR-20*
+_Highest priority · 5 points · traces to FR-070, FR-073, BR-20_
 
 Admin is a separate privilege level, not a flag on a normal account, and sensitive actions need elevated permission.
 
@@ -841,7 +841,7 @@ Admin is a separate privilege level, not a flag on a normal account, and sensiti
 
 ### ADM.2 Build the business verification queue
 
-*Highest priority · 8 points · traces to FR-070, BR-02, AC-10*
+_Highest priority · 8 points · traces to FR-070, BR-02, AC-10_
 
 The queue where a submitted business becomes a verified one, or does not, with a reason either way.
 
@@ -862,7 +862,7 @@ The queue where a submitted business becomes a verified one, or does not, with a
 
 ### ADM.3 Build content moderation for listings, images and reviews
 
-*High priority · 8 points · traces to FR-071, BR-11, AC-10*
+_High priority · 8 points · traces to FR-071, BR-11, AC-10_
 
 Moderate abuse without rewriting what people actually said, and keep the evidence.
 
@@ -883,7 +883,7 @@ Moderate abuse without rewriting what people actually said, and keep the evidenc
 
 ### ADM.4 Build taxonomy management
 
-*High priority · 5 points · traces to FR-072*
+_High priority · 5 points · traces to FR-072_
 
 Categories, tags, amenities, suitability labels and weather-sensitivity classes, editable without a deploy and without breaking existing records.
 
@@ -903,7 +903,7 @@ Categories, tags, amenities, suitability labels and weather-sensitivity classes,
 
 ### ADM.5 Build booking and payment inspection with support actions
 
-*High priority · 8 points · traces to FR-073, BR-20*
+_High priority · 8 points · traces to FR-073, BR-20_
 
 When a traveller calls, operations needs the whole picture and a safe set of levers.
 
@@ -924,7 +924,7 @@ When a traveller calls, operations needs the whole picture and a safe set of lev
 
 ### ADM.6 Build marketplace configuration and feature flags
 
-*Medium priority · 5 points · traces to FR-074*
+_Medium priority · 5 points · traces to FR-074_
 
 Commission, fees, planner limits and feature rollout changeable from the console, with a record of who changed what.
 
@@ -945,7 +945,7 @@ Commission, fees, planner limits and feature rollout changeable from the console
 
 ### ADM.7 Build the platform health and KPI dashboard
 
-*Medium priority · 5 points · traces to FR-075, BRD S19*
+_Medium priority · 5 points · traces to FR-075, BRD S19_
 
 The numbers operations checks every morning, computed from defined event semantics rather than ad-hoc queries.
 
@@ -966,7 +966,7 @@ The numbers operations checks every morning, computed from defined event semanti
 
 ### ADM.8 Build the support case and report handling workflow
 
-*Medium priority · 5 points · traces to FR-076*
+_Medium priority · 5 points · traces to FR-076_
 
 Reported reviews, reported listings and user support cases tracked to resolution rather than handled in an inbox.
 
@@ -987,7 +987,7 @@ Reported reviews, reported listings and user support cases tracked to resolution
 
 ### ADM.9 Build automated data-quality checks
 
-*Medium priority · 5 points · traces to FR-077, BR-08, BR-09*
+_Medium priority · 5 points · traces to FR-077, BR-08, BR-09_
 
 Catch stale availability, missing prices and invalid coordinates before a traveller finds them.
 
@@ -1016,7 +1016,7 @@ The factual services the planner depends on: where things are, how long it takes
 
 ### MAP.1 Integrate the routing and travel-time service
 
-*Highest priority · 8 points · traces to FR-031, AC-05, BR-04*
+_Highest priority · 8 points · traces to FR-031, AC-05, BR-04_
 
 Real distance and duration between stops, cached hard because this is the most expensive external call in the product.
 
@@ -1037,7 +1037,7 @@ Real distance and duration between stops, cached hard because this is the most e
 
 ### MAP.2 Build the start-location picker
 
-*Highest priority · 5 points · traces to FR-030, BR-17*
+_Highest priority · 5 points · traces to FR-030, BR-17_
 
 Three ways to say where you are starting from, and device location is never the only one.
 
@@ -1058,7 +1058,7 @@ Three ways to say where you are starting from, and device location is never the 
 
 ### MAP.3 Implement multi-stop route optimisation
 
-*Highest priority · 13 points · traces to FR-024, FR-032, AC-05*
+_Highest priority · 13 points · traces to FR-024, FR-032, AC-05_
 
 Sequence the stops to cut pointless driving while honouring locked stops, appointment times and the return-by constraint. This is an OR-Tools job, not a prompt.
 
@@ -1080,7 +1080,7 @@ Sequence the stops to cut pointless driving while honouring locked stops, appoin
 
 ### MAP.4 Integrate the weather forecast service
 
-*High priority · 5 points · traces to FR-034, BR-18, AC-06*
+_High priority · 5 points · traces to FR-034, BR-18, AC-06_
 
 Open-Meteo for the prototype behind an interface, because production will need something with a commercial guarantee.
 
@@ -1101,7 +1101,7 @@ Open-Meteo for the prototype behind an interface, because production will need s
 
 ### MAP.5 Implement weather-sensitivity classification and warnings
 
-*High priority · 5 points · traces to FR-033, FR-034, AC-06*
+_High priority · 5 points · traces to FR-033, FR-034, AC-06_
 
 Classify what the weather can ruin, then warn about it clearly - without cancelling anything on the user's behalf.
 
@@ -1122,7 +1122,7 @@ Classify what the weather can ruin, then warn about it clearly - without cancell
 
 ### MAP.6 Implement partial replanning for weather-affected stops
 
-*Medium priority · 8 points · traces to FR-035, AC-06*
+_Medium priority · 8 points · traces to FR-035, AC-06_
 
 Rebuild only the parts the weather hit, and leave the rest of the plan alone.
 
@@ -1151,7 +1151,7 @@ The product's centrepiece and its biggest risk. The language model reads intent 
 
 ### AIP.1 Build the intent extraction service
 
-*Highest priority · 8 points · traces to FR-020, FR-021, AC-03*
+_Highest priority · 8 points · traces to FR-020, FR-021, AC-03_
 
 Turn a sentence in Arabic, Lebanese Arabic, English, French or a mix of them into validated structured constraints.
 
@@ -1173,7 +1173,7 @@ Turn a sentence in Arabic, Lebanese Arabic, English, French or a mix of them int
 
 ### AIP.2 Build the clarification loop
 
-*High priority · 5 points · traces to FR-021, BRD S11*
+_High priority · 5 points · traces to FR-021, BRD S11_
 
 Ask for what is genuinely missing, once, rather than interrogating the user or inventing defaults invisibly.
 
@@ -1193,7 +1193,7 @@ Ask for what is genuinely missing, once, rather than interrogating the user or i
 
 ### AIP.3 Build structured candidate retrieval
 
-*Highest priority · 8 points · traces to FR-022, BR-01, AC-03*
+_Highest priority · 8 points · traces to FR-022, BR-01, AC-03_
 
 Pull candidates from Mshwar inventory before a single word of itinerary text is generated. This is the rule that keeps the product honest.
 
@@ -1214,7 +1214,7 @@ Pull candidates from Mshwar inventory before a single word of itinerary text is 
 
 ### AIP.4 Implement hard eligibility filtering
 
-*Highest priority · 8 points · traces to FR-023, AC-04, BR-05, BR-06*
+_Highest priority · 8 points · traces to FR-023, AC-04, BR-05, BR-06_
 
 Filter candidates against the constraints that cannot be negotiated: hours, duration, capacity, travel feasibility and budget.
 
@@ -1236,7 +1236,7 @@ Filter candidates against the constraints that cannot be negotiated: hours, dura
 
 ### AIP.5 Implement candidate ranking
 
-*High priority · 8 points · traces to BRD S11, BR-10*
+_High priority · 8 points · traces to BRD S11, BR-10_
 
 Rank the eligible candidates against the user's stated preferences, with sponsored placement labelled and unable to bypass eligibility.
 
@@ -1257,7 +1257,7 @@ Rank the eligible candidates against the user's stated preferences, with sponsor
 
 ### AIP.6 Build the itinerary assembly and cost computation
 
-*Highest priority · 8 points · traces to FR-025, BR-04, AC-03*
+_Highest priority · 8 points · traces to FR-025, BR-04, AC-03_
 
 Assemble the timeline and compute the total from stored price components. The model may explain the number; it may never produce it.
 
@@ -1278,7 +1278,7 @@ Assemble the timeline and compute the total from stored price components. The mo
 
 ### AIP.7 Implement stop locking and targeted regeneration
 
-*Highest priority · 8 points · traces to FR-026, AC-07*
+_Highest priority · 8 points · traces to FR-026, AC-07_
 
 Let a user pin what they already love and ask for everything else to change.
 
@@ -1299,7 +1299,7 @@ Let a user pin what they already love and ask for everything else to change.
 
 ### AIP.8 Implement single-stop replacement
 
-*Highest priority · 5 points · traces to FR-027, AC-07*
+_Highest priority · 5 points · traces to FR-027, AC-07_
 
 Swap one stop for an alternative and recompute everything downstream before the user commits.
 
@@ -1319,7 +1319,7 @@ Swap one stop for an alternative and recompute everything downstream before the 
 
 ### AIP.9 Implement conversational trip refinement
 
-*Medium priority · 8 points · traces to FR-028*
+_Medium priority · 8 points · traces to FR-028_
 
 Convert phrases like less driving or make it more romantic into structured preference changes, then revalidate the whole plan.
 
@@ -1340,7 +1340,7 @@ Convert phrases like less driving or make it more romantic into structured prefe
 
 ### AIP.10 Build recommendation explanations with RAG
 
-*Medium priority · 5 points · traces to FR-029, BR-04*
+_Medium priority · 5 points · traces to FR-029, BR-04_
 
 Explain why each stop is there, grounded in the user's stated preferences and factual attributes only.
 
@@ -1360,7 +1360,7 @@ Explain why each stop is there, grounded in the user's stated preferences and fa
 
 ### AIP.11 Persist itinerary versions for auditability
 
-*High priority · 5 points · traces to BR-19, BR-25*
+_High priority · 5 points · traces to BR-19, BR-25_
 
 Every AI-generated version is stored before booking, so the plan that was booked can always be reconstructed.
 
@@ -1381,7 +1381,7 @@ Every AI-generated version is stored before booking, so the plan that was booked
 
 ### AIP.12 Build the AI failure fallback path
 
-*Highest priority · 5 points · traces to AC-13, BRD S18*
+_Highest priority · 5 points · traces to AC-13, BRD S18_
 
 When the model provider is down, the product still works - it just works without natural language.
 
@@ -1402,7 +1402,7 @@ When the model provider is down, the product still works - it just works without
 
 ### AIP.13 Build prompt-injection and output-safety guards
 
-*Highest priority · 5 points · traces to BRD S16, BR-04*
+_Highest priority · 5 points · traces to BRD S16, BR-04_
 
 User text and business-written descriptions both reach the model. Neither may be allowed to change what the system does.
 
@@ -1431,7 +1431,7 @@ Where a plan becomes a commitment and money becomes involved. Snapshots, idempot
 
 ### BKG.1 Implement the three booking modes
 
-*Highest priority · 5 points · traces to FR-040, BR-07, BR-25*
+_Highest priority · 5 points · traces to FR-040, BR-07, BR-25_
 
 Instant confirm, request to book and inquiry only - with the mode visible before the traveller commits to anything.
 
@@ -1451,7 +1451,7 @@ Instant confirm, request to book and inquiry only - with the mode visible before
 
 ### BKG.2 Implement overbooking prevention with database-level guarantees
 
-*Highest priority · 8 points · traces to FR-041, BR-07*
+_Highest priority · 8 points · traces to FR-041, BR-07_
 
 Two travellers clicking at the same second must not both get the last place. Enforce it in Postgres, not in application logic.
 
@@ -1472,7 +1472,7 @@ Two travellers clicking at the same second must not both get the last place. Enf
 
 ### BKG.3 Implement the booking state machine
 
-*Highest priority · 8 points · traces to FR-043, AC-11, BR-25*
+_Highest priority · 8 points · traces to FR-043, AC-11, BR-25_
 
 Draft, pending, confirmed, rejected, cancelled, completed, refunded - with invalid transitions blocked and every move audited.
 
@@ -1493,7 +1493,7 @@ Draft, pending, confirmed, rejected, cancelled, completed, refunded - with inval
 
 ### BKG.4 Implement price and policy snapshots
 
-*Highest priority · 5 points · traces to FR-042, BR-12, AC-11*
+_Highest priority · 5 points · traces to FR-042, BR-12, AC-11_
 
 A booking freezes the price and the cancellation policy as they were at the moment of commitment.
 
@@ -1513,7 +1513,7 @@ A booking freezes the price and the cancellation policy as they were at the mome
 
 ### BKG.5 Build the checkout flow
 
-*Highest priority · 8 points · traces to FR-042, FR-044, AC-11*
+_Highest priority · 8 points · traces to FR-042, FR-044, AC-11_
 
 From listing or itinerary to a committed booking, with party size, date, price and policy all confirmed before money is discussed.
 
@@ -1534,7 +1534,7 @@ From listing or itinerary to a committed booking, with party size, date, price a
 
 ### BKG.6 Build the payment provider abstraction
 
-*Highest priority · 8 points · traces to FR-045, BRD S26*
+_Highest priority · 8 points · traces to FR-045, BRD S26_
 
 Lebanon is not a supported Stripe country. Stripe test mode can carry the academic demo, but the interface has to assume it will be replaced.
 
@@ -1555,7 +1555,7 @@ Lebanon is not a supported Stripe country. Stripe test mode can carry the academ
 
 ### BKG.7 Implement webhook verification and reconciliation
 
-*Highest priority · 8 points · traces to FR-045, FR-048, BR-14, AC-12*
+_Highest priority · 8 points · traces to FR-045, FR-048, BR-14, AC-12_
 
 Payment succeeded does not mean booking confirmed. The two have to be reconciled, and the webhook has to be proven genuine.
 
@@ -1576,7 +1576,7 @@ Payment succeeded does not mean booking confirmed. The two have to be reconciled
 
 ### BKG.8 Implement idempotency across booking and payment writes
 
-*Highest priority · 5 points · traces to BR-13, FR-048*
+_Highest priority · 5 points · traces to BR-13, FR-048_
 
 A double-click, a retry or a flaky network must not produce two reservations or two charges.
 
@@ -1596,7 +1596,7 @@ A double-click, a retry or a flaky network must not produce two reservations or 
 
 ### BKG.9 Implement the outbox pattern for reliable side effects
 
-*High priority · 5 points · traces to FR-080, FR-083, migration 004*
+_High priority · 5 points · traces to FR-080, FR-083, migration 004_
 
 A booking confirmation must not be lost because an email provider was down at the wrong moment.
 
@@ -1616,7 +1616,7 @@ A booking confirmation must not be lost because an email provider was down at th
 
 ### BKG.10 Implement cancellation and refund eligibility
 
-*High priority · 8 points · traces to FR-047, BR-16, BR-15*
+_High priority · 8 points · traces to FR-047, BR-16, BR-15_
 
 Eligibility is computed from the policy snapshot on the booking, not from whatever the policy says today.
 
@@ -1637,7 +1637,7 @@ Eligibility is computed from the policy snapshot on the booking, not from whatev
 
 ### BKG.11 Build booking confirmations
 
-*Highest priority · 3 points · traces to FR-046, AC-11*
+_Highest priority · 3 points · traces to FR-046, AC-11_
 
 An itemised confirmation generated from persisted data, in the user's language.
 
@@ -1657,7 +1657,7 @@ An itemised confirmation generated from persisted data, in the user's language.
 
 ### BKG.12 Prove that failed payments never produce confirmed bookings
 
-*Highest priority · 5 points · traces to FR-048, AC-12, BR-14*
+_Highest priority · 5 points · traces to FR-048, AC-12, BR-14_
 
 The specific failure the BRD calls out: a timed-out or failed payment must not leave a confirmed paid booking behind.
 
@@ -1685,7 +1685,7 @@ Transactional messages that are triggered by persisted events, retryable, observ
 
 ### NTF.1 Build the notification service and channel abstraction
 
-*High priority · 5 points · traces to FR-080, FR-083*
+_High priority · 5 points · traces to FR-080, FR-083_
 
 One service, multiple channels, every message driven by a persisted event.
 
@@ -1706,7 +1706,7 @@ One service, multiple channels, every message driven by a persisted event.
 
 ### NTF.2 Build traveller transactional notifications
 
-*High priority · 5 points · traces to FR-080*
+_High priority · 5 points · traces to FR-080_
 
 Booking requested, confirmed, rejected, cancelled, payment status and material itinerary changes.
 
@@ -1726,7 +1726,7 @@ Booking requested, confirmed, rejected, cancelled, payment status and material i
 
 ### NTF.3 Build business notifications
 
-*High priority · 3 points · traces to FR-081*
+_High priority · 3 points · traces to FR-081_
 
 A new request that sits unanswered is lost revenue, so the business hears about it immediately and can act in one click.
 
@@ -1746,7 +1746,7 @@ A new request that sits unanswered is lost revenue, so the business hears about 
 
 ### NTF.4 Separate marketing from transactional communication
 
-*High priority · 3 points · traces to FR-082*
+_High priority · 3 points · traces to FR-082_
 
 A user can opt out of marketing and still receive the email that tells them their booking was rejected.
 
@@ -1766,7 +1766,7 @@ A user can opt out of marketing and still receive the email that tells them thei
 
 ### NTF.5 Make notification delivery observable and retryable
 
-*Medium priority · 3 points · traces to FR-083*
+_Medium priority · 3 points · traces to FR-083_
 
 Failures should be visible in a dashboard, not discovered by a complaining customer.
 
@@ -1794,7 +1794,7 @@ The social layer: share a trip, collect votes, and let people who actually went 
 
 ### GRP.1 Build shareable group-planning links with roles
 
-*High priority · 8 points · traces to FR-050, AC-08*
+_High priority · 8 points · traces to FR-050, AC-08_
 
 A trip owner shares one link, and the link itself decides whether the recipient can look, vote or edit.
 
@@ -1815,7 +1815,7 @@ A trip owner shares one link, and the link itself decides whether the recipient 
 
 ### GRP.2 Implement participant voting
 
-*High priority · 5 points · traces to FR-051, AC-08*
+_High priority · 5 points · traces to FR-051, AC-08_
 
 Participants vote on suggested experiences and categories, and can change their mind until the trip is locked.
 
@@ -1836,7 +1836,7 @@ Participants vote on suggested experiences and categories, and can change their 
 
 ### GRP.3 Build the group recommendation summary
 
-*Medium priority · 5 points · traces to FR-052*
+_Medium priority · 5 points · traces to FR-052_
 
 Summarise where the group agrees and where it does not, without exposing anything a participant did not agree to share.
 
@@ -1856,7 +1856,7 @@ Summarise where the group agrees and where it does not, without exposing anythin
 
 ### GRP.4 Implement review eligibility and submission
 
-*High priority · 8 points · traces to FR-054, BR-11, AC-10*
+_High priority · 8 points · traces to FR-054, BR-11, AC-10_
 
 Only people who actually had the interaction can review it, and each of them only once.
 
@@ -1877,7 +1877,7 @@ Only people who actually had the interaction can review it, and each of them onl
 
 ### GRP.5 Implement business responses to reviews
 
-*Medium priority · 3 points · traces to FR-055, BR-11*
+_Medium priority · 3 points · traces to FR-055, BR-11_
 
 A business gets a right of reply, and no ability to make a review disappear.
 
@@ -1897,7 +1897,7 @@ A business gets a right of reply, and no ability to make a review disappear.
 
 ### GRP.6 Build review aggregation and display
 
-*Medium priority · 3 points · traces to FR-054, BR-01*
+_Medium priority · 3 points · traces to FR-054, BR-01_
 
 Ratings that roll up honestly, including the distribution rather than just the average.
 
@@ -1925,7 +1925,7 @@ Arabic, English and French as first-class languages, Arabic RTL that actually wo
 
 ### I18N.1 Build the translation workflow and message catalogues
 
-*Highest priority · 5 points · traces to FR-005, AC-16*
+_Highest priority · 5 points · traces to FR-005, AC-16_
 
 One place where strings live, with a process that catches a missing translation before a user does.
 
@@ -1946,7 +1946,7 @@ One place where strings live, with a process that catches a missing translation 
 
 ### I18N.2 Make Arabic RTL correct across every surface
 
-*Highest priority · 8 points · traces to FR-005, AC-16*
+_Highest priority · 8 points · traces to FR-005, AC-16_
 
 Direction is not a stylesheet flip. Icons, drawers, progress, charts, maps and form affordances all need checking.
 
@@ -1967,7 +1967,7 @@ Direction is not a stylesheet flip. Icons, drawers, progress, charts, maps and f
 
 ### I18N.3 Handle Lebanese Arabic in AI input
 
-*High priority · 5 points · traces to FR-020, AC-16*
+_High priority · 5 points · traces to FR-020, AC-16_
 
 People will not type Modern Standard Arabic into the planner. The intent extractor has to cope with how Lebanese Arabic is actually written, including Arabizi.
 
@@ -1987,7 +1987,7 @@ People will not type Modern Standard Arabic into the planner. The intent extract
 
 ### I18N.4 Meet WCAG 2.2 AA across the MVP screens
 
-*High priority · 8 points · traces to Package review findings*
+_High priority · 8 points · traces to Package review findings_
 
 Keyboard operability, visible focus, correct semantics and adequate contrast - verified, not assumed.
 
@@ -2016,7 +2016,7 @@ The controls that make the marketplace safe to transact in: authorisation everyw
 
 ### SEC.1 Implement authorisation checks on every endpoint
 
-*Highest priority · 8 points · traces to BR-21, FR-073*
+_Highest priority · 8 points · traces to BR-21, FR-073_
 
 Every endpoint answers who is asking and what they are allowed to touch, with no reliance on an unguessable ID.
 
@@ -2036,7 +2036,7 @@ Every endpoint answers who is asking and what they are allowed to touch, with no
 
 ### SEC.2 Build the audit log
 
-*Highest priority · 5 points · traces to FR-070, BR-20, FR-073*
+_Highest priority · 5 points · traces to FR-070, BR-20, FR-073_
 
 Anything consequential - verification, moderation, financial overrides, configuration - leaves a record of who, what, when and why.
 
@@ -2056,7 +2056,7 @@ Anything consequential - verification, moderation, financial overrides, configur
 
 ### SEC.3 Implement rate limiting and abuse controls
 
-*High priority · 5 points · traces to FR-001, BRD S16*
+_High priority · 5 points · traces to FR-001, BRD S16_
 
 Protect sign-in, password reset, search, AI generation and booking from volume abuse and from cost blowout.
 
@@ -2076,7 +2076,7 @@ Protect sign-in, password reset, search, AI generation and booking from volume a
 
 ### SEC.4 Prevent secrets and personal data reaching logs
 
-*Highest priority · 3 points · traces to AC-15*
+_Highest priority · 3 points · traces to AC-15_
 
 Logs and error reports carry correlation IDs, never tokens, card references or personal records.
 
@@ -2096,7 +2096,7 @@ Logs and error reports carry correlation IDs, never tokens, card references or p
 
 ### SEC.5 Harden file upload and media handling
 
-*High priority · 3 points · traces to FR-062, FR-060*
+_High priority · 3 points · traces to FR-062, FR-060_
 
 Images and verification documents are untrusted input until proven otherwise.
 
@@ -2116,7 +2116,7 @@ Images and verification documents are untrusted input until proven otherwise.
 
 ### SEC.6 Write the privacy policy, terms and consent flows
 
-*High priority · 5 points · traces to BR-22, BRD S16*
+_High priority · 5 points · traces to BR-22, BRD S16_
 
 The public trust pages and the consent points that make personalisation lawful and reversible.
 
@@ -2136,7 +2136,7 @@ The public trust pages and the consent points that make personalisation lawful a
 
 ### SEC.7 Run a pre-pilot security review
 
-*Medium priority · 5 points · traces to Phase 5, BRD S16*
+_Medium priority · 5 points · traces to Phase 5, BRD S16_
 
 Before real businesses and real travellers, run a structured review against the controls this epic built.
 
@@ -2164,7 +2164,7 @@ The BRD names automated coverage of auth, trip-generation validation, booking an
 
 ### QA.1 Establish the test strategy and pyramid
 
-*High priority · 3 points · traces to BRD S24, AC-14*
+_High priority · 3 points · traces to BRD S24, AC-14_
 
 Agree what is tested where, so the suite stays fast and the gaps are deliberate.
 
@@ -2184,7 +2184,7 @@ Agree what is tested where, so the suite stays fast and the gaps are deliberate.
 
 ### QA.2 Cover the authentication paths with automated tests
 
-*Highest priority · 5 points · traces to AC-14, FR-001*
+_Highest priority · 5 points · traces to AC-14, FR-001_
 
 One of the four paths the MVP acceptance criteria name explicitly.
 
@@ -2204,7 +2204,7 @@ One of the four paths the MVP acceptance criteria name explicitly.
 
 ### QA.3 Cover trip-generation validation with automated tests
 
-*Highest priority · 8 points · traces to AC-14, AC-04*
+_Highest priority · 8 points · traces to AC-14, AC-04_
 
 Prove the planner never produces an infeasible plan, and never invents an entity.
 
@@ -2225,7 +2225,7 @@ Prove the planner never produces an infeasible plan, and never invents an entity
 
 ### QA.4 Cover booking and payment state transitions with automated tests
 
-*Highest priority · 8 points · traces to AC-14, AC-11, FR-048*
+_Highest priority · 8 points · traces to AC-14, AC-11, FR-048_
 
 The fourth named path, and the one with money attached.
 
@@ -2245,7 +2245,7 @@ The fourth named path, and the one with money attached.
 
 ### QA.5 Build the AI evaluation suite
 
-*High priority · 8 points · traces to AC-16, FR-020, BRD S24*
+_High priority · 8 points · traces to AC-16, FR-020, BRD S24_
 
 Model behaviour needs evaluation sets and thresholds, because a unit test cannot tell you the extractor got worse.
 
@@ -2266,7 +2266,7 @@ Model behaviour needs evaluation sets and thresholds, because a unit test cannot
 
 ### QA.6 Build end-to-end journey tests
 
-*High priority · 5 points · traces to BRD S9, S24*
+_High priority · 5 points · traces to BRD S9, S24_
 
 The three journeys that matter, driven through a real browser in all three languages.
 
@@ -2287,7 +2287,7 @@ The three journeys that matter, driven through a real browser in all three langu
 
 ### QA.7 Run performance and load testing
 
-*Medium priority · 5 points · traces to BRD S15*
+_Medium priority · 5 points · traces to BRD S15_
 
 Find out where it breaks before the pilot does.
 
@@ -2308,7 +2308,7 @@ Find out where it breaks before the pilot does.
 
 ### QA.8 Run user acceptance testing against the MVP criteria
 
-*Medium priority · 5 points · traces to AC-01 to AC-16*
+_Medium priority · 5 points · traces to AC-01 to AC-16_
 
 Walk the sixteen acceptance criteria with real users and record the result of each one.
 
@@ -2337,7 +2337,7 @@ Everything needed to run this in front of real businesses: monitoring that tells
 
 ### OPS.1 Integrate Sentry and structured logging
 
-*Highest priority · 3 points · traces to AC-15, BRD S25*
+_Highest priority · 3 points · traces to AC-15, BRD S25_
 
 Errors reach a dashboard with enough context to diagnose them and nothing that should not be there.
 
@@ -2358,7 +2358,7 @@ Errors reach a dashboard with enough context to diagnose them and nothing that s
 
 ### OPS.2 Build application and business metrics dashboards
 
-*High priority · 5 points · traces to BRD S19, S25*
+_High priority · 5 points · traces to BRD S19, S25_
 
 Separate views for is it up and is it working, because those are different questions.
 
@@ -2379,7 +2379,7 @@ Separate views for is it up and is it working, because those are different quest
 
 ### OPS.3 Implement backup, restore and disaster recovery
 
-*Highest priority · 5 points · traces to BRD S25*
+_Highest priority · 5 points · traces to BRD S25_
 
 A backup that has never been restored is not a backup.
 
@@ -2399,7 +2399,7 @@ A backup that has never been restored is not a backup.
 
 ### OPS.4 Write the operational runbooks
 
-*Medium priority · 3 points · traces to BRD S25, S18*
+_Medium priority · 3 points · traces to BRD S25, S18_
 
 The documents someone reads at 2am: what to do when the planner fails, when payments mismatch, when a provider is down.
 
@@ -2420,7 +2420,7 @@ The documents someone reads at 2am: what to do when the planner fails, when paym
 
 ### OPS.5 Decide and document the production payment provider
 
-*Highest priority · 5 points · traces to BRD S26, FR-045*
+_Highest priority · 5 points · traces to BRD S26, FR-045_
 
 Stripe covers the demo. It does not cover Lebanon in production. This decision gates the pilot and needs to be made with the abstraction already in place.
 
@@ -2440,7 +2440,7 @@ Stripe covers the demo. It does not cover Lebanon in production. This decision g
 
 ### OPS.6 Prepare the legal and policy foundation for the pilot
 
-*High priority · 5 points · traces to Phase 5, BRD S17*
+_High priority · 5 points · traces to Phase 5, BRD S17_
 
 Business terms, traveller terms, cancellation and refund policy, and the data-protection position - in place before the first real transaction.
 
@@ -2461,7 +2461,7 @@ Business terms, traveller terms, cancellation and refund policy, and the data-pr
 
 ### OPS.7 Build the partner onboarding programme
 
-*Medium priority · 5 points · traces to Phase 5, AC-09*
+_Medium priority · 5 points · traces to Phase 5, AC-09_
 
 Getting the first real businesses on is a process, not a signup form: outreach, data collection, training and a support path.
 
@@ -2482,7 +2482,7 @@ Getting the first real businesses on is a process, not a signup form: outreach, 
 
 ### OPS.8 Build the public help and trust surfaces
 
-*Medium priority · 3 points · traces to Screen inventory, FR-076*
+_Medium priority · 3 points · traces to Screen inventory, FR-076_
 
 The help centre, contact, safety, about and policy pages that make an unfamiliar marketplace credible.
 
@@ -2503,7 +2503,7 @@ The help centre, contact, safety, about and policy pages that make an unfamiliar
 
 ### OPS.9 Run the pilot readiness review and go-live
 
-*Medium priority · 5 points · traces to Phase 5, AC-01 to AC-16*
+_Medium priority · 5 points · traces to Phase 5, AC-01 to AC-16_
 
 One structured gate covering acceptance criteria, security findings, runbooks, legal, payments and monitoring before real money moves.
 

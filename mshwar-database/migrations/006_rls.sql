@@ -38,10 +38,10 @@ END $$;
 -- Org-scoped policies (must filter by organization_id)
 -- ============================================================
 
--- venues, experiences, slots, blackouts, price_rules, policies, media
+-- venues and experiences have organization_id
 DO $$ DECLARE n text; BEGIN
   FOR n IN SELECT tablename FROM pg_tables WHERE schemaname = 'app' AND tablename IN (
-    'venues', 'experiences', 'slots', 'blackouts', 'price_rules', 'policies', 'media'
+    'venues', 'experiences'
   ) LOOP
     EXECUTE format(
       'CREATE POLICY org_access ON app.%I FOR ALL TO mshwar_backend '
@@ -52,43 +52,111 @@ DO $$ DECLARE n text; BEGIN
   END LOOP;
 END $$;
 
+-- slots, blackouts, price_rules, policies, media are scoped via experience_id
+DO $$ DECLARE n text; BEGIN
+  FOR n IN SELECT tablename FROM pg_tables WHERE schemaname = 'app' AND tablename IN (
+    'slots', 'blackouts', 'price_rules', 'policies', 'media'
+  ) LOOP
+    EXECUTE format(
+      'CREATE POLICY org_access ON app.%I FOR ALL TO mshwar_backend '
+      'USING (EXISTS (SELECT 1 FROM app.experiences e WHERE e.id = %I.experience_id AND e.organization_id = app.current_organization_id())) '
+      'WITH CHECK (EXISTS (SELECT 1 FROM app.experiences e WHERE e.id = %I.experience_id AND e.organization_id = app.current_organization_id()))',
+      n, n, n
+    );
+  END LOOP;
+END $$;
+
 -- bookings: must be scoped to organization_id
 CREATE POLICY org_booking_access ON app.bookings FOR ALL TO mshwar_backend
   USING (organization_id = app.current_organization_id())
   WITH CHECK (organization_id = app.current_organization_id());
 
--- reviews, review_responses, support_cases, outbox, notifications
-DO $$ DECLARE n text; BEGIN
-  FOR n IN SELECT tablename FROM pg_tables WHERE schemaname = 'app' AND tablename IN (
-    'reviews', 'review_responses', 'support_cases', 'outbox', 'notifications'
-  ) LOOP
-    EXECUTE format(
-      'CREATE POLICY org_access ON app.%I FOR ALL TO mshwar_backend '
-      'USING (EXISTS(SELECT 1 FROM app.organizations WHERE id = app.current_organization_id() AND id = %L)) '
-      'WITH CHECK (EXISTS(SELECT 1 FROM app.organizations WHERE id = app.current_organization_id() AND id = %L))',
-      n, n, n
-    );
-  END LOOP;
-END $$;
+-- reviews follow the booking's organization
+CREATE POLICY org_review_access ON app.reviews FOR ALL TO mshwar_backend
+  USING (EXISTS (
+    SELECT 1 FROM app.bookings b
+    WHERE b.id = reviews.booking_id AND b.organization_id = app.current_organization_id()
+  ))
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM app.bookings b
+    WHERE b.id = reviews.booking_id AND b.organization_id = app.current_organization_id()
+  ));
+
+CREATE POLICY org_review_response_access ON app.review_responses FOR ALL TO mshwar_backend
+  USING (EXISTS (
+    SELECT 1 FROM app.reviews r
+    JOIN app.bookings b ON b.id = r.booking_id
+    WHERE r.id = review_responses.review_id AND b.organization_id = app.current_organization_id()
+  ))
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM app.reviews r
+    JOIN app.bookings b ON b.id = r.booking_id
+    WHERE r.id = review_responses.review_id AND b.organization_id = app.current_organization_id()
+  ));
+
+CREATE POLICY org_support_case_access ON app.support_cases FOR ALL TO mshwar_backend
+  USING (
+    reporter_id = app.current_user_id()
+    OR EXISTS (
+      SELECT 1 FROM app.bookings b
+      WHERE b.id = support_cases.booking_id AND b.organization_id = app.current_organization_id()
+    )
+    OR EXISTS (
+      SELECT 1 FROM app.experiences e
+      WHERE e.id = support_cases.experience_id AND e.organization_id = app.current_organization_id()
+    )
+  )
+  WITH CHECK (
+    reporter_id = app.current_user_id()
+    OR EXISTS (
+      SELECT 1 FROM app.bookings b
+      WHERE b.id = support_cases.booking_id AND b.organization_id = app.current_organization_id()
+    )
+    OR EXISTS (
+      SELECT 1 FROM app.experiences e
+      WHERE e.id = support_cases.experience_id AND e.organization_id = app.current_organization_id()
+    )
+  );
+
+-- outbox has no tenant column; require a session organization
+CREATE POLICY org_outbox_access ON app.outbox FOR ALL TO mshwar_backend
+  USING (app.current_organization_id() IS NOT NULL)
+  WITH CHECK (app.current_organization_id() IS NOT NULL);
+
+CREATE POLICY user_notification_access ON app.notifications FOR ALL TO mshwar_backend
+  USING (user_id = app.current_user_id())
+  WITH CHECK (user_id = app.current_user_id());
 
 -- knowledge_documents: scoped by experience_id -> organization_id
 CREATE POLICY org_knowledge_access ON app.knowledge_documents FOR ALL TO mshwar_backend
   USING (EXISTS(SELECT 1 FROM app.experiences e WHERE e.id = knowledge_documents.experience_id AND e.organization_id = app.current_organization_id()))
   WITH CHECK (EXISTS(SELECT 1 FROM app.experiences e WHERE e.id = knowledge_documents.experience_id AND e.organization_id = app.current_organization_id()));
 
--- analytics_events, data_quality_issues: scoped by experience_id or organization_id
-DO $$ DECLARE n text; BEGIN
-  FOR n IN SELECT tablename FROM pg_tables WHERE schemaname = 'app' AND tablename IN (
-    'analytics_events', 'data_quality_issues'
-  ) LOOP
-    EXECUTE format(
-      'CREATE POLICY org_access ON app.%I FOR ALL TO mshwar_backend '
-      'USING (EXISTS(SELECT 1 FROM app.organizations WHERE id = app.current_organization_id())) '
-      'WITH CHECK (EXISTS(SELECT 1 FROM app.organizations WHERE id = app.current_organization_id()))',
-      n
-    );
-  END LOOP;
-END $$;
+CREATE POLICY org_analytics_access ON app.analytics_events FOR ALL TO mshwar_backend
+  USING (
+    organization_id = app.current_organization_id()
+    OR EXISTS (
+      SELECT 1 FROM app.experiences e
+      WHERE e.id = analytics_events.experience_id AND e.organization_id = app.current_organization_id()
+    )
+  )
+  WITH CHECK (
+    organization_id = app.current_organization_id()
+    OR EXISTS (
+      SELECT 1 FROM app.experiences e
+      WHERE e.id = analytics_events.experience_id AND e.organization_id = app.current_organization_id()
+    )
+  );
+
+CREATE POLICY org_data_quality_access ON app.data_quality_issues FOR ALL TO mshwar_backend
+  USING (EXISTS (
+    SELECT 1 FROM app.experiences e
+    WHERE e.id = data_quality_issues.experience_id AND e.organization_id = app.current_organization_id()
+  ))
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM app.experiences e
+    WHERE e.id = data_quality_issues.experience_id AND e.organization_id = app.current_organization_id()
+  ));
 
 -- ============================================================
 -- User-scoped policies (must filter by user_id or owner_id)
@@ -132,8 +200,7 @@ CREATE POLICY user_trip_member_access ON app.trip_members FOR ALL TO mshwar_back
 
 -- user_private, consent_events: user_id
 CREATE POLICY user_private_access ON app.user_private FOR SELECT TO mshwar_backend
-  USING (user_id = app.current_user_id())
-  WITH CHECK (user_id = app.current_user_id());
+  USING (user_id = app.current_user_id());
 
 CREATE POLICY user_consent_access ON app.consent_events FOR ALL TO mshwar_backend
   USING (user_id = app.current_user_id())

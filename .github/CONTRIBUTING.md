@@ -3,6 +3,7 @@
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js 20+ and pnpm 9+
 - Python 3.11+
 - Docker and Docker Compose
@@ -12,25 +13,30 @@
 ### Local Development
 
 1. **Clone the repository**
+
    ```bash
    git clone <repo-url>
    cd mshwar
    ```
 
 2. **Set up environment files**
+
    ```bash
    cp services/api/.env.example services/api/.env.local
    cp apps/web/.env.example apps/web/.env.local
    ```
+
    Edit `.env.local` files with your local credentials. **Never commit these files.**
 
 3. **Install dependencies**
+
    ```bash
    pnpm install
    cd services/api && pip install -e . && cd ..
    ```
 
 4. **Start services**
+
    ```bash
    docker compose up --build
    ```
@@ -46,6 +52,7 @@
 ## Commit Convention
 
 We use **Conventional Commits**:
+
 - `feat:` new feature
 - `fix:` bug fix
 - `docs:` documentation
@@ -57,6 +64,7 @@ We use **Conventional Commits**:
 ## Pull Request Process
 
 1. **Create a feature branch** from `main`:
+
    ```bash
    git checkout -b feature/my-feature main
    ```
@@ -92,6 +100,7 @@ We use **Conventional Commits**:
 ## Testing
 
 ### Backend Tests
+
 ```bash
 cd services/api
 export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar_test
@@ -99,6 +108,7 @@ PYTHONPATH=services/api python3 -m pytest tests/ -v --cov=app --cov-fail-under=8
 ```
 
 ### Frontend Tests
+
 ```bash
 cd apps/web
 pnpm run test
@@ -108,11 +118,11 @@ pnpm run test:coverage
 
 ## Environment-Specific Configuration
 
-| Environment | Env File | Database | Deploy |
-|-------------|----------|----------|--------|
-| Local | `.env.local` | Local Docker | `docker compose up` |
-| Staging | `.env.staging` | Staging DB | Auto-deploy on merge to main |
-| Production | `.env.production` | Production DB | Manual approval required |
+| Environment | Env File          | Database      | Deploy                       |
+| ----------- | ----------------- | ------------- | ---------------------------- |
+| Local       | `.env.local`      | Local Docker  | `docker compose up`          |
+| Staging     | `.env.staging`    | Staging DB    | Auto-deploy on merge to main |
+| Production  | `.env.production` | Production DB | Manual approval required     |
 
 ## Key Rotation
 
@@ -121,6 +131,7 @@ See [KEY_ROTATION.md](../docs/KEY_ROTATION.md) for detailed procedures.
 ## Rollback
 
 If a deployment fails:
+
 1. **Web**: Automatic Vercel rollback or manual via `vercel rollback`
 2. **API**: `alembic downgrade -1` + redeploy previous version
 3. **No manual database surgery required**
