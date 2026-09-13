@@ -5,6 +5,7 @@ from app.api.v1.endpoints import (
     auth,
     bookings,
     businesses,
+    catalogue,
     favorites,
     health,
     locations,
@@ -22,6 +23,7 @@ router.include_router(admin.router, prefix="/admin", tags=["admin"])
 router.include_router(profile.router, prefix="/profile", tags=["profile"])
 router.include_router(privacy.router, prefix="/privacy", tags=["privacy"])
 router.include_router(locations.router, prefix="/locations", tags=["locations"])
+router.include_router(catalogue.router, prefix="/catalogue", tags=["catalogue"])
 router.include_router(businesses.router, prefix="/businesses", tags=["businesses"])
 router.include_router(bookings.router, prefix="/bookings", tags=["bookings"])
 router.include_router(trips.router, prefix="/trips", tags=["trips"])
