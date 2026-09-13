@@ -317,8 +317,8 @@ export const EXPERIENCES: Experience[] = [
     placeLabel: "Byblos · Mount Lebanon",
     hours: 2,
     priceFrom: 15,
-    image: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80",
-    imageAlt: "Stone harbour walls in Byblos",
+    image: "https://images.unsplash.com/photo-1515542621654-7593cbd31345?auto=format&fit=crop&w=1600&q=80",
+    imageAlt: "Stone walls and an old harbour lane",
     summary: "The old harbour, at walking pace.",
     body: "A short wander along the harbour walls and lanes. Sample attraction details — hours and tickets must be confirmed on the day.",
     tags: ["Harbour", "Heritage", "Easy walking"],
@@ -343,8 +343,8 @@ export const EXPERIENCES: Experience[] = [
     placeLabel: "Beirut · Beirut",
     hours: 2,
     priceFrom: 0,
-    image: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1600&q=80",
-    imageAlt: "City streets toward the sea",
+    image: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=1600&q=80",
+    imageAlt: "City lanes and shop fronts",
     summary: "Lanes, coffee, and a little shade.",
     body: "A sample attraction card for a self-guided wander through the central lanes. No named shop is booked here.",
     tags: ["City", "Walking", "Coffee"],
@@ -370,8 +370,8 @@ export const EXPERIENCES: Experience[] = [
     placeLabel: "Byblos · Mount Lebanon",
     hours: 2,
     priceFrom: 28,
-    image: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80",
-    imageAlt: "Harbour tables near the water",
+    image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1600&q=80",
+    imageAlt: "A long lunch table by a window",
     summary: "A long lunch beside the water.",
     body: "A sample restaurant idea for a harbour lunch. No specific kitchen is named or reserved.",
     tags: ["Lunch", "By the sea", "Relaxed pace"],
@@ -396,8 +396,8 @@ export const EXPERIENCES: Experience[] = [
     placeLabel: "Batroun · North Lebanon",
     hours: 2,
     priceFrom: 32,
-    image: "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80",
-    imageAlt: "Coastal town ready for a long lunch",
+    image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1600&q=80",
+    imageAlt: "A simple table set for lunch",
     summary: "Salt air and a simple table.",
     body: "A sample restaurant idea for Batroun. This is not a reservation and does not name a kitchen.",
     tags: ["Lunch", "Coast", "Friendly"],
@@ -524,11 +524,11 @@ export function listingGallery(item: Experience): string[] {
   if (item.gallery?.length) {
     return item.gallery;
   }
-  const extra =
-    item.image === DESTINATIONS[0]?.image
-      ? "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1600&q=80"
-      : HOME_HERO_IMAGE;
-  return item.image === extra ? [item.image] : [item.image, extra];
+  const dest = getDestination(item.destinationSlug);
+  if (dest && dest.image !== item.image) {
+    return [item.image, dest.image];
+  }
+  return [item.image];
 }
 
 export function listingPolicies(item: Experience): { title: string; body: string }[] {
