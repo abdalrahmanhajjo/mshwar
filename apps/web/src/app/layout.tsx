@@ -1,18 +1,36 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { cookies } from "next/headers";
+import { Manrope, Noto_Sans_Arabic } from "next/font/google";
+import { LocaleProvider } from "@/components/shell/locale-provider";
+import { localeDirection, parseLocale } from "@/lib/locale";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-latin-face",
+  display: "swap",
+});
+
+const notoSansArabic = Noto_Sans_Arabic({
+  subsets: ["arabic"],
+  variable: "--font-arabic-face",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Mshwar — Plan Your Lebanon Trip",
   description: "Discover. Plan. Book Lebanon. AI-powered itinerary builder.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const cookieStore = await cookies();
+  const locale = parseLocale(cookieStore.get("mshwar-locale")?.value);
+
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>{children}</body>
+    <html lang={locale} dir={localeDirection(locale)} suppressHydrationWarning>
+      <body className={`${manrope.variable} ${notoSansArabic.variable}`}>
+        <LocaleProvider initialLocale={locale}>{children}</LocaleProvider>
+      </body>
     </html>
   );
 }

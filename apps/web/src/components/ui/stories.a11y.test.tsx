@@ -8,6 +8,9 @@ import { ContentSet } from "./content.stories";
 import { FormSet } from "./form.stories";
 import { LibraryPreview } from "./library-preview";
 import { OverlaySet } from "./overlay.stories";
+import { LocaleProvider } from "@/components/shell/locale-provider";
+import { TravellerShell } from "@/components/shell/app-shell";
+import { ShellPage } from "@/components/shell/shell-page";
 
 const snapshots = [
   { theme: "light", direction: "ltr" },
@@ -22,6 +25,16 @@ const stories: Array<[string, ComponentType]> = [
   ["Primitives/Overlays", OverlaySet],
   ["Primitives/Content", ContentSet],
   ["Library/Core primitives", LibraryPreview],
+  [
+    "Shell/Traveller",
+    () => (
+      <LocaleProvider>
+        <TravellerShell currentPath="/">
+          <ShellPage title="Discover" description="Home" />
+        </TravellerShell>
+      </LocaleProvider>
+    ),
+  ],
 ];
 
 describe("axe-core on every story snapshot", () => {

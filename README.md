@@ -204,7 +204,7 @@ pnpm tokens:check
 pnpm tokens:contrast
 pnpm tokens:test
 
-# Component library (Storybook — Theme and Direction toolbars, axe-core on every story)
+# Component library and app shells (Storybook — Theme, Direction, 390/1440 viewports)
 pnpm --filter web storybook
 pnpm --filter web build-storybook
 

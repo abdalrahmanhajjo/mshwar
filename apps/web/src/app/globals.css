@@ -2,11 +2,41 @@
 @import "../styles/generated/tokens.css";
 @import "../styles/generated/tailwind-theme.css";
 
+html {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
 body {
   color: var(--text);
   background: var(--surface);
-  font-family: var(--font-latin);
+  font-family: var(--font-latin-face), var(--font-latin);
   min-height: 100vh;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+html[dir="rtl"] body,
+html[lang="ar"] body {
+  font-family: var(--font-arabic-face), var(--font-arabic);
+}
+
+.shell-gutter {
+  padding-inline: var(--layout-gutter-mobile);
+}
+
+.shell-frame {
+  width: 100%;
+  max-width: min(100%, var(--layout-max-width));
+  margin-inline: auto;
+  padding-inline: var(--layout-gutter-mobile);
+}
+
+@media (min-width: 64rem) {
+  .shell-gutter,
+  .shell-frame {
+    padding-inline: var(--layout-gutter-desktop);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
