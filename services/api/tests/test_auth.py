@@ -9,7 +9,7 @@ from fastapi import Response
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 
-from app.api.v1.endpoints.auth import RegisterRequest, ResetPasswordRequest
+from app.api.v1.endpoints.auth import RegisterRequest, ResetPasswordRequest, VerifyEmailRequest
 from app.core.config import settings
 from app.core.mailer import RecordingMailer, get_mailer, set_mailer
 from app.core.passwords import hash_password, verify_password
@@ -58,6 +58,7 @@ async def test_register_signin_me_refresh_signout(api: AsyncClient) -> None:
     body = created.json()
     assert body["email"] == email
     assert body["display_name"] == "Lina"
+    assert body["email_verified"] is False
     assert "password" not in body
     assert COOKIE_NAME in created.cookies
     cookie = created.cookies[COOKIE_NAME]
@@ -101,6 +102,11 @@ def test_reset_request_hides_token_and_password_from_repr() -> None:
     rendered = repr(payload)
     assert "hidden-reset-token" not in rendered
     assert "long-enough-secret" not in rendered
+
+
+def test_verify_request_hides_token_from_repr() -> None:
+    payload = VerifyEmailRequest.model_validate({"token": "hidden-verify-token"})
+    assert "hidden-verify-token" not in repr(payload)
 
 
 def test_password_is_omitted_from_request_repr() -> None:
@@ -325,3 +331,121 @@ async def test_register_rejects_short_password_and_bad_email(api: AsyncClient) -
         json={"email": "not-an-email", "password": "long-enough-secret", "display_name": "A", "locale": "en"},
     )
     assert bad_email.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_new_account_is_unverified_until_emailed_link_is_used(api: AsyncClient) -> None:
+    email = _unique_email("verify")
+    secret = "long-enough-secret"
+    await _register(api, email, secret)
+    me = await api.get("/api/v1/auth/me")
+    assert me.status_code == 200
+    assert me.json()["email_verified"] is False
+
+    browsed = await api.get("/api/v1/businesses")
+    assert browsed.status_code == 200
+
+    blocked = await api.post("/api/v1/bookings", json={"business_id": 3})
+    assert blocked.status_code == 403
+    assert blocked.json()["detail"] == "Verify your email before booking"
+
+    mailer = get_mailer()
+    assert isinstance(mailer, RecordingMailer)
+    token = mailer.verification_tokens_for(email)[0]
+    confirmed = await api.post("/api/v1/auth/verify-email", json={"token": token})
+    assert confirmed.status_code == 200
+    assert confirmed.json()["email_verified"] is True
+    assert (await api.get("/api/v1/auth/me")).json()["email_verified"] is True
+
+    reuse = await api.post("/api/v1/auth/verify-email", json={"token": token})
+    assert reuse.status_code == 400
+    assert reuse.json()["detail"] == "Invalid or expired verification link"
+
+    booked = await api.post("/api/v1/bookings", json={"business_id": 3})
+    assert booked.status_code == 200
+    assert booked.json()["business_id"] == 3
+
+
+@pytest.mark.asyncio
+async def test_resend_verification_is_rate_limited(api: AsyncClient) -> None:
+    email = _unique_email("resend")
+    await _register(api, email)
+    last = None
+    for _ in range(settings.verify_email_limit + 1):
+        last = await api.post("/api/v1/auth/resend-verification", json={"email": email})
+    assert last is not None
+    assert last.status_code == 429
+    assert last.json()["detail"] == "Too many requests"
+
+
+@pytest.mark.asyncio
+async def test_resend_verification_is_identical_for_known_and_unknown_emails(api: AsyncClient) -> None:
+    known = _unique_email("resend-known")
+    unknown = _unique_email("resend-unknown")
+    await _register(api, known)
+    known_resend = await api.post("/api/v1/auth/resend-verification", json={"email": known})
+    unknown_resend = await api.post("/api/v1/auth/resend-verification", json={"email": unknown})
+    assert known_resend.status_code == 200
+    assert unknown_resend.status_code == 200
+    assert known_resend.json() == unknown_resend.json() == {"ok": True}
+    assert known_resend.content == unknown_resend.content
+
+
+@pytest.mark.asyncio
+async def test_new_verification_token_invalidates_unused_previous_token(api: AsyncClient) -> None:
+    email = _unique_email("rotate-verify")
+    await _register(api, email)
+    await api.post("/api/v1/auth/resend-verification", json={"email": email})
+    mailer = get_mailer()
+    assert isinstance(mailer, RecordingMailer)
+    tokens = mailer.verification_tokens_for(email)
+    assert len(tokens) == 2
+    stale = await api.post("/api/v1/auth/verify-email", json={"token": tokens[0]})
+    assert stale.status_code == 400
+    fresh = await api.post("/api/v1/auth/verify-email", json={"token": tokens[1]})
+    assert fresh.status_code == 200
+    assert fresh.json()["email_verified"] is True
+
+
+@pytest.mark.asyncio
+async def test_expired_verification_token_is_rejected(api: AsyncClient, db_session) -> None:
+    email = _unique_email("expired-verify")
+    await _register(api, email)
+    mailer = get_mailer()
+    assert isinstance(mailer, RecordingMailer)
+    token = mailer.verification_tokens_for(email)[0]
+    await db_session.execute(
+        text(
+            """
+            UPDATE app.email_verification_tokens t
+            SET created_at = now() - interval '2 days',
+                expires_at = now() - interval '1 day'
+            FROM app.user_private p
+            WHERE t.user_id = p.user_id AND p.email = :email
+            """
+        ),
+        {"email": email},
+    )
+    await db_session.commit()
+    expired = await api.post("/api/v1/auth/verify-email", json={"token": token})
+    assert expired.status_code == 400
+    assert expired.json()["detail"] == "Invalid or expired verification link"
+
+
+@pytest.mark.asyncio
+async def test_admin_users_include_verification_state(api: AsyncClient) -> None:
+    email = _unique_email("admin-user")
+    await _register(api, email)
+    listed = await api.get("/api/v1/admin/users")
+    assert listed.status_code == 200
+    match = next(row for row in listed.json() if row["email"] == email)
+    assert match["email_verified"] is False
+    assert match["display_name"] == "Lina"
+
+    mailer = get_mailer()
+    assert isinstance(mailer, RecordingMailer)
+    token = mailer.verification_tokens_for(email)[0]
+    await api.post("/api/v1/auth/verify-email", json={"token": token})
+    after = await api.get("/api/v1/admin/users")
+    verified = next(row for row in after.json() if row["email"] == email)
+    assert verified["email_verified"] is True

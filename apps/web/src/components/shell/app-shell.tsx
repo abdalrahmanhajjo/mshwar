@@ -3,6 +3,7 @@
 import * as React from "react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { VerificationBanner } from "@/components/auth/verification-banner";
 import { AuthStatus, type AuthState } from "@/components/shell/auth-status";
 import { BrandMark } from "@/components/shell/brand-mark";
 import { LanguageSwitcher } from "@/components/shell/language-switcher";
@@ -102,6 +103,7 @@ export function AppShell({ surface, children, auth, currentPath }: AppShellProps
               </div>
             </div>
           </header>
+          {surface === "traveller" ? <VerificationBanner /> : null}
           <main id="main" className="shell-frame min-w-0 flex-1 py-6">
             {children}
           </main>

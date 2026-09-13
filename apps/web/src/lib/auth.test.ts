@@ -12,6 +12,7 @@ describe("auth helpers", () => {
     expect(isProtectedPath("/signin")).toBe(false);
     expect(isProtectedPath("/forgot-password")).toBe(false);
     expect(isProtectedPath("/reset-password")).toBe(false);
+    expect(isProtectedPath("/verify-email")).toBe(false);
     expect(isProtectedPath("/privacy")).toBe(false);
   });
 

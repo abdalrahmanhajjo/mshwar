@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     rate_limit_window_seconds: int = 3600
     mailer_backend: str = "console"  # console | notification
     public_web_origin: str = "http://localhost:3000"
+    email_verification_ttl_seconds: int = 24 * 60 * 60
+    verify_ip_limit: int = 20
+    verify_email_limit: int = 3
 
     # Connection pool
     pool_size: int = 20

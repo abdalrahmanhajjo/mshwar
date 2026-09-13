@@ -55,8 +55,7 @@ def test_list_and_create_bookings(client: TestClient) -> None:
     assert listed.status_code == 200
     assert listed.json() == []
     created = client.post("/api/v1/bookings", json={"business_id": 9})
-    assert created.status_code == 200
-    assert created.json() == {"id": 1, "business_id": 9, "status": "confirmed"}
+    assert created.status_code == 401
 
 
 def test_list_create_and_get_businesses(client: TestClient) -> None:

@@ -54,6 +54,22 @@ class UserOut(BaseModel):
     email: str
     display_name: str
     locale: str
+    email_verified: bool = False
+
+
+class VerifyEmailRequest(BaseModel):
+    token: str = Field(min_length=8, max_length=256, repr=False)
+
+
+class ResendVerificationRequest(BaseModel):
+    email: str | None = Field(default=None, max_length=254)
+
+
+class ResendVerificationResponse(BaseModel):
+    ok: bool = True
+
+
+_INVALID_VERIFY = "Invalid or expired verification link"
 
 
 class ForgotPasswordRequest(BaseModel):
@@ -111,8 +127,8 @@ async def _load_session(db: AsyncSession, token: str | None) -> dict[str, Any] |
         return None
     result = await db.execute(
         text(
-            "SELECT session_id, user_id, display_name, email, locale, status, expires_at "
-            "FROM app.get_session(:token_hash)"
+            "SELECT session_id, user_id, display_name, email, locale, status, expires_at, "
+            "email_verified_at FROM app.get_session(:token_hash)"
         ),
         {"token_hash": hash_session_token(token)},
     )
@@ -150,7 +166,14 @@ async def register(
             ) from exc
         raise
     await _issue_cookie_session(db, response, user_id, request.headers.get("user-agent"))
-    return UserOut(id=user_id, email=email, display_name=payload.display_name.strip(), locale=locale)
+    await _send_verification_email(db, email)
+    return UserOut(
+        id=user_id,
+        email=email,
+        display_name=payload.display_name.strip(),
+        locale=locale,
+        email_verified=False,
+    )
 
 
 @router.post("/signin", response_model=UserOut)
@@ -162,7 +185,10 @@ async def signin(
 ) -> UserOut:
     email = _normalize_email(payload.email)
     result = await db.execute(
-        text("SELECT user_id, password_hash, display_name, status, locale FROM app.lookup_local_credential(:email)"),
+        text(
+            "SELECT user_id, password_hash, display_name, status, locale, email_verified_at "
+            "FROM app.lookup_local_credential(:email)"
+        ),
         {"email": email},
     )
     row = result.mappings().first()
@@ -174,6 +200,7 @@ async def signin(
         email=email,
         display_name=row["display_name"],
         locale=row["locale"],
+        email_verified=bool(row["email_verified_at"]),
     )
 
 
@@ -233,6 +260,7 @@ async def _me_or_refresh(
         email=session["email"],
         display_name=session["display_name"],
         locale=session["locale"],
+        email_verified=bool(session.get("email_verified_at")),
     )
 
 
@@ -328,7 +356,7 @@ async def reset_password(
         await db.execute(
             text(
                 """
-                SELECT u.id, p.email, u.display_name, u.locale
+                SELECT u.id, p.email, u.display_name, u.locale, u.email_verified_at
                 FROM app.users u
                 JOIN app.user_private p ON p.user_id = u.id
                 WHERE u.id = :user_id
@@ -337,6 +365,124 @@ async def reset_password(
             {"user_id": str(user_id)},
         )
     ).one()
-    user = UserOut(id=fetched[0], email=fetched[1], display_name=fetched[2], locale=fetched[3])
+    user = UserOut(
+        id=fetched[0],
+        email=fetched[1],
+        display_name=fetched[2],
+        locale=fetched[3],
+        email_verified=bool(fetched[4]),
+    )
     await _issue_cookie_session(db, response, user.id, request.headers.get("user-agent"))
     return user
+
+
+def _verify_expiry() -> datetime:
+    return datetime.now(timezone.utc) + timedelta(seconds=settings.email_verification_ttl_seconds)
+
+
+def _verify_link(token: str) -> str:
+    origin = settings.public_web_origin.rstrip("/")
+    return f"{origin}/verify-email?token={token}"
+
+
+async def _send_verification_email(db: AsyncSession, email: str) -> None:
+    token = new_session_token()
+    token_hash = hash_session_token(token)
+    result = await db.execute(
+        text("SELECT app.issue_email_verification(:email, :token_hash, :expires_at)"),
+        {"email": email, "token_hash": token_hash, "expires_at": _verify_expiry()},
+    )
+    if result.scalar_one_or_none() is None:
+        hash_session_token(new_session_token())
+        await get_mailer().send(
+            MailMessage(
+                to=email,
+                subject="Verify your Mshwar email",
+                text_body="If this address needs verification, a link was issued.",
+                purpose="email_verification_suppressed",
+            )
+        )
+        return
+    await get_mailer().send(
+        MailMessage(
+            to=email,
+            subject="Verify your Mshwar email",
+            text_body=f"Use this link to verify your email. It expires in 24 hours.\n{_verify_link(token)}",
+            purpose="email_verification",
+            token=token,
+        )
+    )
+
+
+async def require_verified_user(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    session = await _load_session(db, request.cookies.get(COOKIE_NAME))
+    if session is None or session["status"] != "active":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    if not session.get("email_verified_at"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Verify your email before booking",
+        )
+    return session
+
+
+@router.post("/verify-email", response_model=UserOut)
+async def verify_email(
+    payload: VerifyEmailRequest,
+    request: Request,
+    response: Response,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> UserOut:
+    result = await db.execute(
+        text("SELECT app.confirm_email_verification(:token_hash)"),
+        {"token_hash": hash_session_token(payload.token)},
+    )
+    user_id = result.scalar_one_or_none()
+    if user_id is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=_INVALID_VERIFY)
+    fetched = (
+        await db.execute(
+            text(
+                """
+                SELECT u.id, p.email, u.display_name, u.locale, u.email_verified_at
+                FROM app.users u
+                JOIN app.user_private p ON p.user_id = u.id
+                WHERE u.id = :user_id
+                """
+            ),
+            {"user_id": str(user_id)},
+        )
+    ).one()
+    user = UserOut(
+        id=fetched[0],
+        email=fetched[1],
+        display_name=fetched[2],
+        locale=fetched[3],
+        email_verified=bool(fetched[4]),
+    )
+    existing = await _load_session(db, request.cookies.get(COOKIE_NAME))
+    if existing is None or str(existing["user_id"]) != str(user.id):
+        await _issue_cookie_session(db, response, user.id, request.headers.get("user-agent"))
+    return user
+
+
+@router.post("/resend-verification", response_model=ResendVerificationResponse)
+async def resend_verification(
+    payload: ResendVerificationRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> ResendVerificationResponse:
+    ip = _client_ip(request)
+    if not limiter.allow(f"verify:ip:{ip}", settings.verify_ip_limit, settings.rate_limit_window_seconds):
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=_RATE_LIMITED)
+    session = await _load_session(db, request.cookies.get(COOKIE_NAME))
+    email = _normalize_email(payload.email) if payload.email else (session["email"] if session else "")
+    if not email:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid email")
+    if not limiter.allow(f"verify:email:{email}", settings.verify_email_limit, settings.rate_limit_window_seconds):
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=_RATE_LIMITED)
+    await _send_verification_email(db, email)
+    return ResendVerificationResponse()
