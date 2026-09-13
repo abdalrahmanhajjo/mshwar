@@ -201,6 +201,7 @@ pnpm --filter web test
 # Design tokens (single source → Tailwind / CSS / Figma exports)
 pnpm tokens:generate
 pnpm tokens:check
+pnpm tokens:contrast
 pnpm tokens:test
 
 # Backend tests (including extension smoke tests)

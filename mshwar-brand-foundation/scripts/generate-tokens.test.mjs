@@ -64,7 +64,7 @@ describe("generated artifacts", () => {
     assert.match(css, /\.dark,\n\[data-theme="dark"\] \{/);
     assert.match(css, /--surface: #FCFCF8;/);
     assert.match(css, /--accent: #F3653E;/);
-    assert.match(css, /--border: #D8E0DC;/);
+    assert.match(css, /--border: #7F8984;/);
     assert.match(css, /--danger: #B42318;/);
     assert.match(css, /--text-on-accent:/);
     assert.equal(css.includes("--accent: var(--accent);"), false);

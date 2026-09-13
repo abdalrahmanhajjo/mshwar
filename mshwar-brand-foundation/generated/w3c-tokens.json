@@ -53,10 +53,10 @@
     },
     "text-muted": {
       "$type": "color",
-      "$value": "#66756E",
+      "$value": "#5E6D66",
       "$extensions": {
         "com.mshwar.modes": {
-          "light": "#66756E",
+          "light": "#5E6D66",
           "dark": "#A8B5AF"
         }
       }
@@ -123,20 +123,20 @@
     },
     "border": {
       "$type": "color",
-      "$value": "#D8E0DC",
+      "$value": "#7F8984",
       "$extensions": {
         "com.mshwar.modes": {
-          "light": "#D8E0DC",
-          "dark": "#2A4A44"
+          "light": "#7F8984",
+          "dark": "#6A8A84"
         }
       }
     },
     "border-strong": {
       "$type": "color",
-      "$value": "#66756E",
+      "$value": "#5E6D66",
       "$extensions": {
         "com.mshwar.modes": {
-          "light": "#66756E",
+          "light": "#5E6D66",
           "dark": "#A8B5AF"
         }
       }
@@ -447,7 +447,7 @@
       },
       "slate": {
         "$type": "color",
-        "$value": "#66756E"
+        "$value": "#5E6D66"
       },
       "slateLight": {
         "$type": "color",
@@ -459,11 +459,11 @@
       },
       "border": {
         "$type": "color",
-        "$value": "#D8E0DC"
+        "$value": "#7F8984"
       },
       "borderDark": {
         "$type": "color",
-        "$value": "#2A4A44"
+        "$value": "#6A8A84"
       },
       "error": {
         "$type": "color",

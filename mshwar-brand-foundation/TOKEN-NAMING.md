@@ -51,6 +51,8 @@ CSS custom properties flatten the path and collapse `default`, `primary`, `canva
 
 Do **not** add `orange-500`, `cedar-700`, or similar literal scales to the semantic layer.
 
+Text-on-fill pairings are asserted in `contrast-checks.json`. `accent` is a **fill**. Small text on orange uses `text-on-accent` / `accent.foreground`, never white, cedar, or `text-accent`.
+
 ## Modes
 
 Light and dark are **the same key set** with different values. Both palettes live in the JSON. Generated CSS writes light values on `:root` and dark values on `.dark` / `[data-theme="dark"]`. No colour is introduced only inside a `prefers-color-scheme` media query.
