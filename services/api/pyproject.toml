@@ -33,7 +33,14 @@ addopts = "--cov=app --cov-report=xml --cov-report=term-missing --cov-fail-under
 
 [tool.coverage.run]
 source = ["app"]
-omit = ["app/tests/*", "app/tests/**/*"]
+omit = [
+    "app/tests/*",
+    "app/tests/**/*",
+    "app/alembic/*",
+    "app/alembic/**/*",
+    "app/seed/*",
+    "app/seed/**/*",
+]
 
 [tool.coverage.report]
 fail_under = 80

@@ -3,8 +3,18 @@ import hashlib
 import os
 from pathlib import Path
 import psycopg
+
+
+def libpq_dsn(url: str) -> str:
+    """Accept SQLAlchemy URLs such as postgresql+asyncpg://user@host/db."""
+    scheme, sep, rest = url.partition("://")
+    if sep and "+" in scheme:
+        return f"{scheme.split('+', 1)[0]}://{rest}"
+    return url
+
+
 root = Path(__file__).resolve().parents[1]
-with psycopg.connect(os.environ['DATABASE_URL'], autocommit=True) as conn:
+with psycopg.connect(libpq_dsn(os.environ["DATABASE_URL"]), autocommit=True) as conn:
     conn.execute("SELECT pg_advisory_lock(73649201)")
     try:
         conn.execute("CREATE SCHEMA IF NOT EXISTS mshwar_migrations")

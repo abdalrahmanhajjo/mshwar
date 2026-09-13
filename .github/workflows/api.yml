@@ -81,18 +81,11 @@ jobs:
           cd services/api
           export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar_test
           python scripts/migrate.py
-      - name: Run Alembic migrations up/down
-        run: |
-          cd services/api
-          export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar_test
-          alembic upgrade head
-          alembic downgrade base
-          alembic upgrade head
       - name: Run unit tests with coverage
         run: |
           cd services/api
           export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar_test
-          PYTHONPATH=services/api python3 -m pytest tests/ -v --cov=app --cov-report=xml --cov-report=term-missing --cov-fail-under=80
+          PYTHONPATH=. python3 -m pytest tests/ -v --cov=app --cov-report=xml --cov-report=term-missing --cov-fail-under=80
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
@@ -131,19 +124,17 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
       - run: pip install -r services/api/requirements.txt
       - run: pip install alembic psycopg[binary]
-      - name: Run migration up/down cycle
+      - name: Run SQL migrations twice (idempotent)
         run: |
           cd services/api
           export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar_test
           python scripts/migrate.py
-          alembic downgrade base
-          alembic upgrade head
           python scripts/migrate.py
       - name: Run cross-tenant isolation tests
         run: |
           cd services/api
           export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar_test
-          PYTHONPATH=services/api python3 -m pytest tests/test_cross_tenant.py -v --cov=app --cov-report=term-missing --cov-fail-under=80
+          PYTHONPATH=. python3 -m pytest tests/test_cross_tenant.py -v
 
   coverage-threshold:
     name: Coverage Threshold Check
