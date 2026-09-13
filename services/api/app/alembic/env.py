@@ -2,9 +2,9 @@ import asyncio
 from logging.config import fileConfig
 from typing import Any
 
+from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from alembic import context
 from app.core.config import settings
 
 from app.models import Base  # isort:skip

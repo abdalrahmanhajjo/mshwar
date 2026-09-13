@@ -5,9 +5,8 @@ trip_templates, trip_template_stops.
 """
 
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID
-
 from alembic import op
+from sqlalchemy.dialects.postgresql import UUID
 
 # revision identifiers, used by Alembic
 revision = "003"
