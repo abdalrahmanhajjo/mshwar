@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS app.account_favorites (
     user_id uuid NOT NULL REFERENCES app.users(id),
     listing_slug text NOT NULL,
     created_at timestamptz NOT NULL DEFAULT now(),
-    UNIQUE (user_id, listing_slug),
+    CONSTRAINT account_favorites_user_slug UNIQUE (user_id, listing_slug),
     CHECK (length(btrim(listing_slug)) BETWEEN 1 AND 120)
 );
 
@@ -145,16 +145,21 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = app, public
 AS $$
+DECLARE
+    v_id uuid;
+    v_slug text := btrim(p_listing_slug);
+    v_created timestamptz;
 BEGIN
-    IF length(btrim(p_listing_slug)) < 1 THEN
+    IF length(v_slug) < 1 THEN
         RAISE EXCEPTION 'invalid listing' USING ERRCODE = '22023';
     END IF;
-    RETURN QUERY
-        INSERT INTO app.account_favorites (user_id, listing_slug)
-        VALUES (p_user_id, btrim(p_listing_slug))
-        ON CONFLICT (user_id, listing_slug)
-            DO UPDATE SET listing_slug = EXCLUDED.listing_slug
-        RETURNING account_favorites.id, account_favorites.listing_slug, account_favorites.created_at;
+    INSERT INTO app.account_favorites (user_id, listing_slug)
+    VALUES (p_user_id, v_slug)
+    ON CONFLICT ON CONSTRAINT account_favorites_user_slug
+        DO UPDATE SET listing_slug = EXCLUDED.listing_slug
+    RETURNING account_favorites.id, account_favorites.listing_slug, account_favorites.created_at
+    INTO v_id, v_slug, v_created;
+    RETURN QUERY SELECT v_id, v_slug, v_created;
 END;
 $$;
 
