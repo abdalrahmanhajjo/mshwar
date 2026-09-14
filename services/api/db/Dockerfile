@@ -1,6 +1,6 @@
-FROM postgres:17-alpine
+FROM postgres:17
 
-RUN apk add --no-cache postgresql-postgis postgresql-contrib
+RUN apt-get update && apt-get install -y --no-install-recommends postgis postgresql-17-postgis-3 && rm -rf /var/lib/apt/lists/*
 
 # Enable extensions in template1 so all new databases inherit them
 RUN psql -U postgres -d template1 -c "CREATE EXTENSION IF NOT EXISTS postgis;" && \

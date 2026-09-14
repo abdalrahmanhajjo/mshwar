@@ -15,11 +15,11 @@ depends_on = None
 
 def upgrade() -> None:
     op.execute("CREATE EXTENSION IF NOT EXISTS postgis")
-    op.execute("CREATE EXTENSION IF NOT EXISTS pgvector")
+    op.execute("CREATE EXTENSION IF NOT EXISTS vector")
     op.execute("CREATE EXTENSION IF NOT EXISTS btree_gist")
 
 
 def downgrade() -> None:
     op.execute("DROP EXTENSION IF EXISTS btree_gist")
-    op.execute("DROP EXTENSION IF EXISTS pgvector")
+    op.execute("DROP EXTENSION IF EXISTS vector")
     op.execute("DROP EXTENSION IF EXISTS postgis")
