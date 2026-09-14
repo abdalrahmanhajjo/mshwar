@@ -93,7 +93,28 @@ export type MessageKey =
   | "travellerSurface"
   | "businessSurface"
   | "adminSurface"
-  | "plannerHealth";
+  | "plannerHealth"
+  | "notFound"
+  | "notFoundBody"
+  | "contactTitle"
+  | "contactBody"
+  | "termsTitle"
+  | "termsBody"
+  | "privacyPageTitle"
+  | "privacyPageBody"
+  | "planBody"
+  | "planFromCollection"
+  | "planStopsOne"
+  | "planStopsOther"
+  | "tripLabel"
+  | "estimate"
+  | "fieldRequired"
+  | "fieldInvalid"
+  | "startDate"
+  | "endDate"
+  | "datesLegend"
+  | "carouselPrevious"
+  | "carouselNext";
 
 export const messages: Record<Locale, Record<MessageKey, string>> = {
   en: {
@@ -190,6 +211,27 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     businessSurface: "Business",
     adminSurface: "Admin",
     plannerHealth: "Planner health",
+    notFound: "Page not found",
+    notFoundBody: "That page is not in the catalogue.",
+    contactTitle: "Contact",
+    contactBody: "Reach the Mshwar team.",
+    termsTitle: "Terms",
+    termsBody: "Conditions for planning and booking.",
+    privacyPageTitle: "Privacy",
+    privacyPageBody: "How Mshwar uses traveller data.",
+    planBody: "Build an itinerary from structured inventory.",
+    planFromCollection: "Started from “{title}”.",
+    planStopsOne: "{count} published stop. Edit from structured inventory only.",
+    planStopsOther: "{count} published stops. Edit from structured inventory only.",
+    tripLabel: "Trip {id}",
+    estimate: "Estimate",
+    fieldRequired: "This field is required.",
+    fieldInvalid: "Check this field and try again.",
+    startDate: "Start date",
+    endDate: "End date",
+    datesLegend: "Dates",
+    carouselPrevious: "Previous",
+    carouselNext: "Next",
   },
   ar: {
     skipToContent: "تخطّ إلى المحتوى",
@@ -285,6 +327,27 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     businessSurface: "الأعمال",
     adminSurface: "الإدارة",
     plannerHealth: "صحة المخطِّط",
+    notFound: "الصفحة غير موجودة",
+    notFoundBody: "هذه الصفحة ليست في الكتالوج.",
+    contactTitle: "تواصل",
+    contactBody: "تواصل مع فريق مشوار.",
+    termsTitle: "الشروط",
+    termsBody: "شروط التخطيط والحجز.",
+    privacyPageTitle: "الخصوصية",
+    privacyPageBody: "كيف يستخدم مشوار بيانات المسافر.",
+    planBody: "ابنِ مساراً من المخزون المنظّم فقط.",
+    planFromCollection: "بدأت من «{title}».",
+    planStopsOne: "محطة منشورة واحدة. عدّل من المخزون المنظّم فقط.",
+    planStopsOther: "{count} محطات منشورة. عدّل من المخزون المنظّم فقط.",
+    tripLabel: "رحلة {id}",
+    estimate: "تقدير",
+    fieldRequired: "هذا الحقل مطلوب.",
+    fieldInvalid: "راجع هذا الحقل ثم أعد المحاولة.",
+    startDate: "تاريخ البداية",
+    endDate: "تاريخ النهاية",
+    datesLegend: "التواريخ",
+    carouselPrevious: "السابق",
+    carouselNext: "التالي",
   },
   fr: {
     skipToContent: "Aller au contenu",
@@ -381,5 +444,26 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     businessSurface: "Professionnel",
     adminSurface: "Admin",
     plannerHealth: "Santé du planificateur",
+    notFound: "Page introuvable",
+    notFoundBody: "Cette page n’est pas dans le catalogue.",
+    contactTitle: "Contact",
+    contactBody: "Contacter l’équipe Mshwar.",
+    termsTitle: "Conditions",
+    termsBody: "Conditions de planification et de réservation.",
+    privacyPageTitle: "Confidentialité",
+    privacyPageBody: "Comment Mshwar utilise les données des voyageurs.",
+    planBody: "Construisez un itinéraire à partir de l’inventaire structuré.",
+    planFromCollection: "Commencé à partir de « {title} ».",
+    planStopsOne: "{count} étape publiée. Modifiez uniquement l’inventaire structuré.",
+    planStopsOther: "{count} étapes publiées. Modifiez uniquement l’inventaire structuré.",
+    tripLabel: "Voyage {id}",
+    estimate: "Estimation",
+    fieldRequired: "Ce champ est obligatoire.",
+    fieldInvalid: "Vérifiez ce champ et réessayez.",
+    startDate: "Date de début",
+    endDate: "Date de fin",
+    datesLegend: "Dates",
+    carouselPrevious: "Précédent",
+    carouselNext: "Suivant",
   },
 };

@@ -489,12 +489,22 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                       r="3"
                     />
                   </svg>
-                  Byblos · Mount Lebanon
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Byblos · Mount Lebanon
+                  </span>
                 </p>
                 <h3
                   class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  A slow day in Byblos
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    A slow day in Byblos
+                  </span>
                 </h3>
                 <div
                   class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
@@ -530,8 +540,8 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                     class="font-medium text-text"
                   >
                     من
-                     $
-                    35
+                     
+                    ‏٣٥٫٠٠ US$
                   </span>
                 </div>
               </div>
@@ -619,12 +629,22 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                       r="3"
                     />
                   </svg>
-                  Batroun · North Lebanon
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Batroun · North Lebanon
+                  </span>
                 </p>
                 <h3
                   class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  Coastal escapes in Batroun
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Coastal escapes in Batroun
+                  </span>
                 </h3>
                 <div
                   class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
@@ -660,8 +680,8 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                     class="font-medium text-text"
                   >
                     من
-                     $
-                    45
+                     
+                    ‏٤٥٫٠٠ US$
                   </span>
                 </div>
               </div>
@@ -749,12 +769,22 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                       r="3"
                     />
                   </svg>
-                  Bsharri · North Lebanon
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Bsharri · North Lebanon
+                  </span>
                 </p>
                 <h3
                   class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  Among the ancient cedars
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Among the ancient cedars
+                  </span>
                 </h3>
                 <div
                   class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
@@ -790,8 +820,8 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                     class="font-medium text-text"
                   >
                     من
-                     $
-                    25
+                     
+                    ‏٢٥٫٠٠ US$
                   </span>
                 </div>
               </div>
@@ -951,7 +981,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
               />
               <svg
                 aria-hidden="true"
-                class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+                class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -980,7 +1010,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                 <h3
                   class="mt-1 text-heading font-semibold tracking-tight"
                 >
-                  Batroun
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Batroun
+                  </span>
                 </h3>
                 <p
                   class="mt-2 text-sm opacity-90"
@@ -1013,7 +1048,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
               />
               <svg
                 aria-hidden="true"
-                class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+                class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -1042,7 +1077,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                 <h3
                   class="mt-1 text-heading font-semibold tracking-tight"
                 >
-                  Qadisha Valley
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Qadisha Valley
+                  </span>
                 </h3>
                 <p
                   class="mt-2 text-sm opacity-90"
@@ -1075,7 +1115,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
               />
               <svg
                 aria-hidden="true"
-                class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+                class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -1104,7 +1144,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                 <h3
                   class="mt-1 text-heading font-semibold tracking-tight"
                 >
-                  Baalbek
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Baalbek
+                  </span>
                 </h3>
                 <p
                   class="mt-2 text-sm opacity-90"
@@ -1610,12 +1655,22 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                       r="3"
                     />
                   </svg>
-                  Byblos · Mount Lebanon
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Byblos · Mount Lebanon
+                  </span>
                 </p>
                 <h3
                   class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  A slow day in Byblos
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    A slow day in Byblos
+                  </span>
                 </h3>
                 <div
                   class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
@@ -1651,8 +1706,8 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                     class="font-medium text-text"
                   >
                     From
-                     $
-                    35
+                     
+                    $35.00
                   </span>
                 </div>
               </div>
@@ -1740,12 +1795,22 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                       r="3"
                     />
                   </svg>
-                  Batroun · North Lebanon
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Batroun · North Lebanon
+                  </span>
                 </p>
                 <h3
                   class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  Coastal escapes in Batroun
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Coastal escapes in Batroun
+                  </span>
                 </h3>
                 <div
                   class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
@@ -1781,8 +1846,8 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                     class="font-medium text-text"
                   >
                     From
-                     $
-                    45
+                     
+                    $45.00
                   </span>
                 </div>
               </div>
@@ -1870,12 +1935,22 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                       r="3"
                     />
                   </svg>
-                  Bsharri · North Lebanon
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Bsharri · North Lebanon
+                  </span>
                 </p>
                 <h3
                   class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  Among the ancient cedars
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Among the ancient cedars
+                  </span>
                 </h3>
                 <div
                   class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
@@ -1911,8 +1986,8 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                     class="font-medium text-text"
                   >
                     From
-                     $
-                    25
+                     
+                    $25.00
                   </span>
                 </div>
               </div>
@@ -2072,7 +2147,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
               />
               <svg
                 aria-hidden="true"
-                class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+                class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -2101,7 +2176,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                 <h3
                   class="mt-1 text-heading font-semibold tracking-tight"
                 >
-                  Batroun
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Batroun
+                  </span>
                 </h3>
                 <p
                   class="mt-2 text-sm opacity-90"
@@ -2134,7 +2214,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
               />
               <svg
                 aria-hidden="true"
-                class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+                class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -2163,7 +2243,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                 <h3
                   class="mt-1 text-heading font-semibold tracking-tight"
                 >
-                  Qadisha Valley
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Qadisha Valley
+                  </span>
                 </h3>
                 <p
                   class="mt-2 text-sm opacity-90"
@@ -2196,7 +2281,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
               />
               <svg
                 aria-hidden="true"
-                class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+                class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -2225,7 +2310,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                 <h3
                   class="mt-1 text-heading font-semibold tracking-tight"
                 >
-                  Baalbek
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Baalbek
+                  </span>
                 </h3>
                 <p
                   class="mt-2 text-sm opacity-90"
@@ -2731,12 +2821,22 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                       r="3"
                     />
                   </svg>
-                  Byblos · Mount Lebanon
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Byblos · Mount Lebanon
+                  </span>
                 </p>
                 <h3
                   class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  A slow day in Byblos
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    A slow day in Byblos
+                  </span>
                 </h3>
                 <div
                   class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
@@ -2772,8 +2872,8 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                     class="font-medium text-text"
                   >
                     À partir de
-                     $
-                    35
+                     
+                    35,00 $US
                   </span>
                 </div>
               </div>
@@ -2861,12 +2961,22 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                       r="3"
                     />
                   </svg>
-                  Batroun · North Lebanon
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Batroun · North Lebanon
+                  </span>
                 </p>
                 <h3
                   class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  Coastal escapes in Batroun
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Coastal escapes in Batroun
+                  </span>
                 </h3>
                 <div
                   class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
@@ -2902,8 +3012,8 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                     class="font-medium text-text"
                   >
                     À partir de
-                     $
-                    45
+                     
+                    45,00 $US
                   </span>
                 </div>
               </div>
@@ -2991,12 +3101,22 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                       r="3"
                     />
                   </svg>
-                  Bsharri · North Lebanon
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Bsharri · North Lebanon
+                  </span>
                 </p>
                 <h3
                   class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  Among the ancient cedars
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Among the ancient cedars
+                  </span>
                 </h3>
                 <div
                   class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
@@ -3032,8 +3152,8 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                     class="font-medium text-text"
                   >
                     À partir de
-                     $
-                    25
+                     
+                    25,00 $US
                   </span>
                 </div>
               </div>
@@ -3193,7 +3313,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
               />
               <svg
                 aria-hidden="true"
-                class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+                class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -3222,7 +3342,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                 <h3
                   class="mt-1 text-heading font-semibold tracking-tight"
                 >
-                  Batroun
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Batroun
+                  </span>
                 </h3>
                 <p
                   class="mt-2 text-sm opacity-90"
@@ -3255,7 +3380,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
               />
               <svg
                 aria-hidden="true"
-                class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+                class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -3284,7 +3409,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                 <h3
                   class="mt-1 text-heading font-semibold tracking-tight"
                 >
-                  Qadisha Valley
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Qadisha Valley
+                  </span>
                 </h3>
                 <p
                   class="mt-2 text-sm opacity-90"
@@ -3317,7 +3447,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
               />
               <svg
                 aria-hidden="true"
-                class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+                class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -3346,7 +3476,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                 <h3
                   class="mt-1 text-heading font-semibold tracking-tight"
                 >
-                  Baalbek
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Baalbek
+                  </span>
                 </h3>
                 <p
                   class="mt-2 text-sm opacity-90"
@@ -4662,7 +4797,7 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
           class="font-semibold text-text"
         >
           <span>
-            $35.00
+            ‏٣٥٫٠٠ US$
           </span>
           <span
             class="text-sm font-normal text-text-muted"
@@ -4673,7 +4808,7 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
           <span
             class="ms-2 text-label font-medium text-text-muted"
           >
-            Estimate
+            تقدير
           </span>
         </p>
         <p
@@ -4886,12 +5021,22 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
                       r="3"
                     />
                   </svg>
-                  Batroun · North Lebanon
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Batroun · North Lebanon
+                  </span>
                 </p>
                 <h3
                   class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  Coastal escapes in Batroun
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Coastal escapes in Batroun
+                  </span>
                 </h3>
                 <div
                   class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
@@ -4927,8 +5072,8 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
                     class="font-medium text-text"
                   >
                     من
-                     $
-                    45
+                     
+                    ‏٤٥٫٠٠ US$
                   </span>
                 </div>
               </div>
@@ -5026,12 +5171,22 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
                       r="3"
                     />
                   </svg>
-                  Bsharri · North Lebanon
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Bsharri · North Lebanon
+                  </span>
                 </p>
                 <h3
                   class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  Among the ancient cedars
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Among the ancient cedars
+                  </span>
                 </h3>
                 <div
                   class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
@@ -5067,8 +5222,8 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
                     class="font-medium text-text"
                   >
                     من
-                     $
-                    25
+                     
+                    ‏٢٥٫٠٠ US$
                   </span>
                 </div>
               </div>
@@ -5166,12 +5321,22 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
                       r="3"
                     />
                   </svg>
-                  Qadisha Valley · North Lebanon
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Qadisha Valley · North Lebanon
+                  </span>
                 </p>
                 <h3
                   class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  Take the valley road
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Take the valley road
+                  </span>
                 </h3>
                 <div
                   class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
@@ -5207,8 +5372,8 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
                     class="font-medium text-text"
                   >
                     من
-                     $
-                    40
+                     
+                    ‏٤٠٫٠٠ US$
                   </span>
                 </div>
               </div>
@@ -5952,12 +6117,22 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
                       r="3"
                     />
                   </svg>
-                  Batroun · North Lebanon
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Batroun · North Lebanon
+                  </span>
                 </p>
                 <h3
                   class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  Coastal escapes in Batroun
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Coastal escapes in Batroun
+                  </span>
                 </h3>
                 <div
                   class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
@@ -5993,8 +6168,8 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
                     class="font-medium text-text"
                   >
                     From
-                     $
-                    45
+                     
+                    $45.00
                   </span>
                 </div>
               </div>
@@ -6092,12 +6267,22 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
                       r="3"
                     />
                   </svg>
-                  Bsharri · North Lebanon
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Bsharri · North Lebanon
+                  </span>
                 </p>
                 <h3
                   class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  Among the ancient cedars
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Among the ancient cedars
+                  </span>
                 </h3>
                 <div
                   class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
@@ -6133,8 +6318,8 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
                     class="font-medium text-text"
                   >
                     From
-                     $
-                    25
+                     
+                    $25.00
                   </span>
                 </div>
               </div>
@@ -6232,12 +6417,22 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
                       r="3"
                     />
                   </svg>
-                  Qadisha Valley · North Lebanon
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Qadisha Valley · North Lebanon
+                  </span>
                 </p>
                 <h3
                   class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  Take the valley road
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Take the valley road
+                  </span>
                 </h3>
                 <div
                   class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
@@ -6273,8 +6468,8 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
                     class="font-medium text-text"
                   >
                     From
-                     $
-                    40
+                     
+                    $40.00
                   </span>
                 </div>
               </div>
@@ -6794,7 +6989,7 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
           class="font-semibold text-text"
         >
           <span>
-            $35.00
+            35,00 $US
           </span>
           <span
             class="text-sm font-normal text-text-muted"
@@ -6805,7 +7000,7 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
           <span
             class="ms-2 text-label font-medium text-text-muted"
           >
-            Estimate
+            Estimation
           </span>
         </p>
         <p
@@ -7018,12 +7213,22 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
                       r="3"
                     />
                   </svg>
-                  Batroun · North Lebanon
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Batroun · North Lebanon
+                  </span>
                 </p>
                 <h3
                   class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  Coastal escapes in Batroun
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Coastal escapes in Batroun
+                  </span>
                 </h3>
                 <div
                   class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
@@ -7059,8 +7264,8 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
                     class="font-medium text-text"
                   >
                     À partir de
-                     $
-                    45
+                     
+                    45,00 $US
                   </span>
                 </div>
               </div>
@@ -7158,12 +7363,22 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
                       r="3"
                     />
                   </svg>
-                  Bsharri · North Lebanon
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Bsharri · North Lebanon
+                  </span>
                 </p>
                 <h3
                   class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  Among the ancient cedars
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Among the ancient cedars
+                  </span>
                 </h3>
                 <div
                   class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
@@ -7199,8 +7414,8 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
                     class="font-medium text-text"
                   >
                     À partir de
-                     $
-                    25
+                     
+                    25,00 $US
                   </span>
                 </div>
               </div>
@@ -7298,12 +7513,22 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
                       r="3"
                     />
                   </svg>
-                  Qadisha Valley · North Lebanon
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Qadisha Valley · North Lebanon
+                  </span>
                 </p>
                 <h3
                   class="text-title font-semibold tracking-tight text-text group-hover:underline"
                 >
-                  Take the valley road
+                  <span
+                    class="unicode-bidi-isolate"
+                    dir="ltr"
+                  >
+                    Take the valley road
+                  </span>
                 </h3>
                 <div
                   class="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted"
@@ -7339,8 +7564,8 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
                     class="font-medium text-text"
                   >
                     À partir de
-                     $
-                    40
+                     
+                    40,00 $US
                   </span>
                 </div>
               </div>
@@ -7409,7 +7634,7 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in ar 1`] =
           />
           <svg
             aria-hidden="true"
-            class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+            class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
             fill="none"
             height="24"
             stroke="currentColor"
@@ -7438,7 +7663,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in ar 1`] =
             <h3
               class="mt-1 text-heading font-semibold tracking-tight"
             >
-              Byblos
+              <span
+                class="unicode-bidi-isolate"
+                dir="ltr"
+              >
+                Byblos
+              </span>
             </h3>
             <p
               class="mt-2 text-sm opacity-90"
@@ -7471,7 +7701,7 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in ar 1`] =
           />
           <svg
             aria-hidden="true"
-            class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+            class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
             fill="none"
             height="24"
             stroke="currentColor"
@@ -7500,7 +7730,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in ar 1`] =
             <h3
               class="mt-1 text-heading font-semibold tracking-tight"
             >
-              Batroun
+              <span
+                class="unicode-bidi-isolate"
+                dir="ltr"
+              >
+                Batroun
+              </span>
             </h3>
             <p
               class="mt-2 text-sm opacity-90"
@@ -7533,7 +7768,7 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in ar 1`] =
           />
           <svg
             aria-hidden="true"
-            class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+            class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
             fill="none"
             height="24"
             stroke="currentColor"
@@ -7562,7 +7797,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in ar 1`] =
             <h3
               class="mt-1 text-heading font-semibold tracking-tight"
             >
-              Bsharri
+              <span
+                class="unicode-bidi-isolate"
+                dir="ltr"
+              >
+                Bsharri
+              </span>
             </h3>
             <p
               class="mt-2 text-sm opacity-90"
@@ -7595,7 +7835,7 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in ar 1`] =
           />
           <svg
             aria-hidden="true"
-            class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+            class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
             fill="none"
             height="24"
             stroke="currentColor"
@@ -7624,7 +7864,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in ar 1`] =
             <h3
               class="mt-1 text-heading font-semibold tracking-tight"
             >
-              Qadisha Valley
+              <span
+                class="unicode-bidi-isolate"
+                dir="ltr"
+              >
+                Qadisha Valley
+              </span>
             </h3>
             <p
               class="mt-2 text-sm opacity-90"
@@ -7657,7 +7902,7 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in ar 1`] =
           />
           <svg
             aria-hidden="true"
-            class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+            class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
             fill="none"
             height="24"
             stroke="currentColor"
@@ -7686,7 +7931,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in ar 1`] =
             <h3
               class="mt-1 text-heading font-semibold tracking-tight"
             >
-              Baalbek
+              <span
+                class="unicode-bidi-isolate"
+                dir="ltr"
+              >
+                Baalbek
+              </span>
             </h3>
             <p
               class="mt-2 text-sm opacity-90"
@@ -7719,7 +7969,7 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in ar 1`] =
           />
           <svg
             aria-hidden="true"
-            class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+            class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
             fill="none"
             height="24"
             stroke="currentColor"
@@ -7748,7 +7998,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in ar 1`] =
             <h3
               class="mt-1 text-heading font-semibold tracking-tight"
             >
-              Beirut
+              <span
+                class="unicode-bidi-isolate"
+                dir="ltr"
+              >
+                Beirut
+              </span>
             </h3>
             <p
               class="mt-2 text-sm opacity-90"
@@ -7818,7 +8073,7 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in en 1`] =
           />
           <svg
             aria-hidden="true"
-            class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+            class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
             fill="none"
             height="24"
             stroke="currentColor"
@@ -7847,7 +8102,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in en 1`] =
             <h3
               class="mt-1 text-heading font-semibold tracking-tight"
             >
-              Byblos
+              <span
+                class="unicode-bidi-isolate"
+                dir="ltr"
+              >
+                Byblos
+              </span>
             </h3>
             <p
               class="mt-2 text-sm opacity-90"
@@ -7880,7 +8140,7 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in en 1`] =
           />
           <svg
             aria-hidden="true"
-            class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+            class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
             fill="none"
             height="24"
             stroke="currentColor"
@@ -7909,7 +8169,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in en 1`] =
             <h3
               class="mt-1 text-heading font-semibold tracking-tight"
             >
-              Batroun
+              <span
+                class="unicode-bidi-isolate"
+                dir="ltr"
+              >
+                Batroun
+              </span>
             </h3>
             <p
               class="mt-2 text-sm opacity-90"
@@ -7942,7 +8207,7 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in en 1`] =
           />
           <svg
             aria-hidden="true"
-            class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+            class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
             fill="none"
             height="24"
             stroke="currentColor"
@@ -7971,7 +8236,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in en 1`] =
             <h3
               class="mt-1 text-heading font-semibold tracking-tight"
             >
-              Bsharri
+              <span
+                class="unicode-bidi-isolate"
+                dir="ltr"
+              >
+                Bsharri
+              </span>
             </h3>
             <p
               class="mt-2 text-sm opacity-90"
@@ -8004,7 +8274,7 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in en 1`] =
           />
           <svg
             aria-hidden="true"
-            class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+            class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
             fill="none"
             height="24"
             stroke="currentColor"
@@ -8033,7 +8303,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in en 1`] =
             <h3
               class="mt-1 text-heading font-semibold tracking-tight"
             >
-              Qadisha Valley
+              <span
+                class="unicode-bidi-isolate"
+                dir="ltr"
+              >
+                Qadisha Valley
+              </span>
             </h3>
             <p
               class="mt-2 text-sm opacity-90"
@@ -8066,7 +8341,7 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in en 1`] =
           />
           <svg
             aria-hidden="true"
-            class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+            class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
             fill="none"
             height="24"
             stroke="currentColor"
@@ -8095,7 +8370,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in en 1`] =
             <h3
               class="mt-1 text-heading font-semibold tracking-tight"
             >
-              Baalbek
+              <span
+                class="unicode-bidi-isolate"
+                dir="ltr"
+              >
+                Baalbek
+              </span>
             </h3>
             <p
               class="mt-2 text-sm opacity-90"
@@ -8128,7 +8408,7 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in en 1`] =
           />
           <svg
             aria-hidden="true"
-            class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+            class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
             fill="none"
             height="24"
             stroke="currentColor"
@@ -8157,7 +8437,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in en 1`] =
             <h3
               class="mt-1 text-heading font-semibold tracking-tight"
             >
-              Beirut
+              <span
+                class="unicode-bidi-isolate"
+                dir="ltr"
+              >
+                Beirut
+              </span>
             </h3>
             <p
               class="mt-2 text-sm opacity-90"
@@ -8227,7 +8512,7 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in fr 1`] =
           />
           <svg
             aria-hidden="true"
-            class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+            class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
             fill="none"
             height="24"
             stroke="currentColor"
@@ -8256,7 +8541,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in fr 1`] =
             <h3
               class="mt-1 text-heading font-semibold tracking-tight"
             >
-              Byblos
+              <span
+                class="unicode-bidi-isolate"
+                dir="ltr"
+              >
+                Byblos
+              </span>
             </h3>
             <p
               class="mt-2 text-sm opacity-90"
@@ -8289,7 +8579,7 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in fr 1`] =
           />
           <svg
             aria-hidden="true"
-            class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+            class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
             fill="none"
             height="24"
             stroke="currentColor"
@@ -8318,7 +8608,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in fr 1`] =
             <h3
               class="mt-1 text-heading font-semibold tracking-tight"
             >
-              Batroun
+              <span
+                class="unicode-bidi-isolate"
+                dir="ltr"
+              >
+                Batroun
+              </span>
             </h3>
             <p
               class="mt-2 text-sm opacity-90"
@@ -8351,7 +8646,7 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in fr 1`] =
           />
           <svg
             aria-hidden="true"
-            class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+            class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
             fill="none"
             height="24"
             stroke="currentColor"
@@ -8380,7 +8675,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in fr 1`] =
             <h3
               class="mt-1 text-heading font-semibold tracking-tight"
             >
-              Bsharri
+              <span
+                class="unicode-bidi-isolate"
+                dir="ltr"
+              >
+                Bsharri
+              </span>
             </h3>
             <p
               class="mt-2 text-sm opacity-90"
@@ -8413,7 +8713,7 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in fr 1`] =
           />
           <svg
             aria-hidden="true"
-            class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+            class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
             fill="none"
             height="24"
             stroke="currentColor"
@@ -8442,7 +8742,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in fr 1`] =
             <h3
               class="mt-1 text-heading font-semibold tracking-tight"
             >
-              Qadisha Valley
+              <span
+                class="unicode-bidi-isolate"
+                dir="ltr"
+              >
+                Qadisha Valley
+              </span>
             </h3>
             <p
               class="mt-2 text-sm opacity-90"
@@ -8475,7 +8780,7 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in fr 1`] =
           />
           <svg
             aria-hidden="true"
-            class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+            class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
             fill="none"
             height="24"
             stroke="currentColor"
@@ -8504,7 +8809,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in fr 1`] =
             <h3
               class="mt-1 text-heading font-semibold tracking-tight"
             >
-              Baalbek
+              <span
+                class="unicode-bidi-isolate"
+                dir="ltr"
+              >
+                Baalbek
+              </span>
             </h3>
             <p
               class="mt-2 text-sm opacity-90"
@@ -8537,7 +8847,7 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in fr 1`] =
           />
           <svg
             aria-hidden="true"
-            class="lucide lucide-arrow-up-right absolute end-4 top-4 size-5 text-brand-foreground rtl:-scale-x-100"
+            class="lucide lucide-arrow-up-right rtl:-scale-x-100 absolute end-4 top-4 size-5 text-brand-foreground"
             fill="none"
             height="24"
             stroke="currentColor"
@@ -8566,7 +8876,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in fr 1`] =
             <h3
               class="mt-1 text-heading font-semibold tracking-tight"
             >
-              Beirut
+              <span
+                class="unicode-bidi-isolate"
+                dir="ltr"
+              >
+                Beirut
+              </span>
             </h3>
             <p
               class="mt-2 text-sm opacity-90"

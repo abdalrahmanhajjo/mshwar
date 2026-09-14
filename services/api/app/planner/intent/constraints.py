@@ -1,3 +1,5 @@
+"""Epic 8 LLM intent extraction. Dialect/Arabizi eval lives in extractor.py."""
+
 from __future__ import annotations
 
 from app.planner.defaults import has_intent_anchor

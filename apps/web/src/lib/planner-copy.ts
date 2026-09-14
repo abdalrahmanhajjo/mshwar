@@ -56,7 +56,10 @@ export type PlannerKey =
   | "fromPrice"
   | "quote"
   | "why"
-  | "booking";
+  | "booking"
+  | "updateError"
+  | "tripLabel"
+  | "sealed";
 
 export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
   en: {
@@ -115,6 +118,9 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     quote: "Quote required",
     why: "Why this stop",
     booking: "Booking",
+    updateError: "Could not update the plan.",
+    tripLabel: "Trip {id}",
+    sealed: "sealed",
   },
   ar: {
     startTitle: "من أين تبدأ هذه الخطة؟",
@@ -172,6 +178,9 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     quote: "يتطلب عرض سعر",
     why: "لماذا هذه المحطة",
     booking: "الحجز",
+    updateError: "تعذّر تحديث الخطة.",
+    tripLabel: "رحلة {id}",
+    sealed: "مُغلقة",
   },
   fr: {
     startTitle: "D’où part ce plan ?",
@@ -230,6 +239,9 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     quote: "Devis requis",
     why: "Pourquoi cet arrêt",
     booking: "Réservation",
+    updateError: "Impossible de mettre à jour le plan.",
+    tripLabel: "Voyage {id}",
+    sealed: "scellé",
   },
 };
 

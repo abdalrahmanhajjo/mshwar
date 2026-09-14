@@ -10,6 +10,7 @@ import { SoftPlanCta } from "@/components/browse/plan-cta";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { useBrowseCopy } from "@/lib/browse-copy";
+import { formatPlural } from "@/i18n/format";
 import { withLocalePrefix } from "@/lib/locale";
 import { useLocale } from "@/components/shell/locale-provider";
 import { ExperiencesMap } from "@/components/browse/experiences-map";
@@ -121,7 +122,7 @@ export function ExperiencesView({
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-text-muted">
-              {page.total} {copy.placesCount}
+              {formatPlural(locale, page.total, { one: copy.placesOne, other: copy.placesOther })}
             </p>
             <div className="flex gap-2">
               <Button
