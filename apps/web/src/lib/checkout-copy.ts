@@ -31,7 +31,8 @@ export type CheckoutKey =
   | "suggestionNote"
   | "requestNote"
   | "confirmedNote"
-  | "instantBlocked";
+  | "instantBlocked"
+  | "bookThisStop";
 
 export const checkoutCopy: Record<Locale, Record<CheckoutKey, string>> = {
   en: {
@@ -65,6 +66,7 @@ export const checkoutCopy: Record<Locale, Record<CheckoutKey, string>> = {
     requestNote: "The business must accept before this is confirmed.",
     confirmedNote: "Confirmed only after a successful payment when payment is required.",
     instantBlocked: "Instant confirm needs authoritative capacity.",
+    bookThisStop: "Book this stop",
   },
   ar: {
     title: "إتمام الحجز",
@@ -97,6 +99,7 @@ export const checkoutCopy: Record<Locale, Record<CheckoutKey, string>> = {
     requestNote: "يجب أن يقبل النشاط قبل التأكيد.",
     confirmedNote: "لا يُؤكَّد الحجز المدفوع إلا بعد دفع ناجح.",
     instantBlocked: "التأكيد الفوري يحتاج سعة موثوقة.",
+    bookThisStop: "احجز هذه المحطة",
   },
   fr: {
     title: "Paiement",
@@ -129,6 +132,7 @@ export const checkoutCopy: Record<Locale, Record<CheckoutKey, string>> = {
     requestNote: "L’établissement doit accepter avant confirmation.",
     confirmedNote: "Une réservation payante n’est confirmée qu’après un paiement réussi.",
     instantBlocked: "La confirmation immédiate exige une capacité officielle.",
+    bookThisStop: "Réserver cet arrêt",
   },
 };
 

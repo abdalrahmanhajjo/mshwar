@@ -46,6 +46,7 @@ jobs:
       - run: pnpm run format:check
       - run: pnpm run lint
       - run: pnpm run typecheck
+      - run: pnpm i18n:check
       - run: pnpm tokens:check
       - run: pnpm tokens:contrast
       - run: pnpm tokens:test

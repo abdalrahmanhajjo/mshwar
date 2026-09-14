@@ -1,5 +1,5 @@
-import { ShellPage } from "@/components/shell/shell-page";
+import { LocalizedShellPage } from "@/components/shell/localized-shell-page";
 
 export default function TermsPage() {
-  return <ShellPage title="Terms" description="Conditions for planning and booking." />;
+  return <LocalizedShellPage titleKey="termsTitle" descriptionKey="termsBody" />;
 }

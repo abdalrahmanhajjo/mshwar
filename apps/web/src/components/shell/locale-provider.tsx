@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { translate } from "@/i18n/translate";
 import { applyDocumentLocale, LOCALE_COOKIE, type Locale, parseLocale } from "@/lib/locale";
 import { messages, type MessageKey } from "@/lib/messages";
 
@@ -39,7 +40,7 @@ export function LocaleProvider({
     persistLocale(parsed);
   }, []);
 
-  const t = React.useCallback((key: MessageKey) => messages[locale][key], [locale]);
+  const t = React.useCallback((key: MessageKey) => translate(messages, locale, key), [locale]);
 
   const value = React.useMemo(() => ({ locale, setLocale, t }), [locale, setLocale, t]);
 

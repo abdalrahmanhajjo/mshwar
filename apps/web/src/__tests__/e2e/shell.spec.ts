@@ -559,3 +559,17 @@ test.describe("MSHWAR-33 account hub", () => {
     await assertNoHorizontalScroll(page);
   });
 });
+
+test.describe("MSHWAR-105 Arabic RTL MVP matrix", () => {
+  for (const width of [390, 1440] as const) {
+    for (const path of ["/", "/destinations", "/experiences", "/plan", "/ideas", "/contact"] as const) {
+      test(`${path} stays RTL without overflow at ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+        await page.goto(path === "/" ? "/ar" : `/ar${path}`);
+        await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+        await expect(page.locator("[data-shell='traveller']")).toHaveAttribute("dir", "rtl");
+        await assertNoHorizontalScroll(page);
+      });
+    }
+  }
+});

@@ -4,12 +4,16 @@ import { LocaleLink } from "@/components/shell/locale-link";
 import { Clock, MapPin } from "lucide-react";
 import { CatalogImage } from "@/components/browse/catalog-image";
 import { SaveExperienceButton } from "@/components/browse/save-button";
+import { BidiText } from "@/components/ui/bidi-text";
 import { useBrowseCopy } from "@/lib/browse-copy";
+import { useLocale } from "@/components/shell/locale-provider";
+import { formatCurrency } from "@/i18n/format";
 import type { Experience } from "@/lib/catalog";
 import { CATEGORIES } from "@/lib/catalog";
 
 export function ExperienceCard({ experience, compact = false }: { experience: Experience; compact?: boolean }) {
   const copy = useBrowseCopy();
+  const { locale } = useLocale();
   const category = CATEGORIES.find((item) => item.slug === experience.category)?.label ?? experience.category;
 
   return (
@@ -29,10 +33,10 @@ export function ExperienceCard({ experience, compact = false }: { experience: Ex
         <div className="flex flex-1 flex-col gap-2 pt-3">
           <p className="text-xs text-text-muted">
             <MapPin className="me-1 inline size-3" aria-hidden />
-            {experience.placeLabel}
+            <BidiText>{experience.placeLabel}</BidiText>
           </p>
           <h3 className="text-title font-semibold tracking-tight text-text group-hover:underline">
-            {experience.title}
+            <BidiText>{experience.title}</BidiText>
           </h3>
           <div className="mt-auto flex items-center justify-between gap-3 pt-2 text-sm text-text-muted">
             <span>
@@ -40,7 +44,7 @@ export function ExperienceCard({ experience, compact = false }: { experience: Ex
               {experience.hours} {copy.hoursLabel}
             </span>
             <span className="font-medium text-text">
-              {copy.fromPrice} ${experience.priceFrom}
+              {copy.fromPrice} {formatCurrency(locale, experience.priceFrom)}
             </span>
           </div>
         </div>

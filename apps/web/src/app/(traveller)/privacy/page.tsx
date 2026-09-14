@@ -1,5 +1,5 @@
-import { ShellPage } from "@/components/shell/shell-page";
+import { LocalizedShellPage } from "@/components/shell/localized-shell-page";
 
 export default function PrivacyPage() {
-  return <ShellPage title="Privacy" description="How Mshwar uses traveller data." />;
+  return <LocalizedShellPage titleKey="privacyPageTitle" descriptionKey="privacyPageBody" />;
 }
