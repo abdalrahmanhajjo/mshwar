@@ -45,6 +45,10 @@ def test_defaults() -> None:
     assert settings.payment_provider == "stripe_test"
     assert settings.payments_fault == ""
     assert settings.idempotency_ttl_hours == 24
+    assert settings.smtp_host == ""
+    assert settings.sendgrid_api_key == ""
+    assert settings.notification_max_attempts == 8
+    assert settings.notification_dispatch_token == ""
 
 
 def test_reads_database_url_env(monkeypatch: pytest.MonkeyPatch) -> None:

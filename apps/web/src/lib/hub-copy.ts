@@ -39,6 +39,7 @@ export type HubKey =
   | "markRead"
   | "unread"
   | "read"
+  | "openItem"
   | "pageLabel";
 
 export const hubCopy: Record<Locale, Record<HubKey, string>> = {
@@ -80,6 +81,7 @@ export const hubCopy: Record<Locale, Record<HubKey, string>> = {
     markRead: "Mark as read",
     unread: "Unread",
     read: "Read",
+    openItem: "Open related item",
     pageLabel: "Pagination",
   },
   ar: {
@@ -120,6 +122,7 @@ export const hubCopy: Record<Locale, Record<HubKey, string>> = {
     markRead: "تعليم كمقروء",
     unread: "غير مقروء",
     read: "مقروء",
+    openItem: "فتح العنصر المرتبط",
     pageLabel: "ترقيم الصفحات",
   },
   fr: {
@@ -160,6 +163,7 @@ export const hubCopy: Record<Locale, Record<HubKey, string>> = {
     markRead: "Marquer comme lu",
     unread: "Non lu",
     read: "Lu",
+    openItem: "Ouvrir l’élément lié",
     pageLabel: "Pagination",
   },
 };

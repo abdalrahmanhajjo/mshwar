@@ -131,6 +131,27 @@ class Settings(BaseSettings):
         default=14,
         validation_alias=AliasChoices("DATA_QUALITY_STALE_DAYS", "data_quality_stale_days"),
     )
+    smtp_host: str = Field(default="", validation_alias=AliasChoices("SMTP_HOST", "smtp_host"))
+    smtp_port: int = Field(default=587, validation_alias=AliasChoices("SMTP_PORT", "smtp_port"))
+    smtp_username: str = Field(default="", validation_alias=AliasChoices("SMTP_USERNAME", "smtp_username"))
+    smtp_password: str = Field(default="", validation_alias=AliasChoices("SMTP_PASSWORD", "smtp_password"))
+    smtp_from: str = Field(
+        default="noreply@mshwar.local",
+        validation_alias=AliasChoices("SMTP_FROM", "smtp_from"),
+    )
+    sendgrid_api_key: str = Field(default="", validation_alias=AliasChoices("SENDGRID_API_KEY", "sendgrid_api_key"))
+    notification_max_attempts: int = Field(
+        default=8,
+        validation_alias=AliasChoices("NOTIFICATION_MAX_ATTEMPTS", "notification_max_attempts"),
+    )
+    notification_dispatch_token: str = Field(
+        default="",
+        validation_alias=AliasChoices("NOTIFICATION_DISPATCH_TOKEN", "notification_dispatch_token"),
+    )
+    notification_worker_batch_size: int = Field(
+        default=25,
+        validation_alias=AliasChoices("NOTIFICATION_WORKER_BATCH_SIZE", "notification_worker_batch_size"),
+    )
 
     # Monitoring
     sentry_dsn: str = ""

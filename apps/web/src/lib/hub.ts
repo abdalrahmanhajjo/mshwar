@@ -37,6 +37,9 @@ export type NotificationRecord = {
   category: string;
   read_at: string | null;
   created_at: string;
+  deep_link?: string | null;
+  event_type?: string | null;
+  locale?: string | null;
 };
 
 async function readError(response: Response): Promise<string> {

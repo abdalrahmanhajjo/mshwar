@@ -25,6 +25,7 @@ from app.core.storage import (
     verify_signed_token,
 )
 from app.dependencies import get_auth_db
+from app.schemas.notifications import EscalationIn, RolePrefIn
 from app.schemas.portal import (
     AnalyticsCaptureIn,
     BlackoutIn,
@@ -124,6 +125,63 @@ async def update_contacts(
             if payload.internal_contact
             else None,
             "fulfilment": payload.fulfilment_instructions,
+        },
+    )
+
+
+@router.get("/organizations/{org_id}/notification-preferences")
+async def list_notification_preferences(
+    org_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    session = await _session(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.list_role_notification_prefs(:user_id, :org_id)",
+        {"user_id": _user_id(session), "org_id": str(org_id)},
+    )
+
+
+@router.put("/organizations/{org_id}/notification-preferences")
+async def put_notification_preference(
+    org_id: UUID,
+    payload: RolePrefIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    session = await _session(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.put_role_notification_pref(:user_id, :org_id, :role, :event, :email, :in_app)",
+        {
+            "user_id": _user_id(session),
+            "org_id": str(org_id),
+            "role": payload.role,
+            "event": payload.event_type,
+            "email": payload.email_enabled,
+            "in_app": payload.in_app_enabled,
+        },
+    )
+
+
+@router.put("/organizations/{org_id}/escalation")
+async def put_escalation(
+    org_id: UUID,
+    payload: EscalationIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    session = await _session(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.put_escalation_settings(:user_id, :org_id, :first, :repeat, :max)",
+        {
+            "user_id": _user_id(session),
+            "org_id": str(org_id),
+            "first": payload.first_minutes,
+            "repeat": payload.repeat_minutes,
+            "max": payload.max,
         },
     )
 
