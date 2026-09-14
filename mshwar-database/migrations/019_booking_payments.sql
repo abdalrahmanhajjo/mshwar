@@ -6,8 +6,9 @@ SET search_path = app, public;
 --
 -- Numbering while these PRs are open:
 --   016 admin is on main
---   017 maps/routing is PR #7
---   018 AI trip builder is PR #8
+--   017 maps/routing/weather is on main (PR #7)
+--   018 reserved for Epic 8 AI trip builder (PR #8)
+--   019 this file — booking & payments
 -- Checksum apply is filename-ordered and forward-only. Rebase
 -- may renumber if another migration lands first.
 -- ============================================================
