@@ -487,10 +487,10 @@ BEGIN
         IF v_audience = 'business' AND v_rec.role IS NOT NULL THEN
             v_channels := ARRAY[]::text[];
             IF app.role_channel_enabled(p_org, v_rec.role, p_event, 'in_app') THEN
-                v_channels := v_channels || 'in_app';
+                v_channels := array_append(v_channels, 'in_app');
             END IF;
             IF app.role_channel_enabled(p_org, v_rec.role, p_event, 'email') THEN
-                v_channels := v_channels || 'email';
+                v_channels := array_append(v_channels, 'email');
             END IF;
         ELSE
             v_channels := ARRAY['in_app', 'email'];
@@ -751,11 +751,8 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = app, public
 AS $$
-DECLARE
-    v_prev boolean;
 BEGIN
-    SELECT marketing_consent INTO v_prev FROM app.user_private WHERE user_id = p_user;
-    IF NOT FOUND THEN
+    IF NOT EXISTS (SELECT 1 FROM app.user_private WHERE user_id = p_user) THEN
         RAISE EXCEPTION 'account not found' USING ERRCODE = 'P0002';
     END IF;
     -- transactional_email stays true: marketing opt-out never suppresses transactional.
@@ -765,9 +762,9 @@ BEGIN
         transactional_email = true,
         updated_at = now()
     WHERE user_id = p_user;
-    IF v_prev IS DISTINCT FROM coalesce(p_marketing_email, v_prev) THEN
+    IF p_marketing_email IS NOT NULL THEN
         INSERT INTO app.consent_events (user_id, purpose, granted, policy_version)
-        VALUES (p_user, 'marketing_email', coalesce(p_marketing_email, v_prev), coalesce(p_source, 'preferences'));
+        VALUES (p_user, 'marketing_email', p_marketing_email, coalesce(p_source, 'preferences'));
     END IF;
     IF p_marketing_in_app IS NOT NULL THEN
         INSERT INTO app.consent_events (user_id, purpose, granted, policy_version)
