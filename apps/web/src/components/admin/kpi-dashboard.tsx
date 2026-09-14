@@ -58,7 +58,12 @@ export function KpiDashboard() {
       </CardHeader>
       <CardContent className="grid gap-3">
         <div className="flex flex-wrap gap-2">
-          <Input type="datetime-local" aria-label="from" value={from} onChange={(event) => setFrom(event.target.value)} />
+          <Input
+            type="datetime-local"
+            aria-label="from"
+            value={from}
+            onChange={(event) => setFrom(event.target.value)}
+          />
           <Input type="datetime-local" aria-label="to" value={to} onChange={(event) => setTo(event.target.value)} />
         </div>
         <dl className="grid gap-3 sm:grid-cols-2">

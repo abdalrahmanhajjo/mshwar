@@ -15,8 +15,12 @@ export function AdminRolesView() {
   const [userId, setUserId] = React.useState("");
   const [tier, setTier] = React.useState("ops");
   const [reason, setReason] = React.useState("Operations staffing");
-  const [roles, setRoles] = React.useState<{ user_id: string; email: string; display_name: string; tier: string }[]>([]);
-  const [sessions, setSessions] = React.useState<{ ip: string | null; duration_seconds: number; started_at: string }[]>([]);
+  const [roles, setRoles] = React.useState<{ user_id: string; email: string; display_name: string; tier: string }[]>(
+    [],
+  );
+  const [sessions, setSessions] = React.useState<{ ip: string | null; duration_seconds: number; started_at: string }[]>(
+    [],
+  );
 
   const reload = React.useCallback(async () => {
     try {
@@ -29,8 +33,24 @@ export function AdminRolesView() {
   }, []);
 
   React.useEffect(() => {
-    void reload();
-  }, [reload]);
+    let cancelled = false;
+    void Promise.all([listRoles(), listAdminSessions()])
+      .then(([nextRoles, nextSessions]) => {
+        if (!cancelled) {
+          setRoles(nextRoles);
+          setSessions(nextSessions);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setRoles([]);
+          setSessions([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <Card>
@@ -42,7 +62,11 @@ export function AdminRolesView() {
         <Input aria-label="user id" value={userId} onChange={(event) => setUserId(event.target.value)} />
         <Input aria-label="tier" value={tier} onChange={(event) => setTier(event.target.value)} />
         <Input aria-label="reason" value={reason} onChange={(event) => setReason(event.target.value)} />
-        <Button type="button" disabled={!elevated || userId === user?.id} onClick={() => void grantRole(userId, tier).then(reload)}>
+        <Button
+          type="button"
+          disabled={!elevated || userId === user?.id}
+          onClick={() => void grantRole(userId, tier).then(reload)}
+        >
           {copy.grantRole}
         </Button>
         <ul className="grid gap-2 text-sm">

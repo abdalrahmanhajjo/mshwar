@@ -39,7 +39,7 @@ router = APIRouter()
 
 class AdminUserOut(BaseModel):
     id: UUID
-    email: str
+    email: str | None = None
     display_name: str
     locale: str
     status: str
@@ -573,8 +573,8 @@ async def put_flag(
 @router.get("/kpis")
 async def kpis(
     request: Request,
-    date_from: datetime | None = Query(default=None, alias="from"),
-    date_to: datetime | None = Query(default=None, alias="to"),
+    date_from: datetime | None = Query(default=None, alias="from"),  # noqa: B008
+    date_to: datetime | None = Query(default=None, alias="to"),  # noqa: B008
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
     session = await _admin(request, db)

@@ -6,7 +6,7 @@ import { useLocale } from "@/components/shell/locale-provider";
 
 type AdminUser = {
   id: string;
-  email: string;
+  email: string | null;
   display_name: string;
   locale: string;
   status: string;
@@ -58,7 +58,7 @@ export function AdminUsersTable() {
               {users.map((row) => (
                 <tr key={row.id} className="border-b border-border">
                   <td className="py-2">{row.display_name}</td>
-                  <td className="py-2">{row.email}</td>
+                  <td className="py-2">{row.email ?? "—"}</td>
                   <td className="py-2">{row.email_verified ? t("verified") : t("unverified")}</td>
                 </tr>
               ))}
