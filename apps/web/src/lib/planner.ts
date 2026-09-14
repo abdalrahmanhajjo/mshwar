@@ -437,7 +437,7 @@ export function fetchInjectionEvents() {
 }
 
 export function fetchAdminTripVersions(tripId: string) {
-  return request<
+  return readJson<
     {
       version_id: string;
       version: number;
