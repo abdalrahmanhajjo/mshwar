@@ -124,7 +124,7 @@ export function ExperienceDetailView({ experience, related }: { experience: Expe
           <section className="rounded-card border border-border bg-surface-raised p-6">
             <h3 className="font-semibold">{copy.availabilityStatus}</h3>
             <p className="mt-2 text-sm font-medium">
-              {bookingModeLabel(experience.bookingMode)} · {copy.preview}
+              {`${bookingModeLabel(experience.bookingMode)} · ${copy.preview}`}
             </p>
             <p className="mt-2 text-sm text-text-muted">
               {available ? listingAvailabilityNote(experience) : copy.availabilityUnknown}

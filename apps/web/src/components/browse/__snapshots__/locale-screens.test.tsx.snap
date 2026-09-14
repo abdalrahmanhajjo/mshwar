@@ -4572,9 +4572,7 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
           <p
             class="mt-2 text-sm font-medium"
           >
-            Request to book
-             · 
-            معاينة
+            Request to book · معاينة
           </p>
           <p
             class="mt-2 text-sm text-text-muted"
@@ -5643,9 +5641,7 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
           <p
             class="mt-2 text-sm font-medium"
           >
-            Request to book
-             · 
-            Preview
+            Request to book · Preview
           </p>
           <p
             class="mt-2 text-sm text-text-muted"
@@ -6714,9 +6710,7 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
           <p
             class="mt-2 text-sm font-medium"
           >
-            Request to book
-             · 
-            Aperçu
+            Request to book · Aperçu
           </p>
           <p
             class="mt-2 text-sm text-text-muted"
