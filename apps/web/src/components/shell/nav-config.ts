@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  Bell,
   Bot,
   Building2,
   ClipboardCheck,
@@ -57,6 +58,7 @@ export const ADMIN_NAV: ShellNavItem[] = [
   { href: "/admin/taxonomy", labelKey: "taxonomy", icon: Tags },
   { href: "/admin/cases", labelKey: "supportCases", icon: LifeBuoy },
   { href: "/admin/quality", labelKey: "dataQuality", icon: ClipboardCheck },
+  { href: "/admin/notifications", labelKey: "notificationHealth", icon: Bell },
   { href: "/admin/settings", labelKey: "settings", icon: Settings },
   { href: "/admin/collections", labelKey: "collections", icon: Sparkles },
   { href: "/admin/planner", labelKey: "plannerHealth", icon: Bot },
