@@ -88,8 +88,8 @@ def get_payment_provider(fault: str | None = None) -> PaymentProvider:
         inner: PaymentProvider = LebanonAcquirerStub()
     else:
         inner = StripeTestAdapter(
-            secret_key=settings.stripe_secret_key,
-            webhook_secret=settings.stripe_webhook_secret,
+            settings.stripe_secret_key,
+            settings.stripe_webhook_secret,
         )
     mode = fault if fault is not None else configured_fault()
     if mode:
