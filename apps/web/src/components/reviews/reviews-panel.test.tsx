@@ -19,6 +19,6 @@ describe("rating summary", () => {
       </LocaleProvider>,
     );
     expect(screen.getByText(/Too few reviews/)).toBeInTheDocument();
-    expect(screen.getByText("5 · 1")).toBeInTheDocument();
+    expect(screen.getByLabelText("Rating distribution")).toHaveTextContent("5 · 1");
   });
 });

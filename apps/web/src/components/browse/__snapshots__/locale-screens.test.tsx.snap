@@ -4635,17 +4635,14 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
             </li>
           </ul>
         </section>
-        <section>
+        <section
+          class="grid gap-4"
+        >
           <h3
             class="font-semibold"
           >
-            تابع الاستكشاف
+            تقييمات المسافرين
           </h3>
-          <p
-            class="mt-2 text-sm text-text-muted"
-          >
-            لا مراجعات مسافرين موثّقة بعد. المراجعات في هذه المعاينة عيّنات خاصة.
-          </p>
         </section>
         <p
           class="text-sm text-text-muted"
@@ -5704,17 +5701,14 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
             </li>
           </ul>
         </section>
-        <section>
+        <section
+          class="grid gap-4"
+        >
           <h3
             class="font-semibold"
           >
-            Keep exploring
+            Traveller reviews
           </h3>
-          <p
-            class="mt-2 text-sm text-text-muted"
-          >
-            No verified traveller reviews yet. Reviews in this preview are private sample submissions.
-          </p>
         </section>
         <p
           class="text-sm text-text-muted"
@@ -6773,17 +6767,14 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
             </li>
           </ul>
         </section>
-        <section>
+        <section
+          class="grid gap-4"
+        >
           <h3
             class="font-semibold"
           >
-            Continuer à explorer
+            Avis voyageurs
           </h3>
-          <p
-            class="mt-2 text-sm text-text-muted"
-          >
-            Pas encore d’avis voyageurs vérifiés. Les avis de cet aperçu sont des exemples privés.
-          </p>
         </section>
         <p
           class="text-sm text-text-muted"
