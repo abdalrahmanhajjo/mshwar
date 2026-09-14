@@ -31,6 +31,9 @@ def test_defaults() -> None:
     assert settings.mailer_backend == "console"
     assert settings.email_verification_ttl_seconds == 86400
     assert settings.verify_email_limit == 3
+    assert settings.search_reindex_provider == "stub"
+    assert settings.data_quality_scheduler_enabled is False
+    assert settings.data_quality_stale_days == 14
 
 
 def test_reads_database_url_env(monkeypatch: pytest.MonkeyPatch) -> None:

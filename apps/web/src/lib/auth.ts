@@ -6,6 +6,7 @@ export type AuthUser = {
   display_name: string;
   locale: string;
   email_verified?: boolean;
+  admin_tier?: "ops" | "elevated" | null;
 };
 
 export const PROTECTED_PATHS = [
@@ -23,6 +24,10 @@ export const PROTECTED_PATHS = [
 export function isProtectedPath(pathname: string): boolean {
   const current = pathname.replace(/^\/(en|ar|fr)(?=\/|$)/, "") || "/";
   return PROTECTED_PATHS.some((pattern) => pattern.test(current));
+}
+
+export function isAdminUser(user: AuthUser | null | undefined): boolean {
+  return user?.admin_tier === "ops" || user?.admin_tier === "elevated";
 }
 
 export function safeNextPath(value: string | null | undefined): string {

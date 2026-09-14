@@ -1,5 +1,10 @@
-import { ShellPage } from "@/components/shell/shell-page";
+import { ModerationQueue } from "@/components/admin/moderation-queue";
+import { ShellMain } from "@/components/shell/app-shell";
 
 export default function AdminModerationPage() {
-  return <ShellPage title="Moderation" description="Reviews and listing flags." />;
+  return (
+    <ShellMain>
+      <ModerationQueue />
+    </ShellMain>
+  );
 }

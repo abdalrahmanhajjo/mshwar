@@ -74,6 +74,12 @@ export type MessageKey =
   | "businesses"
   | "moderation"
   | "settings"
+  | "verificationQueue"
+  | "taxonomy"
+  | "supportCases"
+  | "dataQuality"
+  | "adminRoles"
+  | "adminBookings"
   | "privacy"
   | "terms"
   | "contact"
@@ -160,6 +166,12 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     users: "Users",
     businesses: "Businesses",
     moderation: "Moderation",
+    verificationQueue: "Verification",
+    taxonomy: "Taxonomy",
+    supportCases: "Cases",
+    dataQuality: "Quality",
+    adminRoles: "Roles",
+    adminBookings: "Bookings",
     settings: "Settings",
     privacy: "Privacy",
     terms: "Terms",
@@ -246,6 +258,12 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     users: "المستخدمون",
     businesses: "الشركات",
     moderation: "الإشراف",
+    verificationQueue: "التحقق",
+    taxonomy: "التصنيف",
+    supportCases: "الحالات",
+    dataQuality: "الجودة",
+    adminRoles: "الأدوار",
+    adminBookings: "الحجوزات",
     settings: "الإعدادات",
     privacy: "الخصوصية",
     terms: "الشروط",
@@ -334,6 +352,12 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     users: "Utilisateurs",
     businesses: "Entreprises",
     moderation: "Modération",
+    verificationQueue: "Vérification",
+    taxonomy: "Taxonomie",
+    supportCases: "Tickets",
+    dataQuality: "Qualité",
+    adminRoles: "Rôles",
+    adminBookings: "Réservations",
     settings: "Réglages",
     privacy: "Confidentialité",
     terms: "Conditions",

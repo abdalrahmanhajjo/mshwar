@@ -1,5 +1,10 @@
-import { ShellPage } from "@/components/shell/shell-page";
+import { ConfigFlagsView } from "@/components/admin/config-flags-view";
+import { ShellMain } from "@/components/shell/app-shell";
 
 export default function AdminSettingsPage() {
-  return <ShellPage title="Settings" description="Console defaults for internal operators." />;
+  return (
+    <ShellMain>
+      <ConfigFlagsView />
+    </ShellMain>
+  );
 }
