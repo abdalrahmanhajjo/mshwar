@@ -75,12 +75,14 @@ def test_email_channel_is_stub_without_keys() -> None:
 
 def test_dispatch_token_open_in_development() -> None:
     assert dispatch_authorized(None) is True
-    prod = Settings(
-        environment="production",
-        database_url="postgresql+asyncpg://app:secret@db:5432/mshwar",
-        secret_key="rotated-secret",
-        google_maps_api_key="maps-key",
-        notification_dispatch_token="dispatch-secret",
+    prod = Settings.model_validate(
+        {
+            "environment": "production",
+            "database_url": "postgresql+asyncpg://app:secret@db:5432/mshwar",
+            "secret_key": "rotated-secret",
+            "google_maps_api_key": "maps-key",
+            "notification_dispatch_token": "dispatch-secret",
+        }
     )
     assert prod.notification_dispatch_token == "dispatch-secret"
 
