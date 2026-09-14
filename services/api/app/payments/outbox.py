@@ -39,7 +39,7 @@ async def _deliver_email_notifications(db: AsyncSession) -> None:
                 JOIN app.outbox o ON o.id = n.outbox_id
                 JOIN app.user_private p ON p.user_id = n.user_id
                 WHERE n.channel = 'email' AND n.status = 'pending' AND p.email IS NOT NULL
-                ORDER BY n.created_at
+                    ORDER BY o.created_at, n.id
                 LIMIT 50
                 """
             )

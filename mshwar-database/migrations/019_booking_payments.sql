@@ -637,7 +637,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = app, public
 AS $$
-DECLARE existing app.bookings; reserved uuid; q jsonb; mode text; s app.slots; held boolean := false;
+DECLARE existing app.bookings; v_booking_id uuid; q jsonb; mode text; s app.slots; held boolean := false;
 BEGIN
     PERFORM set_config('app.user_id', p_user::text, true);
     PERFORM set_config('app.request_id', coalesce(p_correlation, ''), true);
@@ -690,19 +690,19 @@ BEGIN
         END IF;
         RETURN app.put_idempotency('booking.commit', p_user, p_key, p_hash, existing.id, app.checkout_booking_json(existing.id));
     END IF;
-    reserved := app.reserve_booking(
+    v_booking_id := app.reserve_booking(
         p_user, p_slot, p_party, p_key, p_hash, p_price_rule, p_policy,
         (q ->> 'payment_required')::boolean, p_stop
     );
-    IF EXISTS (SELECT 1 FROM app.bookings WHERE id = reserved AND inventory_reserved)
-       AND NOT EXISTS (SELECT 1 FROM app.slot_unit_holds WHERE booking_id = reserved)
+    IF EXISTS (SELECT 1 FROM app.bookings WHERE id = v_booking_id AND inventory_reserved)
+       AND NOT EXISTS (SELECT 1 FROM app.slot_unit_holds WHERE booking_id = v_booking_id)
     THEN
-        PERFORM app.allocate_slot_units(p_slot, reserved, p_party);
+        PERFORM app.allocate_slot_units(p_slot, v_booking_id, p_party);
     END IF;
     IF mode = 'instant' AND NOT (q ->> 'payment_required')::boolean THEN
-        PERFORM app.transition_booking(reserved, 'confirmed', 'Instant confirm without payment');
+        PERFORM app.transition_booking(v_booking_id, 'confirmed', 'Instant confirm without payment');
     END IF;
-    RETURN app.put_idempotency('booking.commit', p_user, p_key, p_hash, reserved, app.checkout_booking_json(reserved));
+    RETURN app.put_idempotency('booking.commit', p_user, p_key, p_hash, v_booking_id, app.checkout_booking_json(v_booking_id));
 END $$;
 
 CREATE OR REPLACE FUNCTION app.create_inquiry_request(
