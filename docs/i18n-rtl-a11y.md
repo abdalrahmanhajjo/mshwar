@@ -1,6 +1,6 @@
 # Epic 12 — Localization, RTL & Accessibility
 
-Delivery gate for MSHWAR-104–107. No schema migration: `users.locale` and preference locale already exist. Epic 7 owns SQL `017_maps_routing_weather.sql`. Epic 8 owns `018_ai_trip_builder.sql`. Epic 9 owns `019` bookings/payments. This epic is docs + code only.
+Delivery gate for MSHWAR-104–107. No schema migration: `users.locale` and preference locale already exist. Epic 7 owns SQL `017_maps_routing_weather.sql`. Epic 8 owns `018_ai_trip_builder.sql`. Epic 9 owns `019` bookings/payments. Epic 10 owns notifications/messaging SQL. This epic is docs + code only.
 
 ## Story map
 

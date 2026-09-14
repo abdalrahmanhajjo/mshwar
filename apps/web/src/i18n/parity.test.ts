@@ -12,6 +12,7 @@ describe("message catalogue parity", () => {
         "checkoutCopy",
         "hubCopy",
         "messages",
+        "notificationCopy",
         "plannerCopy",
         "privacyCopy",
       ].sort(),

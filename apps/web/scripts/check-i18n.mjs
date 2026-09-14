@@ -17,6 +17,7 @@ const CATALOGUES = [
   "src/lib/admin-copy.ts",
   "src/lib/planner-copy.ts",
   "src/lib/checkout-copy.ts",
+  "src/lib/notifications-copy.ts",
 ];
 
 const MVP_PAGES = [
