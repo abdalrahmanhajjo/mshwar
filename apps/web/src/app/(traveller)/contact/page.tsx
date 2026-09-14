@@ -1,5 +1,5 @@
-import { ShellPage } from "@/components/shell/shell-page";
+import { LocalizedShellPage } from "@/components/shell/localized-shell-page";
 
 export default function ContactPage() {
-  return <ShellPage title="Contact" description="Reach the Mshwar team." />;
+  return <LocalizedShellPage titleKey="contactTitle" descriptionKey="contactBody" />;
 }

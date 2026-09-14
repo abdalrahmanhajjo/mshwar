@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAdminCopy } from "@/lib/admin-copy";
+import { interpolate } from "@/i18n/translate";
 import { fetchAdminTripVersions, fetchInjectionEvents, fetchPlannerHealth } from "@/lib/planner";
 
 export function AdminPlannerHealth() {
@@ -41,10 +42,10 @@ export function AdminPlannerHealth() {
           <CardDescription>{copy.plannerHealthHint}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2 text-sm">
-          <p>Active ranker: {health?.active_ranker ?? "ranker-v1"}</p>
-          <p>Plans (24h): {health?.planned_sessions_24h ?? 0}</p>
-          <p>Degraded (24h): {health?.degraded_sessions_24h ?? 0}</p>
-          <p>Injection events (24h): {health?.injection_events_24h ?? 0}</p>
+          <p>{interpolate(copy.activeRanker, { value: health?.active_ranker ?? "ranker-v1" })}</p>
+          <p>{interpolate(copy.plans24h, { count: health?.planned_sessions_24h ?? 0 })}</p>
+          <p>{interpolate(copy.degraded24h, { count: health?.degraded_sessions_24h ?? 0 })}</p>
+          <p>{interpolate(copy.injections24h, { count: health?.injection_events_24h ?? 0 })}</p>
         </CardContent>
       </Card>
       <Card>
@@ -53,12 +54,12 @@ export function AdminPlannerHealth() {
         </CardHeader>
         <CardContent className="grid gap-3">
           <div className="grid gap-2">
-            <Label htmlFor="admin-trip-id">Trip ID</Label>
+            <Label htmlFor="admin-trip-id">{copy.tripIdLabel}</Label>
             <Input
               id="admin-trip-id"
               value={tripId}
               onChange={(event) => setTripId(event.target.value)}
-              placeholder="uuid"
+              placeholder={copy.tripIdPlaceholder}
             />
           </div>
           <Button
@@ -78,7 +79,7 @@ export function AdminPlannerHealth() {
           <ul className="grid gap-2 text-sm">
             {versions.map((item) => (
               <li key={item.version_id}>
-                v{item.version} · {item.origin} {item.sealed_at ? "· sealed" : ""}
+                v{item.version} · {item.origin} {item.sealed_at ? `· ${copy.sealed}` : ""}
               </li>
             ))}
           </ul>

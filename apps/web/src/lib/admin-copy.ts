@@ -53,7 +53,14 @@ export type AdminKey =
   | "plannerVersions"
   | "lookupVersions"
   | "noInjections"
-  | "reconciliationQueue";
+  | "reconciliationQueue"
+  | "activeRanker"
+  | "plans24h"
+  | "degraded24h"
+  | "injections24h"
+  | "tripIdLabel"
+  | "tripIdPlaceholder"
+  | "sealed";
 
 export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
   en: {
@@ -109,6 +116,13 @@ export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
     lookupVersions: "Look up versions",
     noInjections: "No injection attempts logged.",
     reconciliationQueue: "Reconciliation queue",
+    activeRanker: "Active ranker: {value}",
+    plans24h: "Plans (24h): {count}",
+    degraded24h: "Degraded (24h): {count}",
+    injections24h: "Injection events (24h): {count}",
+    tripIdLabel: "Trip ID",
+    tripIdPlaceholder: "uuid",
+    sealed: "sealed",
   },
   ar: {
     queueTitle: "طابور التحقق",
@@ -163,6 +177,13 @@ export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
     lookupVersions: "عرض الإصدارات",
     noInjections: "لا محاولات حقن مسجّلة.",
     reconciliationQueue: "طابور التسوية",
+    activeRanker: "المرتِّب النشط: {value}",
+    plans24h: "الخطط (24س): {count}",
+    degraded24h: "متدهورة (24س): {count}",
+    injections24h: "أحداث الحقن (24س): {count}",
+    tripIdLabel: "معرّف الرحلة",
+    tripIdPlaceholder: "uuid",
+    sealed: "مُغلقة",
   },
   fr: {
     queueTitle: "File de vérification",
@@ -218,6 +239,13 @@ export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
     lookupVersions: "Consulter les versions",
     noInjections: "Aucune tentative d’injection.",
     reconciliationQueue: "File de réconciliation",
+    activeRanker: "Ranker actif : {value}",
+    plans24h: "Plans (24 h) : {count}",
+    degraded24h: "Dégradés (24 h) : {count}",
+    injections24h: "Injections (24 h) : {count}",
+    tripIdLabel: "ID du voyage",
+    tripIdPlaceholder: "uuid",
+    sealed: "scellé",
   },
 };
 

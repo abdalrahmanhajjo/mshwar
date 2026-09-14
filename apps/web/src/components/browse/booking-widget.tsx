@@ -26,7 +26,12 @@ export function BookingWidget({ experience }: { experience: Experience }) {
       {experience.priceLabel === "quote" ? (
         <p className="text-title font-semibold">{copy.quoteRequired}</p>
       ) : (
-        <Price amount={experience.priceFrom} estimate={experience.priceLabel !== "from"} period={copy.perPerson} />
+        <Price
+          amount={experience.priceFrom}
+          locale={locale}
+          estimate={experience.priceLabel !== "from"}
+          period={copy.perPerson}
+        />
       )}
       <p className="mt-2 text-sm text-text-muted">{copy.previewNote}</p>
       <p className="mt-1 text-sm font-medium text-text">{bookingModeCopy(experience.bookingMode, locale)}</p>

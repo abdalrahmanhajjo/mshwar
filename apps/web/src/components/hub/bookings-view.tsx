@@ -10,8 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { getExperience } from "@/lib/catalog";
 import { listMyCheckoutBookings, type CheckoutBooking } from "@/lib/checkout";
 import { useCheckoutCopy } from "@/lib/checkout-copy";
@@ -113,12 +113,14 @@ export function BookingsView() {
                   {booking.reason ? <p className="text-sm text-text">{booking.reason}</p> : null}
                   {cancellable ? (
                     <div className="grid gap-2">
-                      <Label htmlFor={`cancel-${booking.id}`}>{copy.cancelReason}</Label>
-                      <Input
-                        id={`cancel-${booking.id}`}
-                        value={reason[booking.id] ?? ""}
-                        onChange={(event) => setReason((current) => ({ ...current, [booking.id]: event.target.value }))}
-                      />
+                      <Field id={`cancel-${booking.id}`} label={copy.cancelReason}>
+                        <Input
+                          value={reason[booking.id] ?? ""}
+                          onChange={(event) =>
+                            setReason((current) => ({ ...current, [booking.id]: event.target.value }))
+                          }
+                        />
+                      </Field>
                       <Button
                         type="button"
                         variant="outline"

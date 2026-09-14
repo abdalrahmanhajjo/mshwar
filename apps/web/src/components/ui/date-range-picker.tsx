@@ -35,7 +35,7 @@ function DateRangePicker({
   const end = value?.end ?? "";
 
   return (
-    <fieldset className={cn("min-w-0 space-y-3", className)}>
+    <fieldset className={cn("min-w-0 space-y-3", className)} dir="inherit" data-rtl-datepicker>
       <legend className="text-sm font-medium text-text">{legend}</legend>
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="flex min-w-0 flex-col gap-1.5">

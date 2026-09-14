@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ExperienceCard } from "@/components/browse/experience-card";
 import { SaveExperienceButton } from "@/components/browse/save-button";
+import { BidiText } from "@/components/ui/bidi-text";
 import { Button } from "@/components/ui/button";
 import { useBrowseCopy } from "@/lib/browse-copy";
 import { listingCoordinates } from "@/lib/catalogue-api";
@@ -47,7 +48,7 @@ export function ExperiencesMap({
                 className="rounded-pill bg-brand px-3 py-2 text-sm text-brand-foreground"
                 onClick={() => onSearchArea("beirut")}
               >
-                {copy.clusterLabel} Beirut · {beirut.length}
+                {copy.clusterLabel} <BidiText>Beirut</BidiText> · {beirut.length}
               </button>
             ) : null}
             {others.map((item) => {
@@ -56,11 +57,11 @@ export function ExperiencesMap({
                 <button
                   key={item.slug}
                   type="button"
-                  className="h-fit rounded-pill bg-surface px-3 py-2 text-left text-sm shadow-sm"
+                  className="h-fit rounded-pill bg-surface px-3 py-2 text-start text-sm shadow-sm"
                   style={{ marginTop: point ? `${(34.4 - point.lat) * 40}px` : undefined }}
                   onClick={() => setActive(item.slug)}
                 >
-                  {item.title}
+                  <BidiText>{item.title}</BidiText>
                 </button>
               );
             })}

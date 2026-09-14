@@ -1,7 +1,8 @@
-"""Planner services: routing, weather, optimisation (Epic 7) and AI trip builder (Epic 8)."""
+"""Planner services: routing, weather, optimisation, AI trip builder, and dialect intent."""
 
 from __future__ import annotations
 
+from app.planner.intent.extractor import ExtractedIntent, extract_intent
 from app.planner.optimizer import OptimizeResult, OptimizeStop, optimize_route
 from app.planner.places import PlaceHit, autocomplete, reverse_geocode
 from app.planner.replan import ReplanResult, replan_affected
@@ -23,6 +24,7 @@ __all__ = [
     "PROMPT_VERSION",
     "RANKER_VERSION",
     "VALIDATOR_VERSION",
+    "ExtractedIntent",
     "Forecast",
     "OptimizeResult",
     "OptimizeStop",
@@ -35,6 +37,7 @@ __all__ = [
     "autocomplete",
     "cache_key",
     "evaluate_warnings",
+    "extract_intent",
     "optimize_route",
     "replan_affected",
     "reverse_geocode",

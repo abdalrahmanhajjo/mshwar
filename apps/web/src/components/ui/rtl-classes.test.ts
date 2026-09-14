@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
-const SCAN_ROOT = path.join(process.cwd(), "src/components");
+const SCAN_ROOTS = [path.join(process.cwd(), "src/components"), path.join(process.cwd(), "src/app")];
 
 const FORBIDDEN =
   /\b(?:ml|mr|pl|pr|text-left|text-right|float-left|float-right|rounded-l|rounded-r|border-l|border-r|inset-x-start)-|\b(?:left|right)-(?!1\/2\b)/;
@@ -27,18 +27,20 @@ function listSourceFiles(dir: string): string[] {
 }
 
 describe("RTL logical properties", () => {
-  it("does not use physical left/right layout classes in UI components", () => {
-    const files = listSourceFiles(SCAN_ROOT);
+  it("does not use physical left/right layout classes in UI components or app pages", () => {
+    const files = SCAN_ROOTS.flatMap((root) => listSourceFiles(root));
     const violations: string[] = [];
     for (const filePath of files) {
       const source = fs.readFileSync(filePath, "utf8");
-      const file = path.relative(SCAN_ROOT, filePath);
+      const file = path.relative(process.cwd(), filePath);
       for (const [index, line] of source.split("\n").entries()) {
         if (
           FORBIDDEN.test(line) &&
           !line.includes("left-1/2") &&
           !line.includes("ArrowLeft") &&
-          !line.includes("ArrowRight")
+          !line.includes("ArrowRight") &&
+          !line.includes("ChevronLeft") &&
+          !line.includes("ChevronRight")
         ) {
           violations.push(`${file}:${index + 1}: ${line.trim()}`);
         }

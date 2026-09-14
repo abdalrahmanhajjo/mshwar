@@ -24,6 +24,7 @@ import {
   type PlannerSession,
 } from "@/lib/planner";
 import { usePlannerCopy } from "@/lib/planner-copy";
+import { interpolate } from "@/i18n/catalogues";
 
 function priceKindLabel(kind: string, copy: ReturnType<typeof usePlannerCopy>) {
   if (kind === "quote") {
@@ -69,7 +70,7 @@ export function PlannerView({ initialTripId }: { initialTripId?: string }) {
         setVersions(history);
       }
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Could not update the plan.");
+      setError(caught instanceof Error ? caught.message : copy.updateError);
     } finally {
       setPending(false);
     }
@@ -248,13 +249,15 @@ export function PlannerView({ initialTripId }: { initialTripId?: string }) {
         <Card>
           <CardHeader>
             <CardTitle>{copy.versions}</CardTitle>
-            {initialTripId ? <CardDescription>Trip {initialTripId}</CardDescription> : null}
+            {initialTripId ? (
+              <CardDescription>{interpolate(copy.tripLabel, { id: initialTripId })}</CardDescription>
+            ) : null}
           </CardHeader>
           <CardContent>
             <ol className="grid gap-2 text-sm">
               {versions.map((item) => (
                 <li key={item.version}>
-                  v{item.version} · {item.origin} {item.sealed_at ? "· sealed" : ""}
+                  v{item.version} · {item.origin} {item.sealed_at ? `· ${copy.sealed}` : ""}
                 </li>
               ))}
             </ol>
