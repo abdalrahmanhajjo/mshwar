@@ -31,8 +31,25 @@ export function BusinessReviewsView() {
   }, [org]);
 
   React.useEffect(() => {
-    void reload().catch((err: Error) => setError(err.message));
-  }, [reload]);
+    if (!org) {
+      return;
+    }
+    let cancelled = false;
+    void fetchPortalReviews(org.id)
+      .then((rows) => {
+        if (!cancelled) {
+          setItems(rows);
+        }
+      })
+      .catch((err: Error) => {
+        if (!cancelled) {
+          setError(err.message);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [org]);
 
   return (
     <div className="grid gap-6">

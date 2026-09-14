@@ -103,10 +103,9 @@ async def test_share_link_roles_guest_join_and_revoke(api: AsyncClient) -> None:
         )
         assert denied.status_code == 403
 
-        guest_blocked = await AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
-        blocked = await guest_blocked.post(f"/api/v1/groups/join/{view_token}", json={"display_name": "Guest"})
-        assert blocked.status_code == 403
-        await guest_blocked.aclose()
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as guest_blocked:
+            blocked = await guest_blocked.post(f"/api/v1/groups/join/{view_token}", json={"display_name": "Guest"})
+            assert blocked.status_code == 403
 
     revoked = await api.post(f"/api/v1/groups/share-links/{created.json()['id']}/revoke")
     assert revoked.status_code == 200
@@ -261,7 +260,7 @@ async def test_review_eligibility_moderation_response_and_aggregates(api: AsyncC
                     ) VALUES (
                         :id, :customer_id, :org_id, :experience_id, :slot_id, 2, 'pending', 'request',
                         now() + interval '12 hours', true, 'USD', 9000, false,
-                        '{"schema_version":1}', '{"schema_version":1}', :request_key, :request_hash
+                        CAST(:price_snapshot AS jsonb), CAST(:policy_snapshot AS jsonb), :request_key, :request_hash
                     )
                     """
                 ),
@@ -271,6 +270,8 @@ async def test_review_eligibility_moderation_response_and_aggregates(api: AsyncC
                     "org_id": org["id"],
                     "experience_id": listing["id"],
                     "slot_id": slot_id,
+                    "price_snapshot": '{"schema_version":1}',
+                    "policy_snapshot": '{"schema_version":1}',
                     "request_key": f"req-{uuid4().hex[:12]}",
                     "request_hash": uuid4().hex,
                 },

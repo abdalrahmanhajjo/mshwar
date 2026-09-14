@@ -57,8 +57,30 @@ export function ReviewsPanel({ listingSlug }: { listingSlug: string }) {
   }, [listingSlug]);
 
   React.useEffect(() => {
-    void reload().catch(() => undefined);
-  }, [reload]);
+    let cancelled = false;
+    void fetchReviews(listingSlug)
+      .then((payload) => {
+        if (!cancelled) {
+          setItems(payload.items ?? []);
+          setAggregate(payload.aggregate);
+        }
+        return fetchReviewEligibility(listingSlug);
+      })
+      .then((eligibility) => {
+        if (!cancelled) {
+          const next = eligibility.items.find((item) => item.eligible);
+          setBookingId(next?.booking_id ?? null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setBookingId(null);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [listingSlug]);
 
   return (
     <section className="grid gap-4">
