@@ -30,6 +30,7 @@ class PreferenceValues(BaseModel):
     dietary: list[str] = Field(default_factory=list)
     accessibility: list[str] = Field(default_factory=list)
     interests: list[str] = Field(default_factory=list)
+    start_location: dict[str, Any] | None = None
 
     @field_validator("source")
     @classmethod
@@ -82,8 +83,8 @@ class ProfileUpdate(BaseModel):
 
 class AreaCatalog(BaseModel):
     source: str = "catalog"
-    picker: str = "stub"
-    replace_with: str = "map location picker"
+    picker: str = "map"
+    replace_with: str = "none"
     areas: list[HomeArea]
 
 
@@ -109,6 +110,7 @@ class PreferencePatch(BaseModel):
     dietary: list[str] | None = None
     accessibility: list[str] | None = None
     interests: list[str] | None = None
+    start_location: dict[str, Any] | None = None
 
     @field_validator("activity_intensity")
     @classmethod

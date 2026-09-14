@@ -56,7 +56,7 @@ def _user_id(session: dict[str, Any]) -> str:
 
 @router.get("/geo/lebanon")
 async def get_lebanon_bounds() -> dict[str, Any]:
-    return {"bounds": lebanon_bounds(), "picker": "map-stub"}
+    return {"bounds": lebanon_bounds(), "picker": "map"}
 
 
 @router.get("/taxonomy")
@@ -356,11 +356,23 @@ async def upsert_experience(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
     session = await _session(request, db)
-    return await fetch_json(
+    body = await fetch_json(
         db,
         "SELECT app.upsert_experience(:user_id, :org_id, CAST(:payload AS jsonb))",
         {"user_id": _user_id(session), "org_id": str(org_id), "payload": payload.model_dump_json()},
     )
+    if payload.weather_sensitivity:
+        body = await fetch_json(
+            db,
+            "SELECT app.set_experience_weather_sensitivity(:user_id, :org_id, :experience_id, :value)",
+            {
+                "user_id": _user_id(session),
+                "org_id": str(org_id),
+                "experience_id": str(body["id"]) if isinstance(body, dict) else payload.id,
+                "value": payload.weather_sensitivity,
+            },
+        )
+    return body
 
 
 @router.get("/organizations/{org_id}/experiences/{experience_id}")
