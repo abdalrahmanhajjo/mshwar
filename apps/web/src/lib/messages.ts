@@ -65,6 +65,7 @@ export type MessageKey =
   | "favorites"
   | "notifications"
   | "bookings"
+  | "reviews"
   | "dashboard"
   | "listings"
   | "finance"
@@ -160,6 +161,7 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     favorites: "Favorites",
     notifications: "Notifications",
     bookings: "Bookings",
+    reviews: "Reviews",
     dashboard: "Dashboard",
     listings: "Listings",
     finance: "Finance",
@@ -254,6 +256,7 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     favorites: "المفضلة",
     notifications: "الإشعارات",
     bookings: "الحجوزات",
+    reviews: "التقييمات",
     dashboard: "لوحة التحكم",
     listings: "العروض",
     finance: "المالية",
@@ -349,6 +352,7 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     favorites: "Favoris",
     notifications: "Notifications",
     bookings: "Réservations",
+    reviews: "Avis",
     dashboard: "Tableau de bord",
     listings: "Annonces",
     finance: "Finance",

@@ -25,6 +25,7 @@ from app.core.storage import (
     verify_signed_token,
 )
 from app.dependencies import get_auth_db
+from app.schemas.groups import ReviewResponseIn
 from app.schemas.notifications import EscalationIn, RolePrefIn
 from app.schemas.portal import (
     AnalyticsCaptureIn,
@@ -744,6 +745,75 @@ async def export_metrics_csv(
 ) -> PlainTextResponse:
     metrics = await get_metrics(org_id, request, date_from, date_to, db)
     return PlainTextResponse(metrics_to_csv(metrics or {}), media_type="text/csv")
+
+
+@router.get("/organizations/{org_id}/reviews")
+async def list_portal_reviews(
+    org_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    session = await _session(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.list_portal_reviews(:user_id, :org_id)",
+        {"user_id": _user_id(session), "org_id": str(org_id)},
+    )
+
+
+@router.post("/organizations/{org_id}/reviews/{review_id}/responses")
+async def respond_to_review(
+    org_id: UUID,
+    review_id: UUID,
+    payload: ReviewResponseIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    session = await _session(request, db)
+    await fetch_json(
+        db,
+        "SELECT app.get_organization_portal(:user_id, :org_id)",
+        {"user_id": _user_id(session), "org_id": str(org_id)},
+    )
+    return await fetch_json(
+        db,
+        "SELECT app.respond_to_review(:user_id, :review_id, :body)",
+        {"user_id": _user_id(session), "review_id": str(review_id), "body": payload.body},
+    )
+
+
+async def _forbid_review_mutation(org_id: UUID, review_id: UUID, request: Request, db: AsyncSession) -> Any:
+    session = await _session(request, db)
+    await fetch_json(
+        db,
+        "SELECT app.get_organization_portal(:user_id, :org_id)",
+        {"user_id": _user_id(session), "org_id": str(org_id)},
+    )
+    return await fetch_json(
+        db,
+        "SELECT app.forbid_business_review_mutation(:user_id, :review_id)",
+        {"user_id": _user_id(session), "review_id": str(review_id)},
+    )
+
+
+@router.post("/organizations/{org_id}/reviews/{review_id}/hide")
+async def hide_review_forbidden(
+    org_id: UUID,
+    review_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    return await _forbid_review_mutation(org_id, review_id, request, db)
+
+
+@router.delete("/organizations/{org_id}/reviews/{review_id}")
+async def delete_review_forbidden(
+    org_id: UUID,
+    review_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    return await _forbid_review_mutation(org_id, review_id, request, db)
 
 
 def bookings_to_csv(rows: list[dict[str, Any]]) -> str:

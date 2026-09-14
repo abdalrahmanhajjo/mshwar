@@ -23,6 +23,7 @@ describe("auth helpers", () => {
     expect(isProtectedPath("/reset-password")).toBe(false);
     expect(isProtectedPath("/verify-email")).toBe(false);
     expect(isProtectedPath("/privacy")).toBe(false);
+    expect(isProtectedPath("/join/abc")).toBe(false);
     expect(isProtectedPath("/ar/plan")).toBe(true);
     expect(isProtectedPath("/fr/settings")).toBe(true);
     expect(isProtectedPath("/ar")).toBe(false);

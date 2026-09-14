@@ -8,6 +8,7 @@ from app.api.v1.endpoints import (
     catalogue,
     checkout,
     favorites,
+    groups,
     health,
     locations,
     notifications,
@@ -15,6 +16,7 @@ from app.api.v1.endpoints import (
     portal,
     privacy,
     profile,
+    reviews,
     trips,
     webhooks,
 )
@@ -37,3 +39,5 @@ router.include_router(webhooks.router, prefix="/webhooks", tags=["webhooks"])
 router.include_router(trips.router, prefix="/trips", tags=["trips"])
 router.include_router(favorites.router, prefix="/favorites", tags=["favorites"])
 router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
+router.include_router(groups.router, prefix="/groups", tags=["groups"])
+router.include_router(reviews.router, prefix="/reviews", tags=["reviews"])
