@@ -704,6 +704,28 @@ async def run_quality(
     return await run_checks(db, _uid(session), notify=notify)
 
 
+@router.get("/payments/reconciliation")
+async def list_reconciliation(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    session = await _admin(request, db)
+    return await fetch_json(db, "SELECT app.list_reconciliation_queue(:admin_id)", {"admin_id": _uid(session)})
+
+
+@router.post("/payments/reconcile")
+async def run_reconciliation(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    session = await _admin(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.reconcile_payments(:admin_id, 100)",
+        {"admin_id": _uid(session)},
+    )
+
+
 @router.post("/quality/{issue_id}/notify")
 async def notify_quality(
     issue_id: UUID,

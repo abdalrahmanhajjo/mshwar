@@ -83,7 +83,12 @@ export type BusinessKey =
   | "emptyListings"
   | "emptyInbox"
   | "adminVerify"
-  | "adminReject";
+  | "adminReject"
+  | "bookingMode"
+  | "modeInstant"
+  | "modeRequest"
+  | "modeInquiry"
+  | "instantRequiresCapacity";
 
 export const businessCopy: Record<Locale, Record<BusinessKey, string>> = {
   en: {
@@ -169,6 +174,11 @@ export const businessCopy: Record<Locale, Record<BusinessKey, string>> = {
     emptyInbox: "No booking requests in this filter.",
     adminVerify: "Verify",
     adminReject: "Reject",
+    bookingMode: "Booking mode",
+    modeInstant: "Instant confirm",
+    modeRequest: "Request to book",
+    modeInquiry: "Inquiry only",
+    instantRequiresCapacity: "Instant confirm is only honoured when capacity is authoritative.",
   },
   ar: {
     registerTitle: "سجّل مؤسستك",
@@ -253,6 +263,11 @@ export const businessCopy: Record<Locale, Record<BusinessKey, string>> = {
     emptyInbox: "لا طلبات في هذا التصفية.",
     adminVerify: "توثيق",
     adminReject: "رفض",
+    bookingMode: "طريقة الحجز",
+    modeInstant: "تأكيد فوري",
+    modeRequest: "طلب حجز",
+    modeInquiry: "استفسار فقط",
+    instantRequiresCapacity: "التأكيد الفوري يعمل فقط مع سعة موثوقة.",
   },
   fr: {
     registerTitle: "Enregistrer votre organisation",
@@ -338,6 +353,11 @@ export const businessCopy: Record<Locale, Record<BusinessKey, string>> = {
     emptyInbox: "Aucune demande pour ce filtre.",
     adminVerify: "Vérifier",
     adminReject: "Refuser",
+    bookingMode: "Mode de réservation",
+    modeInstant: "Confirmation immédiate",
+    modeRequest: "Demande de réservation",
+    modeInquiry: "Renseignement uniquement",
+    instantRequiresCapacity: "La confirmation immédiate exige une capacité officielle.",
   },
 };
 

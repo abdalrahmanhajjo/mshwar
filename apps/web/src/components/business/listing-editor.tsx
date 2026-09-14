@@ -44,6 +44,7 @@ export function ListingEditor({ experienceId }: { experienceId?: string }) {
   const [duration, setDuration] = React.useState("90");
   const [amount, setAmount] = React.useState("4500");
   const [terms, setTerms] = React.useState("Cancel 24 hours before.");
+  const [bookingMode, setBookingMode] = React.useState("request");
   const [suitability, setSuitability] = React.useState<string[]>(["groups"]);
   const [weather, setWeather] = React.useState<string[]>(["all-weather"]);
   const [sensitivity, setSensitivity] = React.useState("outdoor");
@@ -78,6 +79,7 @@ export function ListingEditor({ experienceId }: { experienceId?: string }) {
       if (row.weather_sensitivity) {
         setSensitivity(row.weather_sensitivity);
       }
+      setBookingMode(row.booking_mode || "request");
     });
   }, [experienceId, org]);
 
@@ -108,6 +110,7 @@ export function ListingEditor({ experienceId }: { experienceId?: string }) {
         weather_rules: { sensitive: sensitivity === "weather-sensitive" || weather.includes("rain-sensitive") },
         price: { currency: "USD", price_type: "fixed", unit: "person", amount_minor: Number(amount) },
         policy: { cancellation_rules: { hours: 24 }, terms_text: terms },
+        booking_mode: bookingMode,
       });
       setSavedId(listing.id);
       setIssues((listing.publish_report.issues ?? []).map((item) => item.message));
@@ -233,6 +236,18 @@ export function ListingEditor({ experienceId }: { experienceId?: string }) {
         <TabsContent value="policies">
           <Label htmlFor="terms">{copy.editorPolicies}</Label>
           <Textarea id="terms" value={terms} onChange={(event) => setTerms(event.target.value)} />
+          <Label htmlFor="booking-mode">{copy.bookingMode}</Label>
+          <select
+            id="booking-mode"
+            className="rounded-md border border-border bg-surface p-2 text-sm"
+            value={bookingMode}
+            onChange={(event) => setBookingMode(event.target.value)}
+          >
+            <option value="request">{copy.modeRequest}</option>
+            <option value="instant">{copy.modeInstant}</option>
+            <option value="inquiry">{copy.modeInquiry}</option>
+          </select>
+          <p className="text-sm text-text-muted">{copy.instantRequiresCapacity}</p>
         </TabsContent>
       </Tabs>
       <div className="grid gap-2 sm:grid-cols-2">
