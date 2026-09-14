@@ -22,6 +22,7 @@ export default async function PlanPage({
           inventory only.
         </p>
       ) : null}
+      {tripId ? <p className="text-sm text-text-muted">Trip {tripId}</p> : null}
       <PlannerView initialTripId={tripId || undefined} />
       <PlanDefaultsNote />
       <PlanWorkspace />
