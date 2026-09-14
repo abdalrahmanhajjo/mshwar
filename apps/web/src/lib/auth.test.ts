@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isProtectedPath, safeNextPath } from "./auth";
+import { isProtectedPath, isAdminUser, safeNextPath } from "./auth";
 
 describe("auth helpers", () => {
   it("marks traveller account routes and portals as protected", () => {
@@ -13,6 +13,9 @@ describe("auth helpers", () => {
     expect(isProtectedPath("/settings")).toBe(true);
     expect(isProtectedPath("/business/listings")).toBe(true);
     expect(isProtectedPath("/admin/users")).toBe(true);
+    expect(isAdminUser({ id: "1", email: "a@b.c", display_name: "A", locale: "en", admin_tier: "elevated" })).toBe(
+      true,
+    );
     expect(isProtectedPath("/")).toBe(false);
     expect(isProtectedPath("/signin")).toBe(false);
     expect(isProtectedPath("/forgot-password")).toBe(false);

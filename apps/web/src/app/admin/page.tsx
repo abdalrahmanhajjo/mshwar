@@ -1,5 +1,10 @@
-import { ShellPage } from "@/components/shell/shell-page";
+import { KpiDashboard } from "@/components/admin/kpi-dashboard";
+import { ShellMain } from "@/components/shell/app-shell";
 
 export default function AdminOverviewPage() {
-  return <ShellPage title="Overview" description="Operator queue for the three surfaces." />;
+  return (
+    <ShellMain>
+      <KpiDashboard />
+    </ShellMain>
+  );
 }

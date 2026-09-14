@@ -16,6 +16,7 @@ from app.core.passwords import hash_password, verify_password
 from app.core.rate_limit import limiter
 from app.core.sessions import COOKIE_NAME, hash_session_token, set_session_cookie, should_refresh
 from app.main import app
+from tests.conftest import TestingSessionLocal
 
 
 @pytest.fixture
@@ -160,11 +161,16 @@ def _unique_email(prefix: str) -> str:
 
 
 async def _register(api: AsyncClient, email: str, secret: str = "long-enough-secret") -> None:
+    await _register_user(api, email, secret)
+
+
+async def _register_user(api: AsyncClient, email: str, secret: str = "long-enough-secret") -> dict[str, object]:
     created = await api.post(
         "/api/v1/auth/register",
         json={"email": email, "password": secret, "display_name": "Lina", "locale": "en"},
     )
     assert created.status_code == 201, created.text
+    return created.json()
 
 
 @pytest.mark.asyncio
@@ -442,7 +448,14 @@ async def test_expired_verification_token_is_rejected(api: AsyncClient, db_sessi
 @pytest.mark.asyncio
 async def test_admin_users_include_verification_state(api: AsyncClient) -> None:
     email = _unique_email("admin-user")
-    await _register(api, email)
+    created = await _register_user(api, email)
+    listed = await api.get("/api/v1/admin/users")
+    assert listed.status_code == 403
+
+    async with TestingSessionLocal() as session:
+        await session.execute(text("SELECT app.grant_platform_admin(:user_id)"), {"user_id": created["id"]})
+        await session.commit()
+
     listed = await api.get("/api/v1/admin/users")
     assert listed.status_code == 200
     match = next(row for row in listed.json() if row["email"] == email)

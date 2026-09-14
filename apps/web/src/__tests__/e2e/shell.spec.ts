@@ -22,6 +22,7 @@ async function signInForShell(page: Page) {
         email: "e2e@example.com",
         display_name: "Operator",
         locale: "en",
+        admin_tier: "elevated",
       }),
     });
   });
