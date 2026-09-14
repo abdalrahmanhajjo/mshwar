@@ -26,7 +26,8 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Any) -> None:
-    with connection.begin_transaction():
+    context.configure(connection=connection, target_metadata=target_metadata)
+    with connection.begin():
         context.run_migrations()
 
 
@@ -34,7 +35,7 @@ async def run_async_migrations() -> None:
     connectable = create_async_engine(settings.database_url)
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
-        await connection.dispose()  # type: ignore[attr-defined]
+    await connectable.dispose()
 
 
 if context.is_offline_mode():

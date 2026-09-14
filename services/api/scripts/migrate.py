@@ -17,7 +17,7 @@ _db_root = next(
         for candidate in _here.parents
         if (candidate / "mshwar-database" / "scripts" / "migrate.py").is_file()
     ),
-    _here.parents[3] / "mshwar-database",
+    _here.parents[1] / "mshwar-database",
 )
 sys.path.insert(0, str(_db_root))
 

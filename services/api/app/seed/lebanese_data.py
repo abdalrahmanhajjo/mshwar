@@ -140,7 +140,7 @@ VENUES_DATA: list[dict[str, Any]] = [
     },
     {
         "id": uuid.UUID("00000000-0000-0000-0000-000000000204"),
-        "org_id": uuid.UUID("00000000-0000-0000-0000-000000000101"),
+        "org_id": uuid.UUID("00000000-0000-0000-0000-000000000102"),
         "name": "Jeita Grotto",
         "address": "Jeita, Mount Lebanon",
         "destination_slug": "mount-lebanon",
@@ -158,7 +158,7 @@ VENUES_DATA: list[dict[str, Any]] = [
     },
     {
         "id": uuid.UUID("00000000-0000-0000-0000-000000000206"),
-        "org_id": uuid.UUID("00000000-0000-0000-0000-000000000102"),
+        "org_id": uuid.UUID("00000000-0000-0000-0000-000000000103"),
         "name": "Qadisha Valley Lodge",
         "address": "Wadi Qadisha, North Lebanon",
         "destination_slug": "north-lebanon",
@@ -257,7 +257,7 @@ VENUES_DATA: list[dict[str, Any]] = [
     },
     {
         "id": uuid.UUID("00000000-0000-0000-0000-000000000217"),
-        "org_id": uuid.UUID("00000000-0000-0000-0000-000000000109"),
+        "org_id": uuid.UUID("00000000-0000-0000-0000-000000000102"),
         "name": "Jounieh Cable Car",
         "address": "Jounieh, Mount Lebanon",
         "destination_slug": "mount-lebanon",
@@ -266,7 +266,7 @@ VENUES_DATA: list[dict[str, Any]] = [
     },
     {
         "id": uuid.UUID("00000000-0000-0000-0000-000000000218"),
-        "org_id": uuid.UUID("00000000-0000-0000-0000-000000000109"),
+        "org_id": uuid.UUID("00000000-0000-0000-0000-000000000102"),
         "name": "Byblos Beach Tours",
         "address": "Byblos, Mount Lebanon",
         "destination_slug": "mount-lebanon",
@@ -275,7 +275,7 @@ VENUES_DATA: list[dict[str, Any]] = [
     },
     {
         "id": uuid.UUID("00000000-0000-0000-0000-000000000219"),
-        "org_id": uuid.UUID("00000000-0000-0000-0000-000000000110"),
+        "org_id": uuid.UUID("00000000-0000-0000-0000-000000000101"),
         "name": "Beirut Culinary Academy",
         "address": "Gemmayzeh, Beirut",
         "destination_slug": "beirut",
@@ -284,7 +284,7 @@ VENUES_DATA: list[dict[str, Any]] = [
     },
     {
         "id": uuid.UUID("00000000-0000-0000-0000-000000000220"),
-        "org_id": uuid.UUID("00000000-0000-0000-0000-000000000110"),
+        "org_id": uuid.UUID("00000000-0000-0000-0000-000000000101"),
         "name": "Tripoli Food Market",
         "address": "Tripoli, North Lebanon",
         "destination_slug": "north-lebanon",
