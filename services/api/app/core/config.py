@@ -68,6 +68,18 @@ class Settings(BaseSettings):
     private_storage_dir: str = "/tmp/mshwar-private"
     signed_url_ttl_seconds: int = 15 * 60
     staff_invite_ttl_seconds: int = 7 * 24 * 60 * 60
+    search_reindex_provider: str = Field(
+        default="stub",
+        validation_alias=AliasChoices("SEARCH_REINDEX_PROVIDER", "search_reindex_provider"),
+    )
+    data_quality_scheduler_enabled: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("DATA_QUALITY_SCHEDULER_ENABLED", "data_quality_scheduler_enabled"),
+    )
+    data_quality_stale_days: int = Field(
+        default=14,
+        validation_alias=AliasChoices("DATA_QUALITY_STALE_DAYS", "data_quality_stale_days"),
+    )
 
     # Monitoring
     sentry_dsn: str = ""

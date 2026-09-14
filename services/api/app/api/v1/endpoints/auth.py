@@ -55,6 +55,7 @@ class UserOut(BaseModel):
     display_name: str
     locale: str
     email_verified: bool = False
+    admin_tier: str | None = None
 
 
 class VerifyEmailRequest(BaseModel):
@@ -167,8 +168,9 @@ async def register(
         raise
     await _issue_cookie_session(db, response, user_id, request.headers.get("user-agent"))
     await _send_verification_email(db, email)
-    return UserOut(
-        id=user_id,
+    return await _user_out(
+        db,
+        user_id=user_id,
         email=email,
         display_name=payload.display_name.strip(),
         locale=locale,
@@ -195,8 +197,9 @@ async def signin(
     if row is None or row["status"] != "active" or not verify_password(row["password_hash"], payload.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
     await _issue_cookie_session(db, response, row["user_id"], request.headers.get("user-agent"))
-    return UserOut(
-        id=row["user_id"],
+    return await _user_out(
+        db,
+        user_id=row["user_id"],
         email=email,
         display_name=row["display_name"],
         locale=row["locale"],
@@ -211,7 +214,12 @@ async def signout(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Response:
     token = request.cookies.get(COOKIE_NAME)
+    session = await _load_session(db, token)
     if token:
+        if session is not None:
+            from app.core.admin_auth import close_admin_sessions
+
+            await close_admin_sessions(db, session["user_id"])
         await db.execute(
             text("SELECT app.revoke_session(:token_hash)"),
             {"token_hash": hash_session_token(token)},
@@ -255,12 +263,34 @@ async def _me_or_refresh(
             {"token_hash": hash_session_token(token), "expires_at": session_expiry()},
         )
         set_session_cookie(response, token)
-    return UserOut(
-        id=session["user_id"],
+    return await _user_out(
+        db,
+        user_id=session["user_id"],
         email=session["email"],
         display_name=session["display_name"],
         locale=session["locale"],
         email_verified=bool(session.get("email_verified_at")),
+    )
+
+
+async def _user_out(
+    db: AsyncSession,
+    *,
+    user_id: UUID,
+    email: str,
+    display_name: str,
+    locale: str,
+    email_verified: bool,
+) -> UserOut:
+    from app.core.admin_auth import lookup_admin_tier
+
+    return UserOut(
+        id=user_id,
+        email=email,
+        display_name=display_name,
+        locale=locale,
+        email_verified=email_verified,
+        admin_tier=await lookup_admin_tier(db, user_id),
     )
 
 
@@ -365,8 +395,9 @@ async def reset_password(
             {"user_id": str(user_id)},
         )
     ).one()
-    user = UserOut(
-        id=fetched[0],
+    user = await _user_out(
+        db,
+        user_id=fetched[0],
         email=fetched[1],
         display_name=fetched[2],
         locale=fetched[3],
@@ -456,8 +487,9 @@ async def verify_email(
             {"user_id": str(user_id)},
         )
     ).one()
-    user = UserOut(
-        id=fetched[0],
+    user = await _user_out(
+        db,
+        user_id=fetched[0],
         email=fetched[1],
         display_name=fetched[2],
         locale=fetched[3],

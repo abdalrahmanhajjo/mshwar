@@ -1,0 +1,65 @@
+from __future__ import annotations
+
+from typing import Any
+
+from fastapi import Request
+from sqlalchemy import text
+from sqlalchemy.exc import DBAPIError
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.portal_auth import raise_from_db, require_session
+
+
+async def lookup_admin_tier(db: AsyncSession, user_id: object) -> str | None:
+    result = await db.execute(text("SELECT app.admin_tier(:user_id)"), {"user_id": str(user_id)})
+    return result.scalar_one_or_none()
+
+
+def client_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for", "")
+    if forwarded:
+        return forwarded.split(",")[0].strip()[:128]
+    if request.client and request.client.host:
+        return request.client.host
+    return "unknown"
+
+
+async def touch_admin_session(request: Request, db: AsyncSession, session: dict[str, Any]) -> Any:
+    try:
+        result = await db.execute(
+            text("SELECT app.touch_admin_session(:user_id, :session_id, :ip, :user_agent)"),
+            {
+                "user_id": str(session["user_id"]),
+                "session_id": str(session.get("session_id")) if session.get("session_id") else None,
+                "ip": client_ip(request),
+                "user_agent": (request.headers.get("user-agent") or "")[:300],
+            },
+        )
+        return result.scalar_one_or_none()
+    except DBAPIError as exc:
+        raise_from_db(exc)
+        raise
+
+
+async def require_admin(
+    request: Request,
+    db: AsyncSession,
+    *,
+    elevated: bool = False,
+) -> dict[str, Any]:
+    session = await require_session(request, db)
+    try:
+        result = await db.execute(
+            text("SELECT app.require_admin(:user_id, :elevated)"),
+            {"user_id": str(session["user_id"]), "elevated": elevated},
+        )
+        session["admin_tier"] = result.scalar_one()
+    except DBAPIError as exc:
+        raise_from_db(exc)
+        raise
+    await touch_admin_session(request, db, session)
+    return session
+
+
+async def close_admin_sessions(db: AsyncSession, user_id: object) -> None:
+    await db.execute(text("SELECT app.close_admin_sessions(:user_id)"), {"user_id": str(user_id)})
