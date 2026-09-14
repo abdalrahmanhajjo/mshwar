@@ -251,9 +251,11 @@ async def test_unavailable_weather_returns_no_warning(api: AsyncClient, monkeypa
     await _register(api)
     from app.planner.weather import UnavailableWeather, WeatherService
 
-    monkeypatch.setattr(
-        "app.api.v1.endpoints.planner.WeatherService", lambda: WeatherService(provider=UnavailableWeather())
-    )
+    def unavailable_weather() -> WeatherService:
+        return WeatherService(provider=UnavailableWeather())
+
+    monkeypatch.setattr("app.api.v1.endpoints.planner.WeatherService", unavailable_weather)
+    monkeypatch.setattr("app.planner.warnings.WeatherService", unavailable_weather)
     response = await api.post(
         "/api/v1/planner/warnings",
         json={

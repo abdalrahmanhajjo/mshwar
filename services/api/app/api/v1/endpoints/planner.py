@@ -246,7 +246,11 @@ async def weather_warnings(
                 weather_sensitivity=item.weather_sensitivity,
             )
         )
-    result = evaluate_warnings(stops, booking_statuses=dict(payload.booking_statuses))
+    result = evaluate_warnings(
+        stops,
+        weather=WeatherService(),
+        booking_statuses=dict(payload.booking_statuses),
+    )
     return WarningEvalResponse(
         warnings=[
             WeatherWarningOut(
