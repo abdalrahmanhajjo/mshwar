@@ -1,16 +1,33 @@
 from __future__ import annotations
 
+import json
 from datetime import date
 from typing import Any
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from sqlalchemy import text
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.session import require_session
+from app.core.admin_auth import require_admin
 from app.core.config import settings
-from app.core.portal_auth import fetch_json
+from app.core.portal_auth import fetch_json, raise_from_db
 from app.dependencies import get_auth_db
 from app.planner.optimizer import OptimizeStop, optimize_route
+from app.planner.persist import get_session, get_version, list_versions
+from app.planner.pipeline import (
+    accept_replace,
+    alternatives,
+    cancel_replace,
+    preview_replace,
+    refine_apply,
+    refine_preview,
+    regenerate,
+    set_lock,
+    start_or_continue,
+)
 from app.planner.replan import replan_affected
 from app.planner.routing import (
     RouteLeg,
@@ -20,6 +37,15 @@ from app.planner.routing import (
     persist_cost,
     persist_leg,
     time_bucket,
+)
+from app.planner.schemas import (
+    IntentRequest,
+    LinkBookingRequest,
+    LockRequest,
+    RankerWeightsIn,
+    RefineRequest,
+    ReplaceAcceptRequest,
+    ReplacePreviewRequest,
 )
 from app.planner.warnings import WarningStop, evaluate_warnings
 from app.planner.weather import WeatherService, persist_forecast
@@ -334,3 +360,309 @@ async def list_thresholds(
 ) -> Any:
     await require_session(request, db)
     return await fetch_json(db, "SELECT app.list_weather_thresholds()", {})
+
+
+def _http(exc: Exception) -> HTTPException:
+    message = str(exc)
+    code = status.HTTP_422_UNPROCESSABLE_ENTITY
+    if "not found" in message:
+        code = status.HTTP_404_NOT_FOUND
+    return HTTPException(status_code=code, detail=message)
+
+
+@router.post("/sessions")
+async def create_or_plan(
+    payload: IntentRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    session = await require_session(request, db)
+    try:
+        return await start_or_continue(
+            db,
+            session["user_id"],
+            payload.text,
+            payload.locale,
+            payload.session_id,
+            payload.trip_id,
+            answers=payload.answers,
+            approve_budget=payload.approve_budget,
+        )
+    except DBAPIError as exc:
+        raise_from_db(exc)
+        raise
+    except (ValueError, TypeError) as exc:
+        raise _http(exc) from exc
+
+
+@router.post("/sessions/{session_id}/clarify")
+async def clarify(
+    session_id: UUID,
+    payload: IntentRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    session = await require_session(request, db)
+    stored = await get_session(db, session["user_id"], session_id)
+    text_value = payload.text or str(stored.get("raw_text") or "")
+    try:
+        return await start_or_continue(
+            db,
+            session["user_id"],
+            text_value,
+            payload.locale or str(stored.get("locale") or "en"),
+            session_id,
+            payload.trip_id,
+            answers=payload.answers,
+            approve_budget=payload.approve_budget,
+        )
+    except DBAPIError as exc:
+        raise_from_db(exc)
+        raise
+    except (ValueError, TypeError) as exc:
+        raise _http(exc) from exc
+
+
+@router.get("/sessions/{session_id}")
+async def read_session(
+    session_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    session = await require_session(request, db)
+    stored = await get_session(db, session["user_id"], session_id)
+    plan = None
+    if stored.get("current_version_id"):
+        plan = await get_version(db, session["user_id"], UUID(str(stored["current_version_id"])), False)
+    return {"session": stored, "plan": plan}
+
+
+@router.post("/sessions/{session_id}/lock")
+async def lock_stop(
+    session_id: UUID,
+    payload: LockRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    session = await require_session(request, db)
+    try:
+        return await set_lock(db, session["user_id"], session_id, payload.stop_id, payload.locked)
+    except (ValueError, TypeError) as exc:
+        raise _http(exc) from exc
+
+
+@router.post("/sessions/{session_id}/regenerate")
+async def regen(
+    session_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    session = await require_session(request, db)
+    try:
+        return await regenerate(db, session["user_id"], session_id)
+    except (ValueError, TypeError) as exc:
+        raise _http(exc) from exc
+
+
+@router.get("/sessions/{session_id}/stops/{stop_id}/alternatives")
+async def list_alternatives(
+    session_id: UUID,
+    stop_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> list[dict[str, Any]]:
+    session = await require_session(request, db)
+    return await alternatives(db, session["user_id"], session_id, stop_id)
+
+
+@router.post("/sessions/{session_id}/replace/preview")
+async def replace_preview(
+    session_id: UUID,
+    payload: ReplacePreviewRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    session = await require_session(request, db)
+    try:
+        return await preview_replace(db, session["user_id"], session_id, payload.stop_id, payload.experience_id)
+    except (ValueError, TypeError) as exc:
+        raise _http(exc) from exc
+
+
+@router.post("/sessions/{session_id}/replace/accept")
+async def replace_accept(
+    session_id: UUID,
+    payload: ReplaceAcceptRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    session = await require_session(request, db)
+    try:
+        return await accept_replace(db, session["user_id"], session_id, payload.preview_id)
+    except (ValueError, TypeError) as exc:
+        raise _http(exc) from exc
+
+
+@router.post("/sessions/{session_id}/replace/cancel")
+async def replace_cancel(
+    session_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    session = await require_session(request, db)
+    return await cancel_replace(db, session["user_id"], session_id)
+
+
+@router.post("/sessions/{session_id}/refine")
+async def refine(
+    session_id: UUID,
+    payload: RefineRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    session = await require_session(request, db)
+    if payload.apply:
+        try:
+            return await refine_apply(db, session["user_id"], session_id)
+        except ValueError as exc:
+            raise _http(exc) from exc
+    return await refine_preview(db, session["user_id"], session_id, payload.text)
+
+
+@router.get("/trips/{trip_id}/versions")
+async def trip_versions(
+    trip_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> list[dict[str, Any]]:
+    session = await require_session(request, db)
+    return await list_versions(db, session["user_id"], trip_id, False)
+
+
+@router.get("/versions/{version_id}")
+async def read_version(
+    version_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    session = await require_session(request, db)
+    return await get_version(db, session["user_id"], version_id, False)
+
+
+@router.post("/versions/{version_id}/link-booking")
+async def link_booking(
+    version_id: UUID,
+    payload: LinkBookingRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    session = await require_session(request, db)
+    try:
+        row = (
+            await db.execute(
+                text("SELECT app.link_booking_itinerary_version(:user_id, :booking, :version)"),
+                {
+                    "user_id": str(session["user_id"]),
+                    "booking": str(payload.booking_id),
+                    "version": str(version_id),
+                },
+            )
+        ).scalar()
+    except DBAPIError as exc:
+        raise_from_db(exc)
+        raise
+    if not isinstance(row, dict):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="booking not found")
+    return row
+
+
+@router.get("/admin/trips/{trip_id}/versions")
+async def admin_trip_versions(
+    trip_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> list[dict[str, Any]]:
+    session = await require_admin(request, db)
+    try:
+        return await list_versions(db, session["user_id"], trip_id, True)
+    except DBAPIError as exc:
+        raise_from_db(exc)
+        raise
+
+
+@router.get("/admin/versions/{version_id}")
+async def admin_read_version(
+    version_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    session = await require_admin(request, db)
+    try:
+        return await get_version(db, session["user_id"], version_id, True)
+    except (DBAPIError, TypeError) as exc:
+        if isinstance(exc, DBAPIError):
+            raise_from_db(exc)
+        raise _http(exc) from exc
+
+
+@router.get("/admin/health")
+async def admin_health(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    session = await require_admin(request, db)
+    try:
+        row = (
+            await db.execute(
+                text("SELECT app.planner_admin_health(:admin_id)"),
+                {"admin_id": str(session["user_id"])},
+            )
+        ).scalar()
+    except DBAPIError as exc:
+        raise_from_db(exc)
+        raise
+    return row if isinstance(row, dict) else {}
+
+
+@router.get("/admin/injections")
+async def admin_injections(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> list[dict[str, Any]]:
+    session = await require_admin(request, db)
+    try:
+        row = (
+            await db.execute(
+                text("SELECT app.planner_list_safety_events(:admin_id, 50)"),
+                {"admin_id": str(session["user_id"])},
+            )
+        ).scalar()
+    except DBAPIError as exc:
+        raise_from_db(exc)
+        raise
+    return row if isinstance(row, list) else []
+
+
+@router.put("/admin/ranker")
+async def admin_ranker(
+    payload: RankerWeightsIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    session = await require_admin(request, db)
+    try:
+        row = (
+            await db.execute(
+                text("SELECT app.planner_set_ranker_weights(:admin_id, :version, CAST(:weights AS jsonb), :notes)"),
+                {
+                    "admin_id": str(session["user_id"]),
+                    "version": payload.version,
+                    "weights": json.dumps(payload.weights),
+                    "notes": payload.notes,
+                },
+            )
+        ).scalar()
+    except DBAPIError as exc:
+        raise_from_db(exc)
+        raise
+    return row if isinstance(row, dict) else {}

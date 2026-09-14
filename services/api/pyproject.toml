@@ -36,6 +36,7 @@ addopts = "--cov=app --cov-report=xml --cov-report=term-missing --cov-fail-under
 
 [tool.coverage.run]
 source = ["app"]
+concurrency = ["greenlet", "thread"]
 omit = [
     "app/tests/*",
     "app/tests/**/*",

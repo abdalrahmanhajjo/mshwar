@@ -17,6 +17,14 @@ def _settings(**overrides: object) -> Settings:
     return Settings(**payload)  # type: ignore[arg-type]
 
 
+def test_reads_openai_api_key_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "")
+    monkeypatch.setenv("PLANNER_LLM_PROVIDER", "stub")
+    loaded = Settings()
+    assert loaded.openai_api_key == ""
+    assert loaded.planner_llm_provider == "stub"
+
+
 def test_defaults() -> None:
     assert settings.project_name == "Mshwar API"
     assert settings.version == "0.1.0"

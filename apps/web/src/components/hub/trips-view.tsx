@@ -66,11 +66,16 @@ export function TripsView() {
               </CardHeader>
               <CardContent className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm text-text-muted">{new Date(trip.created_at).toLocaleDateString()}</p>
-                {trip.status === "archived" ? null : (
-                  <Button type="button" variant="outline" size="sm" onClick={() => void onArchive(trip)}>
-                    {copy.archiveTrip}
+                <div className="flex flex-wrap gap-2">
+                  <Button asChild variant="secondary" size="sm">
+                    <LocaleLink href={`/plan?trip=${trip.id}`}>{copy.planTrip}</LocaleLink>
                   </Button>
-                )}
+                  {trip.status === "archived" ? null : (
+                    <Button type="button" variant="outline" size="sm" onClick={() => void onArchive(trip)}>
+                      {copy.archiveTrip}
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))}

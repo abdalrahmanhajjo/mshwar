@@ -73,7 +73,7 @@ export type ReplanResult = {
   bookings_mutated: boolean;
 };
 
-export type PlanStop = {
+export type DemoPlanStop = {
   id: string;
   lat: number;
   lng: number;
@@ -143,7 +143,7 @@ export function samplePlan(start: StartLocation) {
         weather_sensitivity: "outdoor",
         estimated_minor: 1800,
       },
-    ] satisfies PlanStop[],
+    ] satisfies DemoPlanStop[],
   };
 }
 
@@ -173,7 +173,7 @@ export function optimizePlan(plan: ReturnType<typeof samplePlan>): Promise<Optim
   });
 }
 
-export function evaluatePlanWarnings(stops: PlanStop[], date = "2026-09-14"): Promise<WarningResult> {
+export function evaluatePlanWarnings(stops: DemoPlanStop[], date = "2026-09-14"): Promise<WarningResult> {
   return readJson("/api/v1/planner/warnings", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -229,4 +229,226 @@ export function saveWeatherThreshold(key: string, value_numeric: number): Promis
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ key, value_numeric }),
   });
+}
+
+export type AssumedDefault = {
+  field: string;
+  value: unknown;
+  label: string;
+};
+
+export type Clarification = {
+  field: string;
+  prompt: string;
+  required: boolean;
+};
+
+export type PlanStop = {
+  id: string;
+  experience_id: string;
+  position: number;
+  starts_at: string;
+  ends_at: string;
+  estimated_minor: number;
+  price_kind: string;
+  locked: boolean;
+  snapshot: {
+    title?: string;
+    slug?: string;
+    destination_slug?: string;
+    explanation?: string;
+    flags?: string[];
+    price_source?: string;
+    sponsored?: boolean;
+    sponsored_label?: string | null;
+  };
+  slug?: string;
+  title?: string;
+  booking_mode?: string;
+};
+
+export type PlanLeg = {
+  id?: string;
+  position: number;
+  provider: string;
+  distance_m: number | null;
+  duration_seconds: number | null;
+  estimated_minor: number;
+  status: string;
+};
+
+export type CostItem = {
+  kind: string;
+  label: string;
+  amount_minor: number;
+};
+
+export type PlanDocument = {
+  trip_id: string;
+  trip_title: string;
+  version_id: string;
+  version: number;
+  origin: string;
+  sealed_at: string | null;
+  window_start: string;
+  return_by: string;
+  party_size: number;
+  budget_minor: number;
+  currency: string;
+  strict_budget: boolean;
+  constraints: Record<string, unknown>;
+  validation: Record<string, unknown>;
+  stops: PlanStop[];
+  legs: PlanLeg[];
+  cost_items: CostItem[];
+  total_minor: number;
+};
+
+export type PlannerSession = {
+  session_id: string;
+  status: string;
+  degraded: boolean;
+  degraded_message: string | null;
+  constraints: Record<string, unknown>;
+  assumed_defaults: AssumedDefault[];
+  clarifications: Clarification[];
+  plan: PlanDocument | null;
+  llm_never_sets_totals?: boolean;
+  blocked?: { slug?: string; blocked: string[] }[];
+  forced_lock_changes?: string[];
+  budget_warning?: string | null;
+  needs_budget_approval?: boolean;
+  injection_logged?: boolean;
+  explanations?: string[];
+};
+
+export function createPlannerSession(input: {
+  text: string;
+  locale: string;
+  session_id?: string;
+  answers?: Record<string, unknown>;
+  approve_budget?: boolean;
+}) {
+  return readJson<PlannerSession>("/api/v1/planner/sessions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+}
+
+export function clarifyPlannerSession(
+  sessionId: string,
+  input: { text: string; locale: string; answers?: Record<string, unknown> },
+) {
+  return readJson<PlannerSession>(`/api/v1/planner/sessions/${sessionId}/clarify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+}
+
+export function lockPlannerStop(sessionId: string, stopId: string, locked: boolean) {
+  return readJson<PlannerSession>(`/api/v1/planner/sessions/${sessionId}/lock`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ stop_id: stopId, locked }),
+  });
+}
+
+export function regeneratePlannerSession(sessionId: string) {
+  return readJson<PlannerSession>(`/api/v1/planner/sessions/${sessionId}/regenerate`, {
+    method: "POST",
+  });
+}
+
+export function fetchAlternatives(sessionId: string, stopId: string) {
+  return readJson<
+    {
+      experience_id: string;
+      slug: string;
+      title: string;
+      why_fit: string[];
+      sponsored: boolean;
+      sponsored_label: string | null;
+      duration_minutes: number;
+    }[]
+  >(`/api/v1/planner/sessions/${sessionId}/stops/${stopId}/alternatives`);
+}
+
+export function previewReplacement(sessionId: string, stopId: string, experienceId: string) {
+  return readJson<{
+    preview_id: string;
+    why_fit: string[];
+    title: string;
+    delta_cost_minor: number;
+    delta_minutes: number;
+    new_total_minor: number;
+  }>(`/api/v1/planner/sessions/${sessionId}/replace/preview`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ stop_id: stopId, experience_id: experienceId }),
+  });
+}
+
+export function acceptReplacement(sessionId: string, previewId: string) {
+  return readJson<PlannerSession>(`/api/v1/planner/sessions/${sessionId}/replace/accept`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ preview_id: previewId }),
+  });
+}
+
+export function cancelReplacement(sessionId: string) {
+  return readJson<PlannerSession>(`/api/v1/planner/sessions/${sessionId}/replace/cancel`, {
+    method: "POST",
+  });
+}
+
+export function refinePlannerSession(sessionId: string, text: string, apply: boolean) {
+  return readJson<PlannerSession & { understood?: boolean; summary?: string; clarification?: string }>(
+    `/api/v1/planner/sessions/${sessionId}/refine`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, apply }),
+    },
+  );
+}
+
+export function fetchTripVersions(tripId: string) {
+  return readJson<
+    { version_id: string; version: number; origin: string; sealed_at: string | null; created_at: string }[]
+  >(`/api/v1/planner/trips/${tripId}/versions`);
+}
+
+export function fetchPlannerHealth() {
+  return readJson<{
+    injection_events_24h: number;
+    planned_sessions_24h: number;
+    degraded_sessions_24h: number;
+    active_ranker: string | null;
+  }>("/api/v1/planner/admin/health");
+}
+
+export function fetchInjectionEvents() {
+  return readJson<{ id: string; kind: string; pattern: string; excerpt: string; created_at: string }[]>(
+    "/api/v1/planner/admin/injections",
+  );
+}
+
+export function fetchAdminTripVersions(tripId: string) {
+  return readJson<
+    {
+      version_id: string;
+      version: number;
+      origin: string;
+      sealed_at: string | null;
+      created_at: string;
+      constraints?: Record<string, unknown>;
+    }[]
+  >(`/api/v1/planner/admin/trips/${tripId}/versions`);
+}
+
+export function formatMinor(amount: number, currency = "USD") {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount / 100);
 }
