@@ -426,7 +426,7 @@ BEGIN
     SELECT * INTO pr
     FROM app.price_rules
     WHERE experience_id = e.id AND price_type = 'fixed' AND valid_during @> s.starts_at
-    ORDER BY created_at DESC
+    ORDER BY verified_at DESC NULLS LAST, id DESC
     LIMIT 1;
     IF NOT FOUND THEN RAISE EXCEPTION 'fixed valid quote required before reservation'; END IF;
     SELECT * INTO pol FROM app.policies WHERE experience_id = e.id ORDER BY version DESC LIMIT 1;
