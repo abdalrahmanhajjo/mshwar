@@ -202,9 +202,7 @@ export function rollbackConfig(key: string, reason: string): Promise<unknown> {
   });
 }
 
-export function listFlags(): Promise<
-  { key: string; environment: string; cohort: string; enabled: boolean }[]
-> {
+export function listFlags(): Promise<{ key: string; environment: string; cohort: string; enabled: boolean }[]> {
   return adminFetch("/api/v1/admin/flags");
 }
 
@@ -218,7 +216,10 @@ export function putFlag(payload: {
   return adminFetch("/api/v1/admin/flags", { method: "PUT", body: JSON.stringify({ ...payload, payload: {} }) });
 }
 
-export function fetchKpis(from?: string, to?: string): Promise<{
+export function fetchKpis(
+  from?: string,
+  to?: string,
+): Promise<{
   metrics: Record<string, number>;
   definitions: { key: string; label: string; definition: string }[];
   planner_source: string;

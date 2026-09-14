@@ -33,11 +33,35 @@ export function ModerationQueue() {
   }, [type]);
 
   React.useEffect(() => {
-    void reload();
-  }, [reload]);
+    let cancelled = false;
+    void listModeration(type === "all" ? undefined : type)
+      .then((payload) => {
+        if (!cancelled) {
+          setListings((payload.listings as Row[]) ?? []);
+          setImages((payload.images as Row[]) ?? []);
+          setReviews((payload.reviews as Row[]) ?? []);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setListings([]);
+          setImages([]);
+          setReviews([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [type]);
 
   const rows =
-    type === "image" ? images : type === "review" ? reviews : type === "listing" ? listings : [...listings, ...images, ...reviews];
+    type === "image"
+      ? images
+      : type === "review"
+        ? reviews
+        : type === "listing"
+          ? listings
+          : [...listings, ...images, ...reviews];
 
   async function act(id: string, entityType: string, action: string) {
     await moderateContent(entityType, id, action, reason);
@@ -71,7 +95,10 @@ export function ModerationQueue() {
             const entityType = String(row.entity_type ?? type);
             const id = String(row.id);
             return (
-              <li key={`${entityType}-${id}`} className="flex flex-wrap items-center justify-between gap-2 border-b border-border py-2">
+              <li
+                key={`${entityType}-${id}`}
+                className="flex flex-wrap items-center justify-between gap-2 border-b border-border py-2"
+              >
                 <label className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
@@ -91,7 +118,12 @@ export function ModerationQueue() {
                   <Button type="button" size="sm" variant="outline" onClick={() => void act(id, entityType, "restore")}>
                     {copy.restore}
                   </Button>
-                  <Button type="button" size="sm" variant="outline" onClick={() => void act(id, entityType, "escalate")}>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void act(id, entityType, "escalate")}
+                  >
                     {copy.escalate}
                   </Button>
                 </div>

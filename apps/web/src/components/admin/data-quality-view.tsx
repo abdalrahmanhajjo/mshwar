@@ -22,8 +22,23 @@ export function DataQualityView() {
   }, []);
 
   React.useEffect(() => {
-    void reload();
-  }, [reload]);
+    let cancelled = false;
+    void listQuality()
+      .then((payload) => {
+        if (!cancelled) {
+          setIssues(payload.issues);
+          setScheduler(payload.scheduler.trigger);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setIssues([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <Card>
@@ -41,7 +56,12 @@ export function DataQualityView() {
               <span>
                 {issue.rule_code} — {issue.status}
               </span>
-              <Button type="button" size="sm" variant="outline" onClick={() => void notifyQuality(issue.id).then(reload)}>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => void notifyQuality(issue.id).then(reload)}
+              >
                 {copy.notifyBusiness}
               </Button>
             </li>

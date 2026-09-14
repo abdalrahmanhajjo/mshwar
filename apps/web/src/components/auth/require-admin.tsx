@@ -8,13 +8,7 @@ import { isAdminTier, isElevatedTier } from "@/lib/admin";
 import { adminCopy } from "@/lib/admin-copy";
 import { withLocalePrefix } from "@/lib/locale";
 
-export function RequireAdmin({
-  children,
-  elevated = false,
-}: {
-  children: React.ReactNode;
-  elevated?: boolean;
-}) {
+export function RequireAdmin({ children, elevated = false }: { children: React.ReactNode; elevated?: boolean }) {
   const { user, ready } = useAuth();
   const { locale } = useLocale();
   const router = useRouter();

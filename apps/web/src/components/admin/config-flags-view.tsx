@@ -17,7 +17,9 @@ export function ConfigFlagsView() {
   const [cohort, setCohort] = React.useState("all");
   const [enabled, setEnabled] = React.useState(false);
   const [config, setConfig] = React.useState<{ key: string; version: number }[]>([]);
-  const [flags, setFlags] = React.useState<{ key: string; environment: string; cohort: string; enabled: boolean }[]>([]);
+  const [flags, setFlags] = React.useState<{ key: string; environment: string; cohort: string; enabled: boolean }[]>(
+    [],
+  );
 
   const reload = React.useCallback(async () => {
     try {
@@ -30,8 +32,24 @@ export function ConfigFlagsView() {
   }, []);
 
   React.useEffect(() => {
-    void reload();
-  }, [reload]);
+    let cancelled = false;
+    void Promise.all([listConfig(), listFlags()])
+      .then(([nextConfig, nextFlags]) => {
+        if (!cancelled) {
+          setConfig(nextConfig);
+          setFlags(nextFlags);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setConfig([]);
+          setFlags([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <Card>
@@ -58,14 +76,22 @@ export function ConfigFlagsView() {
           >
             Save fees
           </Button>
-          <Button type="button" variant="outline" onClick={() => void rollbackConfig("marketplace.fees", reason).then(reload)}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => void rollbackConfig("marketplace.fees", reason).then(reload)}
+          >
             {copy.rollback}
           </Button>
         </div>
         <h3 className="text-sm font-semibold">{copy.flags}</h3>
         <div className="flex flex-wrap gap-2">
           <Input aria-label="flag key" value={flagKey} onChange={(event) => setFlagKey(event.target.value)} />
-          <Input aria-label="environment" value={environment} onChange={(event) => setEnvironment(event.target.value)} />
+          <Input
+            aria-label="environment"
+            value={environment}
+            onChange={(event) => setEnvironment(event.target.value)}
+          />
           <Input aria-label="cohort" value={cohort} onChange={(event) => setCohort(event.target.value)} />
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={enabled} onChange={(event) => setEnabled(event.target.checked)} />

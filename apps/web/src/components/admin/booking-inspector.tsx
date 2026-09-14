@@ -65,7 +65,11 @@ export function BookingInspector() {
                 type="button"
                 size="sm"
                 disabled={!elevated}
-                onClick={() => void bookingAction(detail.id, "force-cancel", reason).then(() => inspectBooking(detail.id).then(setDetail))}
+                onClick={() =>
+                  void bookingAction(detail.id, "force-cancel", reason).then(() =>
+                    inspectBooking(detail.id).then(setDetail),
+                  )
+                }
               >
                 {copy.forceCancel}
               </Button>
@@ -74,7 +78,11 @@ export function BookingInspector() {
                 size="sm"
                 variant="outline"
                 disabled={!elevated}
-                onClick={() => void bookingAction(detail.id, "mark-refunded", reason).then(() => inspectBooking(detail.id).then(setDetail))}
+                onClick={() =>
+                  void bookingAction(detail.id, "mark-refunded", reason).then(() =>
+                    inspectBooking(detail.id).then(setDetail),
+                  )
+                }
               >
                 {copy.markRefunded}
               </Button>

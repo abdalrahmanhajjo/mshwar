@@ -5,7 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useAdminCopy } from "@/lib/admin-copy";
-import { getVerificationCase, listVerificationQueue, transitionVerification, type VerificationCase, type VerificationRow } from "@/lib/admin";
+import {
+  getVerificationCase,
+  listVerificationQueue,
+  transitionVerification,
+  type VerificationCase,
+  type VerificationRow,
+} from "@/lib/admin";
 
 export function AdminBusinessesTable() {
   const copy = useAdminCopy();
@@ -32,8 +38,30 @@ export function AdminBusinessesTable() {
   }, [sla, status]);
 
   React.useEffect(() => {
-    void reload();
-  }, [reload]);
+    let cancelled = false;
+    const params = new URLSearchParams();
+    if (status) {
+      params.set("verification", status);
+    }
+    if (sla) {
+      params.set("sla_hours_min", sla);
+    }
+    const suffix = params.size > 0 ? `?${params.toString()}` : "";
+    void listVerificationQueue(suffix)
+      .then((next) => {
+        if (!cancelled) {
+          setRows(next);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setRows([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [sla, status]);
 
   async function act(id: string, action: "verify" | "reject" | "suspend" | "re-verify") {
     await transitionVerification(id, action, reason);
@@ -78,7 +106,11 @@ export function AdminBusinessesTable() {
             {rows.map((row) => (
               <tr key={row.id} className="border-b border-border">
                 <td className="py-2">
-                  <button type="button" className="underline" onClick={() => void getVerificationCase(row.id).then(setDetail)}>
+                  <button
+                    type="button"
+                    className="underline"
+                    onClick={() => void getVerificationCase(row.id).then(setDetail)}
+                  >
                     {row.name}
                   </button>
                 </td>

@@ -28,9 +28,11 @@ async def api() -> AsyncGenerator[AsyncClient, None]:
 
 
 async def _register(api: AsyncClient, email: str, name: str = "Operator") -> dict[str, Any]:
+    local, _, domain = email.partition("@")
+    unique = f"{local}-{uuid4().hex[:8]}@{domain or 'example.com'}"
     response = await api.post(
         "/api/v1/auth/register",
-        json={"email": email, "password": "long-enough-secret", "display_name": name, "locale": "en"},
+        json={"email": unique, "password": "long-enough-secret", "display_name": name, "locale": "en"},
     )
     assert response.status_code == 201, response.text
     return response.json()
@@ -87,7 +89,7 @@ async def test_privilege_escalation_blocked(api: AsyncClient) -> None:
     assert still_self.status_code == 403
 
     async with TestingSessionLocal() as session:
-        with pytest.raises(Exception):
+        with pytest.raises(Exception):  # noqa: B017
             await session.execute(
                 text("SELECT app.grant_platform_admin(:target, :actor, 'ops')"),
                 {"target": traveller["id"], "actor": traveller["id"]},
@@ -200,12 +202,18 @@ async def test_moderation_preserves_review_text(api: AsyncClient) -> None:
 
     bulk = await api.post(
         "/api/v1/admin/moderation/bulk",
-        json={"entity_type": "review", "ids": [review_id], "action": "restore", "reason": "false positive", "confirm": True},
+        json={
+            "entity_type": "review",
+            "ids": [review_id],
+            "action": "restore",
+            "reason": "false positive",
+            "confirm": True,
+        },
     )
     assert bulk.status_code == 200, bulk.text
 
     async with TestingSessionLocal() as session:
-        with pytest.raises(Exception):
+        with pytest.raises(Exception):  # noqa: B017
             await session.execute(text("UPDATE app.reviews SET body = 'rewritten' WHERE id = :id"), {"id": review_id})
             await session.commit()
         await session.rollback()
@@ -221,7 +229,12 @@ async def test_taxonomy_retire_and_reindex_stub(api: AsyncClient) -> None:
     await _grant(admin["id"], "ops")
     created = await api.post(
         "/api/v1/admin/taxonomy",
-        json={"kind": "category", "slug": "sunset-sips", "label": "Sunset sips", "reason": "Seasonal category"},
+        json={
+            "kind": "category",
+            "slug": f"sunset-sips-{uuid4().hex[:8]}",
+            "label": "Sunset sips",
+            "reason": "Seasonal category",
+        },
     )
     assert created.status_code == 200, created.text
     assert created.json()["reindex"]["provider"] == "stub"
@@ -290,12 +303,20 @@ async def test_config_rollback_cases_and_quality(api: AsyncClient) -> None:
     await _grant(admin["id"], "elevated")
     first = await api.put(
         "/api/v1/admin/config",
-        json={"key": "marketplace.fees", "value": {"commission_bps": 1000, "service_fee_minor": 0}, "reason": "Initial fees"},
+        json={
+            "key": "marketplace.fees",
+            "value": {"commission_bps": 1000, "service_fee_minor": 0},
+            "reason": "Initial fees",
+        },
     )
     assert first.status_code == 200, first.text
     second = await api.put(
         "/api/v1/admin/config",
-        json={"key": "marketplace.fees", "value": {"commission_bps": 1500, "service_fee_minor": 200}, "reason": "Trial bump"},
+        json={
+            "key": "marketplace.fees",
+            "value": {"commission_bps": 1500, "service_fee_minor": 200},
+            "reason": "Trial bump",
+        },
     )
     assert second.status_code == 200
     rolled = await api.post(
@@ -396,11 +417,21 @@ async def test_admin_console_remaining_paths(api: AsyncClient) -> None:
 
     created = await api.post(
         "/api/v1/admin/taxonomy",
-        json={"kind": "amenity", "slug": "quiet-corner", "label": "Quiet corner", "reason": "New amenity"},
+        json={
+            "kind": "amenity",
+            "slug": f"quiet-corner-{uuid4().hex[:8]}",
+            "label": "Quiet corner",
+            "reason": "New amenity",
+        },
     )
     other = await api.post(
         "/api/v1/admin/taxonomy",
-        json={"kind": "amenity", "slug": "quiet-room", "label": "Quiet room", "reason": "Duplicate amenity"},
+        json={
+            "kind": "amenity",
+            "slug": f"quiet-room-{uuid4().hex[:8]}",
+            "label": "Quiet room",
+            "reason": "Duplicate amenity",
+        },
     )
     renamed = await api.post(
         f"/api/v1/admin/taxonomy/{created.json()['id']}/rename",
@@ -507,7 +538,7 @@ async def _completed_booking(org_id: str, listing: dict[str, Any], customer_id: 
                 ) VALUES (
                     :id, :customer_id, :org_id, :experience_id, :slot_id, 2, 'pending', 'request',
                     now() + interval '12 hours', true, 'USD', 9000, false,
-                    '{"schema_version":1}', '{"schema_version":1}', :request_key, :request_hash
+                    CAST(:price_snapshot AS jsonb), CAST(:policy_snapshot AS jsonb), :request_key, :request_hash
                 )
                 """
             ),
@@ -517,9 +548,15 @@ async def _completed_booking(org_id: str, listing: dict[str, Any], customer_id: 
                 "org_id": org_id,
                 "experience_id": listing["id"],
                 "slot_id": slot["id"],
+                "price_snapshot": '{"schema_version":1}',
+                "policy_snapshot": '{"schema_version":1}',
                 "request_key": f"req-{uuid4().hex[:12]}",
                 "request_hash": uuid4().hex,
             },
+        )
+        await session.execute(
+            text("UPDATE app.slots SET reserved = reserved + 2 WHERE id = :slot_id"),
+            {"slot_id": slot["id"]},
         )
         await session.execute(
             text("UPDATE app.bookings SET status = 'confirmed' WHERE id = :id"),
@@ -548,7 +585,7 @@ async def _payable_booking(org_id: str, listing: dict[str, Any], customer_id: st
                 ) VALUES (
                     :id, :customer_id, :org_id, :experience_id, :slot_id, 2, 'pending', 'request',
                     now() + interval '12 hours', true, 'USD', 9000, true,
-                    '{"schema_version":1}', '{"schema_version":1}', :request_key, :request_hash
+                    CAST(:price_snapshot AS jsonb), CAST(:policy_snapshot AS jsonb), :request_key, :request_hash
                 )
                 """
             ),
@@ -558,9 +595,15 @@ async def _payable_booking(org_id: str, listing: dict[str, Any], customer_id: st
                 "org_id": org_id,
                 "experience_id": listing["id"],
                 "slot_id": slot["id"],
+                "price_snapshot": '{"schema_version":1}',
+                "policy_snapshot": '{"schema_version":1}',
                 "request_key": f"req-{uuid4().hex[:12]}",
                 "request_hash": uuid4().hex,
             },
+        )
+        await session.execute(
+            text("UPDATE app.slots SET reserved = reserved + 2 WHERE id = :slot_id"),
+            {"slot_id": slot["id"]},
         )
         await session.execute(
             text(

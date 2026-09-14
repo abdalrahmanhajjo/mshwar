@@ -9,7 +9,9 @@ import { useAdminCopy } from "@/lib/admin-copy";
 
 export function TaxonomyManager() {
   const copy = useAdminCopy();
-  const [rows, setRows] = React.useState<{ id: string; kind: string; slug: string; label: string; active: boolean }[]>([]);
+  const [rows, setRows] = React.useState<{ id: string; kind: string; slug: string; label: string; active: boolean }[]>(
+    [],
+  );
   const [reason, setReason] = React.useState("Catalogue update");
   const [label, setLabel] = React.useState("New term");
   const [slug, setSlug] = React.useState("new-term");
@@ -25,8 +27,22 @@ export function TaxonomyManager() {
   }, []);
 
   React.useEffect(() => {
-    void reload();
-  }, [reload]);
+    let cancelled = false;
+    void listTaxonomy()
+      .then((next) => {
+        if (!cancelled) {
+          setRows(next);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setRows([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <Card>
@@ -46,15 +62,28 @@ export function TaxonomyManager() {
         </div>
         <ul className="grid gap-2">
           {rows.map((row) => (
-            <li key={row.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-border py-2 text-sm">
+            <li
+              key={row.id}
+              className="flex flex-wrap items-center justify-between gap-2 border-b border-border py-2 text-sm"
+            >
               <span>
                 {row.kind}/{row.slug} — {row.label} {row.active ? "" : "(retired)"}
               </span>
               <div className="flex flex-wrap gap-2">
-                <Button type="button" size="sm" variant="outline" onClick={() => void renameTaxonomy(row.id, label, reason).then(reload)}>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void renameTaxonomy(row.id, label, reason).then(reload)}
+                >
                   {copy.rename}
                 </Button>
-                <Button type="button" size="sm" variant="outline" onClick={() => void retireTaxonomy(row.id, reason).then(reload)}>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void retireTaxonomy(row.id, reason).then(reload)}
+                >
                   {copy.retire}
                 </Button>
                 <Input

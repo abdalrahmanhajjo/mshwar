@@ -24,8 +24,22 @@ export function SupportCasesView() {
   }, []);
 
   React.useEffect(() => {
-    void reload();
-  }, [reload]);
+    let cancelled = false;
+    void listCases()
+      .then((next) => {
+        if (!cancelled) {
+          setRows(next);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setRows([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <Card>
@@ -41,7 +55,10 @@ export function SupportCasesView() {
         <Input aria-label="outcome" value={outcome} onChange={(event) => setOutcome(event.target.value)} />
         <ul className="grid gap-2">
           {rows.map((row) => (
-            <li key={row.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-border py-2 text-sm">
+            <li
+              key={row.id}
+              className="flex flex-wrap items-center justify-between gap-2 border-b border-border py-2 text-sm"
+            >
               <span>
                 {row.status} — {row.reason} ({row.age_hours}h)
               </span>
@@ -54,10 +71,20 @@ export function SupportCasesView() {
                 >
                   {copy.assign}
                 </Button>
-                <Button type="button" size="sm" variant="outline" onClick={() => void escalateCase(row.id, "escalated").then(reload)}>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void escalateCase(row.id, "escalated").then(reload)}
+                >
                   Escalate
                 </Button>
-                <Button type="button" size="sm" disabled={outcome.length < 3} onClick={() => void resolveCase(row.id, outcome).then(reload)}>
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={outcome.length < 3}
+                  onClick={() => void resolveCase(row.id, outcome).then(reload)}
+                >
                   Resolve
                 </Button>
               </div>

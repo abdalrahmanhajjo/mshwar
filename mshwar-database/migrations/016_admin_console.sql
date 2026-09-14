@@ -1282,9 +1282,7 @@ BEGIN
     IF NOT FOUND THEN
         RAISE EXCEPTION 'booking not found' USING ERRCODE = 'P0002';
     END IF;
-    UPDATE app.bookings SET status = 'cancelled', reason = btrim(p_reason) WHERE id = p_booking;
-    INSERT INTO app.booking_events (booking_id, actor_id, from_status, to_status, reason)
-    VALUES (p_booking, p_admin, v_booking.status, 'cancelled', btrim(p_reason));
+    PERFORM app.transition_booking(p_booking, 'cancelled', btrim(p_reason));
     INSERT INTO app.audit_log (actor_id, action, table_name, row_key, changes, reason)
     VALUES (p_admin, 'booking_force_cancel', 'bookings', jsonb_build_object('booking_id', p_booking), jsonb_build_object('from', v_booking.status, 'to', 'cancelled'), btrim(p_reason));
     RETURN app.inspect_booking(p_admin, p_booking);
