@@ -614,6 +614,27 @@ async def respond_booking(
     )
 
 
+@router.post("/organizations/{org_id}/bookings/{booking_id}/cancel")
+async def cancel_portal_booking(
+    org_id: UUID,
+    booking_id: UUID,
+    payload: BookingRespondIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    session = await _session(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.cancel_checkout_booking(:user_id, :booking_id, :reason, true, :org_id)",
+        {
+            "user_id": _user_id(session),
+            "booking_id": str(booking_id),
+            "reason": payload.reason,
+            "org_id": str(org_id),
+        },
+    )
+
+
 @router.get("/organizations/{org_id}/metrics")
 async def get_metrics(
     org_id: UUID,

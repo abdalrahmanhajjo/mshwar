@@ -162,6 +162,12 @@ export function listAdminBookings(): Promise<{ id: string; status: string; exper
   return adminFetch("/api/v1/admin/bookings");
 }
 
+export function listReconciliationQueue(): Promise<
+  { id: string; booking_id: string; kind: string; status: string; detail: Record<string, unknown> }[]
+> {
+  return adminFetch("/api/v1/admin/payments/reconciliation");
+}
+
 export function inspectBooking(id: string): Promise<{
   id: string;
   status: string;

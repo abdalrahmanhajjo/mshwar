@@ -4,7 +4,7 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { bookingAction, inspectBooking, isElevatedTier, listAdminBookings } from "@/lib/admin";
+import { bookingAction, inspectBooking, isElevatedTier, listAdminBookings, listReconciliationQueue } from "@/lib/admin";
 import { useAdminCopy } from "@/lib/admin-copy";
 import { useAuth } from "@/components/shell/auth-provider";
 
@@ -13,6 +13,7 @@ export function BookingInspector() {
   const { user } = useAuth();
   const elevated = isElevatedTier(user?.admin_tier);
   const [rows, setRows] = React.useState<{ id: string; status: string; experience_title: string }[]>([]);
+  const [queue, setQueue] = React.useState<{ id: string; booking_id: string; kind: string }[]>([]);
   const [detail, setDetail] = React.useState<Awaited<ReturnType<typeof inspectBooking>> | null>(null);
   const [reason, setReason] = React.useState("Support override");
 
@@ -20,6 +21,9 @@ export function BookingInspector() {
     void listAdminBookings()
       .then(setRows)
       .catch(() => setRows([]));
+    void listReconciliationQueue()
+      .then((items) => setQueue(items ?? []))
+      .catch(() => setQueue([]));
   }, []);
 
   return (
@@ -29,6 +33,14 @@ export function BookingInspector() {
         <CardDescription>{copy.elevatedOnly}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3">
+        <p className="text-sm font-medium">{copy.reconciliationQueue}</p>
+        <ul className="grid gap-1 text-sm">
+          {queue.map((item) => (
+            <li key={item.id}>
+              {item.kind} — {item.booking_id}
+            </li>
+          ))}
+        </ul>
         <Input aria-label="reason" value={reason} onChange={(event) => setReason(event.target.value)} />
         <ul className="grid gap-2">
           {rows.map((row) => (

@@ -4689,7 +4689,7 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
         <p
           class="mt-1 text-sm font-medium text-text"
         >
-          Request to book
+          طلب حجز
         </p>
         <p
           class="mt-1 text-sm text-text-muted"
@@ -4748,13 +4748,12 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
               70
             </span>
           </div>
-          <button
+          <a
             class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] bg-brand text-brand-foreground hover:bg-brand/90 px-4 py-2 rounded-pill"
-            disabled=""
-            type="button"
+            href="/ar/checkout?listing=slow-day-byblos"
           >
-            طلب حجز · معاينة
-          </button>
+            متابعة إلى الحجز
+          </a>
           <a
             class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] border border-border bg-surface text-text hover:bg-surface-sunken px-4 py-2 rounded-pill"
             href="/ar/plan?add=slow-day-byblos"
@@ -5820,13 +5819,12 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
               70
             </span>
           </div>
-          <button
+          <a
             class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] bg-brand text-brand-foreground hover:bg-brand/90 px-4 py-2 rounded-pill"
-            disabled=""
-            type="button"
+            href="/checkout?listing=slow-day-byblos"
           >
-            Request to book · Preview
-          </button>
+            Continue to checkout
+          </a>
           <a
             class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] border border-border bg-surface text-text hover:bg-surface-sunken px-4 py-2 rounded-pill"
             href="/plan?add=slow-day-byblos"
@@ -6833,7 +6831,7 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
         <p
           class="mt-1 text-sm font-medium text-text"
         >
-          Request to book
+          Demande de réservation
         </p>
         <p
           class="mt-1 text-sm text-text-muted"
@@ -6892,13 +6890,12 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
               70
             </span>
           </div>
-          <button
+          <a
             class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] bg-brand text-brand-foreground hover:bg-brand/90 px-4 py-2 rounded-pill"
-            disabled=""
-            type="button"
+            href="/fr/checkout?listing=slow-day-byblos"
           >
-            Demande de réservation · Aperçu
-          </button>
+            Continuer vers le paiement
+          </a>
           <a
             class="inline-flex items-center justify-center gap-2 rounded-control text-sm font-medium transition-colors duration-quick disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] border border-border bg-surface text-text hover:bg-surface-sunken px-4 py-2 rounded-pill"
             href="/fr/plan?add=slow-day-byblos"
