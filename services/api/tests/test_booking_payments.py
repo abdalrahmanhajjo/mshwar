@@ -308,7 +308,12 @@ async def test_checkout_commit_idempotency_and_snapshots(api: AsyncClient) -> No
         assert count == 1
         await session.execute(
             text(
-                "UPDATE app.policies SET terms_text = 'Changed after booking', cancellation_rules = '{\"hours\": 1}' WHERE id = :id"
+                """
+                INSERT INTO app.policies (experience_id, version, cancellation_rules, terms_text)
+                SELECT experience_id, version + 1, '{"hours": 1}'::jsonb, 'Changed after booking'
+                FROM app.policies
+                WHERE id = :id
+                """
             ),
             {"id": quote["policy_id"]},
         )
