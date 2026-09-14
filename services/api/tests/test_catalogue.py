@@ -141,6 +141,9 @@ async def test_collections_open_as_trip_and_admin_editor(api: AsyncClient) -> No
     assert opened.json()["name"] == "The coast is calling."
     assert opened.json()["status"] == "draft"
 
+    from tests.test_admin import _grant as _grant_admin
+    current = (await api.get("/api/v1/auth/me")).json()
+    await _grant_admin(current["id"])
     created = await api.post(
         "/api/v1/catalogue/collections",
         json={

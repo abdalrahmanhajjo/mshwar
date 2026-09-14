@@ -1,3 +1,4 @@
+import { securityFetch } from "@/lib/security";
 export const SESSION_COOKIE = "mshwar_session";
 
 export type AuthUser = {
@@ -38,7 +39,7 @@ export function safeNextPath(value: string | null | undefined): string {
 }
 
 export async function fetchCurrentUser(): Promise<AuthUser | null> {
-  const response = await fetch("/api/v1/auth/me", { credentials: "include" });
+  const response = await securityFetch("/api/v1/auth/me", { credentials: "include" });
   if (!response.ok) {
     return null;
   }
@@ -51,7 +52,7 @@ export async function registerAccount(input: {
   display_name: string;
   locale: string;
 }): Promise<AuthUser> {
-  const response = await fetch("/api/v1/auth/register", {
+  const response = await securityFetch("/api/v1/auth/register", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -64,7 +65,7 @@ export async function registerAccount(input: {
 }
 
 export async function signInAccount(input: { email: string; password: string }): Promise<AuthUser> {
-  const response = await fetch("/api/v1/auth/signin", {
+  const response = await securityFetch("/api/v1/auth/signin", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -77,11 +78,11 @@ export async function signInAccount(input: { email: string; password: string }):
 }
 
 export async function signOutAccount(): Promise<void> {
-  await fetch("/api/v1/auth/signout", { method: "POST", credentials: "include" });
+  await securityFetch("/api/v1/auth/signout", { method: "POST", credentials: "include" });
 }
 
 export async function requestPasswordReset(email: string): Promise<void> {
-  const response = await fetch("/api/v1/auth/forgot-password", {
+  const response = await securityFetch("/api/v1/auth/forgot-password", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -93,7 +94,7 @@ export async function requestPasswordReset(email: string): Promise<void> {
 }
 
 export async function verifyEmail(token: string): Promise<AuthUser> {
-  const response = await fetch("/api/v1/auth/verify-email", {
+  const response = await securityFetch("/api/v1/auth/verify-email", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -106,7 +107,7 @@ export async function verifyEmail(token: string): Promise<AuthUser> {
 }
 
 export async function resendVerification(email?: string): Promise<void> {
-  const response = await fetch("/api/v1/auth/resend-verification", {
+  const response = await securityFetch("/api/v1/auth/resend-verification", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -118,7 +119,7 @@ export async function resendVerification(email?: string): Promise<void> {
 }
 
 export async function resetPassword(input: { token: string; password: string }): Promise<AuthUser> {
-  const response = await fetch("/api/v1/auth/reset-password", {
+  const response = await securityFetch("/api/v1/auth/reset-password", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },

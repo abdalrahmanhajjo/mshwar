@@ -101,18 +101,18 @@ async def test_share_link_roles_guest_join_and_revoke(api: AsyncClient) -> None:
             f"/api/v1/groups/trips/{trip_id}/votes",
             json={"term_id": str(uuid4()), "value": 1},
         )
-        assert denied.status_code == 403
+        assert denied.status_code == 404
 
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as guest_blocked:
             blocked = await guest_blocked.post(f"/api/v1/groups/join/{view_token}", json={"display_name": "Guest"})
-            assert blocked.status_code == 403
+            assert blocked.status_code == 404
 
     revoked = await api.post(f"/api/v1/groups/share-links/{created.json()['id']}/revoke")
     assert revoked.status_code == 200
     assert revoked.json()["revoked_at"]
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as late:
         late_join = await late.post(f"/api/v1/groups/join/{token}", json={"display_name": "Late"})
-        assert late_join.status_code == 403
+        assert late_join.status_code == 404
 
     people = await api.get(f"/api/v1/groups/trips/{trip_id}/participants")
     assert people.status_code == 200
@@ -123,7 +123,7 @@ async def test_share_link_roles_guest_join_and_revoke(api: AsyncClient) -> None:
 
     expired = await api.post(
         f"/api/v1/groups/trips/{trip_id}/share-links",
-        json={"role": "edit", "allow_guest": True, "expires_at": datetime.now(timezone.utc).isoformat()},
+        json={"role": "edit", "allow_guest": True, "expires_at": (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()},
     )
     assert expired.status_code == 422
 
@@ -224,7 +224,7 @@ async def test_voting_tally_lock_and_summary_privacy(api: AsyncClient) -> None:
         f"/api/v1/groups/trips/{trip_id}/votes",
         json={"experience_id": listing["id"], "value": -1},
     )
-    assert closed.status_code == 403
+    assert closed.status_code == 404
 
 
 @pytest.mark.asyncio
@@ -331,9 +331,9 @@ async def test_review_eligibility_moderation_response_and_aggregates(api: AsyncC
     )
     assert second.status_code == 409
     hidden = await api.post(f"/api/v1/portal/organizations/{org['id']}/reviews/{review_id}/hide")
-    assert hidden.status_code == 403
+    assert hidden.status_code == 404
     deleted = await api.delete(f"/api/v1/portal/organizations/{org['id']}/reviews/{review_id}")
-    assert deleted.status_code == 403
+    assert deleted.status_code == 404
 
     await _grant(owner["id"], "ops")
     await api.post(
@@ -397,7 +397,7 @@ async def test_view_role_cannot_edit_or_lock(api: AsyncClient) -> None:
             f"/api/v1/groups/trips/{trip_id}/suggestions",
             json={"term_id": await _term()},
         )
-        assert suggest.status_code == 403
+        assert suggest.status_code == 404
         lock = await viewer.post(f"/api/v1/groups/trips/{trip_id}/lock")
         assert lock.status_code == 404
         revoke = await viewer.post(f"/api/v1/groups/share-links/{link.json()['id']}/revoke")
@@ -427,4 +427,4 @@ async def test_expired_share_link_cannot_join(api: AsyncClient) -> None:
     assert peek.json()["expired"] is True
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as guest:
         joined = await guest.post(f"/api/v1/groups/join/{token}", json={"display_name": "Too late"})
-        assert joined.status_code == 403
+        assert joined.status_code == 404

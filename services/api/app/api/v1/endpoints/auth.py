@@ -225,7 +225,8 @@ async def signout(
             {"token_hash": hash_session_token(token)},
         )
     clear_session_cookie(response)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    response.status_code = status.HTTP_204_NO_CONTENT
+    return response
 
 
 @router.post("/refresh", response_model=UserOut)
@@ -295,12 +296,9 @@ async def _user_out(
 
 
 def _client_ip(request: Request) -> str:
-    forwarded = request.headers.get("x-forwarded-for", "")
-    if forwarded:
-        return forwarded.split(",")[0].strip()[:128]
-    if request.client and request.client.host:
-        return request.client.host
-    return "unknown"
+    from app.core.security_limits import client_ip as trusted_client_ip
+
+    return trusted_client_ip(request)
 
 
 async def _pad_forgot_duration(started: float) -> None:

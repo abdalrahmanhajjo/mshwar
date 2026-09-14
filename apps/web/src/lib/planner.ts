@@ -1,3 +1,4 @@
+import { securityFetch } from "@/lib/security";
 export type StartLocation = {
   lat: number;
   lng: number;
@@ -98,7 +99,7 @@ async function readError(response: Response): Promise<string> {
 }
 
 async function readJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, { credentials: "include", ...init });
+  const response = await securityFetch(path, { credentials: "include", ...init });
   if (!response.ok) {
     throw new Error(await readError(response));
   }

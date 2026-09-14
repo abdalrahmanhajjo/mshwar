@@ -94,7 +94,7 @@ export const DESTINATIONS: Destination[] = [
     country: "Lebanon",
     blurb: "Wander stone lanes, pause by the old harbour, and make time for a long lunch beside the Mediterranean.",
     tags: ["Old town", "By the sea", "Easy walking"],
-    image: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/byblos.jpg",
     imageAlt: "Fishing boats in a stone harbour",
   },
   {
@@ -104,7 +104,7 @@ export const DESTINATIONS: Destination[] = [
     country: "Lebanon",
     blurb: "A friendly coastal town for a slower day by the water.",
     tags: ["Coast", "Friendly", "Relaxed pace"],
-    image: "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/batroun.jpg",
     imageAlt: "Stone church by the coast",
   },
   {
@@ -114,7 +114,7 @@ export const DESTINATIONS: Destination[] = [
     country: "Lebanon",
     blurb: "Mountain air, cedar forest, and a different perspective.",
     tags: ["Forest", "Outdoors", "Mountain air"],
-    image: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/cedars.jpg",
     imageAlt: "Cedar tree against a clear sky",
   },
   {
@@ -124,7 +124,7 @@ export const DESTINATIONS: Destination[] = [
     country: "Lebanon",
     blurb: "Hike the scenic valley road at your own pace.",
     tags: ["Hiking", "Scenic", "Active"],
-    image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/qadisha.jpg",
     imageAlt: "Green mountain valley",
   },
   {
@@ -134,7 +134,7 @@ export const DESTINATIONS: Destination[] = [
     country: "Lebanon",
     blurb: "Give Lebanon’s history a day of your own.",
     tags: ["Heritage", "Architecture", "History"],
-    image: "https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/baalbek.jpg",
     imageAlt: "Ancient stone columns",
   },
   {
@@ -158,7 +158,7 @@ export const EXPERIENCES: Experience[] = [
     placeLabel: "Byblos · Mount Lebanon",
     hours: 3,
     priceFrom: 35,
-    image: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/byblos.jpg",
     imageAlt: "Harbour boats in Byblos",
     summary: "Byblos. A little closer.",
     body: "Wander stone lanes, pause by the old harbour, and make time for a long lunch beside the Mediterranean. A day for taking the scenic route.",
@@ -194,7 +194,7 @@ export const EXPERIENCES: Experience[] = [
     placeLabel: "Batroun · North Lebanon",
     hours: 4,
     priceFrom: 45,
-    image: "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/batroun.jpg",
     imageAlt: "Coastal church in Batroun",
     summary: "Salt air and a friendly town.",
     body: "A coastal day with room to linger — swim, walk the old town, and eat when you are ready.",
@@ -218,7 +218,7 @@ export const EXPERIENCES: Experience[] = [
     placeLabel: "Bsharri · North Lebanon",
     hours: 2,
     priceFrom: 25,
-    image: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/cedars.jpg",
     imageAlt: "Cedar tree in mountain light",
     summary: "A day above it all.",
     body: "Cedar forest and a different perspective. Short walks, cooler air, and time to look up.",
@@ -242,7 +242,7 @@ export const EXPERIENCES: Experience[] = [
     placeLabel: "Qadisha Valley · North Lebanon",
     hours: 5,
     priceFrom: 40,
-    image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/qadisha.jpg",
     imageAlt: "Valley road through the mountains",
     summary: "The scenic route, on purpose.",
     body: "A longer day for people who want the road itself — viewpoints, short walks, and a slower descent.",
@@ -269,7 +269,7 @@ export const EXPERIENCES: Experience[] = [
     placeLabel: "Baalbek · Bekaa",
     hours: 3,
     priceFrom: 30,
-    image: "https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/baalbek.jpg",
     imageAlt: "Ancient columns in Baalbek",
     summary: "Following the stories.",
     body: "Give Lebanon’s history a day of your own — columns, courtyards, and time to stand still.",
@@ -425,7 +425,7 @@ export const IDEAS: Idea[] = [
     description: "Harbour lanes, old streets and a little sea air.",
     stops: 2,
     priceFrom: 80,
-    image: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/byblos.jpg",
     imageAlt: "Harbour boats along the coast",
     experienceSlugs: ["slow-day-byblos", "coastal-escapes-batroun"],
   },
@@ -436,7 +436,7 @@ export const IDEAS: Idea[] = [
     description: "Cedar forests and a different perspective.",
     stops: 2,
     priceFrom: 65,
-    image: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/cedars.jpg",
     imageAlt: "Cedar forest in mountain light",
     accent: true,
     experienceSlugs: ["among-ancient-cedars", "take-the-valley-road"],
@@ -448,14 +448,14 @@ export const IDEAS: Idea[] = [
     description: "Give Lebanon’s history a day of your own.",
     stops: 1,
     priceFrom: 30,
-    image: "https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/baalbek.jpg",
     imageAlt: "Ancient columns",
     experienceSlugs: ["journey-through-baalbek"],
   },
 ];
 
 export const HOME_HERO_IMAGE =
-  "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80";
+  "/images/byblos.jpg";
 
 export type ExperienceFilters = {
   q?: string;

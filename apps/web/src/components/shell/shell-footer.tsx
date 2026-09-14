@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { ArrowUpRight } from "lucide-react";
 import { cn, focusRing } from "@/lib/utils";
@@ -15,7 +16,9 @@ const FOOTER_COPY: Record<ShellSurface, "travellerFooter" | "businessFooter" | "
 };
 
 export function ShellFooter({ surface }: { surface: ShellSurface }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const path = usePathname();
+  const home = /^\/(en|ar|fr)?\/?$/.test(path ?? "/");
   const copy = useBrowseCopy();
 
   if (surface !== "traveller") {
@@ -47,14 +50,14 @@ export function ShellFooter({ surface }: { surface: ShellSurface }) {
     { href: "/contact", label: copy.aboutMshwar },
     { href: "/contact", label: copy.helpCenter },
     { href: "/experiences", label: copy.allPages },
-    { href: "/privacy", label: copy.photoCredits },
+    { href: "/photography-credits", label: copy.photoCredits },
   ];
 
   return (
-    <footer className="mt-auto">
+    <footer className={cn("mt-auto", home && "home-footer")}>
       <div className="bg-brand text-brand-foreground">
         <div className="shell-frame flex flex-col items-start justify-between gap-6 py-12 md:flex-row md:items-center">
-          <h2 className="max-w-xl text-4xl font-semibold tracking-tight md:text-5xl">{copy.yallaTitle}</h2>
+          <div>{home && <p className="home-kicker mb-5">{locale === "en" ? "Go somewhere that feels like you" : copy.footerPace}</p>}<h2 className="max-w-xl text-4xl font-semibold tracking-tight md:text-5xl">{home && locale === "en" ? <>The best plans<br />start with <em>“yalla.”</em></> : copy.yallaTitle}</h2></div>
           <Button asChild size="icon" className="size-14 rounded-full bg-surface text-text hover:bg-surface-sunken">
             <LocaleLink href="/plan" aria-label={copy.planATrip}>
               <ArrowUpRight className="size-5 rtl:-scale-x-100" aria-hidden />

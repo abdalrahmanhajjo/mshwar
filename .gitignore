@@ -108,3 +108,9 @@ services/api/htmlcov/
 services/api/.coverage
 services/api/coverage.xml
 services/api/*.egg-info/
+
+# Local package/download caches
+.pnpm-store/
+.security-scan/
+*-vulnerabilities.json
+.coverage

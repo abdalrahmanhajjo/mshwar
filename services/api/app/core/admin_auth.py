@@ -16,12 +16,9 @@ async def lookup_admin_tier(db: AsyncSession, user_id: object) -> str | None:
 
 
 def client_ip(request: Request) -> str:
-    forwarded = request.headers.get("x-forwarded-for", "")
-    if forwarded:
-        return forwarded.split(",")[0].strip()[:128]
-    if request.client and request.client.host:
-        return request.client.host
-    return "unknown"
+    from app.core.security_limits import client_ip as trusted_client_ip
+
+    return trusted_client_ip(request)
 
 
 async def touch_admin_session(request: Request, db: AsyncSession, session: dict[str, Any]) -> Any:

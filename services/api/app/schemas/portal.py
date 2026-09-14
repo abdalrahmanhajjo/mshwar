@@ -144,7 +144,7 @@ class AnalyticsCaptureIn(BaseModel):
 class FileUploadIn(BaseModel):
     filename: str = Field(min_length=1, max_length=160)
     content_type: str = "application/octet-stream"
-    content_base64: str
+    content_base64: str = Field(max_length=14000000, repr=False)
     alt_text: str | None = None
     experience_id: UUID | None = None
     purpose: str = "verification"

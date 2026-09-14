@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -98,3 +99,23 @@ async def delete_account(
     if isinstance(body, str):
         body = json.loads(body)
     return PrivacyDeleteOut.model_validate(body)
+
+
+class ConsentUpdate(BaseModel):
+    personalisation: bool | None = None
+    marketing: bool | None = None
+
+
+@router.get("/consents")
+async def get_consents(request: Request, db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    session = await require_session(request, db)
+    return await db.scalar(text("SELECT app.security_consents(:actor)"), {"actor": str(session["user_id"])})
+
+
+@router.put("/consents")
+async def update_consents(payload: ConsentUpdate, request: Request, db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    session = await require_session(request, db)
+    return await db.scalar(
+        text("SELECT app.security_consents(:actor, :personal, :marketing)"),
+        {"actor": str(session["user_id"]), "personal": payload.personalisation, "marketing": payload.marketing},
+    )

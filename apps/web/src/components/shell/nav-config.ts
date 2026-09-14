@@ -50,6 +50,7 @@ export const BUSINESS_NAV: ShellNavItem[] = [
 ];
 
 export const ADMIN_NAV: ShellNavItem[] = [
+  { href: "/admin/audit", labelKey: "auditLog", icon: ClipboardCheck },
   { href: "/admin", labelKey: "overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/users", labelKey: "users", icon: Users },
   { href: "/admin/roles", labelKey: "adminRoles", icon: KeyRound },

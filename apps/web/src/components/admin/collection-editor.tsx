@@ -1,4 +1,5 @@
 "use client";
+import { securityFetch } from "@/lib/security";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,7 @@ export function CollectionEditor() {
   const [message, setMessage] = useState("");
 
   async function save() {
-    const response = await fetch("/api/v1/catalogue/collections", {
+    const response = await securityFetch("/api/v1/catalogue/collections", {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },

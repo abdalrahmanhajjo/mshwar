@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 from uuid import UUID
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.responses import PlainTextResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,6 +25,7 @@ from app.core.storage import (
     storage_backend,
     verify_signed_token,
 )
+from app.core.uploads import authorize_upload, reserve_upload, validate_upload
 from app.dependencies import get_auth_db
 from app.schemas.groups import ReviewResponseIn
 from app.schemas.notifications import EscalationIn, RolePrefIn
@@ -239,8 +241,16 @@ async def upload_org_file(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
     session = await _session(request, db)
+    await authorize_upload(db, _user_id(session), str(org_id), payload.experience_id, payload.purpose)
+    if len(payload.content_base64) > (settings.upload_max_bytes + 2) // 3 * 4:
+        raise HTTPException(413, "File exceeds upload size limit")
     raw = _decode_upload(payload.content_base64)
-    stored = put_private_bytes(raw, payload.filename, payload.content_type, public=False)
+    validate_upload(raw, payload.content_type, payload.purpose)
+    await reserve_upload(str(org_id), len(raw))
+    try:
+        stored = put_private_bytes(raw, payload.filename, payload.content_type, public=False)
+    except (ValueError, httpx.HTTPError) as exc:
+        raise HTTPException(502, "Private storage unavailable") from exc
     if payload.purpose == "listing":
         if payload.experience_id is None:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="experience_id required")
@@ -278,9 +288,13 @@ async def download_signed_file(token: str) -> Response:
     try:
         object_key = verify_signed_token(token)
         data = read_private_bytes(object_key)
-    except (ValueError, FileNotFoundError) as exc:
+    except (ValueError, FileNotFoundError, httpx.HTTPError) as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not available") from exc
-    return Response(content=data, media_type="application/octet-stream")
+    return Response(
+        content=data,
+        media_type="application/octet-stream",
+        headers={"Cache-Control": "no-store", "Content-Disposition": "attachment", "X-Content-Type-Options": "nosniff"},
+    )
 
 
 @router.get("/organizations/{org_id}/staff")

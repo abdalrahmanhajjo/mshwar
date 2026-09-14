@@ -1,6 +1,7 @@
 import type { Locale } from "@/lib/locale";
 
 export type MessageKey =
+  | "auditLog"
   | "skipToContent"
   | "openMenu"
   | "closeMenu"
@@ -118,6 +119,7 @@ export type MessageKey =
 
 export const messages: Record<Locale, Record<MessageKey, string>> = {
   en: {
+    auditLog: "Audit log",
     skipToContent: "Skip to content",
     openMenu: "Open menu",
     closeMenu: "Close menu",
@@ -234,6 +236,7 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     carouselNext: "Next",
   },
   ar: {
+    auditLog: "سجل التدقيق",
     skipToContent: "تخطّ إلى المحتوى",
     openMenu: "فتح القائمة",
     closeMenu: "إغلاق القائمة",
@@ -350,6 +353,7 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     carouselNext: "التالي",
   },
   fr: {
+    auditLog: "Journal d’audit",
     skipToContent: "Aller au contenu",
     openMenu: "Ouvrir le menu",
     closeMenu: "Fermer le menu",

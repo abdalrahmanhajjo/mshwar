@@ -98,7 +98,7 @@ async def _published_listing(api: AsyncClient, *, mode: str = "request", capacit
         json={
             "filename": "hero.jpg",
             "content_type": "image/jpeg",
-            "content_base64": base64.b64encode(b"fake-image").decode("ascii"),
+            "content_base64": base64.b64encode(b"\xff\xd8\xffimage\xff\xd9").decode("ascii"),
             "purpose": "listing",
             "experience_id": listing["id"],
             "alt_text": "Cedar table",
@@ -543,6 +543,8 @@ async def test_cancel_preview_outbox_and_reconciliation(api: AsyncClient) -> Non
     )
     assert cancelled.status_code == 200
     assert cancelled.json()["status"] == "cancelled"
+    assert (await guest.post("/api/v1/checkout/ops/publish-outbox")).status_code == 403
+    await _grant_admin(user["id"])
     published = await guest.post("/api/v1/checkout/ops/publish-outbox")
     assert published.status_code == 200
     metrics = await guest.get("/api/v1/checkout/ops/metrics")

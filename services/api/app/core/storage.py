@@ -8,12 +8,16 @@ keys are never hardcoded.
 """
 
 import base64
+import binascii
 import hashlib
 import hmac
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from urllib.parse import quote
 from uuid import uuid4
+
+import httpx
 
 from app.core.config import settings
 
@@ -40,8 +44,24 @@ def put_private_bytes(data: bytes, filename: str, content_type: str, *, public: 
     key = f"{datetime.now(timezone.utc).strftime('%Y/%m')}/{uuid4().hex}-{_safe_name(filename)}"
     backend = storage_backend()
     if backend == _IMAGEKIT_BACKEND:
-        # Stub: persist locally and record that ImageKit would be used in production.
-        _write_local(key, data)
+        with httpx.Client(timeout=20) as client:
+            response = client.post(
+                "https://upload.imagekit.io/api/v1/files/upload",
+                auth=(settings.imagekit_api_key, ""),
+                files={"file": (_safe_name(filename), data, content_type)},
+                data={
+                    "fileName": key.rsplit("/", 1)[-1],
+                    "folder": "/mshwar/" + key.rsplit("/", 1)[0],
+                    "isPrivateFile": "true",
+                    "useUniqueFileName": "false",
+                },
+            )
+        if response.status_code != 200:
+            raise ValueError("Private storage unavailable")
+        path = response.json().get("filePath", "")
+        if not isinstance(path, str) or not path.startswith("/mshwar/"):
+            raise ValueError("Invalid private storage response")
+        key = "imagekit:" + path
         provider = _IMAGEKIT_BACKEND
     else:
         _write_local(key, data)
@@ -62,7 +82,21 @@ def _write_local(key: str, data: bytes) -> None:
 
 
 def read_private_bytes(object_key: str) -> bytes:
-    target = storage_root() / object_key
+    if object_key.startswith("imagekit:"):
+        expires = int(datetime.now(timezone.utc).timestamp()) + min(settings.signed_url_ttl_seconds, 300)
+        url = settings.imagekit_url.rstrip("/") + quote(object_key[len("imagekit:") :], safe="/")
+        signature = hmac.new(
+            settings.imagekit_api_key.encode(), (url.removeprefix(settings.imagekit_url.rstrip("/") + "/") + str(expires)).encode(), hashlib.sha1
+        ).hexdigest()
+        with httpx.Client(timeout=20) as client:
+            response = client.get(url, params={"ik-t": expires, "ik-s": signature})
+        if response.status_code != 200:
+            raise FileNotFoundError("File not available")
+        return response.content
+    root = storage_root().resolve()
+    target = (root / object_key).resolve()
+    if root not in target.parents:
+        raise FileNotFoundError("File not available")
     if not target.is_file():
         raise FileNotFoundError(object_key)
     return target.read_bytes()
@@ -70,7 +104,10 @@ def read_private_bytes(object_key: str) -> bytes:
 
 def sign_object_url(object_key: str, *, ttl_seconds: int | None = None) -> dict[str, str]:
     expires = int(
-        (datetime.now(timezone.utc) + timedelta(seconds=ttl_seconds or settings.signed_url_ttl_seconds)).timestamp()
+        (
+            datetime.now(timezone.utc)
+            + timedelta(seconds=max(1, min(ttl_seconds or settings.signed_url_ttl_seconds, 300)))
+        ).timestamp()
     )
     payload = json.dumps({"k": object_key, "e": expires}, separators=(",", ":"))
     digest = hmac.new(settings.secret_key.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256).hexdigest()
@@ -91,10 +128,10 @@ def verify_signed_token(token: str) -> str:
         if not hmac.compare_digest(expected, digest):
             raise ValueError("invalid signature")
         body = json.loads(payload)
-        if int(body["e"]) < int(datetime.now(timezone.utc).timestamp()):
+        if int(body["e"]) <= int(datetime.now(timezone.utc).timestamp()):
             raise ValueError("expired")
         return str(body["k"])
-    except (ValueError, TypeError, json.JSONDecodeError, UnicodeDecodeError) as exc:
+    except (ValueError, TypeError, KeyError, binascii.Error, json.JSONDecodeError, UnicodeDecodeError) as exc:
         raise ValueError("invalid signature") from exc
 
 

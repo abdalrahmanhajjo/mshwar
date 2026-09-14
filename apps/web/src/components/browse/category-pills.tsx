@@ -30,16 +30,16 @@ export function CategoryPills({ active, variant = "chips" }: { active?: string; 
 
   if (variant === "icons") {
     return (
-      <ul className="flex flex-wrap justify-center gap-6 md:gap-10">
+      <ul className="home-categories">
         {CATEGORIES.map((item) => {
           const Icon = ICONS[item.slug];
           return (
             <li key={item.slug}>
-              <LocaleLink href={hrefFor(item.slug)} className="flex flex-col items-center gap-3 text-sm text-text">
-                <span className="grid size-16 place-items-center rounded-full bg-surface-raised shadow-sm">
+              <LocaleLink href={hrefFor(item.slug)} className={cn("home-category", item.slug === "all" && "home-category-active")}>
+                <span className="grid place-items-center">
                   <Icon className="size-6" aria-hidden />
                 </span>
-                {item.slug === "all" ? copy.experiences : item.label}
+                {item.label}
               </LocaleLink>
             </li>
           );

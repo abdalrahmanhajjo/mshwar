@@ -9,7 +9,8 @@ from app.core.context import clear_db_session_context, set_db_session_context
 
 engine = create_async_engine(
     settings.database_url,
-    echo=settings.environment == "development",
+    echo=False,
+    hide_parameters=True,
     pool_size=settings.pool_size,
     max_overflow=settings.max_overflow,
     pool_recycle=settings.pool_recycle,

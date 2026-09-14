@@ -1,3 +1,4 @@
+import { securityFetch } from "@/lib/security";
 import {
   DESTINATIONS,
   EXPERIENCES,
@@ -145,7 +146,7 @@ function ideaFromApi(item: ApiCollection): Idea {
 
 async function readJson<T>(path: string): Promise<T | null> {
   try {
-    const response = await fetch(`${API_ROOT}${path}`, { cache: "no-store" });
+    const response = await securityFetch(`${API_ROOT}${path}`, { cache: "no-store" });
     if (!response.ok) {
       return null;
     }

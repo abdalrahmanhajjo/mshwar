@@ -3,18 +3,15 @@ version: "3.8"
 services:
   web:
     build:
-      context: ./apps/web
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/web/Dockerfile
     ports:
-      - "3000:3000"
+      - "3001:3000"
     env_file:
       - apps/web/.env.local
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
       - NODE_ENV=${NODE_ENV:-development}
-    volumes:
-      - ./apps/web:/app
-      - /app/node_modules
     depends_on:
       - api
 
@@ -37,12 +34,9 @@ services:
       - redis
 
   db:
-    build:
-      context: ./services/api/db
-      dockerfile: Dockerfile
-    image: mshwar-postgres:17
+    image: datosonline/postgis-pgvector:17-3.5
     ports:
-      - "5432:5432"
+      - "55433:5432"
     env_file:
       - services/api/.env.local
     environment:

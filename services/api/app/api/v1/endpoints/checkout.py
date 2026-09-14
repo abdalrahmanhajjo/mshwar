@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.v1.endpoints.auth import require_verified_user
 from app.api.v1.session import require_session
 from app.core.config import settings
+from app.core.permissions import require_object
 from app.core.portal_auth import fetch_json
 from app.dependencies import get_auth_db
 from app.payments.confirmations import render_confirmation
@@ -387,6 +388,7 @@ async def simulate_payment(
     if settings.is_production:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Simulation disabled")
     session = await require_session(request, db)
+    await require_object(db, session["user_id"], "booking", booking_id)
     row = (
         await db.execute(
             text(

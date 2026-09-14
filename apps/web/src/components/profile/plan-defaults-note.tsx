@@ -3,6 +3,7 @@
 import * as React from "react";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { useLocale } from "@/components/shell/locale-provider";
+import { securityFetch } from "@/lib/security";
 import { fetchProfile } from "@/lib/profile";
 
 export function PlanDefaultsNote() {
@@ -11,9 +12,13 @@ export function PlanDefaultsNote() {
 
   React.useEffect(() => {
     let cancelled = false;
-    void fetchProfile()
+    void securityFetch("/api/v1/privacy/consents", { credentials: "include" })
+      .then(async response => {
+        if (!response.ok || !(await response.json()).personalisation) return null;
+        return fetchProfile();
+      })
       .then((profile) => {
-        if (cancelled) {
+        if (cancelled || !profile) {
           return;
         }
         const size = profile.preferences.default_group_size;

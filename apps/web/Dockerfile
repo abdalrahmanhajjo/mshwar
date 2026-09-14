@@ -1,23 +1,21 @@
-FROM node:20-alpine AS base
-
-RUN corepack enable pnpm
-
-FROM base AS deps
+# Build from the monorepo root: docker build -f apps/web/Dockerfile .
+FROM node:22-alpine AS builder
 WORKDIR /app
-COPY package.json pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN npm install -g pnpm@11.15.1
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY apps/web/package.json ./apps/web/package.json
+RUN pnpm install --frozen-lockfile --network-concurrency=4
+COPY apps/web ./apps/web
+COPY mshwar-brand-foundation ./mshwar-brand-foundation
+RUN pnpm --filter web build
 
-FROM base AS builder
+FROM node:22-alpine AS runner
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-RUN pnpm run build
-
-FROM base AS runner
-WORKDIR /app
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./
 ENV NODE_ENV=production
+ENV HOSTNAME=0.0.0.0
+COPY --from=builder --chown=node:node /app/apps/web/.next/standalone ./
+COPY --from=builder --chown=node:node /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder --chown=node:node /app/apps/web/public ./apps/web/public
+USER node
 EXPOSE 3000
-CMD ["pnpm", "start"]
+CMD ["node", "apps/web/server.js"]

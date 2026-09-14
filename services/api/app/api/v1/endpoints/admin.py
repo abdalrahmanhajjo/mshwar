@@ -813,3 +813,45 @@ async def resend_notification(
 ) -> Any:
     session = await _admin(request, db)
     return await notification_service.resend(db, _uid(session), str(notification_id), payload.reason)
+
+
+@router.get("/audit")
+async def search_audit(
+    request: Request,
+    action: str | None = Query(default=None, max_length=80),
+    target: str | None = Query(default=None, max_length=80),
+    actor: UUID | None = None,
+    since: datetime | None = None,
+    until: datetime | None = None,
+    q: str | None = Query(default=None, max_length=120),
+    page: int = Query(default=1, ge=1, le=10000),
+    page_size: int = Query(default=25, ge=1, le=100),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    session = await require_admin(request, db)
+    result = await fetch_json(
+        db,
+        "SELECT app.security_audit_search(:user_id,:action,:target,:actor,:since,:until,:q,:lim,:off)",
+        {
+            "user_id": str(session["user_id"]),
+            "action": action,
+            "target": target,
+            "actor": str(actor) if actor else None,
+            "since": since,
+            "until": until,
+            "q": q,
+            "lim": page_size,
+            "off": (page - 1) * page_size,
+        },
+    )
+    from app.core.log_scrubbing import scrub
+
+    return scrub(result)
+
+
+@router.get("/security-metrics")
+async def security_metrics(request: Request, db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    await require_admin(request, db)
+    from app.core.security_limits import metrics
+
+    return dict(metrics)

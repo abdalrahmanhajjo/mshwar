@@ -1,3 +1,4 @@
+import { securityFetch } from "@/lib/security";
 export const HUB_PAGE_SIZE = 6;
 
 export type HubPage<T> = {
@@ -52,7 +53,7 @@ async function readError(response: Response): Promise<string> {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, { credentials: "include", ...init });
+  const response = await securityFetch(path, { credentials: "include", ...init });
   if (response.status === 204) {
     return undefined as T;
   }

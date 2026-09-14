@@ -78,6 +78,7 @@ def test_dispatch_token_open_in_development() -> None:
     prod = Settings.model_validate(
         {
             "environment": "production",
+            "security_rate_backend": "postgres",
             "database_url": "postgresql+asyncpg://app:secret@db:5432/mshwar",
             "secret_key": "rotated-secret",
             "google_maps_api_key": "maps-key",

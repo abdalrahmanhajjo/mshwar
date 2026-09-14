@@ -9,6 +9,7 @@ _DEFAULT_SECRET = "change-me-in-production"
 def _settings(**overrides: object) -> Settings:
     payload: dict[str, object] = {
         "environment": "production",
+        "security_rate_backend": "postgres",
         "database_url": "postgresql+asyncpg://app:secret@db:5432/mshwar",
         "google_maps_api_key": "maps-key",
     }

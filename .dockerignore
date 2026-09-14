@@ -1,0 +1,11 @@
+.git
+node_modules
+**/node_modules
+**/.next
+**/storybook-static
+.venv
+.pnpm-store
+.env*
+**/.env*
+**/__pycache__
+**/coverage*

@@ -9,9 +9,12 @@ export function middleware(request: NextRequest) {
   const locale = prefixLocale ?? parseLocale(request.cookies.get(LOCALE_COOKIE)?.value);
 
   const requestHeaders = new Headers(request.headers);
+  const correlation = crypto.randomUUID();
+  requestHeaders.set("X-Request-ID", correlation);
   requestHeaders.set(LOCALE_HEADER, locale);
 
   function withLocaleCookie(response: NextResponse) {
+    response.headers.set("X-Request-ID", correlation);
     response.cookies.set(LOCALE_COOKIE, locale, {
       path: "/",
       maxAge: 60 * 60 * 24 * 365,

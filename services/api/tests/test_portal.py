@@ -87,7 +87,7 @@ async def _complete_listing(api: AsyncClient, org_id: str) -> dict[str, Any]:
         json={
             "filename": "hero.jpg",
             "content_type": "image/jpeg",
-            "content_base64": base64.b64encode(b"fake-image").decode("ascii"),
+            "content_base64": base64.b64encode(b"\xff\xd8\xffimage\xff\xd9").decode("ascii"),
             "purpose": "listing",
             "experience_id": body["id"],
             "alt_text": "Cedar table",
@@ -121,7 +121,7 @@ async def test_onboarding_publish_block_and_admin_verify(api: AsyncClient) -> No
         json={
             "filename": "cr.pdf",
             "content_type": "application/pdf",
-            "content_base64": base64.b64encode(b"%PDF-1.4 stub").decode("ascii"),
+            "content_base64": base64.b64encode(b"%PDF-1.4 stub\n%%EOF").decode("ascii"),
             "purpose": "verification",
         },
     )
@@ -181,7 +181,7 @@ async def test_staff_rbac_invite_expire_and_cross_org(api: AsyncClient) -> None:
     assert accepted.json()["role"] == "bookings"
 
     listings = await staff.get(f"/api/v1/portal/organizations/{org_a['id']}/experiences")
-    assert listings.status_code == 403
+    assert listings.status_code == 404
 
     bookings = await staff.get(f"/api/v1/portal/organizations/{org_a['id']}/bookings")
     assert bookings.status_code == 200
@@ -190,9 +190,9 @@ async def test_staff_rbac_invite_expire_and_cross_org(api: AsyncClient) -> None:
     await _register(owner_b, "owner-b@example.com", "Owner B")
     org_b = (await owner_b.post("/api/v1/portal/organizations", json={"name": "Org B"})).json()
     leaked = await staff.get(f"/api/v1/portal/organizations/{org_b['id']}")
-    assert leaked.status_code == 403
+    assert leaked.status_code == 404
     leaked_list = await staff.get(f"/api/v1/portal/organizations/{org_b['id']}/bookings")
-    assert leaked_list.status_code == 403
+    assert leaked_list.status_code == 404
 
     finance_invite = await api.post(
         f"/api/v1/portal/organizations/{org_a['id']}/staff/invitations",

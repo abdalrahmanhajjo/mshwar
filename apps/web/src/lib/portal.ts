@@ -1,3 +1,4 @@
+import { securityFetch } from "@/lib/security";
 export const ORG_STORAGE_KEY = "mshwar-active-org";
 export const ORG_HEADER = "x-organization-id";
 
@@ -158,7 +159,7 @@ async function portalFetch<T>(path: string, init: RequestInit = {}, orgId?: stri
   if (org) {
     headers.set(ORG_HEADER, org);
   }
-  const response = await fetch(path, { ...init, credentials: "include", headers });
+  const response = await securityFetch(path, { ...init, credentials: "include", headers });
   if (!response.ok) {
     throw new Error(await readError(response));
   }

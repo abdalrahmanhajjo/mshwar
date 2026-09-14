@@ -1,4 +1,5 @@
 "use client";
+import { securityFetch } from "@/lib/security";
 
 import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +20,7 @@ export function AdminUsersTable() {
 
   React.useEffect(() => {
     let cancelled = false;
-    void fetch("/api/v1/admin/users", { credentials: "include" })
+    void securityFetch("/api/v1/admin/users", { credentials: "include" })
       .then(async (response) => {
         if (!response.ok) {
           return [];

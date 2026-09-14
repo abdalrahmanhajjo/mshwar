@@ -1,3 +1,4 @@
+import { CookieChoices } from "@/components/privacy/consent-controls";
 import type { Metadata } from "next";
 import { cookies, headers } from "next/headers";
 import { Manrope, Noto_Sans_Arabic } from "next/font/google";
@@ -36,6 +37,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <AuthProvider>
             <SignedInLocaleSync />
             {children}
+            <CookieChoices />
           </AuthProvider>
         </LocaleProvider>
       </body>

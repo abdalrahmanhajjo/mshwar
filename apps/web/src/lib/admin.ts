@@ -1,3 +1,4 @@
+import { securityFetch } from "@/lib/security";
 export type AdminTier = "ops" | "elevated";
 
 export type AdminMe = {
@@ -45,7 +46,7 @@ async function adminFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (!headers.has("Content-Type") && init.body) {
     headers.set("Content-Type", "application/json");
   }
-  const response = await fetch(path, { ...init, credentials: "include", headers });
+  const response = await securityFetch(path, { ...init, credentials: "include", headers });
   if (!response.ok) {
     throw new Error(await readError(response));
   }

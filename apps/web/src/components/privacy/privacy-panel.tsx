@@ -1,4 +1,5 @@
 "use client";
+import { ConsentControls } from "@/components/privacy/consent-controls";
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
@@ -42,6 +43,8 @@ export function PrivacyPanel() {
         </h2>
         <p className="mt-3 text-text-muted">{copy.privacyBody}</p>
       </header>
+
+      <ConsentControls />
 
       <Card>
         <CardHeader>

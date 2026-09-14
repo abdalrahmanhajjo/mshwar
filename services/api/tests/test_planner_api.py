@@ -695,7 +695,7 @@ async def test_planner_error_paths_and_unauthenticated(api: AsyncClient) -> None
     health = await api.get("/api/v1/planner/admin/health")
     assert health.status_code == 403
     forbidden_versions = await api.get(f"/api/v1/planner/admin/trips/{created.json()['plan']['trip_id']}/versions")
-    assert forbidden_versions.status_code == 403
+    assert forbidden_versions.status_code == 404
 
 
 @pytest.mark.asyncio

@@ -7,6 +7,7 @@ behind the same ``allow`` contract when the fleet is multi-instance.
 
 from __future__ import annotations
 
+import math
 import time
 from collections import defaultdict
 
@@ -25,6 +26,10 @@ class MemoryRateLimiter:
         recent.append(current)
         self._hits[key] = recent
         return True
+
+    def retry_after(self, key: str, window_seconds: int) -> int:
+        hits = self._hits.get(key, [])
+        return max(1, math.ceil(hits[0] + window_seconds - time.monotonic())) if hits else window_seconds
 
     def reset(self) -> None:
         self._hits.clear()

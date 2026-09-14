@@ -86,7 +86,7 @@ export function AppShell({ surface, children, auth, currentPath }: AppShellProps
       ) : (
         <>
           <header className="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur">
-            <div className="shell-frame flex min-h-[3.5rem] items-center justify-between gap-3 py-2">
+            <div className="traveller-header shell-frame flex min-h-[5.8rem] items-center justify-between gap-3 py-2">
               <div className="flex min-w-0 items-center gap-2">
                 <MobileNav items={items} pathname={activePath} auth={auth} />
                 <BrandMark href={homeHref} compact />

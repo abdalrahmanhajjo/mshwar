@@ -274,7 +274,7 @@ async def open_collection_as_trip(
     stored = row[3] if isinstance(row[3], dict) else {}
     profile_row = (
         await db.execute(
-            text("SELECT preferences FROM app.get_profile(:user_id)"),
+            text("SELECT app.security_plan_preferences(:user_id)"),
             {"user_id": str(session["user_id"])},
         )
     ).first()

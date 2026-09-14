@@ -1,3 +1,4 @@
+import { securityFetch } from "@/lib/security";
 export const LOW_SAMPLE_THRESHOLD = 3;
 
 export type ReviewAggregate = {
@@ -33,7 +34,7 @@ async function readError(response: Response): Promise<string> {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, { credentials: "include", ...init });
+  const response = await securityFetch(path, { credentials: "include", ...init });
   if (!response.ok) {
     throw new Error(await readError(response));
   }

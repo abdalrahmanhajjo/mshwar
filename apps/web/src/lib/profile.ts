@@ -1,3 +1,4 @@
+import { securityFetch } from "@/lib/security";
 export type PreferenceTerm = {
   kind: string;
   slug: string;
@@ -83,7 +84,7 @@ async function readError(response: Response): Promise<string> {
 }
 
 export async function fetchProfile(): Promise<Profile> {
-  const response = await fetch("/api/v1/profile", { credentials: "include" });
+  const response = await securityFetch("/api/v1/profile", { credentials: "include" });
   if (!response.ok) {
     throw new Error(await readError(response));
   }
@@ -95,7 +96,7 @@ export async function saveProfile(input: {
   locale: string;
   preferences: PreferenceValues;
 }): Promise<Profile> {
-  const response = await fetch("/api/v1/profile", {
+  const response = await securityFetch("/api/v1/profile", {
     method: "PUT",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -108,7 +109,7 @@ export async function saveProfile(input: {
 }
 
 export async function fetchAreas(): Promise<AreaCatalog> {
-  const response = await fetch("/api/v1/locations/areas", { credentials: "include" });
+  const response = await securityFetch("/api/v1/locations/areas", { credentials: "include" });
   if (!response.ok) {
     throw new Error(await readError(response));
   }
@@ -129,7 +130,7 @@ export async function persistSignedInLocale(locale: string): Promise<void> {
 }
 
 export async function fetchVocabularies(): Promise<VocabularyCatalog> {
-  const response = await fetch("/api/v1/profile/vocabularies", { credentials: "include" });
+  const response = await securityFetch("/api/v1/profile/vocabularies", { credentials: "include" });
   if (!response.ok) {
     throw new Error(await readError(response));
   }

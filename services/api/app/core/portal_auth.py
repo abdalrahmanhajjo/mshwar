@@ -50,17 +50,17 @@ def resolve_org_id(request: Request, explicit: str | None = None) -> str | None:
 def raise_from_db(exc: object) -> None:
     orig = getattr(exc, "orig", None)
     sqlstate = getattr(orig, "sqlstate", None) or getattr(orig, "pgcode", None)
-    diag = getattr(orig, "diag", None)
-    primary = getattr(diag, "message_primary", None)
-    message = str(primary or orig or exc)
     cause = exc if isinstance(exc, BaseException) else None
     if sqlstate == "42501":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=message) from cause
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied") from cause
     if sqlstate == "P0002":
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=message) from cause
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found") from cause
     if sqlstate in {"23505", "23P01"}:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=message) from cause
-    raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=message) from cause
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Conflict") from cause
+    detail = "Invalid request"
+    if sqlstate == "22023" and "org_unverified" in str(orig):
+        detail = "Listing cannot be published: org_unverified"
+    raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail) from cause
 
 
 async def fetch_json(db: AsyncSession, sql: str, params: dict[str, Any]) -> Any:

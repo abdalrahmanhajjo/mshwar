@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from app.api.v1.endpoints import (
     admin,
@@ -20,8 +20,9 @@ from app.api.v1.endpoints import (
     trips,
     webhooks,
 )
+from app.core.permissions import enforce_endpoint
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(enforce_endpoint)])
 
 router.include_router(health.router, prefix="/health", tags=["health"])
 router.include_router(auth.router, prefix="/auth", tags=["auth"])

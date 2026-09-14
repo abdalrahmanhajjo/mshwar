@@ -129,6 +129,7 @@ async def test_unknown_vocabulary_is_rejected(api: AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_trip_overrides_are_defaults_not_constraints(api: AsyncClient) -> None:
     await _register(api, _email())
+    await api.put("/api/v1/privacy/consents", json={"personalisation": True})
     await api.put(
         "/api/v1/profile",
         json={

@@ -1,5 +1,6 @@
+import { securityFetch } from "@/lib/security";
 export async function downloadDataExport(): Promise<void> {
-  const response = await fetch("/api/v1/privacy/export", { credentials: "include" });
+  const response = await securityFetch("/api/v1/privacy/export", { credentials: "include" });
   if (!response.ok) {
     throw new Error("export");
   }
@@ -13,7 +14,7 @@ export async function downloadDataExport(): Promise<void> {
 }
 
 export async function resetPersonalisation(): Promise<void> {
-  const response = await fetch("/api/v1/privacy/reset-personalisation", {
+  const response = await securityFetch("/api/v1/privacy/reset-personalisation", {
     method: "POST",
     credentials: "include",
   });
@@ -23,7 +24,7 @@ export async function resetPersonalisation(): Promise<void> {
 }
 
 export async function deleteAccount(confirmation: string): Promise<void> {
-  const response = await fetch("/api/v1/privacy/delete-account", {
+  const response = await securityFetch("/api/v1/privacy/delete-account", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },

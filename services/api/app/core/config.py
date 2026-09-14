@@ -16,9 +16,9 @@ class Settings(BaseSettings):
 
     project_name: str = "Mshwar API"
     version: str = "0.1.0"
-    environment: str = "development"
+    environment: str = Field(default="development", validation_alias=AliasChoices("ENVIRONMENT", "environment"))
     api_v1_prefix: str = "/api/v1"
-    allowed_origins: list[str] = ["http://localhost:3000", "http://localhost:3001"]
+    allowed_origins: list[str] = Field(default=["http://localhost:3000", "http://localhost:3001"], validation_alias=AliasChoices("ALLOWED_ORIGINS", "allowed_origins"))
 
     # Database
     database_url: str = Field(
@@ -28,7 +28,9 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
 
     # Auth
-    secret_key: str = "change-me-in-production"
+    secret_key: str = Field(
+        default="change-me-in-production", validation_alias=AliasChoices("SECRET_KEY", "secret_key")
+    )
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24 * 8
     session_cookie_name: str = "mshwar_session"
@@ -114,10 +116,14 @@ class Settings(BaseSettings):
         default=24,
         validation_alias=AliasChoices("IDEMPOTENCY_TTL_HOURS", "idempotency_ttl_hours"),
     )
-    imagekit_api_key: str = ""
-    imagekit_url: str = ""
-    private_storage_dir: str = "/tmp/mshwar-private"
-    signed_url_ttl_seconds: int = 15 * 60
+    imagekit_api_key: str = Field(default="", validation_alias=AliasChoices("IMAGEKIT_API_KEY", "imagekit_api_key"))
+    imagekit_url: str = Field(default="", validation_alias=AliasChoices("IMAGEKIT_URL", "imagekit_url"))
+    private_storage_dir: str = Field(
+        default="/tmp/mshwar-private", validation_alias=AliasChoices("PRIVATE_STORAGE_DIR", "private_storage_dir")
+    )
+    signed_url_ttl_seconds: int = Field(
+        default=300, ge=1, le=300, validation_alias=AliasChoices("SIGNED_URL_TTL_SECONDS", "signed_url_ttl_seconds")
+    )
     staff_invite_ttl_seconds: int = 7 * 24 * 60 * 60
     search_reindex_provider: str = Field(
         default="stub",
@@ -153,8 +159,28 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("NOTIFICATION_WORKER_BATCH_SIZE", "notification_worker_batch_size"),
     )
 
+    # Epic 13 quotas: memory is for a single development worker only.
+    security_rate_backend: str = Field(
+        default="memory", validation_alias=AliasChoices("SECURITY_RATE_BACKEND", "security_rate_backend")
+    )
+    ai_daily_budget_micros: int = Field(
+        default=5000000, gt=0, validation_alias=AliasChoices("AI_DAILY_BUDGET_MICROS", "ai_daily_budget_micros")
+    )
+    ai_request_budget_micros: int = Field(
+        default=100000, gt=0, validation_alias=AliasChoices("AI_REQUEST_BUDGET_MICROS", "ai_request_budget_micros")
+    )
+    upload_max_bytes: int = Field(
+        default=5242880, gt=0, validation_alias=AliasChoices("UPLOAD_MAX_BYTES", "upload_max_bytes")
+    )
+    upload_org_daily_bytes: int = Field(
+        default=104857600, gt=0, validation_alias=AliasChoices("UPLOAD_ORG_DAILY_BYTES", "upload_org_daily_bytes")
+    )
+    upload_org_hourly_count: int = Field(
+        default=30, gt=0, validation_alias=AliasChoices("UPLOAD_ORG_HOURLY_COUNT", "upload_org_hourly_count")
+    )
+
     # Monitoring
-    sentry_dsn: str = ""
+    sentry_dsn: str = Field(default="", validation_alias=AliasChoices("SENTRY_DSN", "sentry_dsn"))
     sentry_environment: str = "development"
     posthog_api_key: str = ""
 
@@ -179,6 +205,8 @@ class Settings(BaseSettings):
 
     def _validate_credentials(self) -> None:
         if self.is_production:
+            if self.security_rate_backend != "postgres":
+                raise ValueError("Production SECURITY_RATE_BACKEND must be postgres")
             if self.database_url.startswith("postgresql+asyncpg://postgres:postgres"):
                 raise ValueError("Production DATABASE_URL must not use default credentials")
             if self.secret_key == "change-me-in-production":

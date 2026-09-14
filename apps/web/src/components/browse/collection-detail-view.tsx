@@ -1,4 +1,5 @@
 "use client";
+import { securityFetch } from "@/lib/security";
 
 import { useRouter } from "next/navigation";
 import { ExperienceCard } from "@/components/browse/experience-card";
@@ -21,7 +22,7 @@ export function CollectionDetailView({ collection, stops }: { collection: Idea; 
       router.push(withLocalePrefix(locale, `/signin?next=/collections/${collection.slug}`));
       return;
     }
-    const response = await fetch(`/api/v1/catalogue/collections/${collection.slug}/open-as-trip`, {
+    const response = await securityFetch(`/api/v1/catalogue/collections/${collection.slug}/open-as-trip`, {
       method: "POST",
       credentials: "include",
     });
