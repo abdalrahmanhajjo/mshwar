@@ -220,7 +220,7 @@ test.describe("MSHWAR-31 settings routes", () => {
 
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/settings");
-    await expect(page.getByRole("heading", { name: "Preferences" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Preferences", exact: true })).toBeVisible();
     await assertNoHorizontalScroll(page);
   });
 });
