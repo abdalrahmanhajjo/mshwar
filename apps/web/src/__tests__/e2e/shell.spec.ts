@@ -253,8 +253,8 @@ async function mockSettingsApis(page: Page) {
       contentType: "application/json",
       body: JSON.stringify({
         source: "catalog",
-        picker: "stub",
-        replace_with: "map location picker",
+        picker: "map",
+        replace_with: "none",
         areas: [{ id: "area-1", slug: "beirut", name: "Beirut", country_code: "LB" }],
       }),
     });
@@ -277,6 +277,7 @@ async function mockSettingsApis(page: Page) {
           dietary: [],
           accessibility: [],
           interests: [],
+          start_location: null,
         },
         home_area: null,
       }),

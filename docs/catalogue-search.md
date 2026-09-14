@@ -15,7 +15,9 @@ Natural-language queries are tokenized: stopwords (`in`, `the`, Arabic/French eq
 
 ## Routing / travel time
 
-Related cards show PostGIS distance plus `app.catalogue.routing.estimate_travel`. Set `CATALOGUE_ROUTING_PROVIDER` when a real router is wired. CI uses the stub.
+Related cards still show PostGIS distance plus `app.catalogue.routing.estimate_travel` for nearby ranking.
+
+Planner travel time uses `app.planner.routing.RoutingService` (Google Distance Matrix when a server Maps credential exists, otherwise a labelled Haversine stub). Cache key = origin, destination, mode, time bucket. Provider failure marks metrics unavailable; it does not invent minutes. See `docs/maps-routing-weather.md`.
 
 ## Maps
 

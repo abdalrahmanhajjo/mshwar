@@ -59,7 +59,18 @@ class Settings(BaseSettings):
     # External services
     google_maps_api_key: str = ""
     catalogue_embedding_provider: str = "stub"
-    catalogue_routing_provider: str = "stub"
+    catalogue_routing_provider: str = "auto"
+    routing_time_bucket_minutes: int = 15
+    routing_cache_ttl_seconds: int = 6 * 60 * 60
+    routing_plan_budget_usd: float = 0.5
+    weather_provider: str = "stub"
+    weather_cache_ttl_seconds: int = 60 * 60
+    weather_precip_mm_threshold: float = 5.0
+    weather_precip_mm_sensitive_threshold: float = 2.0
+    weather_wind_kmh_threshold: float = 45.0
+    weather_wind_kmh_sensitive_threshold: float = 30.0
+    weather_temp_max_c_threshold: float = 38.0
+    weather_temp_min_c_threshold: float = 4.0
     open_meteo_api_key: str = ""
     stripe_secret_key: str = ""
     stripe_webhook_secret: str = ""
