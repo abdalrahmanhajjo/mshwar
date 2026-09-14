@@ -20,6 +20,7 @@ import {
   type Experience,
 } from "@/lib/catalog";
 import { CATEGORIES } from "@/lib/catalog";
+import { ReviewsPanel } from "@/components/reviews/reviews-panel";
 import { Rating } from "@/components/ui/rating";
 
 export function ExperienceDetailView({ experience, related }: { experience: Experience; related: Experience[] }) {
@@ -144,10 +145,7 @@ export function ExperienceDetailView({ experience, related }: { experience: Expe
               ))}
             </ul>
           </section>
-          <section>
-            <h3 className="font-semibold">{copy.keepExploring.replace(".", "")}</h3>
-            <p className="mt-2 text-sm text-text-muted">{copy.noReviews}</p>
-          </section>
+          <ReviewsPanel listingSlug={experience.slug} />
           <p className="text-sm text-text-muted">{copy.sampleOffer}</p>
         </div>
         <BookingWidget experience={experience} />

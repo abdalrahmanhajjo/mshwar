@@ -17,6 +17,7 @@ export function ModerationQueue() {
   const [listings, setListings] = React.useState<Row[]>([]);
   const [images, setImages] = React.useState<Row[]>([]);
   const [reviews, setReviews] = React.useState<Row[]>([]);
+  const [responses, setResponses] = React.useState<Row[]>([]);
   const [confirm, setConfirm] = React.useState(false);
 
   const reload = React.useCallback(async () => {
@@ -25,10 +26,12 @@ export function ModerationQueue() {
       setListings((payload.listings as Row[]) ?? []);
       setImages((payload.images as Row[]) ?? []);
       setReviews((payload.reviews as Row[]) ?? []);
+      setResponses((payload.responses as Row[]) ?? []);
     } catch {
       setListings([]);
       setImages([]);
       setReviews([]);
+      setResponses([]);
     }
   }, [type]);
 
@@ -40,6 +43,7 @@ export function ModerationQueue() {
           setListings((payload.listings as Row[]) ?? []);
           setImages((payload.images as Row[]) ?? []);
           setReviews((payload.reviews as Row[]) ?? []);
+          setResponses((payload.responses as Row[]) ?? []);
         }
       })
       .catch(() => {
@@ -47,6 +51,7 @@ export function ModerationQueue() {
           setListings([]);
           setImages([]);
           setReviews([]);
+          setResponses([]);
         }
       });
     return () => {
@@ -61,7 +66,7 @@ export function ModerationQueue() {
         ? reviews
         : type === "listing"
           ? listings
-          : [...listings, ...images, ...reviews];
+          : [...listings, ...images, ...reviews, ...responses];
 
   async function act(id: string, entityType: string, action: string) {
     await moderateContent(entityType, id, action, reason);
