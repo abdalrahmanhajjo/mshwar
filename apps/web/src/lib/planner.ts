@@ -436,6 +436,19 @@ export function fetchInjectionEvents() {
   );
 }
 
+export function fetchAdminTripVersions(tripId: string) {
+  return request<
+    {
+      version_id: string;
+      version: number;
+      origin: string;
+      sealed_at: string | null;
+      created_at: string;
+      constraints?: Record<string, unknown>;
+    }[]
+  >(`/api/v1/planner/admin/trips/${tripId}/versions`);
+}
+
 export function formatMinor(amount: number, currency = "USD") {
   return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount / 100);
 }

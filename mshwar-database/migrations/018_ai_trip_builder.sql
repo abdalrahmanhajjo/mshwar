@@ -183,9 +183,7 @@ SECURITY DEFINER
 SET search_path = app, public
 AS $$
 BEGIN
-    IF NOT app.is_platform_admin(p_admin) THEN
-        RAISE EXCEPTION 'admin required' USING ERRCODE = '42501';
-    END IF;
+    PERFORM app.require_admin(p_admin, false);
     IF jsonb_typeof(p_weights) IS DISTINCT FROM 'object' THEN
         RAISE EXCEPTION 'invalid weights' USING ERRCODE = '22023';
     END IF;
@@ -788,9 +786,7 @@ SECURITY DEFINER
 SET search_path = app, public
 AS $$
 BEGIN
-    IF NOT app.is_platform_admin(p_admin) THEN
-        RAISE EXCEPTION 'admin required' USING ERRCODE = '42501';
-    END IF;
+    PERFORM app.require_admin(p_admin, false);
     RETURN coalesce((
         SELECT jsonb_agg(jsonb_build_object(
             'id', e.id,
@@ -818,9 +814,7 @@ SECURITY DEFINER
 SET search_path = app, public
 AS $$
 BEGIN
-    IF NOT app.is_platform_admin(p_admin) THEN
-        RAISE EXCEPTION 'admin required' USING ERRCODE = '42501';
-    END IF;
+    PERFORM app.require_admin(p_admin, false);
     RETURN jsonb_build_object(
         'injection_events_24h', (
             SELECT count(*) FROM app.ai_safety_events

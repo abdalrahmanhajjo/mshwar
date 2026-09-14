@@ -1,10 +1,15 @@
 "use client";
 
 import * as React from "react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { fetchInjectionEvents, fetchPlannerHealth } from "@/lib/planner";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAdminCopy } from "@/lib/admin-copy";
+import { fetchAdminTripVersions, fetchInjectionEvents, fetchPlannerHealth } from "@/lib/planner";
 
 export function AdminPlannerHealth() {
+  const copy = useAdminCopy();
   const [health, setHealth] = React.useState<{
     injection_events_24h: number;
     planned_sessions_24h: number;
@@ -13,6 +18,10 @@ export function AdminPlannerHealth() {
   } | null>(null);
   const [events, setEvents] = React.useState<
     { id: string; kind: string; pattern: string; excerpt: string; created_at: string }[]
+  >([]);
+  const [tripId, setTripId] = React.useState("");
+  const [versions, setVersions] = React.useState<
+    { version_id: string; version: number; origin: string; sealed_at: string | null }[]
   >([]);
 
   React.useEffect(() => {
@@ -28,10 +37,8 @@ export function AdminPlannerHealth() {
     <div className="grid gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>Planner health</CardTitle>
-          <CardDescription>
-            Circuit-breaker and injection signals for support. Ranker weights are versioned.
-          </CardDescription>
+          <CardTitle>{copy.plannerHealthTitle}</CardTitle>
+          <CardDescription>{copy.plannerHealthHint}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2 text-sm">
           <p>Active ranker: {health?.active_ranker ?? "ranker-v1"}</p>
@@ -42,14 +49,49 @@ export function AdminPlannerHealth() {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Injection attempts</CardTitle>
-          <CardDescription>
-            User and business text is treated as data. The model cannot book, pay or change a price.
-          </CardDescription>
+          <CardTitle>{copy.plannerVersions}</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3">
+          <div className="grid gap-2">
+            <Label htmlFor="admin-trip-id">Trip ID</Label>
+            <Input
+              id="admin-trip-id"
+              value={tripId}
+              onChange={(event) => setTripId(event.target.value)}
+              placeholder="uuid"
+            />
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              if (!tripId.trim()) {
+                return;
+              }
+              void fetchAdminTripVersions(tripId.trim())
+                .then(setVersions)
+                .catch(() => setVersions([]));
+            }}
+          >
+            {copy.lookupVersions}
+          </Button>
+          <ul className="grid gap-2 text-sm">
+            {versions.map((item) => (
+              <li key={item.version_id}>
+                v{item.version} · {item.origin} {item.sealed_at ? "· sealed" : ""}
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>{copy.plannerInjections}</CardTitle>
+          <CardDescription>{copy.plannerInjectionsHint}</CardDescription>
         </CardHeader>
         <CardContent>
           {events.length === 0 ? (
-            <p className="text-sm text-text-muted">No injection attempts logged.</p>
+            <p className="text-sm text-text-muted">{copy.noInjections}</p>
           ) : (
             <ul className="grid gap-2 text-sm">
               {events.map((event) => (

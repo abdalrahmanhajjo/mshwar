@@ -48,9 +48,12 @@ async def _register(api: AsyncClient, prefix: str = "plan") -> dict[str, object]
     return response.json()
 
 
-async def _grant_admin(user_id: str) -> None:
+async def _grant_admin(user_id: str, tier: str = "ops") -> None:
     async with TestingSessionLocal() as session:
-        await session.execute(text("SELECT app.grant_platform_admin(:user_id)"), {"user_id": user_id})
+        await session.execute(
+            text("SELECT app.grant_platform_admin(:user_id, NULL, :tier)"),
+            {"user_id": user_id, "tier": tier},
+        )
         await session.commit()
 
 
@@ -616,6 +619,13 @@ async def test_session_version_ranker_and_replace_cancel(api: AsyncClient) -> No
     version = await api.get(f"/api/v1/planner/versions/{version_id}")
     assert version.status_code == 200
     assert version.json()["total_minor"] == created.json()["plan"]["total_minor"]
+    admin_versions = await api.get(f"/api/v1/planner/admin/trips/{created.json()['plan']['trip_id']}/versions")
+    assert admin_versions.status_code == 200
+    assert admin_versions.json()
+    snapshot = await api.get(f"/api/v1/planner/admin/versions/{version_id}")
+    assert snapshot.status_code == 200
+    assert snapshot.json()["version_id"] == version_id
+    assert snapshot.json()["constraints"]
     weights = await api.put(
         "/api/v1/planner/admin/ranker",
         json={"version": "ranker-v1", "weights": {"preference": 0.4, "vector": 0.2}, "notes": "test"},
@@ -679,7 +689,9 @@ async def test_planner_error_paths_and_unauthenticated(api: AsyncClient) -> None
     cancelled = await api.post(f"/api/v1/planner/sessions/{session_id}/replace/cancel")
     assert cancelled.status_code == 200
     health = await api.get("/api/v1/planner/admin/health")
-    assert health.status_code in {401, 403, 404, 422, 500}
+    assert health.status_code == 403
+    forbidden_versions = await api.get(f"/api/v1/planner/admin/trips/{created.json()['plan']['trip_id']}/versions")
+    assert forbidden_versions.status_code == 403
 
 
 @pytest.mark.asyncio
