@@ -90,7 +90,8 @@ export type MessageKey =
   | "menu"
   | "travellerSurface"
   | "businessSurface"
-  | "adminSurface";
+  | "adminSurface"
+  | "plannerHealth";
 
 export const messages: Record<Locale, Record<MessageKey, string>> = {
   en: {
@@ -184,6 +185,7 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     travellerSurface: "Traveller",
     businessSurface: "Business",
     adminSurface: "Admin",
+    plannerHealth: "Planner health",
   },
   ar: {
     skipToContent: "تخطّ إلى المحتوى",
@@ -276,6 +278,7 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     travellerSurface: "المسافر",
     businessSurface: "الأعمال",
     adminSurface: "الإدارة",
+    plannerHealth: "صحة المخطِّط",
   },
   fr: {
     skipToContent: "Aller au contenu",
@@ -369,5 +372,6 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     travellerSurface: "Voyageur",
     businessSurface: "Professionnel",
     adminSurface: "Admin",
+    plannerHealth: "Santé du planificateur",
   },
 };

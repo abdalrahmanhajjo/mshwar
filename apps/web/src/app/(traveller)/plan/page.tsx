@@ -1,6 +1,7 @@
 import { ShellMain } from "@/components/shell/app-shell";
 import { PlanWorkspace } from "@/components/plan/plan-workspace";
 import { PlanDefaultsNote } from "@/components/profile/plan-defaults-note";
+import { PlannerView } from "@/components/planner/planner-view";
 import { loadCollection } from "@/lib/catalogue-api";
 
 export default async function PlanPage({
@@ -21,7 +22,7 @@ export default async function PlanPage({
           inventory only.
         </p>
       ) : null}
-      {tripId ? <p className="text-sm text-text-muted">Trip {tripId}</p> : null}
+      <PlannerView initialTripId={tripId || undefined} />
       <PlanDefaultsNote />
       <PlanWorkspace />
     </ShellMain>
