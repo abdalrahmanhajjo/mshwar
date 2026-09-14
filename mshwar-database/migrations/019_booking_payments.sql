@@ -4,10 +4,10 @@ SET search_path = app, public;
 -- Migration 019: Availability, Booking & Payments (Epic 9)
 -- MSHWAR-81–92.
 --
--- Numbering while these PRs are open:
+-- Numbering after Epic 7 and Epic 8 landed on main:
 --   016 admin is on main
 --   017 maps/routing/weather is on main (PR #7)
---   018 reserved for Epic 8 AI trip builder (PR #8)
+--   018 AI trip builder is on main (PR #8)
 --   019 this file — booking & payments
 -- Checksum apply is filename-ordered and forward-only. Rebase
 -- may renumber if another migration lands first.
