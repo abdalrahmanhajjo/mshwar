@@ -65,6 +65,9 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str = ""
     imagekit_api_key: str = ""
     imagekit_url: str = ""
+    private_storage_dir: str = "/tmp/mshwar-private"
+    signed_url_ttl_seconds: int = 15 * 60
+    staff_invite_ttl_seconds: int = 7 * 24 * 60 * 60
 
     # Monitoring
     sentry_dsn: str = ""

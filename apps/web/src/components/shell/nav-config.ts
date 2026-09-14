@@ -39,6 +39,7 @@ export const BUSINESS_NAV: ShellNavItem[] = [
   { href: "/business/bookings", labelKey: "bookings", icon: Ticket },
   { href: "/business/finance", labelKey: "finance", icon: Wallet },
   { href: "/business/team", labelKey: "team", icon: Users },
+  { href: "/business/settings", labelKey: "settings", icon: Settings },
 ];
 
 export const ADMIN_NAV: ShellNavItem[] = [

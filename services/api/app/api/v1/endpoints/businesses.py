@@ -1,51 +1,70 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Any
 
-from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.dependencies import get_db
+from app.core.portal_auth import fetch_json
+from app.dependencies import get_auth_db
 
 router = APIRouter()
 
-
-class Business(BaseModel):
-    id: int
-    name: str
-    category: str
-    location: str
-    verified: bool = False
-    status: str = "active"
+_INTERNAL_KEYS = frozenset({"internal_contact", "fulfilment_instructions"})
 
 
-class BusinessCreate(BaseModel):
-    name: str
-    category: str
-    location: str
+def public_organization_view(payload: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Strip internal fulfilment fields from any public organisation payload."""
+    if payload is None:
+        return None
+    cleaned = {key: value for key, value in payload.items() if key not in _INTERNAL_KEYS}
+    organization = cleaned.get("organization")
+    if isinstance(organization, dict):
+        cleaned["organization"] = {key: value for key, value in organization.items() if key not in _INTERNAL_KEYS}
+    return cleaned
 
 
-class BusinessUpdate(BaseModel):
-    name: Optional[str] = None  # noqa: UP045
-    category: Optional[str] = None  # noqa: UP045
-    status: Optional[str] = None  # noqa: UP045
-
-
-@router.get("", response_model=list[Business])
+@router.get("")
 async def list_businesses(
-    q: Optional[str] = Query(None),  # noqa: UP045
-    category: Optional[str] = Query(None),  # noqa: UP045
-    db: AsyncSession = Depends(get_db),  # noqa: B008
-) -> list[Business]:
-    return []
+    q: str | None = Query(default=None),
+    category: str | None = Query(default=None),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> list[dict[str, Any]]:
+    rows = await fetch_json(db, "SELECT app.list_public_organizations()", {})
+    items = [public_organization_view(row) or {} for row in (rows or [])]
+    if q:
+        needle = q.lower()
+        items = [item for item in items if needle in str(item.get("name", "")).lower()]
+    if category:
+        items = [
+            item
+            for item in items
+            if any(
+                str(exp.get("title", "")).lower().find(category.lower()) >= 0 for exp in item.get("experiences") or []
+            )
+        ]
+    return items
 
 
-@router.post("", response_model=Business)
-async def create_business(business: BusinessCreate, db: AsyncSession = Depends(get_db)) -> Business:  # noqa: B008
-    return Business(id=1, **business.model_dump())
+@router.get("/experiences/{slug}")
+async def get_public_experience(
+    slug: str,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    row = await fetch_json(db, "SELECT app.public_experience(:slug)", {"slug": slug})
+    public = public_organization_view(row)
+    if public is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Experience not found")
+    return public
 
 
-@router.get("/{business_id}", response_model=Business)
-async def get_business(business_id: int, db: AsyncSession = Depends(get_db)) -> Business:  # noqa: B008
-    return Business(id=business_id, name="Sample", category="Sample", location="Lebanon")
+@router.get("/{slug}")
+async def get_business(
+    slug: str,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    row = await fetch_json(db, "SELECT app.public_organization(:slug)", {"slug": slug})
+    public = public_organization_view(row)
+    if public is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Business not found")
+    return public
