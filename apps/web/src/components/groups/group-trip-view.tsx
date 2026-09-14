@@ -86,7 +86,8 @@ export function GroupTripView({ tripId }: { tripId: string }) {
         <h1 className="text-4xl font-semibold tracking-tight">{trip?.title ?? copy.title}</h1>
         {trip?.status === "locked" ? (
           <p className="mt-2 text-sm text-text-muted">
-            {copy.lockedBy} {trip.locked_by_name} {trip.locked_at ? `· ${new Date(trip.locked_at).toLocaleString()}` : ""}
+            {copy.lockedBy} {trip.locked_by_name}{" "}
+            {trip.locked_at ? `· ${new Date(trip.locked_at).toLocaleString()}` : ""}
           </p>
         ) : null}
       </header>
@@ -141,7 +142,12 @@ export function GroupTripView({ tripId }: { tripId: string }) {
                     {link.role} {link.allow_guest ? "· guest" : ""} {link.revoked_at ? `· ${copy.revoked}` : ""}
                   </span>
                   {link.revoked_at ? null : (
-                    <Button type="button" size="sm" variant="outline" onClick={() => void revokeShareLink(link.id).then(reload)}>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => void revokeShareLink(link.id).then(reload)}
+                    >
                       Revoke
                     </Button>
                   )}

@@ -18,11 +18,10 @@ import {
 
 export function RatingSummary({ aggregate }: { aggregate: ReviewAggregate }) {
   const copy = useReviewCopy();
-  const low = aggregate.low_sample || aggregate.count < 3;
+  const headline = honestAverageLabel(aggregate);
   return (
     <div className="grid gap-2">
-      <p className="text-sm font-medium">{honestAverageLabel(aggregate)}</p>
-      {low ? <p className="text-sm text-text-muted">{copy.lowSample}</p> : null}
+      <p className="text-sm font-medium">{headline}</p>
       <ul aria-label={copy.distribution} className="grid gap-1 text-sm">
         {["5", "4", "3", "2", "1"].map((star) => (
           <li key={star}>
