@@ -6,7 +6,7 @@ from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -32,7 +32,14 @@ from app.schemas.admin import (
     TaxonomyMergeIn,
     TaxonomyRenameIn,
 )
+from app.schemas.planner import ThresholdIn
 from app.schemas.portal import AdminVerificationAction
+
+
+class WeatherSensitivityIn(BaseModel):
+    weather_sensitivity: str = Field(min_length=5, max_length=32)
+    organization_id: UUID
+
 
 router = APIRouter()
 
@@ -708,4 +715,47 @@ async def notify_quality(
         db,
         "SELECT app.notify_data_quality_issue(:admin_id, :issue_id)",
         {"admin_id": _uid(session), "issue_id": str(issue_id)},
+    )
+
+
+@router.get("/weather-thresholds")
+async def admin_weather_thresholds(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    await _admin(request, db)
+    return await fetch_json(db, "SELECT app.list_weather_thresholds()", {})
+
+
+@router.put("/weather-thresholds")
+async def admin_update_weather_threshold(
+    payload: ThresholdIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    session = await _admin(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.upsert_weather_threshold(:admin_id, :key, :value)",
+        {"admin_id": _uid(session), "key": payload.key, "value": payload.value_numeric},
+    )
+
+
+@router.post("/experiences/{experience_id}/weather-sensitivity")
+async def admin_set_weather_sensitivity(
+    experience_id: UUID,
+    payload: WeatherSensitivityIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    session = await _admin(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.set_experience_weather_sensitivity(:user_id, :org_id, :experience_id, :value)",
+        {
+            "user_id": _uid(session),
+            "org_id": str(payload.organization_id),
+            "experience_id": str(experience_id),
+            "value": payload.weather_sensitivity,
+        },
     )

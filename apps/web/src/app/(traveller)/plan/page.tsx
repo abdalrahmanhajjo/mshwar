@@ -1,6 +1,6 @@
 import { ShellMain } from "@/components/shell/app-shell";
+import { PlanWorkspace } from "@/components/plan/plan-workspace";
 import { PlanDefaultsNote } from "@/components/profile/plan-defaults-note";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { loadCollection } from "@/lib/catalogue-api";
 
 export default async function PlanPage({
@@ -15,18 +15,15 @@ export default async function PlanPage({
 
   return (
     <ShellMain>
-      <Card>
-        <CardHeader>
-          <CardTitle>Plan</CardTitle>
-          <CardDescription>
-            {collection
-              ? `Started from “${collection.title}”. ${collection.experienceSlugs.length} published stops. Edit from structured inventory only.`
-              : "Build an itinerary from structured inventory."}
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      {collection ? (
+        <p className="text-sm text-text-muted">
+          Started from “{collection.title}”. {collection.experienceSlugs.length} published stops. Edit from structured
+          inventory only.
+        </p>
+      ) : null}
       {tripId ? <p className="text-sm text-text-muted">Trip {tripId}</p> : null}
       <PlanDefaultsNote />
+      <PlanWorkspace />
     </ShellMain>
   );
 }
