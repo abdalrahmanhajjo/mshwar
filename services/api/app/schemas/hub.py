@@ -68,6 +68,9 @@ class NotificationOut(BaseModel):
     category: str
     read_at: datetime | None = None
     created_at: datetime
+    deep_link: str | None = None
+    event_type: str | None = None
+    locale: str | None = None
 
 
 class NotificationListOut(HubPage):

@@ -17,6 +17,7 @@ describe("auth helpers", () => {
       true,
     );
     expect(isProtectedPath("/")).toBe(false);
+    expect(isProtectedPath("/unsubscribe/token")).toBe(false);
     expect(isProtectedPath("/signin")).toBe(false);
     expect(isProtectedPath("/forgot-password")).toBe(false);
     expect(isProtectedPath("/reset-password")).toBe(false);

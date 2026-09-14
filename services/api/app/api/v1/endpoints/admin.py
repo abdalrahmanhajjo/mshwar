@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.admin_auth import require_admin
 from app.core.data_quality import run_checks, scheduler_status
+from app.core.notifications import service as notification_service
 from app.core.portal_auth import fetch_json
 from app.core.search_reindex import reindex_provider
 from app.core.storage import sign_object_url
@@ -781,3 +782,34 @@ async def admin_set_weather_sensitivity(
             "value": payload.weather_sensitivity,
         },
     )
+
+
+@router.get("/notifications/health")
+async def notification_health(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    session = await _admin(request, db)
+    return await notification_service.health(db, _uid(session))
+
+
+@router.get("/notifications")
+async def list_admin_notifications(
+    request: Request,
+    status_filter: str | None = Query(default=None, alias="status"),
+    channel: str | None = Query(default=None),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    session = await _admin(request, db)
+    return await notification_service.list_admin(db, _uid(session), status_filter, channel)
+
+
+@router.post("/notifications/{notification_id}/resend")
+async def resend_notification(
+    notification_id: UUID,
+    payload: ReasonIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    session = await _admin(request, db)
+    return await notification_service.resend(db, _uid(session), str(notification_id), payload.reason)

@@ -30,3 +30,9 @@ Rollback writes a new version that copies the previous value (one action). Do no
 - Admin cannot be self-granted. Bootstrap remains SQL `app.grant_platform_admin` for tests and break-glass.
 
 Admin sessions record actor, IP and duration. `/admin` is hidden and blocked for non-admins.
+
+## Notification health (Epic 10)
+
+`/admin/notifications` reads `GET /api/v1/admin/notifications/health`. Failures, dead letters and per-channel rates are listed there. Resend writes `audit_log.action = notification_resend` and does not touch booking or payment rows.
+
+Cron `POST /api/v1/notifications/dispatch` and `POST /api/v1/notifications/escalate`. See `docs/notifications.md`.
