@@ -626,6 +626,10 @@ async def test_session_version_ranker_and_replace_cancel(api: AsyncClient) -> No
     assert snapshot.status_code == 200
     assert snapshot.json()["version_id"] == version_id
     assert snapshot.json()["constraints"]
+    missing_version = await api.get(f"/api/v1/planner/admin/versions/{uuid4()}")
+    assert missing_version.status_code in {404, 422}
+    missing_trip = await api.get(f"/api/v1/planner/admin/trips/{uuid4()}/versions")
+    assert missing_trip.status_code in {404, 422}
     weights = await api.put(
         "/api/v1/planner/admin/ranker",
         json={"version": "ranker-v1", "weights": {"preference": 0.4, "vector": 0.2}, "notes": "test"},
