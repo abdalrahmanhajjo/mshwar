@@ -5,7 +5,7 @@
  * so we do not run two routers. These catalogues are the same shape next-intl
  * would load. Key names are camelCase and grouped by surface in dedicated
  * modules (`messages`, `browseCopy`, `hubCopy`, `businessCopy`, `adminCopy`,
- * `privacyCopy`, `plannerCopy`, `checkoutCopy`).
+ * `privacyCopy`, `plannerCopy`, `checkoutCopy`, `notificationCopy`).
  */
 export { messages } from "@/lib/messages";
 export { browseCopy } from "@/lib/browse-copy";
@@ -14,6 +14,7 @@ export { hubCopy } from "@/lib/hub-copy";
 export { privacyCopy } from "@/lib/privacy-copy";
 export { plannerCopy } from "@/lib/planner-copy";
 export { checkoutCopy } from "@/lib/checkout-copy";
+export { notificationCopy } from "@/lib/notifications-copy";
 export { adminCopy } from "@/lib/admin-copy";
 export { LOCALES, type Locale } from "@/lib/locale";
 export { catalogueRegistry, catalogueParityErrors } from "@/i18n/parity";

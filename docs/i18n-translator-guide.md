@@ -4,16 +4,17 @@ Mshwar ships English, Arabic and French as first-class locales. User-facing copy
 
 ## Where strings live
 
-| Catalogue      | File                                | Surface                                        |
-| -------------- | ----------------------------------- | ---------------------------------------------- |
-| `messages`     | `apps/web/src/lib/messages.ts`      | Shell, auth, plan, legal, shared form chrome   |
-| `browseCopy`   | `apps/web/src/lib/browse-copy.ts`   | Discover, destinations, experiences, ideas     |
-| `hubCopy`      | `apps/web/src/lib/hub-copy.ts`      | Trips, favorites, bookings, notifications      |
-| `businessCopy` | `apps/web/src/lib/business-copy.ts` | Business portal                                |
-| `adminCopy`    | `apps/web/src/lib/admin-copy.ts`    | Admin console                                  |
-| `privacyCopy`  | `apps/web/src/lib/privacy-copy.ts`  | Privacy controls                               |
-| `plannerCopy`  | `apps/web/src/lib/planner-copy.ts`  | Plan workspace: start location, route, weather |
-| `checkoutCopy` | `apps/web/src/lib/checkout-copy.ts` | Checkout, booking mode, itinerary add-to-plan  |
+| Catalogue          | File                                     | Surface                                        |
+| ------------------ | ---------------------------------------- | ---------------------------------------------- |
+| `messages`         | `apps/web/src/lib/messages.ts`           | Shell, auth, plan, legal, shared form chrome   |
+| `browseCopy`       | `apps/web/src/lib/browse-copy.ts`        | Discover, destinations, experiences, ideas     |
+| `hubCopy`          | `apps/web/src/lib/hub-copy.ts`           | Trips, favorites, bookings, notifications      |
+| `businessCopy`     | `apps/web/src/lib/business-copy.ts`      | Business portal                                |
+| `adminCopy`        | `apps/web/src/lib/admin-copy.ts`         | Admin console                                  |
+| `privacyCopy`      | `apps/web/src/lib/privacy-copy.ts`       | Privacy controls                               |
+| `plannerCopy`      | `apps/web/src/lib/planner-copy.ts`       | Plan workspace: start location, route, weather |
+| `checkoutCopy`     | `apps/web/src/lib/checkout-copy.ts`      | Checkout, booking mode, itinerary add-to-plan  |
+| `notificationCopy` | `apps/web/src/lib/notifications-copy.ts` | Notification prefs, unsubscribe, outbox health |
 
 Key names are camelCase. Keep the same key in `en`, `ar` and `fr`. Do not leave a value empty.
 

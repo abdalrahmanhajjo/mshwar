@@ -6,6 +6,7 @@ import { businessCopy } from "@/lib/business-copy";
 import { checkoutCopy } from "@/lib/checkout-copy";
 import { hubCopy } from "@/lib/hub-copy";
 import { messages } from "@/lib/messages";
+import { notificationCopy } from "@/lib/notifications-copy";
 import { plannerCopy } from "@/lib/planner-copy";
 import { privacyCopy } from "@/lib/privacy-copy";
 
@@ -18,6 +19,7 @@ export const catalogueRegistry = {
   adminCopy,
   plannerCopy,
   checkoutCopy,
+  notificationCopy,
 } as const;
 
 export type CatalogueName = keyof typeof catalogueRegistry;
