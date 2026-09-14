@@ -567,7 +567,11 @@ test.describe("MSHWAR-105 Arabic RTL MVP matrix", () => {
         await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
         await page.goto(path === "/" ? "/ar" : `/ar${path}`);
         await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-        await expect(page.locator("[data-shell='traveller']")).toHaveAttribute("dir", "rtl");
+        // Destinations (and other catalogue pages) can stream a second shell while
+        // `loadDestinations()` waits on a down API. Assert the visible chrome.
+        const shell = page.locator("[data-shell='traveller']").first();
+        await expect(shell).toBeVisible();
+        await expect(shell).toHaveAttribute("dir", "rtl");
         await assertNoHorizontalScroll(page);
       });
     }
