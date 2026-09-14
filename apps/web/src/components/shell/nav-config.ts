@@ -43,6 +43,7 @@ export const BUSINESS_NAV: ShellNavItem[] = [
   { href: "/business", labelKey: "dashboard", icon: LayoutDashboard, exact: true },
   { href: "/business/listings", labelKey: "listings", icon: Store },
   { href: "/business/bookings", labelKey: "bookings", icon: Ticket },
+  { href: "/business/reviews", labelKey: "reviews", icon: ClipboardCheck },
   { href: "/business/finance", labelKey: "finance", icon: Wallet },
   { href: "/business/team", labelKey: "team", icon: Users },
   { href: "/business/settings", labelKey: "settings", icon: Settings },
