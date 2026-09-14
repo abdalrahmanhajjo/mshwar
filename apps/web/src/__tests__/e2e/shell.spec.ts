@@ -391,12 +391,28 @@ test.describe("MSHWAR-36 / MSHWAR-39 marketing browse", () => {
     await expect(page.getByLabel("Distance from Beirut")).toBeVisible();
     await page.goto("/experiences/slow-day-byblos");
     await expect(page.getByRole("heading", { name: "A slow day in Byblos" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Request to book · Preview" })).toBeVisible();
+    await expect(page.locator("aside").getByText("Request to book", { exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Continue to checkout" })).toBeVisible();
     await expect(page.getByText("Estimated from", { exact: true }).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: "Policies" })).toBeVisible();
     await expect(
       page.getByRole("region", { name: "Policies" }).getByText("Cancellation", { exact: true }),
     ).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+
+  test("checkout at 390px shows mode before pay in EN/AR/FR", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/checkout?listing=slow-day-byblos");
+    await expect(page.getByRole("heading", { name: "Checkout" })).toBeVisible();
+    await expect(page.getByText("Booking mode")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+    await page.getByRole("button", { name: "العربية" }).first().click();
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(page.getByText("طريقة الحجز")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+    await page.getByRole("button", { name: "Français" }).first().click();
+    await expect(page.getByText("Mode de réservation")).toBeVisible();
     await assertNoHorizontalScroll(page);
   });
 

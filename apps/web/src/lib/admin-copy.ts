@@ -52,7 +52,8 @@ export type AdminKey =
   | "plannerInjectionsHint"
   | "plannerVersions"
   | "lookupVersions"
-  | "noInjections";
+  | "noInjections"
+  | "reconciliationQueue";
 
 export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
   en: {
@@ -107,6 +108,7 @@ export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
     plannerVersions: "Itinerary versions",
     lookupVersions: "Look up versions",
     noInjections: "No injection attempts logged.",
+    reconciliationQueue: "Reconciliation queue",
   },
   ar: {
     queueTitle: "طابور التحقق",
@@ -160,6 +162,7 @@ export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
     plannerVersions: "إصدارات البرنامج",
     lookupVersions: "عرض الإصدارات",
     noInjections: "لا محاولات حقن مسجّلة.",
+    reconciliationQueue: "طابور التسوية",
   },
   fr: {
     queueTitle: "File de vérification",
@@ -214,6 +217,7 @@ export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
     plannerVersions: "Versions d’itinéraire",
     lookupVersions: "Consulter les versions",
     noInjections: "Aucune tentative d’injection.",
+    reconciliationQueue: "File de réconciliation",
   },
 };
 
