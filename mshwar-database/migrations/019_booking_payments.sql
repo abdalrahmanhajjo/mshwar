@@ -581,14 +581,14 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = app, public
 AS $$
-DECLARE q jsonb; existing app.bookings; result uuid; mode text;
+DECLARE q jsonb; existing app.bookings; result uuid; v_mode text;
 BEGIN
     PERFORM set_config('app.user_id', p_user::text, true);
     PERFORM set_config('app.request_id', coalesce(p_correlation, ''), true);
     IF p_user IS DISTINCT FROM app.actor_id() THEN RAISE EXCEPTION 'actor mismatch'; END IF;
     q := app.quote_checkout(p_slug, p_slot, p_party);
-    mode := q ->> 'effective_mode';
-    IF mode = 'inquiry' THEN RAISE EXCEPTION 'use inquiry flow'; END IF;
+    v_mode := q ->> 'effective_mode';
+    IF v_mode = 'inquiry' THEN RAISE EXCEPTION 'use inquiry flow'; END IF;
     PERFORM pg_advisory_xact_lock(hashtextextended(p_user::text || ':' || p_key, 0));
     SELECT * INTO existing FROM app.bookings WHERE customer_id = p_user AND request_key = p_key;
     IF FOUND THEN
@@ -610,7 +610,7 @@ BEGIN
         price_snapshot, policy_snapshot, request_key, request_hash
     )
     SELECT
-        p_user, e.organization_id, e.id, p_slot, p_stop, p_party, 'draft', mode,
+        p_user, e.organization_id, e.id, p_slot, p_stop, p_party, 'draft', v_mode,
         clock_timestamp() + interval '30 minutes', false,
         q ->> 'currency', (q ->> 'total_minor')::bigint, (q ->> 'payment_required')::boolean,
         q -> 'price_snapshot', q -> 'policy_snapshot', p_key, p_hash
@@ -637,14 +637,14 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = app, public
 AS $$
-DECLARE existing app.bookings; v_booking_id uuid; q jsonb; mode text; s app.slots; held boolean := false;
+DECLARE existing app.bookings; v_booking_id uuid; q jsonb; v_mode text; s app.slots; held boolean := false;
 BEGIN
     PERFORM set_config('app.user_id', p_user::text, true);
     PERFORM set_config('app.request_id', coalesce(p_correlation, ''), true);
     IF p_user IS DISTINCT FROM app.actor_id() THEN RAISE EXCEPTION 'actor mismatch'; END IF;
     q := app.quote_checkout(p_slug, p_slot, p_party);
-    mode := q ->> 'effective_mode';
-    IF mode = 'inquiry' THEN RAISE EXCEPTION 'use inquiry flow'; END IF;
+    v_mode := q ->> 'effective_mode';
+    IF v_mode = 'inquiry' THEN RAISE EXCEPTION 'use inquiry flow'; END IF;
     IF p_price_rule IS DISTINCT FROM (q ->> 'price_rule_id')::uuid
        OR p_policy IS DISTINCT FROM (q ->> 'policy_id')::uuid THEN
         RAISE EXCEPTION 'quote no longer valid';
@@ -670,7 +670,7 @@ BEGIN
         END IF;
         UPDATE app.bookings
         SET status = 'pending',
-            mode = mode,
+            mode = v_mode,
             price_snapshot = q -> 'price_snapshot',
             policy_snapshot = q -> 'policy_snapshot',
             total_minor = (q ->> 'total_minor')::bigint,
@@ -679,13 +679,13 @@ BEGIN
             inventory_reserved = held,
             hold_until = least(
                 s.starts_at,
-                clock_timestamp() + CASE WHEN mode = 'instant' THEN interval '15 minutes' ELSE interval '24 hours' END
+                clock_timestamp() + CASE WHEN v_mode = 'instant' THEN interval '15 minutes' ELSE interval '24 hours' END
             ),
             response_due_at = CASE
-                WHEN mode = 'request' THEN least(s.starts_at, clock_timestamp() + interval '24 hours')
+                WHEN v_mode = 'request' THEN least(s.starts_at, clock_timestamp() + interval '24 hours')
             END
         WHERE id = existing.id;
-        IF mode = 'instant' AND NOT (q ->> 'payment_required')::boolean THEN
+        IF v_mode = 'instant' AND NOT (q ->> 'payment_required')::boolean THEN
             PERFORM app.transition_booking(existing.id, 'confirmed', 'Instant confirm without payment');
         END IF;
         RETURN app.put_idempotency('booking.commit', p_user, p_key, p_hash, existing.id, app.checkout_booking_json(existing.id));
@@ -699,7 +699,7 @@ BEGIN
     THEN
         PERFORM app.allocate_slot_units(p_slot, v_booking_id, p_party);
     END IF;
-    IF mode = 'instant' AND NOT (q ->> 'payment_required')::boolean THEN
+    IF v_mode = 'instant' AND NOT (q ->> 'payment_required')::boolean THEN
         PERFORM app.transition_booking(v_booking_id, 'confirmed', 'Instant confirm without payment');
     END IF;
     RETURN app.put_idempotency('booking.commit', p_user, p_key, p_hash, v_booking_id, app.checkout_booking_json(v_booking_id));
