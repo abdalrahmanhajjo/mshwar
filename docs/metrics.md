@@ -16,4 +16,9 @@ Sourced by `GET /api/v1/admin/kpis` (`app.admin_metric_definitions`) and shown a
 | `planner_infeasible_rate` | Share of runs with status `infeasible`.                                                                        |
 | `planner_fallback_rate`   | Share of runs with status `fallback`.                                                                          |
 
+| `outbox_depth`            | Pending `app.outbox` rows (`processed_at` and `dead_lettered_at` null). Exposed on `GET /api/v1/checkout/ops/metrics`. |
+| `outbox_failed`           | Pending outbox rows with `last_error_code` set.                                                                        |
+| `outbox_dead_lettered`    | Outbox rows moved to the DLQ after 8 publish attempts.                                                                 |
+
 Event semantics: counts use row `created_at` in the requested `[from, to)` window unless the definition says "at query time". Planner rates use `recommendation_runs.status` only — the API never invents generation outcomes.
+

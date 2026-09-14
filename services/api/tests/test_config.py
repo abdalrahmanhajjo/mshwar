@@ -42,6 +42,9 @@ def test_defaults() -> None:
     assert settings.search_reindex_provider == "stub"
     assert settings.data_quality_scheduler_enabled is False
     assert settings.data_quality_stale_days == 14
+    assert settings.payment_provider == "stripe_test"
+    assert settings.payments_fault == ""
+    assert settings.idempotency_ttl_hours == 24
 
 
 def test_reads_database_url_env(monkeypatch: pytest.MonkeyPatch) -> None:

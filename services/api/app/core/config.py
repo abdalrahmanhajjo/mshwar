@@ -102,6 +102,18 @@ class Settings(BaseSettings):
     open_meteo_api_key: str = ""
     stripe_secret_key: str = ""
     stripe_webhook_secret: str = ""
+    payment_provider: str = Field(
+        default="stripe_test",
+        validation_alias=AliasChoices("PAYMENT_PROVIDER", "payment_provider"),
+    )
+    payments_fault: str = Field(
+        default="",
+        validation_alias=AliasChoices("PAYMENTS_FAULT", "payments_fault"),
+    )
+    idempotency_ttl_hours: int = Field(
+        default=24,
+        validation_alias=AliasChoices("IDEMPOTENCY_TTL_HOURS", "idempotency_ttl_hours"),
+    )
     imagekit_api_key: str = ""
     imagekit_url: str = ""
     private_storage_dir: str = "/tmp/mshwar-private"

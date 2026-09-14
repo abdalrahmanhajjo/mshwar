@@ -6,6 +6,7 @@ from app.api.v1.endpoints import (
     bookings,
     businesses,
     catalogue,
+    checkout,
     favorites,
     health,
     locations,
@@ -15,6 +16,7 @@ from app.api.v1.endpoints import (
     privacy,
     profile,
     trips,
+    webhooks,
 )
 
 router = APIRouter()
@@ -30,6 +32,8 @@ router.include_router(catalogue.router, prefix="/catalogue", tags=["catalogue"])
 router.include_router(portal.router, prefix="/portal", tags=["portal"])
 router.include_router(businesses.router, prefix="/businesses", tags=["businesses"])
 router.include_router(bookings.router, prefix="/bookings", tags=["bookings"])
+router.include_router(checkout.router, prefix="/checkout", tags=["checkout"])
+router.include_router(webhooks.router, prefix="/webhooks", tags=["webhooks"])
 router.include_router(trips.router, prefix="/trips", tags=["trips"])
 router.include_router(favorites.router, prefix="/favorites", tags=["favorites"])
 router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])

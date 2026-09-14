@@ -13,6 +13,8 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getExperience } from "@/lib/catalog";
+import { listMyCheckoutBookings, type CheckoutBooking } from "@/lib/checkout";
+import { useCheckoutCopy } from "@/lib/checkout-copy";
 import { cancelBooking, fetchBookings, type BookingRecord } from "@/lib/hub";
 import { useHubCopy } from "@/lib/hub-copy";
 
@@ -27,9 +29,17 @@ const STATUS_VARIANT: Record<string, "secondary" | "success" | "danger" | "warni
 
 export function BookingsView() {
   const copy = useHubCopy();
+  const checkoutCopy = useCheckoutCopy();
   const loader = React.useCallback((page: number) => fetchBookings(page), []);
   const { page, data, error, pending, load, setData } = useHubPage(loader);
   const [reason, setReason] = React.useState<Record<string, string>>({});
+  const [checkoutRows, setCheckoutRows] = React.useState<CheckoutBooking[]>([]);
+
+  React.useEffect(() => {
+    void listMyCheckoutBookings()
+      .then(setCheckoutRows)
+      .catch(() => setCheckoutRows([]));
+  }, []);
 
   async function onCancel(booking: BookingRecord) {
     const next = await cancelBooking(booking.id, (reason[booking.id] ?? "").trim());
@@ -62,6 +72,25 @@ export function BookingsView() {
             </Button>
           }
         />
+      ) : null}
+      {Array.isArray(checkoutRows) && checkoutRows.length > 0 ? (
+        <div className="grid gap-3">
+          {checkoutRows.map((booking) => (
+            <Card key={booking.id}>
+              <CardHeader>
+                <CardTitle>{booking.experience_title}</CardTitle>
+                <CardDescription>
+                  {booking.status} · {booking.mode}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button asChild variant="outline">
+                  <LocaleLink href={`/bookings/${booking.id}`}>{checkoutCopy.retrieve}</LocaleLink>
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       ) : null}
       {data && data.items.length > 0 ? (
         <div className="grid gap-4">
