@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import base64
 import json
 from collections.abc import AsyncGenerator
 from datetime import datetime, timedelta, timezone
@@ -92,6 +93,18 @@ async def _published_listing(api: AsyncClient, *, mode: str = "request", capacit
     )
     assert experience.status_code == 200, experience.text
     listing = experience.json()
+    upload = await api.post(
+        f"/api/v1/portal/organizations/{org['id']}/files",
+        json={
+            "filename": "hero.jpg",
+            "content_type": "image/jpeg",
+            "content_base64": base64.b64encode(b"fake-image").decode("ascii"),
+            "purpose": "listing",
+            "experience_id": listing["id"],
+            "alt_text": "Cedar table",
+        },
+    )
+    assert upload.status_code == 200, upload.text
     await _grant_admin(owner["id"])
     await api.post(f"/api/v1/admin/organizations/{org['id']}/verify", json={"reason": "Documents match"})
     hours = await api.put(
