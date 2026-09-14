@@ -36,11 +36,7 @@ export default function BookingDetailPage() {
           />
         ) : null}
         {timeline ? <BookingTimeline title={copy.timeline} events={timeline.timeline} /> : null}
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => void previewCancel(params.id).then(setPreview)}
-        >
+        <Button type="button" variant="outline" onClick={() => void previewCancel(params.id).then(setPreview)}>
           {copy.cancelPreview}
         </Button>
         {preview ? (
@@ -52,7 +48,9 @@ export default function BookingDetailPage() {
         <Button
           type="button"
           disabled={!reason.trim()}
-          onClick={() => void cancelCheckoutBooking(params.id, reason).then(() => fetchTimeline(params.id).then(setTimeline))}
+          onClick={() =>
+            void cancelCheckoutBooking(params.id, reason).then(() => fetchTimeline(params.id).then(setTimeline))
+          }
         >
           {copy.confirmCancel}
         </Button>

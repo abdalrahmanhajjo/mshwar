@@ -4,13 +4,13 @@ Snapshots, idempotency and reconciliation are required. The booking service neve
 
 ## Environment stubs
 
-| Variable                 | Default       | Notes                                                                                         |
-| ------------------------ | ------------- | --------------------------------------------------------------------------------------------- |
-| `STRIPE_SECRET_KEY`      | empty         | Empty keeps `StripeTestAdapter` in local stub mode. Do not commit live keys.                  |
-| `STRIPE_WEBHOOK_SECRET`  | empty         | Empty signs/verifies webhooks with the local stub secret.                                     |
-| `PAYMENT_PROVIDER`       | `stripe_test` | `stripe_test` or `lebanon_acquirer`. Booking code talks only to `PaymentProvider`.            |
-| `PAYMENTS_FAULT`         | empty         | Test-only: `fail`, `timeout`, `late_success`. Ignored for production payment confirmation.    |
-| `IDEMPOTENCY_TTL_HOURS`  | `24`          | Booking and payment write keys expire after 24 hours (`app.idempotency_keys`).                |
+| Variable                | Default       | Notes                                                                                      |
+| ----------------------- | ------------- | ------------------------------------------------------------------------------------------ |
+| `STRIPE_SECRET_KEY`     | empty         | Empty keeps `StripeTestAdapter` in local stub mode. Do not commit live keys.               |
+| `STRIPE_WEBHOOK_SECRET` | empty         | Empty signs/verifies webhooks with the local stub secret.                                  |
+| `PAYMENT_PROVIDER`      | `stripe_test` | `stripe_test` or `lebanon_acquirer`. Booking code talks only to `PaymentProvider`.         |
+| `PAYMENTS_FAULT`        | empty         | Test-only: `fail`, `timeout`, `late_success`. Ignored for production payment confirmation. |
+| `IDEMPOTENCY_TTL_HOURS` | `24`          | Booking and payment write keys expire after 24 hours (`app.idempotency_keys`).             |
 
 `POST /api/v1/checkout/{id}/simulate` is disabled when `environment=production`.
 
