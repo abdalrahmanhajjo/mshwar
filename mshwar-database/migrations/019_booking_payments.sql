@@ -976,12 +976,12 @@ RETURNS integer
 LANGUAGE plpgsql
 STABLE
 AS $$
-DECLARE hours numeric; window jsonb; best integer := 0;
+DECLARE hours numeric; v_window jsonb; best integer := 0;
 BEGIN
     IF p_snapshot ? 'windows' AND jsonb_typeof(p_snapshot -> 'windows') = 'array' THEN
-        FOR window IN SELECT value FROM jsonb_array_elements(p_snapshot -> 'windows') LOOP
-            IF p_starts - make_interval(hours => coalesce((window ->> 'hours_before')::integer, 0)) >= clock_timestamp() THEN
-                best := greatest(best, coalesce((window ->> 'refund_bps')::integer, 0));
+        FOR v_window IN SELECT value FROM jsonb_array_elements(p_snapshot -> 'windows') LOOP
+            IF p_starts - make_interval(hours => coalesce((v_window ->> 'hours_before')::integer, 0)) >= clock_timestamp() THEN
+                best := greatest(best, coalesce((v_window ->> 'refund_bps')::integer, 0));
             END IF;
         END LOOP;
         RETURN best;
