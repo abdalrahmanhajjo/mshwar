@@ -444,6 +444,15 @@ async def test_admin_console_remaining_paths(api: AsyncClient) -> None:
     )
     assert merged.status_code == 200
 
+    users = await api.get("/api/v1/admin/users")
+    assert users.status_code == 200
+    assert any(row["id"] == elevated["id"] for row in users.json())
+
+    queue = await api.get("/api/v1/admin/organizations?verification=pending")
+    assert queue.status_code == 200
+    assert (await api.get("/api/v1/admin/taxonomy")).status_code == 200
+    assert (await api.get("/api/v1/admin/moderation?entity_type=review")).status_code == 200
+
     assert (await api.get("/api/v1/admin/bookings")).status_code == 200
     assert (await api.get("/api/v1/admin/config")).status_code == 200
     assert (await api.get("/api/v1/admin/flags")).status_code == 200
