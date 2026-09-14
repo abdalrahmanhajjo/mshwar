@@ -37,6 +37,8 @@ describe("listing editor", () => {
       </LocaleProvider>,
     );
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Inside Lebanon"));
+    fireEvent.click(screen.getByRole("button", { name: "weather-sensitive" }));
+    expect(screen.getByText("Weather sensitivity")).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("lng"), { target: { value: "2.3" } });
     fireEvent.change(screen.getByLabelText("lat"), { target: { value: "48.8" } });
     expect(screen.getByRole("status")).toHaveTextContent("outside Lebanon");

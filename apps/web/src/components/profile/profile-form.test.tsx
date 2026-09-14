@@ -35,8 +35,8 @@ describe("profile form", () => {
       if (String(url).includes("/locations/areas")) {
         return jsonResponse({
           source: "catalog",
-          picker: "stub",
-          replace_with: "map location picker",
+          picker: "map",
+          replace_with: "none",
           areas: [{ id: "area-1", slug: "beirut", name: "Beirut", country_code: "LB" }],
         });
       }
@@ -63,6 +63,7 @@ describe("profile form", () => {
           dietary: [],
           accessibility: [],
           interests: [],
+          start_location: null,
         },
         home_area: null,
       });
@@ -112,8 +113,8 @@ describe("profile form", () => {
       if (String(url).includes("/locations/areas")) {
         return jsonResponse({
           source: "catalog",
-          picker: "stub",
-          replace_with: "map location picker",
+          picker: "map",
+          replace_with: "none",
           areas: [{ id: "area-1", slug: "beirut", name: "Beirut", country_code: "LB" }],
         });
       }
@@ -130,6 +131,7 @@ describe("profile form", () => {
           dietary: [],
           accessibility: [],
           interests: [],
+          start_location: null,
         },
         home_area: { id: "area-1", slug: "beirut", name: "Beirut", country_code: "LB" },
       });

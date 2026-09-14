@@ -10,6 +10,7 @@ from app.api.v1.endpoints import (
     health,
     locations,
     notifications,
+    planner,
     portal,
     privacy,
     profile,
@@ -24,6 +25,7 @@ router.include_router(admin.router, prefix="/admin", tags=["admin"])
 router.include_router(profile.router, prefix="/profile", tags=["profile"])
 router.include_router(privacy.router, prefix="/privacy", tags=["privacy"])
 router.include_router(locations.router, prefix="/locations", tags=["locations"])
+router.include_router(planner.router, prefix="/planner", tags=["planner"])
 router.include_router(catalogue.router, prefix="/catalogue", tags=["catalogue"])
 router.include_router(portal.router, prefix="/portal", tags=["portal"])
 router.include_router(businesses.router, prefix="/businesses", tags=["businesses"])

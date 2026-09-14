@@ -71,6 +71,7 @@ export type PortalExperience = {
   category?: string | null;
   suitability: string[];
   weather: string[];
+  weather_sensitivity?: string;
   images: { id: string; object_key: string; alt_text: string }[];
   venue?: { id: string; name: string; address: string; lng: number; lat: number };
   price?: { currency: string; price_type: string; unit: string; amount_minor: number | null } | null;

@@ -46,6 +46,7 @@ export function ListingEditor({ experienceId }: { experienceId?: string }) {
   const [terms, setTerms] = React.useState("Cancel 24 hours before.");
   const [suitability, setSuitability] = React.useState<string[]>(["groups"]);
   const [weather, setWeather] = React.useState<string[]>(["all-weather"]);
+  const [sensitivity, setSensitivity] = React.useState("outdoor");
   const [venueName, setVenueName] = React.useState("Venue");
   const [address, setAddress] = React.useState("Beirut");
   const [savedId, setSavedId] = React.useState(experienceId);
@@ -74,6 +75,9 @@ export function ListingEditor({ experienceId }: { experienceId?: string }) {
       }
       setIssues((row.publish_report.issues ?? []).map((item) => item.message));
       setReady(row.publish_report.ready);
+      if (row.weather_sensitivity) {
+        setSensitivity(row.weather_sensitivity);
+      }
     });
   }, [experienceId, org]);
 
@@ -100,7 +104,8 @@ export function ListingEditor({ experienceId }: { experienceId?: string }) {
         category,
         suitability,
         weather,
-        weather_rules: { sensitive: weather.includes("rain-sensitive") },
+        weather_sensitivity: sensitivity,
+        weather_rules: { sensitive: sensitivity === "weather-sensitive" || weather.includes("rain-sensitive") },
         price: { currency: "USD", price_type: "fixed", unit: "person", amount_minor: Number(amount) },
         policy: { cancellation_rules: { hours: 24 }, terms_text: terms },
       });
@@ -186,6 +191,16 @@ export function ListingEditor({ experienceId }: { experienceId?: string }) {
             </Button>
           ))}
           <p className="text-sm">{copy.weatherSensitivity}</p>
+          {["indoor", "outdoor", "weather-sensitive"].map((item) => (
+            <Button
+              key={item}
+              type="button"
+              variant={sensitivity === item ? "default" : "outline"}
+              onClick={() => setSensitivity(item)}
+            >
+              {item}
+            </Button>
+          ))}
           {["all-weather", "rain-sensitive", "heat-sensitive"].map((item) => (
             <Button
               key={item}

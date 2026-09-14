@@ -47,6 +47,7 @@ async def test_profile_defaults_are_empty_and_explicit(api: AsyncClient) -> None
     assert prefs["accessibility"] == []
     assert prefs["interests"] == []
     assert prefs["activity_intensity"] is None
+    assert prefs["start_location"] is None
 
 
 @pytest.mark.asyncio
@@ -55,8 +56,8 @@ async def test_profile_update_persists_without_new_session(api: AsyncClient) -> 
     areas = await api.get("/api/v1/locations/areas")
     assert areas.status_code == 200
     catalog = areas.json()
-    assert catalog["picker"] == "stub"
-    assert catalog["replace_with"] == "map location picker"
+    assert catalog["picker"] == "map"
+    assert catalog["replace_with"] == "none"
     beirut = next(area for area in catalog["areas"] if area["slug"] == "beirut")
 
     updated = await api.put(
@@ -170,6 +171,12 @@ def test_merge_keeps_profile_values_the_trip_did_not_override() -> None:
     assert merged.default_group_size == 6
     assert merged.interests == ["food"]
     assert merged.source == "explicit"
+    with_start = merge_plan_defaults(
+        profile,
+        {"start_location": {"lat": 33.89, "lng": 35.48, "label": "Hamra", "source": "search"}},
+    )
+    assert with_start.start_location is not None
+    assert with_start.start_location["label"] == "Hamra"
 
 
 @pytest.mark.asyncio

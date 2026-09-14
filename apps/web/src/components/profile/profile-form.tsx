@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/shell/auth-provider";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { useLocale } from "@/components/shell/locale-provider";
 import { LOCALES, LOCALE_LABELS, withLocalePrefix, type Locale } from "@/lib/locale";
 import {
@@ -191,6 +192,9 @@ export function ProfileForm() {
               <p className="text-sm text-text-muted">{t("notSet")}</p>
             )}
             <p className="text-xs text-text-muted">{t("homeAreaStub")}</p>
+            <LocaleLink className="text-sm text-brand underline-offset-4 hover:underline" href="/plan/start">
+              {t("planATrip")}
+            </LocaleLink>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="group-size">{t("groupSize")}</Label>

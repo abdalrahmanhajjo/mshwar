@@ -82,6 +82,7 @@ class ExperienceUpsert(BaseModel):
     category: str | None = None
     suitability: list[str] = Field(default_factory=list)
     weather: list[str] = Field(default_factory=list)
+    weather_sensitivity: str | None = None
     price: PricePayload | None = None
     policy: PolicyPayload | None = None
 

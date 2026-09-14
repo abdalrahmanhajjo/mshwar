@@ -19,6 +19,12 @@ export type PreferenceValues = {
   dietary: string[];
   accessibility: string[];
   interests: string[];
+  start_location: {
+    lat: number;
+    lng: number;
+    label: string;
+    source: "search" | "pin" | "device" | "manual";
+  } | null;
 };
 
 export type Profile = {
@@ -52,6 +58,7 @@ export const EMPTY_PREFERENCES: PreferenceValues = {
   dietary: [],
   accessibility: [],
   interests: [],
+  start_location: null,
 };
 
 export function hydratePreferences(profile: Profile): PreferenceValues {
