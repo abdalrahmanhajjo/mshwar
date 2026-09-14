@@ -62,11 +62,18 @@ export function NotificationsView() {
                 </CardHeader>
                 <CardContent className="flex flex-wrap items-center justify-between gap-3">
                   <p className="text-sm text-text-muted">{item.body}</p>
-                  {unread ? (
-                    <Button type="button" variant="outline" size="sm" onClick={() => void onRead(item)}>
-                      {copy.markRead}
-                    </Button>
-                  ) : null}
+                  <div className="flex flex-wrap gap-2">
+                    {item.deep_link ? (
+                      <Button asChild variant="outline" size="sm">
+                        <LocaleLink href={item.deep_link}>{copy.openItem}</LocaleLink>
+                      </Button>
+                    ) : null}
+                    {unread ? (
+                      <Button type="button" variant="outline" size="sm" onClick={() => void onRead(item)}>
+                        {copy.markRead}
+                      </Button>
+                    ) : null}
+                  </div>
                 </CardContent>
               </Card>
             );

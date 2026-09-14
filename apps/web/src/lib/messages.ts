@@ -78,6 +78,7 @@ export type MessageKey =
   | "taxonomy"
   | "supportCases"
   | "dataQuality"
+  | "notificationHealth"
   | "adminRoles"
   | "adminBookings"
   | "privacy"
@@ -171,6 +172,7 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     taxonomy: "Taxonomy",
     supportCases: "Cases",
     dataQuality: "Quality",
+    notificationHealth: "Notifications",
     adminRoles: "Roles",
     adminBookings: "Bookings",
     settings: "Settings",
@@ -264,6 +266,7 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     taxonomy: "التصنيف",
     supportCases: "الحالات",
     dataQuality: "الجودة",
+    notificationHealth: "الإشعارات",
     adminRoles: "الأدوار",
     adminBookings: "الحجوزات",
     settings: "الإعدادات",
@@ -358,6 +361,7 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     taxonomy: "Taxonomie",
     supportCases: "Tickets",
     dataQuality: "Qualité",
+    notificationHealth: "Notifications",
     adminRoles: "Rôles",
     adminBookings: "Réservations",
     settings: "Réglages",

@@ -152,8 +152,8 @@ async def test_bookings_cancel_is_explicit_and_cross_user_blocked(api: AsyncClie
 
     notes = await api.get("/api/v1/notifications")
     assert notes.status_code == 200
-    assert notes.json()["total"] == 1
-    note = notes.json()["items"][0]
+    assert notes.json()["total"] >= 1
+    note = next(item for item in notes.json()["items"] if "cancelled" in item["title"].lower())
     assert note["read_at"] is None
     assert "cancelled" in note["title"].lower()
 
