@@ -391,8 +391,8 @@ test.describe("MSHWAR-36 / MSHWAR-39 marketing browse", () => {
     await expect(page.getByLabel("Distance from Beirut")).toBeVisible();
     await page.goto("/experiences/slow-day-byblos");
     await expect(page.getByRole("heading", { name: "A slow day in Byblos" })).toBeVisible();
-    await expect(page.locator("aside").getByText("Request to book", { exact: true })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Continue to checkout" })).toBeVisible();
+    await expect(page.locator("aside").first().getByText("Request to book", { exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Continue to checkout" }).first()).toBeVisible();
     await expect(page.getByText("Estimated from", { exact: true }).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: "Policies" })).toBeVisible();
     await expect(
