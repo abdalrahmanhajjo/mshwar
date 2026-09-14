@@ -11,6 +11,7 @@
     "lint": "pnpm --filter web lint && pnpm --filter api lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "i18n:check": "pnpm --filter web i18n:check",
     "typecheck": "pnpm --filter web typecheck && pnpm --filter api typecheck",
     "test": "pnpm --filter web test && pnpm --filter api test && pnpm tokens:test",
     "tokens:generate": "node mshwar-brand-foundation/scripts/generate-tokens.mjs && node mshwar-brand-foundation/scripts/assert-contrast.mjs --write",

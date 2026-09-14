@@ -172,7 +172,7 @@ export function DashboardView() {
                     <p className="text-label text-text-muted">{label}</p>
                     <p className="text-title">{current}</p>
                     <p className="text-xs text-text-muted">{metricDelta(current, previous)}</p>
-                    <div className="mt-2 h-2 rounded-full bg-surface-sunken" aria-hidden>
+                    <div className="mt-2 h-2 rounded-full bg-surface-sunken" aria-hidden data-rtl-chart>
                       <div
                         className="h-2 rounded-full bg-accent"
                         style={{ width: `${Math.round((current / peak) * 100)}%` }}

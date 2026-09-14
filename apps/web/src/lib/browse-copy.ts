@@ -126,7 +126,9 @@ export type BrowseKey =
   | "collectionsBody"
   | "openAsTrip"
   | "minutesLabel"
-  | "nearbyTitle";
+  | "nearbyTitle"
+  | "placesOne"
+  | "placesOther";
 
 export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
   en: {
@@ -258,6 +260,8 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     openAsTrip: "Open as a trip",
     minutesLabel: "min",
     nearbyTitle: "Nearby and related",
+    placesOne: "{count} place to make a day of it",
+    placesOther: "{count} places to make a day of it",
   },
   ar: {
     heroTitle: "اترك مساحة لمشوار صغير.",
@@ -386,6 +390,8 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     openAsTrip: "افتح كرحلة",
     minutesLabel: "د",
     nearbyTitle: "قريب وذو صلة",
+    placesOne: "مكان واحد لصنع يوم",
+    placesOther: "{count} أماكن لصنع يوم",
   },
   fr: {
     heroTitle: "Faites une place à un petit mshwar.",
@@ -515,6 +521,8 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     openAsTrip: "Ouvrir comme voyage",
     minutesLabel: "min",
     nearbyTitle: "À proximité et liés",
+    placesOne: "{count} lieu pour en faire une journée",
+    placesOther: "{count} lieux pour en faire une journée",
   },
 };
 

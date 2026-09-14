@@ -6,8 +6,8 @@ import { LocaleLink } from "@/components/shell/locale-link";
 import { withLocalePrefix } from "@/lib/locale";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useAuth } from "@/components/shell/auth-provider";
 import { useLocale } from "@/components/shell/locale-provider";
 import { registerAccount, safeNextPath, signInAccount } from "@/lib/auth";
@@ -56,24 +56,24 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
         <CardDescription>{mode === "signup" ? t("passwordHint") : t("noAccount")}</CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="grid gap-4" onSubmit={(event) => void onSubmit(event)}>
+        <form
+          className="grid gap-4"
+          onSubmit={(event) => void onSubmit(event)}
+          aria-describedby={error ? "auth-error" : undefined}
+        >
           {mode === "signup" ? (
-            <div className="grid gap-2">
-              <Label htmlFor="display-name">{t("displayName")}</Label>
+            <Field id="display-name" label={t("displayName")}>
               <Input
-                id="display-name"
                 name="display_name"
                 autoComplete="name"
                 required
                 value={displayName}
                 onChange={(event) => setDisplayName(event.target.value)}
               />
-            </div>
+            </Field>
           ) : null}
-          <div className="grid gap-2">
-            <Label htmlFor="email">{t("email")}</Label>
+          <Field id="email" label={t("email")}>
             <Input
-              id="email"
               name="email"
               type="email"
               autoComplete="email"
@@ -81,11 +81,9 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
             />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="password">{t("password")}</Label>
+          </Field>
+          <Field id="password" label={t("password")} description={mode === "signup" ? t("passwordHint") : undefined}>
             <Input
-              id="password"
               name="password"
               type="password"
               autoComplete={mode === "signup" ? "new-password" : "current-password"}
@@ -94,7 +92,7 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
             />
-          </div>
+          </Field>
           {mode === "signin" ? (
             <p className="text-sm">
               <LocaleLink className="text-brand underline-offset-4 hover:underline" href="/forgot-password">
@@ -103,7 +101,7 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
             </p>
           ) : null}
           {error ? (
-            <p role="alert" className="text-sm text-danger">
+            <p id="auth-error" role="alert" className="text-sm text-danger">
               {error}
             </p>
           ) : null}

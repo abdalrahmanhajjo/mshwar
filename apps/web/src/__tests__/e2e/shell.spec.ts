@@ -391,8 +391,8 @@ test.describe("MSHWAR-36 / MSHWAR-39 marketing browse", () => {
     await expect(page.getByLabel("Distance from Beirut")).toBeVisible();
     await page.goto("/experiences/slow-day-byblos");
     await expect(page.getByRole("heading", { name: "A slow day in Byblos" })).toBeVisible();
-    await expect(page.locator("aside").getByText("Request to book", { exact: true })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Continue to checkout" })).toBeVisible();
+    await expect(page.locator("aside").first().getByText("Request to book", { exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Continue to checkout" }).first()).toBeVisible();
     await expect(page.getByText("Estimated from", { exact: true }).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: "Policies" })).toBeVisible();
     await expect(
@@ -558,4 +558,22 @@ test.describe("MSHWAR-33 account hub", () => {
     await expect(page.getByText("Change of dates")).toBeVisible();
     await assertNoHorizontalScroll(page);
   });
+});
+
+test.describe("MSHWAR-105 Arabic RTL MVP matrix", () => {
+  for (const width of [390, 1440] as const) {
+    for (const path of ["/", "/destinations", "/experiences", "/plan", "/ideas", "/contact"] as const) {
+      test(`${path} stays RTL without overflow at ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+        await page.goto(path === "/" ? "/ar" : `/ar${path}`);
+        await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+        // Destinations (and other catalogue pages) can stream a second shell while
+        // `loadDestinations()` waits on a down API. Assert the visible chrome.
+        const shell = page.locator("[data-shell='traveller']").first();
+        await expect(shell).toBeVisible();
+        await expect(shell).toHaveAttribute("dir", "rtl");
+        await assertNoHorizontalScroll(page);
+      });
+    }
+  }
 });
