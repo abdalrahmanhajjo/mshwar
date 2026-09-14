@@ -11,6 +11,7 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.session import require_session
+from app.core.admin_auth import require_admin
 from app.core.config import settings
 from app.core.portal_auth import fetch_json, raise_from_db
 from app.dependencies import get_auth_db
@@ -575,12 +576,41 @@ async def link_booking(
     return row
 
 
+@router.get("/admin/trips/{trip_id}/versions")
+async def admin_trip_versions(
+    trip_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> list[dict[str, Any]]:
+    session = await require_admin(request, db)
+    try:
+        return await list_versions(db, session["user_id"], trip_id, True)
+    except DBAPIError as exc:
+        raise_from_db(exc)
+        raise
+
+
+@router.get("/admin/versions/{version_id}")
+async def admin_read_version(
+    version_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    session = await require_admin(request, db)
+    try:
+        return await get_version(db, session["user_id"], version_id, True)
+    except (DBAPIError, TypeError) as exc:
+        if isinstance(exc, DBAPIError):
+            raise_from_db(exc)
+        raise _http(exc) from exc
+
+
 @router.get("/admin/health")
 async def admin_health(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> dict[str, Any]:
-    session = await require_session(request, db)
+    session = await require_admin(request, db)
     try:
         row = (
             await db.execute(
@@ -599,7 +629,7 @@ async def admin_injections(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> list[dict[str, Any]]:
-    session = await require_session(request, db)
+    session = await require_admin(request, db)
     try:
         row = (
             await db.execute(
@@ -619,7 +649,7 @@ async def admin_ranker(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> dict[str, Any]:
-    session = await require_session(request, db)
+    session = await require_admin(request, db)
     try:
         row = (
             await db.execute(

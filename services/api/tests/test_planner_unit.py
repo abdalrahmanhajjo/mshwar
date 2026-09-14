@@ -268,7 +268,9 @@ def test_ranking_preference_price_and_weight_edges() -> None:
             "intensity": "relaxed",
         }
     )
-    candidate = _candidate(intensity=1, category_slugs=["culture"], interest_slugs=["heritage"], listing_kind="experience")
+    candidate = _candidate(
+        intensity=1, category_slugs=["culture"], interest_slugs=["heritage"], listing_kind="experience"
+    )
     assert preference_score(candidate, constraints) == 1.0
     quote = _candidate(price={"type": "quote", "amount_minor": None})
     assert price_fit_score(quote, constraints) == 0.5
