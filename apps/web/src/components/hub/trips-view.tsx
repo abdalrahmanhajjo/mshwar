@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useGroupCopy } from "@/lib/group-copy";
 import { archiveTrip, fetchTrips, type TripRecord } from "@/lib/hub";
 import { useHubCopy } from "@/lib/hub-copy";
 
@@ -20,6 +21,7 @@ const STATUS_VARIANT: Record<string, "secondary" | "warning" | "outline"> = {
 
 export function TripsView() {
   const copy = useHubCopy();
+  const groupCopy = useGroupCopy();
   const loader = React.useCallback((page: number) => fetchTrips(page), []);
   const { page, data, error, pending, load, setData } = useHubPage(loader);
 
@@ -69,6 +71,9 @@ export function TripsView() {
                 <div className="flex flex-wrap gap-2">
                   <Button asChild variant="secondary" size="sm">
                     <LocaleLink href={`/plan?trip=${trip.id}`}>{copy.planTrip}</LocaleLink>
+                  </Button>
+                  <Button asChild size="sm" variant="outline">
+                    <LocaleLink href={`/trips/${trip.id}`}>{groupCopy.openGroup}</LocaleLink>
                   </Button>
                   {trip.status === "archived" ? null : (
                     <Button type="button" variant="outline" size="sm" onClick={() => void onArchive(trip)}>

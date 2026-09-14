@@ -94,6 +94,7 @@ export function listModeration(entityType?: string): Promise<{
   listings: Record<string, unknown>[];
   images: Record<string, unknown>[];
   reviews: Record<string, unknown>[];
+  responses?: Record<string, unknown>[];
 }> {
   const suffix = entityType ? `?entity_type=${encodeURIComponent(entityType)}` : "";
   return adminFetch(`/api/v1/admin/moderation${suffix}`);
