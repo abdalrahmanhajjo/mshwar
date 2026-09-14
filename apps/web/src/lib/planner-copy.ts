@@ -30,7 +30,33 @@ export type PlannerKey =
   | "outdoor"
   | "weatherSensitive"
   | "thresholdsTitle"
-  | "thresholdsHint";
+  | "thresholdsHint"
+  | "title"
+  | "body"
+  | "placeholder"
+  | "build"
+  | "clarify"
+  | "assumptions"
+  | "degraded"
+  | "timeline"
+  | "travel"
+  | "cost"
+  | "total"
+  | "lock"
+  | "unlock"
+  | "regenerate"
+  | "replace"
+  | "accept"
+  | "cancel"
+  | "refine"
+  | "apply"
+  | "versions"
+  | "sponsored"
+  | "estimated"
+  | "fromPrice"
+  | "quote"
+  | "why"
+  | "booking";
 
 export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
   en: {
@@ -63,6 +89,32 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     weatherSensitive: "Weather-sensitive",
     thresholdsTitle: "Weather warning thresholds",
     thresholdsHint: "Warnings name affected stops. They never cancel bookings.",
+    title: "AI trip builder",
+    body: "Describe a day in Arabic, Lebanese Arabic, English or French. Stops come from published inventory. Totals are summed from stored prices — the model never invents a place or a number.",
+    placeholder: "A slow day in Byblos for two, or بدي يوم هادي بجبيل…",
+    build: "Build plan",
+    clarify: "Answer and continue",
+    assumptions: "Assumed defaults",
+    degraded: "Natural-language planning is unavailable. This plan used structured filters only.",
+    timeline: "Timeline",
+    travel: "Travel",
+    cost: "Cost breakdown",
+    total: "Plan total",
+    lock: "Lock stop",
+    unlock: "Unlock",
+    regenerate: "Regenerate the rest",
+    replace: "Replace this stop",
+    accept: "Accept replacement",
+    cancel: "Cancel",
+    refine: "Ask for a change",
+    apply: "Apply this change",
+    versions: "Version history",
+    sponsored: "Sponsored",
+    estimated: "Estimated",
+    fromPrice: "From",
+    quote: "Quote required",
+    why: "Why this stop",
+    booking: "Booking",
   },
   ar: {
     startTitle: "من أين تبدأ هذه الخطة؟",
@@ -94,6 +146,32 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     weatherSensitive: "حسّاس للطقس",
     thresholdsTitle: "عتبات تحذير الطقس",
     thresholdsHint: "التحذيرات تسمّي المحطات المتأثرة ولا تلغي الحجوزات.",
+    title: "منشئ الرحلة",
+    body: "صف يوماً بالعربية أو الإنكليزية أو الفرنسية. المحطات من المخزون المنشور. المجاميع تُحسب من الأسعار المخزّنة.",
+    placeholder: "بدي يوم هادي بجبيل لشخصين…",
+    build: "إنشاء الخطة",
+    clarify: "أجب وتابع",
+    assumptions: "افتراضات ظاهرة",
+    degraded: "التخطيط باللغة الطبيعية غير متاح. استُخدمت عوامل التصفية المنظمة فقط.",
+    timeline: "الجدول",
+    travel: "الانتقال",
+    cost: "تفصيل التكلفة",
+    total: "مجموع الخطة",
+    lock: "تثبيت المحطة",
+    unlock: "إلغاء التثبيت",
+    regenerate: "إعادة توليد الباقي",
+    replace: "استبدال هذه المحطة",
+    accept: "قبول البديل",
+    cancel: "إلغاء",
+    refine: "اطلب تغييراً",
+    apply: "تطبيق التغيير",
+    versions: "سجل النسخ",
+    sponsored: "مدعوم",
+    estimated: "تقديري",
+    fromPrice: "ابتداءً من",
+    quote: "يتطلب عرض سعر",
+    why: "لماذا هذه المحطة",
+    booking: "الحجز",
   },
   fr: {
     startTitle: "D’où part ce plan ?",
@@ -126,10 +204,38 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     weatherSensitive: "Sensible à la météo",
     thresholdsTitle: "Seuils d’alerte météo",
     thresholdsHint: "Les alertes nomment les arrêts concernés. Elles n’annulent jamais une réservation.",
+    title: "Créateur de voyage",
+    body: "Décrivez une journée en arabe, anglais ou français. Les arrêts viennent de l’inventaire publié. Les totaux sont calculés côté serveur.",
+    placeholder: "Une journée lente à Byblos pour deux…",
+    build: "Créer le plan",
+    clarify: "Répondre et continuer",
+    assumptions: "Hypothèses affichées",
+    degraded: "La planification en langage naturel est indisponible. Filtres structurés uniquement.",
+    timeline: "Chronologie",
+    travel: "Trajet",
+    cost: "Détail des coûts",
+    total: "Total du plan",
+    lock: "Verrouiller",
+    unlock: "Déverrouiller",
+    regenerate: "Régénérer le reste",
+    replace: "Remplacer cet arrêt",
+    accept: "Accepter le remplacement",
+    cancel: "Annuler",
+    refine: "Demander un changement",
+    apply: "Appliquer",
+    versions: "Historique des versions",
+    sponsored: "Sponsorisé",
+    estimated: "Estimé",
+    fromPrice: "À partir de",
+    quote: "Devis requis",
+    why: "Pourquoi cet arrêt",
+    booking: "Réservation",
   },
 };
 
-export function usePlannerCopy() {
+export type PlannerCopy = Record<PlannerKey, string>;
+
+export function usePlannerCopy(): PlannerCopy {
   const { locale } = useLocale();
   return plannerCopy[locale];
 }

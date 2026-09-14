@@ -71,6 +71,34 @@ class Settings(BaseSettings):
     weather_wind_kmh_sensitive_threshold: float = 30.0
     weather_temp_max_c_threshold: float = 38.0
     weather_temp_min_c_threshold: float = 4.0
+    openai_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("OPENAI_API_KEY", "openai_api_key"),
+    )
+    planner_llm_provider: str = Field(
+        default="stub",
+        validation_alias=AliasChoices("PLANNER_LLM_PROVIDER", "planner_llm_provider"),
+    )
+    planner_llm_max_attempts: int = Field(
+        default=2,
+        validation_alias=AliasChoices("PLANNER_LLM_MAX_ATTEMPTS", "planner_llm_max_attempts"),
+    )
+    planner_llm_timeout_seconds: float = Field(
+        default=8.0,
+        validation_alias=AliasChoices("PLANNER_LLM_TIMEOUT_SECONDS", "planner_llm_timeout_seconds"),
+    )
+    planner_circuit_threshold: int = Field(
+        default=3,
+        validation_alias=AliasChoices("PLANNER_CIRCUIT_THRESHOLD", "planner_circuit_threshold"),
+    )
+    planner_circuit_reset_seconds: float = Field(
+        default=60.0,
+        validation_alias=AliasChoices("PLANNER_CIRCUIT_RESET_SECONDS", "planner_circuit_reset_seconds"),
+    )
+    planner_fault_inject: str = Field(
+        default="",
+        validation_alias=AliasChoices("PLANNER_FAULT_INJECT", "planner_fault_inject"),
+    )
     open_meteo_api_key: str = ""
     stripe_secret_key: str = ""
     stripe_webhook_secret: str = ""

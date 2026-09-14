@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  Bot,
   Building2,
   ClipboardCheck,
   Compass,
@@ -58,6 +59,7 @@ export const ADMIN_NAV: ShellNavItem[] = [
   { href: "/admin/quality", labelKey: "dataQuality", icon: ClipboardCheck },
   { href: "/admin/settings", labelKey: "settings", icon: Settings },
   { href: "/admin/collections", labelKey: "collections", icon: Sparkles },
+  { href: "/admin/planner", labelKey: "plannerHealth", icon: Bot },
 ];
 
 export const NAV_BY_SURFACE: Record<ShellSurface, ShellNavItem[]> = {
