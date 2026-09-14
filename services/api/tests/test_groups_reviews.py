@@ -276,6 +276,10 @@ async def test_review_eligibility_moderation_response_and_aggregates(api: AsyncC
                     "request_hash": uuid4().hex,
                 },
             )
+            await session.execute(
+                text("UPDATE app.slots SET reserved = reserved + 2 WHERE id = :slot_id"),
+                {"slot_id": slot_id},
+            )
             await session.commit()
         too_early = await guest.post(
             "/api/v1/reviews",
