@@ -45,7 +45,14 @@ export type AdminKey =
   | "grantRole"
   | "revokeRole"
   | "sessionLog"
-  | "notAdmin";
+  | "notAdmin"
+  | "plannerHealthTitle"
+  | "plannerHealthHint"
+  | "plannerInjections"
+  | "plannerInjectionsHint"
+  | "plannerVersions"
+  | "lookupVersions"
+  | "noInjections";
 
 export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
   en: {
@@ -93,6 +100,13 @@ export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
     revokeRole: "Revoke",
     sessionLog: "Session log",
     notAdmin: "This console is only for platform operators.",
+    plannerHealthTitle: "Planner health",
+    plannerHealthHint: "Circuit-breaker and injection signals for support. Ranker weights are versioned.",
+    plannerInjections: "Injection attempts",
+    plannerInjectionsHint: "User and business text is treated as data. The model cannot book, pay or change a price.",
+    plannerVersions: "Itinerary versions",
+    lookupVersions: "Look up versions",
+    noInjections: "No injection attempts logged.",
   },
   ar: {
     queueTitle: "طابور التحقق",
@@ -139,6 +153,13 @@ export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
     revokeRole: "سحب",
     sessionLog: "سجل الجلسات",
     notAdmin: "هذه الوحدة للمشغّلين فقط.",
+    plannerHealthTitle: "صحة المخطِّط",
+    plannerHealthHint: "إشارات القاطع ومحاولات الحقن للدعم. أوزان الترتيب مُصدَّرة بإصدار.",
+    plannerInjections: "محاولات الحقن",
+    plannerInjectionsHint: "نص المستخدم والنشاط بيانات فقط. لا يحجز النموذج ولا يدفع ولا يغيّر سعراً.",
+    plannerVersions: "إصدارات البرنامج",
+    lookupVersions: "عرض الإصدارات",
+    noInjections: "لا محاولات حقن مسجّلة.",
   },
   fr: {
     queueTitle: "File de vérification",
@@ -185,6 +206,14 @@ export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
     revokeRole: "Révoquer",
     sessionLog: "Journal de session",
     notAdmin: "Cette console est réservée aux opérateurs.",
+    plannerHealthTitle: "Santé du planificateur",
+    plannerHealthHint: "Signaux de disjoncteur et d’injection pour le support. Pondérations versionnées.",
+    plannerInjections: "Tentatives d’injection",
+    plannerInjectionsHint:
+      "Le texte utilisateur ou métier est une donnée. Le modèle ne réserve, ne paie ni ne change un prix.",
+    plannerVersions: "Versions d’itinéraire",
+    lookupVersions: "Consulter les versions",
+    noInjections: "Aucune tentative d’injection.",
   },
 };
 

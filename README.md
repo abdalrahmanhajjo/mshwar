@@ -96,14 +96,19 @@ pnpm dev
 
 See `.env.example` for all required variables. Key variables:
 
-| Variable              | Default                                                        | Description                     |
-| --------------------- | -------------------------------------------------------------- | ------------------------------- |
-| `NODE_ENV`            | `development`                                                  | Application environment         |
-| `NEXT_PUBLIC_API_URL` | `http://localhost:8000`                                        | Backend API URL for the web app |
-| `DATABASE_URL`        | `postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar` | PostgreSQL connection string    |
-| `REDIS_URL`           | `redis://localhost:6379/0`                                     | Redis connection string         |
-| `SECRET_KEY`          | `change-me-in-production`                                      | JWT signing secret              |
-| `ALGORITHM`           | `HS256`                                                        | JWT algorithm                   |
+| Variable                       | Default                                                        | Description                                                   |
+| ------------------------------ | -------------------------------------------------------------- | ------------------------------------------------------------- |
+| `NODE_ENV`                     | `development`                                                  | Application environment                                       |
+| `NEXT_PUBLIC_API_URL`          | `http://localhost:8000`                                        | Backend API URL for the web app                               |
+| `DATABASE_URL`                 | `postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar` | PostgreSQL connection string                                  |
+| `REDIS_URL`                    | `redis://localhost:6379/0`                                     | Redis connection string                                       |
+| `SECRET_KEY`                   | `change-me-in-production`                                      | JWT signing secret                                            |
+| `CATALOGUE_EMBEDDING_PROVIDER` | `stub`                                                         | Catalogue embeddings (`stub` in CI)                           |
+| `CATALOGUE_ROUTING_PROVIDER`   | `auto`                                                         | Google when keyed, else Haversine+road-factor stub            |
+| `WEATHER_PROVIDER`             | `stub`                                                         | Weather forecasts (`stub` in CI)                              |
+| `OPENAI_API_KEY`               | _(empty)_                                                      | When unset, the trip builder uses deterministic stub fixtures |
+| `PLANNER_LLM_PROVIDER`         | `stub`                                                         | `stub` or `openai`. Empty key always forces stub              |
+| `PLANNER_FAULT_INJECT`         | _(empty)_                                                      | Test-only: `provider_down` or `malformed`                     |
 
 ## Code Quality
 
