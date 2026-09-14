@@ -52,11 +52,27 @@ export function GroupTripView({ tripId }: { tripId: string }) {
 
   React.useEffect(() => {
     let cancelled = false;
-    void reload().catch((err: Error) => {
-      if (!cancelled) {
-        setError(err.message);
-      }
-    });
+    void Promise.all([fetchGroupTrip(tripId), fetchParticipants(tripId), fetchTally(tripId), fetchSummary(tripId)])
+      .then(async ([nextTrip, people, nextTally, nextSummary]) => {
+        if (cancelled) {
+          return;
+        }
+        setTrip(nextTrip);
+        setParticipants(people.items ?? []);
+        setTally(nextTally);
+        setSummary(nextSummary);
+        if (nextTrip.can_share) {
+          const nextLinks = await fetchShareLinks(tripId);
+          if (!cancelled) {
+            setLinks(nextLinks);
+          }
+        }
+      })
+      .catch((err: Error) => {
+        if (!cancelled) {
+          setError(err.message);
+        }
+      });
     const timer = window.setInterval(() => {
       void fetchTally(tripId)
         .then((next) => {
@@ -77,7 +93,7 @@ export function GroupTripView({ tripId }: { tripId: string }) {
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, [reload, tripId]);
+  }, [tripId]);
 
   return (
     <div className="grid gap-6">

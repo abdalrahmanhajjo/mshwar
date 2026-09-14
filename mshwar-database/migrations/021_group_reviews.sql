@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS app.group_votes (
     updated_at timestamptz NOT NULL DEFAULT now(),
     CHECK (num_nonnulls(user_id, guest_id) = 1),
     CHECK (num_nonnulls(experience_id, term_id) = 1),
-    UNIQUE NULLS NOT DISTINCT (trip_id, user_id, guest_id, experience_id, term_id)
+    CONSTRAINT group_votes_actor_target UNIQUE NULLS NOT DISTINCT (trip_id, user_id, guest_id, experience_id, term_id)
 );
 
 CREATE TABLE IF NOT EXISTS app.review_aggregates (
@@ -773,7 +773,7 @@ BEGIN
     END IF;
     INSERT INTO app.group_votes (trip_id, user_id, guest_id, experience_id, term_id, value)
     VALUES (p_trip, p_user, p_guest, p_experience, p_term, p_value)
-    ON CONFLICT DO UPDATE
+    ON CONFLICT ON CONSTRAINT group_votes_actor_target DO UPDATE
         SET value = EXCLUDED.value, updated_at = now()
     RETURNING id INTO v_id;
     RETURN app.group_vote_tally(p_trip, p_user, p_guest);
