@@ -659,6 +659,9 @@ $$;
 
 -- ---- traveller feed / preferences -----------------------------------
 
+DROP FUNCTION IF EXISTS app.list_my_notifications(uuid, integer, integer);
+DROP FUNCTION IF EXISTS app.mark_my_notification_read(uuid, uuid);
+
 CREATE OR REPLACE FUNCTION app.list_my_notifications(p_user_id uuid, p_limit integer, p_offset integer)
 RETURNS TABLE (
     id uuid,
