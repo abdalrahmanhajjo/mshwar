@@ -1,6 +1,8 @@
 "use client";
 
+import * as React from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft, ArrowRight, LayoutGrid, Map as MapIcon, SlidersHorizontal, X } from "lucide-react";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { CategoryPills } from "@/components/browse/category-pills";
 import { ExperienceCard } from "@/components/browse/experience-card";
@@ -9,11 +11,15 @@ import { HeroSearch } from "@/components/browse/hero-search";
 import { SoftPlanCta } from "@/components/browse/plan-cta";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
+import { PageHeader } from "@/components/ui/page-header";
 import { useBrowseCopy } from "@/lib/browse-copy";
 import { formatPlural } from "@/i18n/format";
 import { withLocalePrefix } from "@/lib/locale";
 import { useLocale } from "@/components/shell/locale-provider";
 import { ExperiencesMap } from "@/components/browse/experiences-map";
+import { splitSentence } from "@/lib/text";
+import { cn, focusRing } from "@/lib/utils";
 import {
   DESTINATIONS,
   LISTING_KINDS,
@@ -35,6 +41,7 @@ export function ExperiencesView({
   const copy = useBrowseCopy();
   const { locale } = useLocale();
   const router = useRouter();
+  const [lead, tail] = splitSentence(copy.browseTitle);
 
   function pushFilters(next: ExperienceFilters) {
     const query = serializeExperienceFilters(next);
@@ -63,153 +70,233 @@ export function ExperiencesView({
     filters.available ? { key: "available", label: copy.availableOnly } : null,
   ].filter(Boolean) as { key: keyof ExperienceFilters; label: string }[];
 
+  const advancedCount = [
+    filters.date,
+    filters.priceMax,
+    filters.distance,
+    filters.party,
+    filters.rating,
+    filters.available,
+  ].filter(Boolean).length;
+  const [showFilters, setShowFilters] = React.useState(advancedCount > 0);
+  const isMap = filters.view === "map";
+
   return (
-    <div className="shell-frame grid gap-8 py-12 md:py-16">
-      <header className="mx-auto max-w-2xl text-center">
-        <p className="text-xs uppercase tracking-[0.18em] text-text-muted">{copy.browseEyebrow}</p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">{copy.browseTitle}</h1>
-        <p className="mt-4 text-text-muted">{copy.browseBody}</p>
-      </header>
+    <div className="shell-frame grid gap-8 pb-20 pt-12 md:pt-16">
+      <PageHeader eyebrow={copy.browseEyebrow} title={lead} accent={tail || undefined} description={copy.browseBody} />
 
-      <HeroSearch initialQuery={filters.q ?? ""} compact />
-
-      <div className="flex flex-wrap justify-center gap-2">
-        {LISTING_KINDS.map((kind) => {
-          const active = (filters.kind ?? "all") === kind.slug;
-          return (
-            <Button
-              key={kind.slug}
-              type="button"
-              size="sm"
-              variant={active ? "default" : "outline"}
-              className="rounded-pill"
-              onClick={() => patch({ kind: kind.slug === "all" ? undefined : kind.slug, page: 1 })}
-            >
-              {kind.slug === "all"
-                ? copy.kindAll
-                : kind.slug === "experience"
-                  ? copy.kindExperiences
-                  : kind.slug === "attraction"
-                    ? copy.kindAttractions
-                    : copy.kindRestaurants}
-            </Button>
-          );
-        })}
+      <div className="grid gap-3">
+        <div className="flex flex-col gap-3 rounded-card border border-border-subtle bg-surface-sunken/70 p-3 md:flex-row md:items-center md:p-4">
+          <HeroSearch initialQuery={filters.q ?? ""} compact />
+          <NativeSelect
+            aria-label={copy.destinations}
+            wrapperClassName="md:w-56"
+            className="h-12 border-border-subtle"
+            value={filters.destination ?? ""}
+            onChange={(event) => patch({ destination: event.target.value || undefined, page: 1 })}
+          >
+            <option value="">{copy.anywhere}</option>
+            {DESTINATIONS.map((destination) => (
+              <option key={destination.slug} value={destination.slug}>
+                {destination.name}
+              </option>
+            ))}
+          </NativeSelect>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-12 px-6"
+            aria-expanded={showFilters}
+            aria-controls="experience-filters"
+            onClick={() => setShowFilters((value) => !value)}
+          >
+            <SlidersHorizontal aria-hidden />
+            {copy.filters}
+            {advancedCount ? (
+              <span className="grid size-5 place-items-center rounded-full bg-brand text-[0.6875rem] text-brand-foreground">
+                {advancedCount}
+              </span>
+            ) : null}
+          </Button>
+        </div>
+        {showFilters ? <FilterRail id="experience-filters" layout="panel" filters={filters} onChange={patch} /> : null}
       </div>
 
-      <CategoryPills active={filters.category ?? "all"} />
-
-      <div className="grid gap-8 lg:grid-cols-[16rem_1fr] lg:items-start">
-        <FilterRail filters={filters} onChange={patch} />
-        <div className="grid gap-6">
-          {activeChips.length ? (
-            <div className="flex flex-wrap items-center gap-2">
-              {activeChips.map((chip) => (
-                <span key={chip.key} className="rounded-pill bg-surface-sunken px-3 py-1 text-sm">
-                  {chip.label}
-                </span>
-              ))}
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => router.push(withLocalePrefix(locale, "/experiences"))}
-              >
-                {copy.clearFilters}
-              </Button>
-            </div>
-          ) : null}
-
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-text-muted">
-              {formatPlural(locale, page.total, { one: copy.placesOne, other: copy.placesOther })}
-            </p>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant={filters.view === "map" ? "outline" : "default"}
-                onClick={() => patch({ view: undefined })}
-              >
-                {copy.listView}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant={filters.view === "map" ? "default" : "outline"}
-                onClick={() => patch({ view: "map" })}
-              >
-                {copy.mapView}
-              </Button>
-            </div>
-            <label className="flex items-center gap-2 text-sm">
-              <span className="text-text-muted">{copy.recommended}</span>
-              <select
-                className="rounded-control border border-border bg-surface-raised px-3 py-2"
-                value={filters.sort ?? "recommended"}
-                onChange={(event) =>
-                  patch({ sort: event.target.value === "recommended" ? undefined : event.target.value, page: 1 })
-                }
-                aria-label={copy.recommended}
-              >
-                <option value="recommended">{copy.sortRecommended}</option>
-                <option value="price">{copy.sortPrice}</option>
-                <option value="duration">{copy.sortDuration}</option>
-                <option value="rating">{copy.sortRating}</option>
-              </select>
-            </label>
+      <div className="grid gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div
+            role="group"
+            aria-label={copy.kindAll}
+            className="inline-flex rounded-pill border border-border-subtle bg-surface-raised p-1"
+          >
+            {LISTING_KINDS.map((kind) => {
+              const active = (filters.kind ?? "all") === kind.slug;
+              return (
+                <button
+                  key={kind.slug}
+                  type="button"
+                  aria-pressed={active}
+                  className={cn(
+                    "inline-flex h-9 items-center rounded-pill px-4 text-sm font-medium transition-colors",
+                    active ? "bg-brand text-brand-foreground" : "text-text-muted hover:text-text",
+                    focusRing,
+                  )}
+                  onClick={() => patch({ kind: kind.slug === "all" ? undefined : kind.slug, page: 1 })}
+                >
+                  {kind.slug === "all"
+                    ? copy.kindAll
+                    : kind.slug === "experience"
+                      ? copy.kindExperiences
+                      : kind.slug === "attraction"
+                        ? copy.kindAttractions
+                        : copy.kindRestaurants}
+                </button>
+              );
+            })}
           </div>
+        </div>
+        <CategoryPills active={filters.category ?? "all"} />
+      </div>
 
-          {filters.view === "map" ? (
-            <ExperiencesMap items={mapItems} onSearchArea={(destination) => patch({ destination, page: 1 })} />
-          ) : page.items.length ? (
-            <div className="grid gap-8 sm:grid-cols-2 xl:grid-cols-3">
-              {page.items.map((experience) => (
-                <ExperienceCard key={experience.slug} experience={experience} />
-              ))}
-            </div>
-          ) : (
-            <EmptyState
-              title={copy.emptyResults}
-              action={
-                <Button type="button" onClick={() => router.push(withLocalePrefix(locale, "/experiences"))}>
-                  {copy.clearFilters}
-                </Button>
+      {activeChips.length ? (
+        <div className="flex flex-wrap items-center gap-2">
+          {activeChips.map((chip) => (
+            <button
+              key={chip.key}
+              type="button"
+              onClick={() => patch({ [chip.key]: undefined, page: 1 } as Partial<ExperienceFilters>)}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-pill bg-brand-subtle py-1.5 pe-2 ps-3 text-sm font-medium text-text hover:bg-brand-subtle/70",
+                focusRing,
+              )}
+            >
+              {chip.label}
+              <X className="size-3.5" aria-hidden />
+            </button>
+          ))}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push(withLocalePrefix(locale, "/experiences"))}
+          >
+            {copy.clearFilters}
+          </Button>
+        </div>
+      ) : null}
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle pb-4">
+        <p className="text-sm text-text-muted">
+          {formatPlural(locale, page.total, { one: copy.placesOne, other: copy.placesOther })}
+        </p>
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 text-sm">
+            <span className="sr-only">{copy.resultsSort}</span>
+            <NativeSelect
+              className="min-h-10 w-44 border-transparent bg-transparent py-2 hover:border-border-subtle"
+              value={filters.sort ?? "recommended"}
+              onChange={(event) =>
+                patch({ sort: event.target.value === "recommended" ? undefined : event.target.value, page: 1 })
               }
-            />
-          )}
-
-          {page.pages > 1 ? (
-            <nav className="flex items-center justify-between gap-3" aria-label="Pagination">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={page.page <= 1}
-                onClick={() => patch({ page: page.page - 1 })}
-              >
-                {copy.pagePrevious}
-              </Button>
-              <p className="text-sm text-text-muted">
-                {page.page} / {page.pages}
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={page.page >= page.pages}
-                onClick={() => patch({ page: page.page + 1 })}
-              >
-                {copy.pageNext}
-              </Button>
-            </nav>
-          ) : null}
+              aria-label={copy.recommended}
+            >
+              <option value="recommended">{copy.sortRecommended}</option>
+              <option value="price">{copy.sortPrice}</option>
+              <option value="duration">{copy.sortDuration}</option>
+              <option value="rating">{copy.sortRating}</option>
+            </NativeSelect>
+          </label>
+          <div
+            role="group"
+            aria-label={copy.viewToggle}
+            className="inline-flex rounded-control border border-border-subtle bg-surface-raised p-1"
+          >
+            <button
+              type="button"
+              aria-pressed={!isMap}
+              onClick={() => patch({ view: undefined })}
+              className={cn(
+                "inline-flex h-9 items-center gap-2 rounded-[0.55rem] px-2.5 text-sm font-medium",
+                !isMap ? "bg-brand text-brand-foreground" : "text-text-muted hover:text-text",
+                focusRing,
+              )}
+            >
+              <LayoutGrid className="size-4" aria-hidden />
+              <span className="sr-only sm:not-sr-only">{copy.listView}</span>
+            </button>
+            <button
+              type="button"
+              aria-pressed={isMap}
+              onClick={() => patch({ view: "map" })}
+              className={cn(
+                "inline-flex h-9 items-center gap-2 rounded-[0.55rem] px-2.5 text-sm font-medium",
+                isMap ? "bg-brand text-brand-foreground" : "text-text-muted hover:text-text",
+                focusRing,
+              )}
+            >
+              <MapIcon className="size-4" aria-hidden />
+              <span className="sr-only sm:not-sr-only">{copy.mapView}</span>
+            </button>
+          </div>
         </div>
       </div>
 
+      {isMap ? (
+        <ExperiencesMap items={mapItems} onSearchArea={(destination) => patch({ destination, page: 1 })} />
+      ) : page.items.length ? (
+        <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+          {page.items.map((experience) => (
+            <ExperienceCard key={experience.slug} experience={experience} />
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          icon={<SlidersHorizontal aria-hidden />}
+          title={copy.emptyResults}
+          action={
+            <Button type="button" onClick={() => router.push(withLocalePrefix(locale, "/experiences"))}>
+              {copy.clearFilters}
+            </Button>
+          }
+        />
+      )}
+
+      {page.pages > 1 ? (
+        <nav className="flex items-center justify-center gap-3" aria-label="Pagination">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={page.page <= 1}
+            onClick={() => patch({ page: page.page - 1 })}
+          >
+            <ArrowLeft className="rtl:rotate-180" aria-hidden />
+            {copy.pagePrevious}
+          </Button>
+          <p className="min-w-16 text-center text-sm tabular-nums text-text-muted">
+            {page.page} / {page.pages}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={page.page >= page.pages}
+            onClick={() => patch({ page: page.page + 1 })}
+          >
+            {copy.pageNext}
+            <ArrowRight className="rtl:rotate-180" aria-hidden />
+          </Button>
+        </nav>
+      ) : null}
+
+      <p className="-mt-2 text-xs text-text-muted">{copy.sampleOffer}</p>
+
       <SoftPlanCta />
       <p className="text-center text-sm">
-        <LocaleLink href="/ideas" className="underline-offset-4 hover:underline">
+        <LocaleLink
+          href="/ideas"
+          className="font-medium underline decoration-border-subtle underline-offset-4 hover:decoration-text"
+        >
           {copy.ideasTitle}
         </LocaleLink>
       </p>

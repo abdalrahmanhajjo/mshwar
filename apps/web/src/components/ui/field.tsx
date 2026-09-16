@@ -28,7 +28,7 @@ export function Field({
     <div className={cn("grid gap-2", className)}>
       <Label htmlFor={id}>{label}</Label>
       {description ? (
-        <p id={descriptionId} className="text-sm text-text-muted">
+        <p id={descriptionId} className="-mt-1 text-xs text-text-muted">
           {description}
         </p>
       ) : null}

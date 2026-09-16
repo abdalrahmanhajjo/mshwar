@@ -60,7 +60,65 @@ export type AdminKey =
   | "injections24h"
   | "tripIdLabel"
   | "tripIdPlaceholder"
-  | "sealed";
+  | "sealed"
+  | "consoleKicker"
+  | "overviewBody"
+  | "openCases"
+  | "openIssues"
+  | "fromLabel"
+  | "toLabel"
+  | "usersTitle"
+  | "usersBody"
+  | "nameCol"
+  | "statusCol"
+  | "actionsCol"
+  | "languageCol"
+  | "reasonLabel"
+  | "typeLabel"
+  | "selectedCount"
+  | "openCase"
+  | "resolve"
+  | "outcomeLabel"
+  | "caseReasonLabel"
+  | "bookingsList"
+  | "selectBooking"
+  | "snapshots"
+  | "queueEmpty"
+  | "collectionsTitle"
+  | "collectionsBody"
+  | "settingsTitle"
+  | "settingsBody"
+  | "retiredNote"
+  | "rolesNote"
+  | "feesNote"
+  | "saveFees"
+  | "saveFlag"
+  | "enabledLabel"
+  | "disabledLabel"
+  | "retiredLabel"
+  | "activeLabel"
+  | "verifiedBadge"
+  | "notVerified"
+  | "kindLabel"
+  | "slugLabel"
+  | "labelLabel"
+  | "mergeTarget"
+  | "userIdLabel"
+  | "tierLabel"
+  | "commissionLabel"
+  | "serviceFeeLabel"
+  | "flagKeyLabel"
+  | "environmentLabel"
+  | "cohortLabel"
+  | "configVersions"
+  | "titleLabel"
+  | "descriptionLabel"
+  | "stopsLabel"
+  | "publishCollection"
+  | "savedMessage"
+  | "saveFailed"
+  | "unknownIp"
+  | "runs";
 
 export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
   en: {
@@ -123,6 +181,64 @@ export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
     tripIdLabel: "Trip ID",
     tripIdPlaceholder: "uuid",
     sealed: "sealed",
+    consoleKicker: "Operations console",
+    overviewBody: "Signals across travellers, businesses, bookings and the planner.",
+    openCases: "Open cases",
+    openIssues: "Open quality issues",
+    fromLabel: "From",
+    toLabel: "To",
+    usersTitle: "Users",
+    usersBody: "Accounts, language and verification state. Unverified accounts can browse but cannot book.",
+    nameCol: "Name",
+    statusCol: "Status",
+    actionsCol: "Actions",
+    languageCol: "Language",
+    reasonLabel: "Reason for the audit log",
+    typeLabel: "Content type",
+    selectedCount: "{count} selected",
+    openCase: "Open case",
+    resolve: "Resolve",
+    outcomeLabel: "Outcome note",
+    caseReasonLabel: "What is the case about?",
+    bookingsList: "Recent bookings",
+    selectBooking: "Select a booking to inspect its timeline and payments.",
+    snapshots: "Price and policy snapshots",
+    queueEmpty: "Nothing in this queue.",
+    collectionsTitle: "Collections",
+    collectionsBody: "Assemble collections from existing published experiences.",
+    settingsTitle: "Settings",
+    settingsBody: "Fees, feature flags and weather thresholds.",
+    retiredNote: "Retiring keeps history and blocks new assignments.",
+    rolesNote: "Admin is a distinct role. It cannot be self-granted.",
+    feesNote: "Live-safe keys: marketplace fees and feature flags. Actor, timestamp and previous value are versioned.",
+    saveFees: "Save fees",
+    saveFlag: "Save flag",
+    enabledLabel: "Enabled",
+    disabledLabel: "Disabled",
+    retiredLabel: "Retired",
+    activeLabel: "Active",
+    verifiedBadge: "Verified badge",
+    notVerified: "Not verified",
+    kindLabel: "Kind",
+    slugLabel: "Slug",
+    labelLabel: "Label",
+    mergeTarget: "Merge into (term id)",
+    userIdLabel: "User ID",
+    tierLabel: "Tier",
+    commissionLabel: "Commission (bps)",
+    serviceFeeLabel: "Service fee (minor units)",
+    flagKeyLabel: "Flag key",
+    environmentLabel: "Environment",
+    cohortLabel: "Cohort",
+    configVersions: "Config versions",
+    titleLabel: "Title",
+    descriptionLabel: "Description",
+    stopsLabel: "Experience slugs (comma separated)",
+    publishCollection: "Publish collection",
+    savedMessage: "Saved.",
+    saveFailed: "Could not save. Sign in and use existing experience slugs.",
+    unknownIp: "unknown",
+    runs: "Scheduler",
   },
   ar: {
     queueTitle: "طابور التحقق",
@@ -184,6 +300,64 @@ export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
     tripIdLabel: "معرّف الرحلة",
     tripIdPlaceholder: "uuid",
     sealed: "مُغلقة",
+    consoleKicker: "وحدة العمليات",
+    overviewBody: "مؤشرات عبر المسافرين والأعمال والحجوزات والمخطِّط.",
+    openCases: "حالات مفتوحة",
+    openIssues: "مشكلات جودة مفتوحة",
+    fromLabel: "من",
+    toLabel: "إلى",
+    usersTitle: "المستخدمون",
+    usersBody: "الحسابات واللغة وحالة التحقق. الحسابات غير الموثّقة تتصفح ولا تحجز.",
+    nameCol: "الاسم",
+    statusCol: "الحالة",
+    actionsCol: "الإجراءات",
+    languageCol: "اللغة",
+    reasonLabel: "السبب لسجل التدقيق",
+    typeLabel: "نوع المحتوى",
+    selectedCount: "{count} محدد",
+    openCase: "فتح حالة",
+    resolve: "حل",
+    outcomeLabel: "ملاحظة النتيجة",
+    caseReasonLabel: "ما موضوع الحالة؟",
+    bookingsList: "أحدث الحجوزات",
+    selectBooking: "اختر حجزاً لفحص سجلّه ومدفوعاته.",
+    snapshots: "لقطات السعر والسياسة",
+    queueEmpty: "لا شيء في هذه القائمة.",
+    collectionsTitle: "المجموعات",
+    collectionsBody: "اجمع المجموعات من تجارب منشورة.",
+    settingsTitle: "الإعدادات",
+    settingsBody: "الرسوم ومفاتيح الميزات وحدود الطقس.",
+    retiredNote: "الإيقاف يحفظ السجل ويمنع الإسناد الجديد.",
+    rolesNote: "المسؤول دور مستقل ولا يمكن منحه للنفس.",
+    feesNote: "مفاتيح آمنة: رسوم السوق ومفاتيح الميزات. يُحفظ المنفّذ والوقت والقيمة السابقة.",
+    saveFees: "حفظ الرسوم",
+    saveFlag: "حفظ المفتاح",
+    enabledLabel: "مفعّل",
+    disabledLabel: "معطّل",
+    retiredLabel: "موقوف",
+    activeLabel: "نشط",
+    verifiedBadge: "شارة التوثيق",
+    notVerified: "غير موثّق",
+    kindLabel: "النوع",
+    slugLabel: "المعرّف",
+    labelLabel: "التسمية",
+    mergeTarget: "دمج مع (معرّف المصطلح)",
+    userIdLabel: "معرّف المستخدم",
+    tierLabel: "المستوى",
+    commissionLabel: "العمولة (نقاط أساس)",
+    serviceFeeLabel: "رسوم الخدمة (بالوحدات الصغرى)",
+    flagKeyLabel: "مفتاح الميزة",
+    environmentLabel: "البيئة",
+    cohortLabel: "الفئة",
+    configVersions: "إصدارات الإعداد",
+    titleLabel: "العنوان",
+    descriptionLabel: "الوصف",
+    stopsLabel: "معرّفات التجارب (مفصولة بفواصل)",
+    publishCollection: "نشر المجموعة",
+    savedMessage: "تم الحفظ.",
+    saveFailed: "تعذّر الحفظ. سجّل الدخول واستخدم معرّفات تجارب موجودة.",
+    unknownIp: "غير معروف",
+    runs: "المجدول",
   },
   fr: {
     queueTitle: "File de vérification",
@@ -246,6 +420,64 @@ export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
     tripIdLabel: "ID du voyage",
     tripIdPlaceholder: "uuid",
     sealed: "scellé",
+    consoleKicker: "Console des opérations",
+    overviewBody: "Signaux sur les voyageurs, les entreprises, les réservations et le planificateur.",
+    openCases: "Dossiers ouverts",
+    openIssues: "Problèmes de qualité ouverts",
+    fromLabel: "Du",
+    toLabel: "Au",
+    usersTitle: "Utilisateurs",
+    usersBody: "Comptes, langue et vérification. Les comptes non vérifiés peuvent naviguer mais pas réserver.",
+    nameCol: "Nom",
+    statusCol: "Statut",
+    actionsCol: "Actions",
+    languageCol: "Langue",
+    reasonLabel: "Motif pour le journal d’audit",
+    typeLabel: "Type de contenu",
+    selectedCount: "{count} sélectionné(s)",
+    openCase: "Ouvrir un dossier",
+    resolve: "Résoudre",
+    outcomeLabel: "Note de résolution",
+    caseReasonLabel: "Quel est l’objet du dossier ?",
+    bookingsList: "Réservations récentes",
+    selectBooking: "Sélectionnez une réservation pour voir son historique et ses paiements.",
+    snapshots: "Instantanés prix et politique",
+    queueEmpty: "Rien dans cette file.",
+    collectionsTitle: "Collections",
+    collectionsBody: "Composez des collections à partir d’expériences publiées.",
+    settingsTitle: "Paramètres",
+    settingsBody: "Frais, fonctionnalités et seuils météo.",
+    retiredNote: "Le retrait conserve l’historique et bloque les nouvelles affectations.",
+    rolesNote: "Administrateur est un rôle distinct. Il ne peut pas être auto-attribué.",
+    feesNote: "Clés modifiables à chaud : frais et fonctionnalités. Auteur, date et valeur précédente sont versionnés.",
+    saveFees: "Enregistrer les frais",
+    saveFlag: "Enregistrer",
+    enabledLabel: "Activé",
+    disabledLabel: "Désactivé",
+    retiredLabel: "Retiré",
+    activeLabel: "Actif",
+    verifiedBadge: "Badge vérifié",
+    notVerified: "Non vérifié",
+    kindLabel: "Type",
+    slugLabel: "Identifiant",
+    labelLabel: "Libellé",
+    mergeTarget: "Fusionner avec (id du terme)",
+    userIdLabel: "ID utilisateur",
+    tierLabel: "Niveau",
+    commissionLabel: "Commission (pb)",
+    serviceFeeLabel: "Frais de service (centimes)",
+    flagKeyLabel: "Clé",
+    environmentLabel: "Environnement",
+    cohortLabel: "Cohorte",
+    configVersions: "Versions de configuration",
+    titleLabel: "Titre",
+    descriptionLabel: "Description",
+    stopsLabel: "Identifiants d’expériences (séparés par des virgules)",
+    publishCollection: "Publier la collection",
+    savedMessage: "Enregistré.",
+    saveFailed: "Échec de l’enregistrement. Connectez-vous et utilisez des identifiants existants.",
+    unknownIp: "inconnue",
+    runs: "Planificateur",
   },
 };
 

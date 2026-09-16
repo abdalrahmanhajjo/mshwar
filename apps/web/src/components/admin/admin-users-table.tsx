@@ -1,8 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AdminHeader, EmptyRow, TableShell } from "@/components/admin/admin-ui";
+import { Avatar } from "@/components/shell/auth-status";
 import { useLocale } from "@/components/shell/locale-provider";
+import { Badge } from "@/components/ui/badge";
+import { useAdminCopy } from "@/lib/admin-copy";
+import { statusTone } from "@/lib/status";
 
 type AdminUser = {
   id: string;
@@ -15,6 +19,7 @@ type AdminUser = {
 
 export function AdminUsersTable() {
   const { t } = useLocale();
+  const copy = useAdminCopy();
   const [users, setUsers] = React.useState<AdminUser[]>([]);
 
   React.useEffect(() => {
@@ -37,35 +42,42 @@ export function AdminUsersTable() {
   }, []);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("users")}</CardTitle>
-        <CardDescription>{t("verifyToBook")}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {users.length === 0 ? (
-          <p className="text-sm text-text-muted">{t("users")}</p>
-        ) : (
-          <table className="w-full text-start text-sm">
-            <thead>
-              <tr className="border-b border-border text-text-muted">
-                <th className="py-2 font-medium">{t("displayName")}</th>
-                <th className="py-2 font-medium">{t("email")}</th>
-                <th className="py-2 font-medium">{t("verifyEmail")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((row) => (
-                <tr key={row.id} className="border-b border-border">
-                  <td className="py-2">{row.display_name}</td>
-                  <td className="py-2">{row.email ?? "—"}</td>
-                  <td className="py-2">{row.email_verified ? t("verified") : t("unverified")}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </CardContent>
-    </Card>
+    <div className="grid gap-8">
+      <AdminHeader title={t("users")} description={copy.usersBody} />
+      <TableShell>
+        <thead>
+          <tr>
+            <th scope="col">{t("displayName")}</th>
+            <th scope="col">{t("email")}</th>
+            <th scope="col">{copy.languageCol}</th>
+            <th scope="col">{copy.statusCol}</th>
+            <th scope="col">{t("verifyEmail")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.length === 0 ? <EmptyRow colSpan={5} label={copy.queueEmpty} /> : null}
+          {users.map((row) => (
+            <tr key={row.id}>
+              <td>
+                <span className="flex items-center gap-3">
+                  <Avatar name={row.display_name} className="size-9 text-xs" />
+                  <span className="font-medium">{row.display_name}</span>
+                </span>
+              </td>
+              <td className="text-text-muted">{row.email ?? "—"}</td>
+              <td className="uppercase">{row.locale}</td>
+              <td>
+                <Badge variant={statusTone(row.status)}>{row.status}</Badge>
+              </td>
+              <td>
+                <Badge variant={row.email_verified ? "success" : "warning"}>
+                  {row.email_verified ? t("verified") : t("unverified")}
+                </Badge>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </TableShell>
+    </div>
   );
 }

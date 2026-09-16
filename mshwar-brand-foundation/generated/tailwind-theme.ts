@@ -20,15 +20,19 @@ export const mshwarTheme = {
     },
     "accent": {
       "DEFAULT": "var(--accent)",
-      "foreground": "var(--accent-foreground)"
+      "foreground": "var(--accent-foreground)",
+      "subtle": "var(--accent-subtle)",
+      "strong": "var(--accent-strong)"
     },
     "brand": {
       "DEFAULT": "var(--brand)",
-      "foreground": "var(--brand-foreground)"
+      "foreground": "var(--brand-foreground)",
+      "subtle": "var(--brand-subtle)"
     },
     "border": {
       "DEFAULT": "var(--border)",
-      "strong": "var(--border-strong)"
+      "strong": "var(--border-strong)",
+      "subtle": "var(--border-subtle)"
     },
     "danger": {
       "DEFAULT": "var(--danger)",
@@ -69,6 +73,11 @@ export const mshwarTheme = {
       "var(--font-latin)",
       "system-ui",
       "sans-serif"
+    ],
+    "display": [
+      "var(--font-display)",
+      "Georgia",
+      "serif"
     ],
     "arabic": [
       "var(--font-arabic)",

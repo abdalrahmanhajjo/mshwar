@@ -84,7 +84,7 @@ function Rating({ value = 0, onValueChange, max = 5, label = "Rating", readOnly 
               )}
               onClick={() => onValueChange?.(star)}
             >
-              <Star className={cn("size-5", filled ? "fill-accent text-accent" : "text-border-strong")} aria-hidden />
+              <Star className={cn("size-5", filled ? "fill-accent text-accent" : "text-border")} aria-hidden />
             </button>
           );
         })}

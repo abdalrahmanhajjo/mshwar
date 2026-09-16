@@ -32,7 +32,8 @@ export type NotificationCopyKey =
   | "maxEscalations"
   | "emailChannel"
   | "inAppChannel"
-  | "saveEscalation";
+  | "saveEscalation"
+  | "roleLabel";
 
 export const notificationCopy: Record<Locale, Record<NotificationCopyKey, string>> = {
   en: {
@@ -67,6 +68,7 @@ export const notificationCopy: Record<Locale, Record<NotificationCopyKey, string
     emailChannel: "Email",
     inAppChannel: "In-app",
     saveEscalation: "Save schedule",
+    roleLabel: "Role",
   },
   ar: {
     prefsTitle: "تفضيلات التواصل",
@@ -100,6 +102,7 @@ export const notificationCopy: Record<Locale, Record<NotificationCopyKey, string
     emailChannel: "البريد",
     inAppChannel: "داخل التطبيق",
     saveEscalation: "حفظ الجدول",
+    roleLabel: "الدور",
   },
   fr: {
     prefsTitle: "Préférences de communication",
@@ -133,6 +136,7 @@ export const notificationCopy: Record<Locale, Record<NotificationCopyKey, string
     emailChannel: "E-mail",
     inAppChannel: "In-app",
     saveEscalation: "Enregistrer le calendrier",
+    roleLabel: "Rôle",
   },
 };
 

@@ -101,6 +101,26 @@
         }
       }
     },
+    "accent-subtle": {
+      "$type": "color",
+      "$value": "#FDEBE3",
+      "$extensions": {
+        "com.mshwar.modes": {
+          "light": "#FDEBE3",
+          "dark": "#3D2118"
+        }
+      }
+    },
+    "accent-strong": {
+      "$type": "color",
+      "$value": "#B03A17",
+      "$extensions": {
+        "com.mshwar.modes": {
+          "light": "#B03A17",
+          "dark": "#FDBA9F"
+        }
+      }
+    },
     "brand": {
       "$type": "color",
       "$value": "#12352F",
@@ -121,6 +141,16 @@
         }
       }
     },
+    "brand-subtle": {
+      "$type": "color",
+      "$value": "#E4EDE7",
+      "$extensions": {
+        "com.mshwar.modes": {
+          "light": "#E4EDE7",
+          "dark": "#1E3F39"
+        }
+      }
+    },
     "border": {
       "$type": "color",
       "$value": "#7F8984",
@@ -138,6 +168,16 @@
         "com.mshwar.modes": {
           "light": "#5E6D66",
           "dark": "#A8B5AF"
+        }
+      }
+    },
+    "border-subtle": {
+      "$type": "color",
+      "$value": "#E2E6DF",
+      "$extensions": {
+        "com.mshwar.modes": {
+          "light": "#E2E6DF",
+          "dark": "#24403B"
         }
       }
     },
@@ -245,7 +285,11 @@
   "fontFamily": {
     "latin": {
       "$type": "fontFamily",
-      "$value": "Manrope"
+      "$value": "DM Sans"
+    },
+    "display": {
+      "$type": "fontFamily",
+      "$value": "Newsreader"
     },
     "arabic": {
       "$type": "fontFamily",
@@ -516,6 +560,38 @@
       "accentText": {
         "$type": "color",
         "$value": "#0C241F"
+      },
+      "orangeSubtle": {
+        "$type": "color",
+        "$value": "#FDEBE3"
+      },
+      "orangeSubtleDark": {
+        "$type": "color",
+        "$value": "#3D2118"
+      },
+      "orangeText": {
+        "$type": "color",
+        "$value": "#B03A17"
+      },
+      "orangeTextDark": {
+        "$type": "color",
+        "$value": "#FDBA9F"
+      },
+      "cedarSubtle": {
+        "$type": "color",
+        "$value": "#E4EDE7"
+      },
+      "cedarSubtleDark": {
+        "$type": "color",
+        "$value": "#1E3F39"
+      },
+      "borderSubtle": {
+        "$type": "color",
+        "$value": "#E2E6DF"
+      },
+      "borderSubtleDark": {
+        "$type": "color",
+        "$value": "#24403B"
       },
       "overlayLight": {
         "$type": "color",

@@ -82,11 +82,12 @@ Orange as small text on canvas is only 3.03:1 and is listed as forbidden in `con
 
 ## Typography
 
-- Latin: **Manrope**, weights 400, 500, 600, 700 and 800. [Official specimen](https://fonts.google.com/specimen/Manrope).
+- Latin: **DM Sans** (variable, optical size axis), weights 400–700. [Official specimen](https://fonts.google.com/specimen/DM+Sans).
+- Display accent: **Newsreader** italic (`typography.family.display`), used sparingly for one emphasised phrase in large headings. [Official specimen](https://fonts.google.com/specimen/Newsreader).
 - Arabic: **Noto Sans Arabic**, weights 400, 500, 600 and 700. [Official specimen](https://fonts.google.com/noto/specimen/Noto%20Sans%20Arabic).
 - Main body: 16px or larger; standard labels 14px or larger; Latin line height 1.6, Arabic 1.8.
 - Use semantic heading order and avoid all-caps paragraphs. Do not apply Latin letter spacing to Arabic.
-- Self-host approved font files in the production repository with their license notices; this package does not contain font binaries.
+- Self-host approved font files in the production repository with their license notices (the web app keeps them in `apps/web/src/app/fonts`); this package does not contain font binaries.
 
 ## Icon system
 

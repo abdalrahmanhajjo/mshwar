@@ -2,7 +2,11 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Building2, Check, FileText } from "lucide-react";
+import { AdminHeader, EmptyRow, ReasonField, TableShell } from "@/components/admin/admin-ui";
+import { Badge } from "@/components/ui/badge";
+import { NativeSelect } from "@/components/ui/native-select";
+import { statusTone } from "@/lib/status";
 import { Input } from "@/components/ui/input";
 import { useAdminCopy } from "@/lib/admin-copy";
 import {
@@ -72,80 +76,105 @@ export function AdminBusinessesTable() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{copy.queueTitle}</CardTitle>
-        <CardDescription>{copy.reasonRequired}</CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-3">
-        <label className="grid gap-1 text-sm">
-          {copy.reasonRequired}
-          <Input aria-label="reason" value={reason} onChange={(event) => setReason(event.target.value)} />
-        </label>
-        <div className="flex flex-wrap gap-2">
-          <label className="grid gap-1 text-sm">
-            {copy.filterStatus}
-            <Input aria-label={copy.filterStatus} value={status} onChange={(event) => setStatus(event.target.value)} />
-          </label>
-          <label className="grid gap-1 text-sm">
-            {copy.slaHours}
-            <Input aria-label={copy.slaHours} value={sla} onChange={(event) => setSla(event.target.value)} />
-          </label>
-        </div>
-        <table className="w-full text-start text-sm">
-          <thead>
-            <tr className="border-b border-border text-text-muted">
-              <th className="py-2 font-medium">Name</th>
-              <th className="py-2 font-medium">Status</th>
-              <th className="py-2 font-medium">{copy.slaHours}</th>
-              <th className="py-2 font-medium">{copy.documents}</th>
-              <th className="py-2 font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id} className="border-b border-border">
-                <td className="py-2">
-                  <button
-                    type="button"
-                    className="underline"
-                    onClick={() => void getVerificationCase(row.id).then(setDetail)}
-                  >
-                    {row.name}
-                  </button>
-                </td>
-                <td className="py-2">{row.verification}</td>
-                <td className="py-2">{row.sla_hours ?? "—"}</td>
-                <td className="py-2">{row.document_count ?? 0}</td>
-                <td className="py-2">
-                  <div className="flex flex-wrap gap-2">
-                    <Button type="button" size="sm" onClick={() => void act(row.id, "verify")}>
-                      {copy.approve}
-                    </Button>
-                    <Button type="button" size="sm" variant="outline" onClick={() => void act(row.id, "reject")}>
-                      {copy.reject}
-                    </Button>
-                    <Button type="button" size="sm" variant="outline" onClick={() => void act(row.id, "suspend")}>
-                      {copy.suspend}
-                    </Button>
-                    <Button type="button" size="sm" variant="outline" onClick={() => void act(row.id, "re-verify")}>
-                      {copy.reVerify}
-                    </Button>
-                  </div>
-                </td>
-              </tr>
+    <div className="grid gap-8">
+      <AdminHeader title={copy.queueTitle} description={copy.reasonRequired} />
+      <div className="grid gap-4 rounded-card border border-border-subtle bg-surface-sunken/70 p-4 md:grid-cols-[2fr_1fr_1fr] md:items-end">
+        <ReasonField id="verification-reason" value={reason} onChange={setReason} />
+        <label className="grid gap-2 text-label font-medium">
+          {copy.filterStatus}
+          <NativeSelect
+            aria-label={copy.filterStatus}
+            value={status}
+            onChange={(event) => setStatus(event.target.value)}
+          >
+            <option value="">—</option>
+            {["pending", "verified", "rejected", "suspended"].map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
             ))}
-          </tbody>
-        </table>
-        {detail ? (
-          <section className="grid gap-2 rounded-card border border-border p-3" aria-label={copy.documents}>
-            <h3 className="text-sm font-semibold">{detail.name}</h3>
-            <p className="text-sm text-text-muted">Badge: {detail.verified_badge ? "verified" : "not verified"}</p>
+          </NativeSelect>
+        </label>
+        <label className="grid gap-2 text-label font-medium">
+          {copy.slaHours}
+          <Input
+            aria-label={copy.slaHours}
+            inputMode="numeric"
+            value={sla}
+            onChange={(event) => setSla(event.target.value)}
+          />
+        </label>
+      </div>
+      <TableShell>
+        <thead>
+          <tr>
+            <th scope="col">{copy.nameCol}</th>
+            <th scope="col">{copy.statusCol}</th>
+            <th scope="col">{copy.slaHours}</th>
+            <th scope="col">{copy.documents}</th>
+            <th scope="col">{copy.actionsCol}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.length === 0 ? <EmptyRow colSpan={5} label={copy.queueEmpty} /> : null}
+          {rows.map((row) => (
+            <tr key={row.id} className={detail?.id === row.id ? "[&>td]:bg-brand-subtle/40" : undefined}>
+              <td>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-2 font-semibold underline-offset-4 hover:underline"
+                  onClick={() => void getVerificationCase(row.id).then(setDetail)}
+                >
+                  <Building2 className="size-4 text-text-muted" aria-hidden />
+                  {row.name}
+                </button>
+              </td>
+              <td>
+                <Badge variant={statusTone(row.verification)}>{row.verification}</Badge>
+              </td>
+              <td className="tabular-nums">{row.sla_hours ?? "—"}</td>
+              <td className="tabular-nums">{row.document_count ?? 0}</td>
+              <td>
+                <div className="flex flex-wrap gap-1.5">
+                  <Button type="button" size="sm" onClick={() => void act(row.id, "verify")}>
+                    <Check aria-hidden />
+                    {copy.approve}
+                  </Button>
+                  <Button type="button" size="sm" variant="outline" onClick={() => void act(row.id, "reject")}>
+                    {copy.reject}
+                  </Button>
+                  <Button type="button" size="sm" variant="ghost" onClick={() => void act(row.id, "suspend")}>
+                    {copy.suspend}
+                  </Button>
+                  <Button type="button" size="sm" variant="ghost" onClick={() => void act(row.id, "re-verify")}>
+                    {copy.reVerify}
+                  </Button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </TableShell>
+      {detail ? (
+        <section
+          className="grid gap-5 rounded-card border border-border-subtle bg-surface-raised p-6 shadow-sm md:grid-cols-2 md:p-7"
+          aria-label={copy.documents}
+        >
+          <div className="grid content-start gap-3">
+            <h2 className="title-card">{detail.name}</h2>
+            <Badge variant={detail.verified_badge ? "success" : "outline"} className="w-fit">
+              {detail.verified_badge ? copy.verifiedBadge : copy.notVerified}
+            </Badge>
+            <h3 className="mt-2 text-sm font-semibold">{copy.documents}</h3>
             <ul className="grid gap-2">
               {detail.documents.map((doc) => (
-                <li key={doc.id}>
+                <li
+                  key={doc.id}
+                  className="flex items-center gap-2 rounded-control bg-surface-sunken px-3.5 py-2.5 text-sm"
+                >
+                  <FileText className="size-4 text-text-muted" aria-hidden />
                   {doc.signed_url ? (
-                    <a href={doc.signed_url} className="underline">
+                    <a href={doc.signed_url} className="font-medium underline underline-offset-4">
                       {doc.filename}
                     </a>
                   ) : (
@@ -154,16 +183,20 @@ export function AdminBusinessesTable() {
                 </li>
               ))}
             </ul>
-            <ul className="text-sm text-text-muted">
+          </div>
+          <div className="grid content-start gap-3">
+            <h3 className="text-sm font-semibold">{copy.timeline}</h3>
+            <ol className="grid gap-2 text-sm">
               {detail.events.map((event) => (
-                <li key={event.id}>
-                  {event.decision}: {event.reason}
+                <li key={event.id} className="grid gap-0.5 border-s-2 border-border-subtle ps-3">
+                  <span className="font-semibold capitalize">{event.decision}</span>
+                  <span className="text-text-muted">{event.reason}</span>
                 </li>
               ))}
-            </ul>
-          </section>
-        ) : null}
-      </CardContent>
-    </Card>
+            </ol>
+          </div>
+        </section>
+      ) : null}
+    </div>
   );
 }

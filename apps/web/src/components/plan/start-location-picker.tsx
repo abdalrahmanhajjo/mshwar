@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { LocateFixed, MapPin, Save, Search } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { usePlannerCopy } from "@/lib/planner-copy";
@@ -19,12 +20,26 @@ function pinFromClick(clientX: number, clientY: number, rect: DOMRect): { lat: n
   return { lat, lng };
 }
 
+function pinPosition(lat: number, lng: number) {
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return null;
+  }
+  const x = (lng - LEBANON.lngMin) / (LEBANON.lngMax - LEBANON.lngMin);
+  const y = (LEBANON.latMax - lat) / (LEBANON.latMax - LEBANON.latMin);
+  if (x < 0 || x > 1 || y < 0 || y > 1) {
+    return null;
+  }
+  return { x: x * 100, y: y * 100 };
+}
+
 export function StartLocationPicker({
   initial,
   onSaved,
+  standalone = false,
 }: {
   initial?: StartLocation | null;
   onSaved?: (value: StartLocation) => void;
+  standalone?: boolean;
 }) {
   const copy = usePlannerCopy();
   const [query, setQuery] = React.useState("");
@@ -100,81 +115,128 @@ export function StartLocationPicker({
     }
   }
 
+  const pin = pinPosition(Number(lat), Number(lng));
+  const Heading = standalone ? "h1" : "h3";
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{copy.startTitle}</CardTitle>
-        <CardDescription>{copy.startHint}</CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-4">
-        <div className="grid gap-2">
-          <Label htmlFor="place-search">{copy.searchPlace}</Label>
-          <Input
-            id="place-search"
-            value={query}
-            placeholder={copy.searchPlaceholder}
-            onChange={(event) => {
-              const next = event.target.value;
-              setQuery(next);
-              if (next.trim().length < 2) {
-                setHits([]);
-              }
-            }}
-          />
-          {hits.length ? (
-            <ul className="grid gap-1">
-              {hits.map((hit) => (
-                <li key={hit.place_id}>
-                  <Button type="button" variant="outline" onClick={() => void applyPlace(hit, "search")}>
-                    {hit.label}
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          ) : null}
+    <section className="grid gap-6 rounded-card border border-border-subtle bg-surface-raised p-6 shadow-sm md:p-7">
+      <header className="grid gap-2">
+        {standalone ? <p className="eyebrow">{copy.routeStart}</p> : null}
+        <Heading className={standalone ? "title-page" : "title-card"}>{copy.startTitle}</Heading>
+        <p className="text-sm leading-relaxed text-text-muted">{copy.startHint}</p>
+      </header>
+      <div className={cn("grid gap-6", standalone && "lg:grid-cols-[1fr_1.1fr]")}>
+        <div className="grid content-start gap-5">
+          <div className="grid gap-2">
+            <Label htmlFor="place-search">{copy.searchPlace}</Label>
+            <div className="relative">
+              <Search
+                className="pointer-events-none absolute start-3.5 top-1/2 size-4 -translate-y-1/2 text-text-muted"
+                aria-hidden
+              />
+              <Input
+                id="place-search"
+                value={query}
+                placeholder={copy.searchPlaceholder}
+                className="ps-10"
+                onChange={(event) => {
+                  const next = event.target.value;
+                  setQuery(next);
+                  if (next.trim().length < 2) {
+                    setHits([]);
+                  }
+                }}
+              />
+            </div>
+            {hits.length ? (
+              <ul className="grid gap-1 rounded-control border border-border-subtle bg-surface-raised p-1.5 shadow-md">
+                {hits.map((hit) => (
+                  <li key={hit.place_id}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="w-full justify-start rounded-[0.6rem]"
+                      onClick={() => void applyPlace(hit, "search")}
+                    >
+                      <MapPin aria-hidden />
+                      {hit.label}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+          <div className="grid gap-2">
+            <Button type="button" variant="outline" onClick={onLocate}>
+              <LocateFixed aria-hidden />
+              {copy.useLocation}
+            </Button>
+            <p className="text-xs text-text-muted">{copy.precisePermission}</p>
+            {denied ? (
+              <p role="alert" className="text-sm text-danger">
+                {copy.locationDenied}
+              </p>
+            ) : null}
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="start-label">{copy.manualEntry}</Label>
+            <Input id="start-label" value={label} onChange={(event) => setLabel(event.target.value)} />
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                aria-label="lat"
+                value={lat}
+                onChange={(event) => setLat(event.target.value)}
+                className="tabular-nums"
+              />
+              <Input
+                aria-label="lng"
+                value={lng}
+                onChange={(event) => setLng(event.target.value)}
+                className="tabular-nums"
+              />
+            </div>
+          </div>
         </div>
-        <div className="grid gap-2">
-          <p className="text-sm">{copy.dropPin}</p>
-          {!MAPS_KEY ? <p className="text-sm text-text-muted">{copy.mapFallback}</p> : null}
+        <div className="grid content-start gap-2">
+          <p className="text-sm font-medium">{copy.dropPin}</p>
           <div
             role="application"
             aria-label={copy.dropPin}
-            className="relative min-h-[220px] cursor-crosshair overflow-hidden rounded-card border border-border bg-surface-sunken"
+            dir="ltr"
+            className="surface-grain relative min-h-[260px] cursor-crosshair overflow-hidden rounded-card border border-border-subtle bg-brand-subtle/60"
             onClick={(event) => void onPin(event)}
           >
-            <span className="absolute start-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm">
+            <div
+              aria-hidden
+              className="absolute inset-y-0 start-0 w-[18%] bg-gradient-to-r from-[#bfd9dd] to-transparent opacity-70"
+            />
+            {pin ? (
+              <span
+                aria-hidden
+                className="absolute -translate-x-1/2 -translate-y-full"
+                style={{ insetInlineStart: `${pin.x}%`, top: `${pin.y}%` }}
+              >
+                <MapPin className="size-8 fill-accent text-surface-raised drop-shadow" strokeWidth={1.5} />
+              </span>
+            ) : null}
+            <span className="absolute bottom-3 start-3 max-w-[80%] truncate rounded-pill bg-surface-raised/95 px-3 py-1.5 text-sm font-medium shadow-sm">
               {label || copy.dropPin}
             </span>
           </div>
+          {!MAPS_KEY ? <p className="text-xs text-text-muted">{copy.mapFallback}</p> : null}
         </div>
-        <div className="grid gap-2">
-          <Button type="button" variant="secondary" onClick={onLocate}>
-            {copy.useLocation}
-          </Button>
-          <p className="text-xs text-text-muted">{copy.precisePermission}</p>
-          {denied ? (
-            <p role="alert" className="text-sm text-danger">
-              {copy.locationDenied}
-            </p>
-          ) : null}
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="start-label">{copy.manualEntry}</Label>
-          <Input id="start-label" value={label} onChange={(event) => setLabel(event.target.value)} />
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Input aria-label="lat" value={lat} onChange={(event) => setLat(event.target.value)} />
-            <Input aria-label="lng" value={lng} onChange={(event) => setLng(event.target.value)} />
-          </div>
-        </div>
+      </div>
+      <div className="flex flex-wrap items-center gap-3 border-t border-border-subtle pt-5">
         <Button type="button" disabled={pending} onClick={() => void onSave()}>
+          <Save aria-hidden />
           {copy.saveStart}
         </Button>
         {status ? (
-          <p role="status" className="text-sm">
+          <p role="status" className="text-sm text-text-muted">
             {status}
           </p>
         ) : null}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }

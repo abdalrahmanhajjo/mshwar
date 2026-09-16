@@ -70,48 +70,69 @@ function NotificationPrefsForm({ orgId }: { orgId: string }) {
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr] lg:items-start">
       <Card>
         <CardHeader>
-          <CardTitle>{copy.businessPrefsTitle}</CardTitle>
+          <CardTitle as="h2">{copy.businessPrefsTitle}</CardTitle>
           <CardDescription>{copy.businessPrefsBody}</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-3 text-sm">
+        <CardContent className="grid gap-6 p-0 md:p-0">
           {EVENTS.map((eventType) => (
-            <div key={eventType} className="grid gap-2">
-              <p className="font-medium">{eventType}</p>
-              {ROLES.map((role) => (
-                <div key={`${eventType}-${role}`} className="flex flex-wrap items-center gap-3">
-                  <span className="w-24">{role}</span>
-                  <label className="flex items-center gap-1">
-                    <input
-                      type="checkbox"
-                      checked={enabled(role, eventType, "email")}
-                      onChange={() => void toggle(role, eventType, "email")}
-                    />
-                    {copy.emailChannel}
-                  </label>
-                  <label className="flex items-center gap-1">
-                    <input
-                      type="checkbox"
-                      checked={enabled(role, eventType, "in_app")}
-                      onChange={() => void toggle(role, eventType, "in_app")}
-                    />
-                    {copy.inAppChannel}
-                  </label>
-                </div>
-              ))}
+            <div key={eventType} className="overflow-x-auto">
+              <table className="data-table">
+                <caption className="px-6 pb-2 text-start font-mono text-xs text-text-muted md:px-7">
+                  {eventType}
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">{copy.roleLabel}</th>
+                    <th scope="col">{copy.emailChannel}</th>
+                    <th scope="col">{copy.inAppChannel}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ROLES.map((role) => (
+                    <tr key={`${eventType}-${role}`}>
+                      <td className="font-medium capitalize">{role}</td>
+                      <td>
+                        <label className="inline-flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={enabled(role, eventType, "email")}
+                            onChange={() => void toggle(role, eventType, "email")}
+                          />
+                          <span className="sr-only">
+                            {role} {copy.emailChannel}
+                          </span>
+                        </label>
+                      </td>
+                      <td>
+                        <label className="inline-flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={enabled(role, eventType, "in_app")}
+                            onChange={() => void toggle(role, eventType, "in_app")}
+                          />
+                          <span className="sr-only">
+                            {role} {copy.inAppChannel}
+                          </span>
+                        </label>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           ))}
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>{copy.escalationTitle}</CardTitle>
+          <CardTitle as="h2">{copy.escalationTitle}</CardTitle>
         </CardHeader>
         <CardContent>
           <form
-            className="grid gap-3"
+            className="grid gap-4"
             onSubmit={(event) => {
               event.preventDefault();
               void saveEscalation(orgId, {
@@ -121,15 +142,15 @@ function NotificationPrefsForm({ orgId }: { orgId: string }) {
               }).then(setSettings);
             }}
           >
-            <label className="grid gap-1 text-sm">
+            <label className="grid gap-2 text-sm font-medium">
               {copy.firstMinutes}
               <Input type="number" min={1} value={first} onChange={(event) => setFirst(Number(event.target.value))} />
             </label>
-            <label className="grid gap-1 text-sm">
+            <label className="grid gap-2 text-sm font-medium">
               {copy.repeatMinutes}
               <Input type="number" min={1} value={repeat} onChange={(event) => setRepeat(Number(event.target.value))} />
             </label>
-            <label className="grid gap-1 text-sm">
+            <label className="grid gap-2 text-sm font-medium">
               {copy.maxEscalations}
               <Input
                 type="number"
@@ -139,7 +160,9 @@ function NotificationPrefsForm({ orgId }: { orgId: string }) {
                 onChange={(event) => setMax(Number(event.target.value))}
               />
             </label>
-            <Button type="submit">{copy.saveEscalation}</Button>
+            <Button type="submit" className="w-fit">
+              {copy.saveEscalation}
+            </Button>
           </form>
         </CardContent>
       </Card>

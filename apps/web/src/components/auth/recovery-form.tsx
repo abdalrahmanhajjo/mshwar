@@ -3,7 +3,9 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, MailCheck } from "lucide-react";
+import { AuthLayout } from "@/components/auth/auth-layout";
+import { Notice } from "@/components/ui/notice";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/components/shell/auth-provider";
@@ -59,82 +61,72 @@ export function RecoveryForm({ mode }: { mode: "forgot" | "reset" }) {
     }
   }
 
+  const backLink = (
+    <LocaleLink className="inline-flex items-center gap-2 font-semibold text-text hover:underline" href="/signin">
+      <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
+      {t("backToSignIn")}
+    </LocaleLink>
+  );
+
   if (mode === "reset" && !token) {
     return (
-      <Card className="mx-auto w-full max-w-md">
-        <CardHeader>
-          <CardTitle>{t("resetPassword")}</CardTitle>
-          <CardDescription>{t("invalidReset")}</CardDescription>
-        </CardHeader>
-        <CardFooter className="justify-center text-sm text-text-muted">
-          <LocaleLink className="text-brand underline-offset-4 hover:underline" href="/signin">
-            {t("backToSignIn")}
-          </LocaleLink>
-        </CardFooter>
-      </Card>
+      <AuthLayout title={t("resetPassword")} footer={backLink} imageIndex={4}>
+        <Notice tone="warning">{t("invalidReset")}</Notice>
+      </AuthLayout>
     );
   }
 
   return (
-    <Card className="mx-auto w-full max-w-md">
-      <CardHeader>
-        <CardTitle>{mode === "forgot" ? t("forgotPassword") : t("resetPassword")}</CardTitle>
-        <CardDescription>{mode === "forgot" ? t("forgotHint") : t("passwordHint")}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {mode === "forgot" && sent ? (
-          <p role="status" className="text-sm text-text">
-            {t("resetSent")}
-          </p>
-        ) : (
-          <form
-            className="grid gap-4"
-            onSubmit={(event) => void (mode === "forgot" ? onForgot(event) : onReset(event))}
-          >
-            {mode === "forgot" ? (
-              <div className="grid gap-2">
-                <Label htmlFor="email">{t("email")}</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                />
-              </div>
-            ) : (
-              <div className="grid gap-2">
-                <Label htmlFor="new-password">{t("newPassword")}</Label>
-                <Input
-                  id="new-password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  minLength={10}
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                />
-              </div>
-            )}
-            {error ? (
-              <p role="alert" className="text-sm text-danger">
-                {error}
-              </p>
-            ) : null}
-            <Button type="submit" disabled={pending}>
-              {mode === "forgot" ? t("sendResetLink") : t("updatePassword")}
-            </Button>
-          </form>
-        )}
-      </CardContent>
-      <CardFooter className="justify-center text-sm text-text-muted">
-        <LocaleLink className="text-brand underline-offset-4 hover:underline" href="/signin">
-          {t("backToSignIn")}
-        </LocaleLink>
-      </CardFooter>
-    </Card>
+    <AuthLayout
+      title={mode === "forgot" ? t("forgotPassword") : t("resetPassword")}
+      description={mode === "forgot" ? t("forgotHint") : t("passwordHint")}
+      footer={backLink}
+      imageIndex={mode === "forgot" ? 4 : 1}
+    >
+      {mode === "forgot" && sent ? (
+        <Notice tone="success" icon={<MailCheck aria-hidden />}>
+          <p role="status">{t("resetSent")}</p>
+        </Notice>
+      ) : (
+        <form className="grid gap-5" onSubmit={(event) => void (mode === "forgot" ? onForgot(event) : onReset(event))}>
+          {mode === "forgot" ? (
+            <div className="grid gap-2">
+              <Label htmlFor="email">{t("email")}</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+            </div>
+          ) : (
+            <div className="grid gap-2">
+              <Label htmlFor="new-password">{t("newPassword")}</Label>
+              <Input
+                id="new-password"
+                name="password"
+                type="password"
+                autoComplete="new-password"
+                required
+                minLength={10}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+            </div>
+          )}
+          {error ? (
+            <Notice tone="danger" role="alert">
+              {error}
+            </Notice>
+          ) : null}
+          <Button type="submit" size="lg" className="w-full" disabled={pending}>
+            {mode === "forgot" ? t("sendResetLink") : t("updatePassword")}
+          </Button>
+        </form>
+      )}
+    </AuthLayout>
   );
 }

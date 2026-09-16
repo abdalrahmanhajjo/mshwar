@@ -32,7 +32,25 @@ export type CheckoutKey =
   | "requestNote"
   | "confirmedNote"
   | "instantBlocked"
-  | "bookThisStop";
+  | "bookThisStop"
+  | "stepChoose"
+  | "stepReview"
+  | "stepDone"
+  | "summaryTitle"
+  | "testModeNote"
+  | "noSlots"
+  | "backToListing"
+  | "totalLabel"
+  | "bookingRef"
+  | "cancelTitle"
+  | "cancelHint"
+  | "cancelReasonLabel"
+  | "bookingDetailTitle"
+  | "viewAllBookings"
+  | "sentInquiry"
+  | "bookingCreated"
+  | "secureCheckout"
+  | "noEventsYet";
 
 export const checkoutCopy: Record<Locale, Record<CheckoutKey, string>> = {
   en: {
@@ -67,6 +85,24 @@ export const checkoutCopy: Record<Locale, Record<CheckoutKey, string>> = {
     confirmedNote: "Confirmed only after a successful payment when payment is required.",
     instantBlocked: "Instant confirm needs authoritative capacity.",
     bookThisStop: "Book this stop",
+    stepChoose: "Choose",
+    stepReview: "Review",
+    stepDone: "Done",
+    summaryTitle: "Booking summary",
+    testModeNote: "Preview checkout — payments run in test mode and nothing is charged.",
+    noSlots: "No open times yet. Try again later or send an inquiry.",
+    backToListing: "Back to the experience",
+    totalLabel: "Total",
+    bookingRef: "Booking reference",
+    cancelTitle: "Need to cancel?",
+    cancelHint: "Preview the refund first. A reason is required to confirm.",
+    cancelReasonLabel: "Reason for cancelling",
+    bookingDetailTitle: "Your booking",
+    viewAllBookings: "All bookings",
+    sentInquiry: "Inquiry sent. The business will reply in your notifications.",
+    bookingCreated: "Booking created. Keep the reference for your records.",
+    secureCheckout: "Secure checkout",
+    noEventsYet: "No updates yet.",
   },
   ar: {
     title: "إتمام الحجز",
@@ -100,6 +136,24 @@ export const checkoutCopy: Record<Locale, Record<CheckoutKey, string>> = {
     confirmedNote: "لا يُؤكَّد الحجز المدفوع إلا بعد دفع ناجح.",
     instantBlocked: "التأكيد الفوري يحتاج سعة موثوقة.",
     bookThisStop: "احجز هذه المحطة",
+    stepChoose: "اختر",
+    stepReview: "راجع",
+    stepDone: "تم",
+    summaryTitle: "ملخص الحجز",
+    testModeNote: "دفع تجريبي — تعمل المدفوعات في وضع الاختبار ولا يُخصم أي مبلغ.",
+    noSlots: "لا أوقات متاحة بعد. حاول لاحقاً أو أرسل استفساراً.",
+    backToListing: "العودة إلى التجربة",
+    totalLabel: "المجموع",
+    bookingRef: "مرجع الحجز",
+    cancelTitle: "هل تحتاج إلى الإلغاء؟",
+    cancelHint: "اطّلع على المبلغ المسترد أولاً. السبب مطلوب للتأكيد.",
+    cancelReasonLabel: "سبب الإلغاء",
+    bookingDetailTitle: "حجزك",
+    viewAllBookings: "كل الحجوزات",
+    sentInquiry: "تم إرسال الاستفسار. سيرد النشاط عبر إشعاراتك.",
+    bookingCreated: "تم إنشاء الحجز. احتفظ بالمرجع.",
+    secureCheckout: "دفع آمن",
+    noEventsYet: "لا تحديثات بعد.",
   },
   fr: {
     title: "Paiement",
@@ -133,6 +187,24 @@ export const checkoutCopy: Record<Locale, Record<CheckoutKey, string>> = {
     confirmedNote: "Une réservation payante n’est confirmée qu’après un paiement réussi.",
     instantBlocked: "La confirmation immédiate exige une capacité officielle.",
     bookThisStop: "Réserver cet arrêt",
+    stepChoose: "Choisir",
+    stepReview: "Vérifier",
+    stepDone: "Terminé",
+    summaryTitle: "Récapitulatif",
+    testModeNote: "Paiement d’aperçu — les paiements sont en mode test, rien n’est débité.",
+    noSlots: "Aucun créneau ouvert pour l’instant. Réessayez plus tard ou envoyez une demande.",
+    backToListing: "Retour à l’expérience",
+    totalLabel: "Total",
+    bookingRef: "Référence",
+    cancelTitle: "Besoin d’annuler ?",
+    cancelHint: "Consultez d’abord le remboursement. Un motif est requis pour confirmer.",
+    cancelReasonLabel: "Motif d’annulation",
+    bookingDetailTitle: "Votre réservation",
+    viewAllBookings: "Toutes les réservations",
+    sentInquiry: "Demande envoyée. L’établissement répondra dans vos notifications.",
+    bookingCreated: "Réservation créée. Conservez la référence.",
+    secureCheckout: "Paiement sécurisé",
+    noEventsYet: "Aucune mise à jour pour l’instant.",
   },
 };
 

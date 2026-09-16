@@ -2,7 +2,9 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BellRing, Mail, ShieldCheck } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Notice } from "@/components/ui/notice";
 import { fetchConsentHistory, fetchPreferences, savePreferences, type ConsentEvent } from "@/lib/notifications";
 import { useNotificationCopy } from "@/lib/notifications-copy";
 
@@ -49,57 +51,99 @@ export function PreferencesPanel() {
   }
 
   return (
-    <section className="grid gap-6" aria-labelledby="comms-heading">
-      <header>
-        <h2 id="comms-heading" className="text-3xl font-semibold tracking-tight">
+    <section
+      id="communication"
+      className="scroll-mt-28 overflow-hidden rounded-card border border-border-subtle bg-surface-raised shadow-sm"
+      aria-labelledby="comms-heading"
+    >
+      <header className="grid gap-1.5 p-6 md:p-7">
+        <h2 id="comms-heading" className="title-card">
           {copy.prefsTitle}
         </h2>
-        <p className="mt-3 text-text-muted">{copy.prefsBody}</p>
+        <p className="text-sm leading-relaxed text-text-muted">{copy.prefsBody}</p>
       </header>
-      <Card>
-        <CardHeader>
-          <CardTitle>{copy.prefsTitle}</CardTitle>
-          <CardDescription>{copy.transactionalAlways}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form className="grid gap-3" onSubmit={(event) => void onSave(event)}>
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={marketingEmail}
-                onChange={(event) => setMarketingEmail(event.target.checked)}
-              />
-              {copy.marketingEmail}
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={marketingInApp}
-                onChange={(event) => setMarketingInApp(event.target.checked)}
-              />
-              {copy.marketingInApp}
-            </label>
+      <div className="grid gap-6 px-6 pb-6 md:px-7 md:pb-7">
+        <Notice icon={<ShieldCheck aria-hidden />}>{copy.transactionalAlways}</Notice>
+        <form className="grid gap-3" onSubmit={(event) => void onSave(event)}>
+          <ToggleRow
+            icon={<Mail aria-hidden />}
+            label={copy.marketingEmail}
+            checked={marketingEmail}
+            onChange={setMarketingEmail}
+          />
+          <ToggleRow
+            icon={<BellRing aria-hidden />}
+            label={copy.marketingInApp}
+            checked={marketingInApp}
+            onChange={setMarketingInApp}
+          />
+          <div className="flex flex-wrap items-center gap-3 pt-2">
             <Button type="submit" disabled={pending}>
               {copy.savePrefs}
             </Button>
-            {status ? <p role="status">{status}</p> : null}
-          </form>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>{copy.consentHistory}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="grid gap-2 text-sm">
-            {history.map((row) => (
-              <li key={row.id}>
-                {row.purpose}: {row.granted ? copy.granted : copy.revoked}
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
+            {status ? (
+              <p role="status" className="text-sm text-success">
+                {status}
+              </p>
+            ) : null}
+          </div>
+        </form>
+        {history.length ? (
+          <div className="grid gap-3 border-t border-border-subtle pt-5">
+            <h3 className="text-sm font-semibold">{copy.consentHistory}</h3>
+            <ul className="grid gap-2 text-sm">
+              {history.map((row) => (
+                <li
+                  key={row.id}
+                  className="flex items-center justify-between gap-3 rounded-control bg-surface-sunken px-3.5 py-2.5"
+                >
+                  <span>{row.purpose}</span>
+                  <Badge variant={row.granted ? "success" : "outline"}>
+                    {row.granted ? copy.granted : copy.revoked}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <div className="grid gap-1 border-t border-border-subtle pt-5">
+            <h3 className="text-sm font-semibold">{copy.consentHistory}</h3>
+          </div>
+        )}
+      </div>
     </section>
+  );
+}
+
+export function ToggleRow({
+  icon,
+  label,
+  checked,
+  onChange,
+}: {
+  icon?: React.ReactNode;
+  label: string;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <label className="flex cursor-pointer items-center justify-between gap-4 rounded-control border border-border-subtle px-4 py-3.5 transition-colors hover:bg-surface-sunken/60">
+      <span className="flex items-center gap-3 text-sm font-medium">
+        {icon ? <span className="text-text-muted [&_svg]:size-[1.1rem]">{icon}</span> : null}
+        {label}
+      </span>
+      <input
+        type="checkbox"
+        role="switch"
+        aria-checked={checked}
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="peer sr-only"
+      />
+      <span
+        aria-hidden
+        className="relative h-6 w-11 shrink-0 rounded-pill bg-border transition-colors after:absolute after:start-0.5 after:top-0.5 after:size-5 after:rounded-full after:bg-surface-raised after:shadow-sm after:transition-transform peer-checked:bg-brand peer-checked:after:translate-x-5 peer-focus-visible:ring-2 peer-focus-visible:ring-focus peer-focus-visible:ring-offset-2 rtl:peer-checked:after:-translate-x-5"
+      />
+    </label>
   );
 }

@@ -3,7 +3,8 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Clock3, Download, RotateCcw, UserX } from "lucide-react";
+import { Notice } from "@/components/ui/notice";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signOutAccount } from "@/lib/auth";
@@ -35,32 +36,43 @@ export function PrivacyPanel() {
   }
 
   return (
-    <section className="grid gap-6" aria-labelledby="privacy-heading">
-      <header>
-        <h2 id="privacy-heading" className="text-3xl font-semibold tracking-tight">
+    <section
+      id="privacy"
+      className="scroll-mt-28 overflow-hidden rounded-card border border-border-subtle bg-surface-raised shadow-sm"
+      aria-labelledby="privacy-heading"
+    >
+      <header className="grid gap-1.5 p-6 md:p-7">
+        <h2 id="privacy-heading" className="title-card">
           {copy.privacyTitle}
         </h2>
-        <p className="mt-3 text-text-muted">{copy.privacyBody}</p>
+        <p className="text-sm leading-relaxed text-text-muted">{copy.privacyBody}</p>
       </header>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{copy.exportTitle}</CardTitle>
-          <CardDescription>{copy.exportBody}</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div className="divide-y divide-border-subtle border-t border-border-subtle">
+        <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between md:px-7">
+          <div className="flex items-start gap-4">
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-subtle">
+              <Download className="size-[1.1rem]" aria-hidden />
+            </span>
+            <div className="grid gap-1">
+              <h3 className="font-semibold">{copy.exportTitle}</h3>
+              <p className="text-sm text-text-muted">{copy.exportBody}</p>
+            </div>
+          </div>
           <Button type="button" disabled={pending} onClick={() => void run(downloadDataExport, copy.exportDone)}>
             {copy.exportAction}
           </Button>
-        </CardContent>
-      </Card>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{copy.resetTitle}</CardTitle>
-          <CardDescription>{copy.resetBody}</CardDescription>
-        </CardHeader>
-        <CardContent>
+        <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between md:px-7">
+          <div className="flex items-start gap-4">
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-subtle">
+              <RotateCcw className="size-[1.1rem]" aria-hidden />
+            </span>
+            <div className="grid gap-1">
+              <h3 className="font-semibold">{copy.resetTitle}</h3>
+              <p className="text-sm text-text-muted">{copy.resetBody}</p>
+            </div>
+          </div>
           <Button
             type="button"
             variant="outline"
@@ -69,62 +81,78 @@ export function PrivacyPanel() {
           >
             {copy.resetAction}
           </Button>
-        </CardContent>
-      </Card>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{copy.deleteTitle}</CardTitle>
-          <CardDescription>{copy.deleteBody}</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-3">
-          <Label htmlFor="delete-confirm">{copy.deleteConfirm}</Label>
-          <Input
-            id="delete-confirm"
-            value={confirmation}
-            onChange={(event) => setConfirmation(event.target.value)}
-            autoComplete="off"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            disabled={pending || confirmation.trim().toUpperCase() !== "DELETE"}
-            onClick={() =>
-              void run(async () => {
-                await deleteAccount(confirmation);
-                await signOutAccount();
-                router.replace(withLocalePrefix(locale, "/"));
-              }, copy.deleteTitle)
-            }
-          >
-            {copy.deleteAction}
-          </Button>
-        </CardContent>
-      </Card>
+        <div className="grid gap-4 bg-danger-subtle/40 p-6 md:px-7">
+          <div className="flex items-start gap-4">
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-danger-subtle text-danger">
+              <UserX className="size-[1.1rem]" aria-hidden />
+            </span>
+            <div className="grid gap-1">
+              <h3 className="font-semibold">{copy.deleteTitle}</h3>
+              <p className="text-sm text-text-muted">{copy.deleteBody}</p>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+            <div className="grid gap-2">
+              <Label htmlFor="delete-confirm">{copy.deleteConfirm}</Label>
+              <Input
+                id="delete-confirm"
+                value={confirmation}
+                onChange={(event) => setConfirmation(event.target.value)}
+                autoComplete="off"
+              />
+            </div>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={pending || confirmation.trim().toUpperCase() !== "DELETE"}
+              onClick={() =>
+                void run(async () => {
+                  await deleteAccount(confirmation);
+                  await signOutAccount();
+                  router.replace(withLocalePrefix(locale, "/"));
+                }, copy.deleteTitle)
+              }
+            >
+              {copy.deleteAction}
+            </Button>
+          </div>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{copy.retentionTitle}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-2 text-sm text-text-muted">
-          <p>{copy.retentionProfile}</p>
-          <p>{copy.retentionTrips}</p>
-          <p>{copy.retentionFavorites}</p>
-          <p>{copy.retentionReviews}</p>
-          <p>{copy.retentionBookings}</p>
-          <p>{copy.retentionPayments}</p>
-        </CardContent>
-      </Card>
+        <div className="grid gap-3 p-6 md:px-7">
+          <h3 className="font-semibold">{copy.retentionTitle}</h3>
+          <ul className="grid gap-2 text-sm text-text-muted sm:grid-cols-2">
+            {[
+              copy.retentionProfile,
+              copy.retentionTrips,
+              copy.retentionFavorites,
+              copy.retentionReviews,
+              copy.retentionBookings,
+              copy.retentionPayments,
+            ].map((line) => (
+              <li key={line} className="flex items-start gap-2 rounded-control bg-surface-sunken px-3.5 py-2.5">
+                <Clock3 className="mt-0.5 size-4 shrink-0" aria-hidden />
+                {line}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
 
-      {error ? (
-        <p role="alert" className="text-sm text-danger">
-          {error}
-        </p>
-      ) : null}
-      {status ? (
-        <p role="status" className="text-sm text-text">
-          {status}
-        </p>
+      {error || status ? (
+        <div className="border-t border-border-subtle p-6 md:px-7">
+          {error ? (
+            <Notice tone="danger" role="alert">
+              {error}
+            </Notice>
+          ) : null}
+          {status ? (
+            <Notice tone="success">
+              <p role="status">{status}</p>
+            </Notice>
+          ) : null}
+        </div>
       ) : null}
     </section>
   );

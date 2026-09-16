@@ -21,7 +21,9 @@ export function SaveExperienceButton({ slug, compact = false }: { slug: string; 
       size={compact ? "icon" : "sm"}
       aria-pressed={saved}
       aria-label={saved ? copy.savedExperience : copy.saveExperience}
-      className={cn(compact && "rounded-full bg-surface/95")}
+      className={cn(
+        compact && "size-10 min-h-10 rounded-full bg-surface/95 text-text shadow-sm backdrop-blur hover:bg-surface",
+      )}
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -31,7 +33,7 @@ export function SaveExperienceButton({ slug, compact = false }: { slug: string; 
         }
       }}
     >
-      <Heart className={cn("size-4", saved && "fill-accent text-accent")} aria-hidden />
+      <Heart className={cn("size-4 transition-transform", saved && "scale-110 fill-accent text-accent")} aria-hidden />
       {compact ? null : saved ? copy.savedExperience : copy.saveExperience}
     </Button>
   );

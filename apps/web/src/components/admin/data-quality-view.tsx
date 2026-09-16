@@ -2,7 +2,10 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Play, Send } from "lucide-react";
+import { AdminHeader, EmptyRow, TableShell } from "@/components/admin/admin-ui";
+import { Badge } from "@/components/ui/badge";
+import { statusTone } from "@/lib/status";
 import { listQuality, notifyQuality, runQuality } from "@/lib/admin";
 import { useAdminCopy } from "@/lib/admin-copy";
 
@@ -41,33 +44,48 @@ export function DataQualityView() {
   }, []);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{copy.qualityTitle}</CardTitle>
-        <CardDescription>{scheduler}</CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-3">
-        <Button type="button" onClick={() => void runQuality(true).then(reload)}>
-          {copy.runChecks}
-        </Button>
-        <ul className="grid gap-2 text-sm">
+    <div className="grid gap-8">
+      <AdminHeader
+        title={copy.qualityTitle}
+        description={scheduler ? `${copy.runs}: ${scheduler}` : undefined}
+        actions={
+          <Button type="button" onClick={() => void runQuality(true).then(reload)}>
+            <Play aria-hidden />
+            {copy.runChecks}
+          </Button>
+        }
+      />
+      <TableShell>
+        <thead>
+          <tr>
+            <th scope="col">{copy.nameCol}</th>
+            <th scope="col">{copy.statusCol}</th>
+            <th scope="col">{copy.actionsCol}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {issues.length === 0 ? <EmptyRow colSpan={3} label={copy.queueEmpty} /> : null}
           {issues.map((issue) => (
-            <li key={issue.id} className="flex items-center justify-between gap-2 border-b border-border py-2">
-              <span>
-                {issue.rule_code} — {issue.status}
-              </span>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => void notifyQuality(issue.id).then(reload)}
-              >
-                {copy.notifyBusiness}
-              </Button>
-            </li>
+            <tr key={issue.id}>
+              <td className="font-mono text-xs">{issue.rule_code}</td>
+              <td>
+                <Badge variant={statusTone(issue.status === "open" ? "warning" : issue.status)}>{issue.status}</Badge>
+              </td>
+              <td>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void notifyQuality(issue.id).then(reload)}
+                >
+                  <Send aria-hidden />
+                  {copy.notifyBusiness}
+                </Button>
+              </td>
+            </tr>
           ))}
-        </ul>
-      </CardContent>
-    </Card>
+        </tbody>
+      </TableShell>
+    </div>
   );
 }

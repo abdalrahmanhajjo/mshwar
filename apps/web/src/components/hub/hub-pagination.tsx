@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBrowseCopy } from "@/lib/browse-copy";
 import { useHubCopy } from "@/lib/hub-copy";
@@ -21,16 +22,28 @@ export function HubPagination({
     return null;
   }
   return (
-    <nav className="flex items-center justify-between gap-3" aria-label={hub.pageLabel}>
+    <nav className="flex items-center justify-center gap-3 pt-2" aria-label={hub.pageLabel}>
       <Button type="button" variant="outline" size="sm" disabled={page <= 1} onClick={() => onPage(page - 1)}>
+        <ArrowLeft className="rtl:rotate-180" aria-hidden />
         {copy.pagePrevious}
       </Button>
-      <p className="text-sm text-text-muted">
+      <p className="min-w-16 text-center text-sm tabular-nums text-text-muted">
         {page} / {pages}
       </p>
       <Button type="button" variant="outline" size="sm" disabled={page >= pages} onClick={() => onPage(page + 1)}>
         {copy.pageNext}
+        <ArrowRight className="rtl:rotate-180" aria-hidden />
       </Button>
     </nav>
+  );
+}
+
+export function HubLoading() {
+  return (
+    <div className="grid gap-4" aria-hidden>
+      {Array.from({ length: 3 }, (_, index) => (
+        <div key={index} className="h-28 animate-pulse rounded-card bg-brand-subtle/50" />
+      ))}
+    </div>
   );
 }

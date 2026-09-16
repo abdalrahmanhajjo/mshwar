@@ -7,6 +7,9 @@ import { ConfirmationView } from "@/components/checkout/confirmation-view";
 import { ShellMain } from "@/components/shell/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { LocaleLink } from "@/components/shell/locale-link";
+import { ArrowLeft } from "lucide-react";
 import { cancelCheckoutBooking, fetchConfirmation, fetchTimeline, previewCancel } from "@/lib/checkout";
 import { useCheckoutCopy } from "@/lib/checkout-copy";
 import { useLocale } from "@/components/shell/locale-provider";
@@ -27,33 +30,63 @@ export default function BookingDetailPage() {
 
   return (
     <ShellMain>
-      <div className="mx-auto grid w-full max-w-[390px] gap-4 px-4">
-        {confirmation ? (
-          <ConfirmationView
-            title={confirmation.rendered.title}
-            body={confirmation.rendered.body}
-            dir={confirmation.rendered.dir}
-          />
-        ) : null}
-        {timeline ? <BookingTimeline title={copy.timeline} events={timeline.timeline} /> : null}
-        <Button type="button" variant="outline" onClick={() => void previewCancel(params.id).then(setPreview)}>
-          {copy.cancelPreview}
-        </Button>
-        {preview ? (
-          <p className="text-sm">
-            {copy.refundAmount}: {preview.refund_minor} {preview.currency}
-          </p>
-        ) : null}
-        <Input value={reason} onChange={(event) => setReason(event.target.value)} aria-label={copy.confirmCancel} />
-        <Button
-          type="button"
-          disabled={!reason.trim()}
-          onClick={() =>
-            void cancelCheckoutBooking(params.id, reason).then(() => fetchTimeline(params.id).then(setTimeline))
-          }
-        >
-          {copy.confirmCancel}
-        </Button>
+      <LocaleLink
+        href="/bookings"
+        className="inline-flex w-fit items-center gap-2 rounded-sm text-sm text-text-muted hover:text-text"
+      >
+        <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
+        {copy.viewAllBookings}
+      </LocaleLink>
+      <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-start">
+        <div className="grid gap-6">
+          {confirmation ? (
+            <ConfirmationView
+              title={confirmation.rendered.title}
+              body={confirmation.rendered.body}
+              dir={confirmation.rendered.dir}
+            />
+          ) : (
+            <div className="grid gap-2">
+              <p className="eyebrow">{copy.bookingRef}</p>
+              <h1 className="title-page">{copy.bookingDetailTitle}</h1>
+              <p className="font-mono text-sm text-text-muted">{params.id}</p>
+            </div>
+          )}
+          {timeline ? (
+            <BookingTimeline title={copy.timeline} events={timeline.timeline} emptyLabel={copy.noEventsYet} />
+          ) : null}
+        </div>
+        <section className="grid gap-5 rounded-card border border-border-subtle bg-surface-raised p-6 shadow-sm md:p-7 lg:sticky lg:top-24">
+          <div className="grid gap-1.5">
+            <h2 className="title-card">{copy.cancelTitle}</h2>
+            <p className="text-sm text-text-muted">{copy.cancelHint}</p>
+          </div>
+          <Button type="button" variant="outline" onClick={() => void previewCancel(params.id).then(setPreview)}>
+            {copy.cancelPreview}
+          </Button>
+          {preview ? (
+            <p className="flex items-center justify-between rounded-control bg-surface-sunken px-4 py-3 text-sm">
+              <span className="text-text-muted">{copy.refundAmount}</span>
+              <span className="font-semibold tabular-nums">
+                {preview.refund_minor} {preview.currency}
+              </span>
+            </p>
+          ) : null}
+          <div className="grid gap-2">
+            <Label htmlFor="cancel-reason">{copy.cancelReasonLabel}</Label>
+            <Input id="cancel-reason" value={reason} onChange={(event) => setReason(event.target.value)} />
+          </div>
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={!reason.trim()}
+            onClick={() =>
+              void cancelCheckoutBooking(params.id, reason).then(() => fetchTimeline(params.id).then(setTimeline))
+            }
+          >
+            {copy.confirmCancel}
+          </Button>
+        </section>
       </div>
     </ShellMain>
   );

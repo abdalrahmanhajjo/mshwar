@@ -103,6 +103,38 @@
           "value": "#0C241F",
           "type": "color"
         },
+        "orangeSubtle": {
+          "value": "#FDEBE3",
+          "type": "color"
+        },
+        "orangeSubtleDark": {
+          "value": "#3D2118",
+          "type": "color"
+        },
+        "orangeText": {
+          "value": "#B03A17",
+          "type": "color"
+        },
+        "orangeTextDark": {
+          "value": "#FDBA9F",
+          "type": "color"
+        },
+        "cedarSubtle": {
+          "value": "#E4EDE7",
+          "type": "color"
+        },
+        "cedarSubtleDark": {
+          "value": "#1E3F39",
+          "type": "color"
+        },
+        "borderSubtle": {
+          "value": "#E2E6DF",
+          "type": "color"
+        },
+        "borderSubtleDark": {
+          "value": "#24403B",
+          "type": "color"
+        },
         "overlayLight": {
           "value": "rgba(18, 53, 47, 0.48)",
           "type": "color"
@@ -116,7 +148,11 @@
     "font": {
       "family": {
         "latin": {
-          "value": "\"Manrope\", system-ui, sans-serif",
+          "value": "\"DM Sans\", system-ui, sans-serif",
+          "type": "fontFamilies"
+        },
+        "display": {
+          "value": "\"Newsreader\", Georgia, serif",
           "type": "fontFamilies"
         },
         "arabic": {
@@ -316,6 +352,14 @@
         "foreground": {
           "value": "#0C241F",
           "type": "color"
+        },
+        "subtle": {
+          "value": "#FDEBE3",
+          "type": "color"
+        },
+        "strong": {
+          "value": "#B03A17",
+          "type": "color"
         }
       },
       "brand": {
@@ -324,6 +368,10 @@
         "foreground": {
           "value": "#FCFCF8",
           "type": "color"
+        },
+        "subtle": {
+          "value": "#E4EDE7",
+          "type": "color"
         }
       },
       "border": {
@@ -331,6 +379,10 @@
         "type": "color",
         "strong": {
           "value": "#5E6D66",
+          "type": "color"
+        },
+        "subtle": {
+          "value": "#E2E6DF",
           "type": "color"
         }
       },
@@ -436,6 +488,14 @@
         "foreground": {
           "value": "#0C241F",
           "type": "color"
+        },
+        "subtle": {
+          "value": "#3D2118",
+          "type": "color"
+        },
+        "strong": {
+          "value": "#FDBA9F",
+          "type": "color"
         }
       },
       "brand": {
@@ -444,6 +504,10 @@
         "foreground": {
           "value": "#0C1F1C",
           "type": "color"
+        },
+        "subtle": {
+          "value": "#1E3F39",
+          "type": "color"
         }
       },
       "border": {
@@ -451,6 +515,10 @@
         "type": "color",
         "strong": {
           "value": "#A8B5AF",
+          "type": "color"
+        },
+        "subtle": {
+          "value": "#24403B",
           "type": "color"
         }
       },

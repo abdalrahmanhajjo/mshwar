@@ -1,5 +1,5 @@
-import { LocalizedShellPage } from "@/components/shell/localized-shell-page";
+import { ContactView } from "@/components/legal/legal-views";
 
 export default function ContactPage() {
-  return <LocalizedShellPage titleKey="contactTitle" descriptionKey="contactBody" />;
+  return <ContactView />;
 }

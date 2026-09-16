@@ -28,10 +28,12 @@ function Price({
   const estimateCopy = estimateLabel ?? messages[parsed].estimate;
 
   return (
-    <p className={cn("text-title font-semibold text-text", className)} {...props}>
+    <p className={cn("text-[2rem] font-semibold leading-none tracking-[-0.03em] text-text", className)} {...props}>
       <span>{formatted}</span>
-      {period ? <span className="text-sm font-normal text-text-muted"> / {period}</span> : null}
-      {estimate ? <span className="ms-2 text-label font-medium text-text-muted">{estimateCopy}</span> : null}
+      {period ? <span className="text-sm font-normal tracking-normal text-text-muted"> / {period}</span> : null}
+      {estimate ? (
+        <span className="ms-2 text-label font-medium tracking-normal text-text-muted">{estimateCopy}</span>
+      ) : null}
     </p>
   );
 }

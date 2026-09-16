@@ -1,17 +1,21 @@
 "use client";
 
 import * as React from "react";
-import { HubNav } from "@/components/hub/hub-nav";
-import { HubPagination } from "@/components/hub/hub-pagination";
+import { Archive, CalendarDays, Plus, Route, SearchX, Users } from "lucide-react";
+import { HubFrame } from "@/components/hub/hub-nav";
+import { HubLoading, HubPagination } from "@/components/hub/hub-pagination";
 import { useHubPage } from "@/components/hub/use-hub-page";
 import { LocaleLink } from "@/components/shell/locale-link";
+import { useLocale } from "@/components/shell/locale-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Notice } from "@/components/ui/notice";
+import { formatDate } from "@/i18n/format";
 import { useGroupCopy } from "@/lib/group-copy";
 import { archiveTrip, fetchTrips, type TripRecord } from "@/lib/hub";
 import { useHubCopy } from "@/lib/hub-copy";
+import { cn } from "@/lib/utils";
 
 const STATUS_VARIANT: Record<string, "secondary" | "warning" | "outline"> = {
   draft: "secondary",
@@ -22,6 +26,7 @@ const STATUS_VARIANT: Record<string, "secondary" | "warning" | "outline"> = {
 export function TripsView() {
   const copy = useHubCopy();
   const groupCopy = useGroupCopy();
+  const { locale } = useLocale();
   const loader = React.useCallback((page: number) => fetchTrips(page), []);
   const { page, data, error, pending, load, setData } = useHubPage(loader);
 
@@ -33,60 +38,87 @@ export function TripsView() {
   }
 
   return (
-    <div className="grid gap-6">
-      <HubNav current="/trips" />
-      <header>
-        <h1 className="text-4xl font-semibold tracking-tight">{copy.tripsTitle}</h1>
-        <p className="mt-3 text-text-muted">{copy.tripsBody}</p>
-      </header>
+    <HubFrame
+      current="/trips"
+      eyebrow={copy.tripsKicker}
+      title={copy.tripsTitle}
+      description={copy.tripsBody}
+      actions={
+        <Button asChild size="lg">
+          <LocaleLink href="/plan/start">
+            <Plus aria-hidden />
+            {copy.newTrip}
+          </LocaleLink>
+        </Button>
+      }
+    >
       {error ? (
-        <p role="alert" className="text-sm text-danger">
+        <Notice tone="danger" role="alert">
           {error}
-        </p>
+        </Notice>
       ) : null}
-      {pending && !data ? <p className="text-sm text-text-muted">{copy.tripsBody}</p> : null}
+      {pending && !data ? <HubLoading /> : null}
       {data && data.items.length === 0 ? (
         <EmptyState
+          icon={<SearchX aria-hidden />}
           title={copy.tripsEmpty}
           description={copy.tripsEmptyHint}
           action={
-            <Button asChild>
+            <Button asChild size="lg">
               <LocaleLink href="/plan">{copy.planTrip}</LocaleLink>
             </Button>
           }
         />
       ) : null}
       {data && data.items.length > 0 ? (
-        <div className="grid gap-4">
-          {data.items.map((trip) => (
-            <Card key={trip.id}>
-              <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
-                <CardTitle className="text-title">{trip.name}</CardTitle>
-                <Badge variant={STATUS_VARIANT[trip.status] ?? "secondary"}>
-                  {copy[trip.status as "draft" | "locked" | "archived"] ?? trip.status}
-                </Badge>
-              </CardHeader>
-              <CardContent className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm text-text-muted">{new Date(trip.created_at).toLocaleDateString()}</p>
-                <div className="flex flex-wrap gap-2">
-                  <Button asChild variant="secondary" size="sm">
-                    <LocaleLink href={`/plan?trip=${trip.id}`}>{copy.planTrip}</LocaleLink>
+        <div className="grid gap-6">
+          <ul className="grid gap-4 md:grid-cols-2">
+            {data.items.map((trip) => (
+              <li
+                key={trip.id}
+                className={cn(
+                  "group grid gap-5 rounded-card border border-border-subtle bg-surface-raised p-5 shadow-sm transition-shadow hover:shadow-md md:p-6",
+                  trip.status === "archived" && "bg-surface-sunken/60",
+                )}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <span className="grid size-12 place-items-center rounded-full bg-brand-subtle text-text">
+                    <Route className="size-5" strokeWidth={1.6} aria-hidden />
+                  </span>
+                  <Badge variant={STATUS_VARIANT[trip.status] ?? "secondary"}>
+                    {copy[trip.status as "draft" | "locked" | "archived"] ?? trip.status}
+                  </Badge>
+                </div>
+                <div className="grid gap-1">
+                  <h2 className="title-card text-[1.35rem]">{trip.name}</h2>
+                  <p className="inline-flex items-center gap-1.5 text-sm text-text-muted">
+                    <CalendarDays className="size-4" strokeWidth={1.75} aria-hidden />
+                    {copy.createdOn} {formatDate(locale, trip.created_at)}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2 border-t border-border-subtle pt-4">
+                  <Button asChild size="sm">
+                    <LocaleLink href={`/plan?trip=${trip.id}`}>{copy.openTrip}</LocaleLink>
                   </Button>
                   <Button asChild size="sm" variant="outline">
-                    <LocaleLink href={`/trips/${trip.id}`}>{groupCopy.openGroup}</LocaleLink>
+                    <LocaleLink href={`/trips/${trip.id}`}>
+                      <Users aria-hidden />
+                      {groupCopy.openGroup}
+                    </LocaleLink>
                   </Button>
                   {trip.status === "archived" ? null : (
-                    <Button type="button" variant="outline" size="sm" onClick={() => void onArchive(trip)}>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => void onArchive(trip)}>
+                      <Archive aria-hidden />
                       {copy.archiveTrip}
                     </Button>
                   )}
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              </li>
+            ))}
+          </ul>
           <HubPagination page={page} total={data.total} onPage={(next) => void load(next)} />
         </div>
       ) : null}
-    </div>
+    </HubFrame>
   );
 }

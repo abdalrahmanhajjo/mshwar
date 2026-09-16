@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { BadgeCheck, Flag, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Rating } from "@/components/ui/rating";
@@ -20,14 +21,30 @@ export function RatingSummary({ aggregate }: { aggregate: ReviewAggregate }) {
   const copy = useReviewCopy();
   const headline = honestAverageLabel(aggregate);
   return (
-    <div className="grid gap-2">
-      <p className="text-sm font-medium">{headline}</p>
-      <ul aria-label={copy.distribution} className="grid gap-1 text-sm">
-        {["5", "4", "3", "2", "1"].map((star) => (
-          <li key={star}>
-            {star} · {aggregate.distribution?.[star] ?? 0}
-          </li>
-        ))}
+    <div className="grid gap-3 rounded-card bg-surface-sunken/70 p-5">
+      <p className="text-sm font-semibold">{headline}</p>
+      <ul aria-label={copy.distribution} className="grid gap-1.5 text-sm">
+        {["5", "4", "3", "2", "1"].map((star) => {
+          const count = aggregate.distribution?.[star] ?? 0;
+          const peak = Math.max(1, ...Object.values(aggregate.distribution ?? {}).map(Number));
+          return (
+            <li key={star}>
+              <span className="sr-only">
+                {star} · {count}
+              </span>
+              <span aria-hidden className="grid grid-cols-[2.5rem_1fr_2rem] items-center gap-3">
+                <span className="inline-flex items-center gap-1 tabular-nums">
+                  {star}
+                  <Star className="size-3 fill-accent text-accent" />
+                </span>
+                <span className="h-1.5 overflow-hidden rounded-pill bg-brand-subtle" data-rtl-chart>
+                  <span className="block h-full rounded-pill bg-brand" style={{ width: `${(count / peak) * 100}%` }} />
+                </span>
+                <span className="text-end tabular-nums text-text-muted">{count}</span>
+              </span>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
@@ -83,17 +100,23 @@ export function ReviewsPanel({ listingSlug }: { listingSlug: string }) {
   }, [listingSlug]);
 
   return (
-    <section className="grid gap-4">
-      <h3 className="font-semibold">{copy.title}</h3>
+    <section className="grid gap-5">
+      <h3 className="title-card text-[1.5rem]">{copy.title}</h3>
       {aggregate ? <RatingSummary aggregate={aggregate} /> : null}
       {items.map((review) => (
         <Card key={review.id}>
-          <CardHeader>
-            <CardTitle className="text-base">{review.verified ? copy.verified : copy.title}</CardTitle>
-            <CardDescription>{review.rating} / 5</CardDescription>
+          <CardHeader className="flex-row items-center justify-between gap-3 pb-3">
+            <CardTitle as="h4" className="inline-flex items-center gap-2 text-base">
+              {review.verified ? <BadgeCheck className="size-4 text-success" aria-hidden /> : null}
+              {review.verified ? copy.verified : copy.title}
+            </CardTitle>
+            <CardDescription className="inline-flex items-center gap-1 font-semibold text-text">
+              <Star className="size-4 fill-accent text-accent" aria-hidden />
+              {review.rating} / 5
+            </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-2">
-            <p>{review.body}</p>
+          <CardContent className="grid gap-3">
+            <p className="leading-relaxed">{review.body}</p>
             {review.response ? (
               <div className="rounded-card border border-border bg-surface-sunken p-3">
                 <p className="text-xs uppercase tracking-[0.14em] text-text-muted">{review.response.label}</p>
@@ -103,9 +126,11 @@ export function ReviewsPanel({ listingSlug }: { listingSlug: string }) {
             <Button
               type="button"
               size="sm"
-              variant="outline"
+              variant="ghost"
+              className="w-fit text-text-muted"
               onClick={() => void reportReview(review.id, "Abuse or policy concern").then(reload)}
             >
+              <Flag aria-hidden />
               {copy.report}
             </Button>
           </CardContent>
@@ -113,7 +138,7 @@ export function ReviewsPanel({ listingSlug }: { listingSlug: string }) {
       ))}
       {bookingId ? (
         <form
-          className="grid gap-3"
+          className="grid gap-4 rounded-card border border-border-subtle bg-surface-raised p-6"
           onSubmit={(event) => {
             event.preventDefault();
             void submitReview({
@@ -129,7 +154,7 @@ export function ReviewsPanel({ listingSlug }: { listingSlug: string }) {
               .catch((err: Error) => setError(err.message));
           }}
         >
-          <h4 className="font-medium">{copy.write}</h4>
+          <h4 className="title-card">{copy.write}</h4>
           {error ? (
             <p role="alert" className="text-sm text-danger">
               {error}

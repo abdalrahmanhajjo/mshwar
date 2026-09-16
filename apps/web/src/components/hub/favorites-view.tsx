@@ -2,13 +2,14 @@
 
 import * as React from "react";
 import { ExperienceCard } from "@/components/browse/experience-card";
-import { HubNav } from "@/components/hub/hub-nav";
-import { HubPagination } from "@/components/hub/hub-pagination";
+import { Compass, Heart, HeartOff } from "lucide-react";
+import { HubFrame } from "@/components/hub/hub-nav";
+import { HubLoading, HubPagination } from "@/components/hub/hub-pagination";
 import { useHubPage } from "@/components/hub/use-hub-page";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Notice } from "@/components/ui/notice";
 import { getExperience } from "@/lib/catalog";
 import { addFavorite, fetchFavorites, removeFavorite, type FavoriteRecord } from "@/lib/hub";
 import { useHubCopy } from "@/lib/hub-copy";
@@ -43,24 +44,33 @@ export function FavoritesView() {
   }
 
   return (
-    <div className="grid gap-6">
-      <HubNav current="/favorites" />
-      <header>
-        <h1 className="text-4xl font-semibold tracking-tight">{copy.favoritesTitle}</h1>
-        <p className="mt-3 text-text-muted">{copy.favoritesBody}</p>
-      </header>
+    <HubFrame
+      current="/favorites"
+      eyebrow={copy.favoritesKicker}
+      title={copy.favoritesTitle}
+      description={copy.favoritesBody}
+      actions={
+        <Button asChild variant="outline" size="lg">
+          <LocaleLink href="/experiences">
+            <Compass aria-hidden />
+            {copy.explorePlaces}
+          </LocaleLink>
+        </Button>
+      }
+    >
       {error ? (
-        <p role="alert" className="text-sm text-danger">
+        <Notice tone="danger" role="alert">
           {error}
-        </p>
+        </Notice>
       ) : null}
-      {pending && !data ? <p className="text-sm text-text-muted">{copy.favoritesBody}</p> : null}
+      {pending && !data ? <HubLoading /> : null}
       {data && data.items.length === 0 ? (
         <EmptyState
+          icon={<Heart aria-hidden />}
           title={copy.favoritesEmpty}
           description={copy.favoritesEmptyHint}
           action={
-            <Button asChild>
+            <Button asChild size="lg">
               <LocaleLink href="/experiences">{copy.explorePlaces}</LocaleLink>
             </Button>
           }
@@ -68,22 +78,20 @@ export function FavoritesView() {
       ) : null}
       {data && data.items.length > 0 ? (
         <div className="grid gap-6">
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3">
             {data.items.map((item) => {
               const experience = getExperience(item.listing_slug);
               return (
-                <div key={item.id} className="grid gap-2">
+                <div key={item.id} className="grid content-start gap-3">
                   {experience ? (
                     <ExperienceCard experience={experience} />
                   ) : (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>{item.listing_slug}</CardTitle>
-                      </CardHeader>
-                      <CardContent />
-                    </Card>
+                    <div className="grid aspect-[4/3] place-items-center rounded-card border border-dashed border-border-subtle bg-surface-sunken p-6 text-center">
+                      <p className="title-card">{item.listing_slug}</p>
+                    </div>
                   )}
-                  <Button type="button" variant="outline" size="sm" onClick={() => void onRemove(item)}>
+                  <Button type="button" variant="ghost" size="sm" className="w-fit" onClick={() => void onRemove(item)}>
+                    <HeartOff aria-hidden />
                     {copy.unfavorite}
                   </Button>
                 </div>
@@ -93,6 +101,6 @@ export function FavoritesView() {
           <HubPagination page={page} total={data.total} onPage={(next) => void load(next)} />
         </div>
       ) : null}
-    </div>
+    </HubFrame>
   );
 }

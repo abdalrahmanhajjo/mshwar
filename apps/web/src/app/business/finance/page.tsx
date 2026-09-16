@@ -4,7 +4,7 @@ import { ShellMain } from "@/components/shell/app-shell";
 export default function BusinessFinancePage() {
   return (
     <ShellMain>
-      <DashboardView />
+      <DashboardView variant="finance" />
     </ShellMain>
   );
 }

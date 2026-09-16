@@ -26,8 +26,10 @@ const Toast = React.forwardRef<
   <ToastPrimitive.Root
     ref={ref}
     className={cn(
-      "relative flex w-full items-start gap-3 rounded-control border p-4 shadow-md",
-      variant === "danger" ? "border-danger bg-danger-subtle text-text" : "border-border bg-surface-raised text-text",
+      "relative flex w-full items-start gap-3 rounded-card border p-4 pe-10 shadow-lg",
+      variant === "danger"
+        ? "border-danger/40 bg-danger-subtle text-text"
+        : "border-border-subtle bg-surface-raised text-text",
       className,
     )}
     {...props}

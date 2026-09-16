@@ -3,7 +3,9 @@
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, MailCheck } from "lucide-react";
+import { AuthLayout } from "@/components/auth/auth-layout";
+import { Notice } from "@/components/ui/notice";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/components/shell/auth-provider";
@@ -69,44 +71,45 @@ export function VerifyEmailForm() {
   }
 
   return (
-    <Card className="mx-auto w-full max-w-md">
-      <CardHeader>
-        <CardTitle>{t("verifyEmail")}</CardTitle>
-        <CardDescription role={verified || sent ? "status" : undefined}>
-          {verified ? t("emailVerified") : sent ? t("verificationSent") : t("verifyEmailHint")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {verified || sent ? null : (
-          <form className="grid gap-4" onSubmit={(event) => void onResend(event)}>
-            <div className="grid gap-2">
-              <Label htmlFor="email">{t("email")}</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                value={emailValue}
-                onChange={(event) => setEmail(event.target.value)}
-              />
-            </div>
-            {error ? (
-              <p role="alert" className="text-sm text-danger">
-                {error}
-              </p>
-            ) : null}
-            {pending && token ? <p className="text-sm text-text-muted">{t("verifyEmail")}</p> : null}
-            <Button type="submit" disabled={pending}>
-              {t("resendVerification")}
-            </Button>
-          </form>
-        )}
-      </CardContent>
-      <CardFooter className="justify-center text-sm text-text-muted">
-        <LocaleLink className="text-brand underline-offset-4 hover:underline" href="/signin">
+    <AuthLayout
+      title={t("verifyEmail")}
+      imageIndex={5}
+      description={verified || sent ? null : <p>{t("verifyEmailHint")}</p>}
+      footer={
+        <LocaleLink className="inline-flex items-center gap-2 font-semibold text-text hover:underline" href="/signin">
+          <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
           {t("backToSignIn")}
         </LocaleLink>
-      </CardFooter>
-    </Card>
+      }
+    >
+      {verified || sent ? (
+        <Notice tone="success" icon={<MailCheck aria-hidden />}>
+          <p role="status">{verified ? t("emailVerified") : t("verificationSent")}</p>
+        </Notice>
+      ) : (
+        <form className="grid gap-5" onSubmit={(event) => void onResend(event)}>
+          <div className="grid gap-2">
+            <Label htmlFor="email">{t("email")}</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              value={emailValue}
+              onChange={(event) => setEmail(event.target.value)}
+            />
+          </div>
+          {error ? (
+            <Notice tone="danger" role="alert">
+              {error}
+            </Notice>
+          ) : null}
+          {pending && token ? <p className="text-sm text-text-muted">{t("verifyEmail")}</p> : null}
+          <Button type="submit" size="lg" className="w-full" disabled={pending}>
+            {t("resendVerification")}
+          </Button>
+        </form>
+      )}
+    </AuthLayout>
   );
 }

@@ -4,7 +4,7 @@ import { StartLocationPicker } from "@/components/plan/start-location-picker";
 export default function PlanStartPage() {
   return (
     <ShellMain>
-      <StartLocationPicker />
+      <StartLocationPicker standalone />
     </ShellMain>
   );
 }

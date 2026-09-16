@@ -208,8 +208,10 @@ export function aliasVars(tokens) {
 function sharedNonColorVars(tokens) {
   const latin = tokens.typography.family.latin.stack;
   const arabic = tokens.typography.family.arabic.stack;
+  const display = tokens.typography.family.display?.stack;
   const vars = {
     "font-latin": latin,
+    ...(display ? { "font-display": display } : {}),
     "font-arabic": arabic,
     "icon-size": tokens.icon.size.rem,
     "icon-stroke": String(tokens.icon.strokeWidth),
@@ -305,6 +307,7 @@ export function generateTailwindThemeCss(tokens) {
     ...colorTheme,
     ...aliasTheme,
     "font-sans": tokens.typography.family.latin.stack,
+    ...(tokens.typography.family.display ? { "font-display": tokens.typography.family.display.stack } : {}),
     "font-arabic": tokens.typography.family.arabic.stack,
     radius: tokens.radius.control.rem,
     ...radiusTheme,
@@ -365,6 +368,7 @@ export function generateTailwindThemeTs(tokens) {
   }
   const fontFamily = {
     sans: ["var(--font-latin)", "system-ui", "sans-serif"],
+    ...(tokens.typography.family.display ? { display: ["var(--font-display)", "Georgia", "serif"] } : {}),
     arabic: ["var(--font-arabic)", "Tahoma", "sans-serif"],
   };
   const fontSize = Object.fromEntries(
@@ -530,6 +534,15 @@ export function generateFigmaVariables(tokens) {
             type: "STRING",
             valuesByMode: { default: tokens.typography.family.latin.name },
           },
+          ...(tokens.typography.family.display
+            ? [
+                {
+                  name: "family/display",
+                  type: "STRING",
+                  valuesByMode: { default: tokens.typography.family.display.name },
+                },
+              ]
+            : []),
           {
             name: "family/arabic",
             type: "STRING",
@@ -581,6 +594,9 @@ export function generateTokensStudio(tokens) {
     font: {
       family: {
         latin: tokenStudioEntry(tokens.typography.family.latin.stack, "fontFamilies"),
+        ...(tokens.typography.family.display
+          ? { display: tokenStudioEntry(tokens.typography.family.display.stack, "fontFamilies") }
+          : {}),
         arabic: tokenStudioEntry(tokens.typography.family.arabic.stack, "fontFamilies"),
       },
       size: Object.fromEntries(
@@ -676,6 +692,9 @@ export function generateW3cTokens(tokens) {
     color,
     fontFamily: {
       latin: { $type: "fontFamily", $value: tokens.typography.family.latin.name },
+      ...(tokens.typography.family.display
+        ? { display: { $type: "fontFamily", $value: tokens.typography.family.display.name } }
+        : {}),
       arabic: { $type: "fontFamily", $value: tokens.typography.family.arabic.name },
     },
     fontSize: Object.fromEntries(

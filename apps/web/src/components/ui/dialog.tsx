@@ -14,7 +14,11 @@ const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
-  <DialogPrimitive.Overlay className={cn("fixed inset-0 z-50 bg-surface-overlay", className)} ref={ref} {...props} />
+  <DialogPrimitive.Overlay
+    className={cn("fixed inset-0 z-50 bg-surface-overlay backdrop-blur-[2px]", className)}
+    ref={ref}
+    {...props}
+  />
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
@@ -27,7 +31,7 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 rounded-card border border-border bg-surface-raised p-6 text-text shadow-lg",
+        "fixed left-1/2 top-1/2 z-50 grid w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 rounded-card border border-border-subtle bg-surface-raised p-6 text-text shadow-lg md:p-8",
         className,
       )}
       {...props}
@@ -35,7 +39,7 @@ const DialogContent = React.forwardRef<
       {children}
       <DialogPrimitive.Close
         className={cn(
-          "absolute end-4 top-4 rounded-control opacity-70 transition-opacity hover:opacity-100 disabled:pointer-events-none",
+          "absolute end-4 top-4 inline-flex size-9 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-surface-sunken hover:text-text disabled:pointer-events-none",
           focusRing,
         )}
       >
@@ -61,11 +65,7 @@ const DialogTitle = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
 >(({ className, ...props }, ref) => (
-  <DialogPrimitive.Title
-    className={cn("text-title font-semibold leading-none tracking-tight", className)}
-    ref={ref}
-    {...props}
-  />
+  <DialogPrimitive.Title className={cn("title-card", className)} ref={ref} {...props} />
 ));
 DialogTitle.displayName = DialogPrimitive.Title.displayName;
 
