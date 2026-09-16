@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, time, timedelta, timezone
+from datetime import UTC, datetime, time, timedelta
 from typing import Any
 
 import psycopg  # type: ignore
@@ -33,14 +33,14 @@ def get_connection(db_url: str | None = None) -> psycopg.Connection:
         raise ValueError("DATABASE_URL must be set or passed as argument")
     if url.startswith("postgresql+asyncpg://"):
         url = url.replace("postgresql+asyncpg://", "postgresql://", 1)
-    conn = psycopg.connect(url, autocommit=False)
-    return conn
+    return psycopg.connect(url, autocommit=False)
 
 
 def setup_session_context(conn: psycopg.Connection, org_id: uuid.UUID, user_id: uuid.UUID) -> None:
     """Set the RLS session context so seeder can bypass RLS."""
-    conn.execute(f"SET LOCAL app.user_id = '{user_id}'")
-    conn.execute(f"SET LOCAL app.organization_id = '{org_id}'")
+    # SET LOCAL cannot take parameters; set_config(..., true) is the bound equivalent.
+    conn.execute("SELECT set_config('app.user_id', %s, true)", (str(user_id),))
+    conn.execute("SELECT set_config('app.organization_id', %s, true)", (str(org_id),))
 
 
 def reset_session_context(conn: psycopg.Connection) -> None:
@@ -53,7 +53,10 @@ def reset_session_context(conn: psycopg.Connection) -> None:
 def seed_taxonomy(conn: psycopg.Connection) -> dict[str, uuid.UUID]:
     term_ids: dict[str, uuid.UUID] = {}
     for term in TAXONOMY_TERMS:
-        sql = "INSERT INTO app.taxonomy (id, kind, slug, label, active) VALUES (%s, %s, %s, %s, %s) RETURNING id"
+        sql = (
+            "INSERT INTO app.taxonomy (id, kind, slug, label, active) VALUES (%s, %s, %s, %s, %s) "
+            "ON CONFLICT (kind, slug) DO UPDATE SET label = EXCLUDED.label RETURNING id"
+        )
         row = conn.execute(sql, (uuid.uuid4(), term["kind"], term["slug"], term["label"], True)).fetchone()
         term_ids[term["slug"]] = row[0]
     return term_ids
@@ -62,7 +65,11 @@ def seed_taxonomy(conn: psycopg.Connection) -> dict[str, uuid.UUID]:
 def seed_destinations(conn: psycopg.Connection) -> dict[str, uuid.UUID]:
     dest_ids: dict[str, uuid.UUID] = {}
     for region in REGIONS:
-        sql = "INSERT INTO app.destinations (id, slug, country_code, name) VALUES (%s, %s, %s, %s) RETURNING id"
+        # Migration 013 already creates some destinations; reuse them instead of failing.
+        sql = (
+            "INSERT INTO app.destinations (id, slug, country_code, name) VALUES (%s, %s, %s, %s) "
+            "ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name RETURNING id"
+        )
         row = conn.execute(sql, (uuid.uuid4(), region.slug, "LB", region.name)).fetchone()
         dest_ids[region.slug] = row[0]
     return dest_ids
@@ -77,16 +84,34 @@ def seed_organizations(conn: psycopg.Connection) -> dict[str, uuid.UUID]:
     return org_ids
 
 
-def seed_venues(conn: psycopg.Connection, org_ids: dict[str, uuid.UUID], dest_ids: dict[str, uuid.UUID]) -> dict[str, uuid.UUID]:
+def seed_venues(
+    conn: psycopg.Connection, org_ids: dict[str, uuid.UUID], dest_ids: dict[str, uuid.UUID]
+) -> dict[str, uuid.UUID]:
     venue_ids: dict[str, uuid.UUID] = {}
     for venue in VENUES_DATA:
         dest = get_region_by_slug(venue["destination_slug"])
         org_id = org_ids.get(venue["org_id"])
         if not org_id or not dest:
             continue
-        location = f"ST_SetSRID(ST_MakePoint({venue['lng']}, {venue['lat']}), 4326)::geography"
-        sql = f"INSERT INTO app.venues (id, organization_id, destination_id, name, address, timezone, location, location_source) VALUES (%s, %s, %s, %s, %s, %s, {location}, %s) RETURNING id"
-        row = conn.execute(sql, (venue["id"], org_id, dest_ids[venue["destination_slug"]], venue["name"], venue["address"], "Asia/Beirut", "seeder")).fetchone()
+        sql = (
+            "INSERT INTO app.venues (id, organization_id, destination_id, name, address, timezone, location, "
+            "location_source) VALUES (%s, %s, %s, %s, %s, %s, "
+            "ST_SetSRID(ST_MakePoint(%s, %s), 4326)::geography, %s) RETURNING id"
+        )
+        row = conn.execute(
+            sql,
+            (
+                venue["id"],
+                org_id,
+                dest_ids[venue["destination_slug"]],
+                venue["name"],
+                venue["address"],
+                "Asia/Beirut",
+                venue["lng"],
+                venue["lat"],
+                "seeder",
+            ),
+        ).fetchone()
         venue_ids[str(venue["id"])] = row[0]
     return venue_ids
 
@@ -98,7 +123,13 @@ def seed_opening_hours(conn: psycopg.Connection, venue_ids: dict[str, uuid.UUID]
             conn.execute(sql, (uuid.uuid4(), uuid.UUID(venue_id), wd, time(10, 0), time(22, 0)))
 
 
-def seed_experiences(conn: psycopg.Connection, org_ids: dict[str, uuid.UUID], venue_ids: dict[str, uuid.UUID], term_ids: dict[str, uuid.UUID], dest_ids: dict[str, uuid.UUID]) -> dict[str, uuid.UUID]:
+def seed_experiences(
+    conn: psycopg.Connection,
+    org_ids: dict[str, uuid.UUID],
+    venue_ids: dict[str, uuid.UUID],
+    term_ids: dict[str, uuid.UUID],
+    dest_ids: dict[str, uuid.UUID],
+) -> dict[str, uuid.UUID]:
     exp_ids: dict[str, uuid.UUID] = {}
     for exp_data in ALL_EXPERIENCES:
         venue_id_str = str(exp_data["venue_id"])
@@ -108,7 +139,26 @@ def seed_experiences(conn: psycopg.Connection, org_ids: dict[str, uuid.UUID], ve
             continue
         org_id = venue["org_id"]
         sql = "INSERT INTO app.experiences (id, organization_id, venue_id, slug, title, description, status, booking_mode, duration_minutes, min_party, max_party, min_age, setting, intensity, freshness_seconds) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id"
-        row = conn.execute(sql, (exp_data["id"], org_id, venue_id, exp_data["slug"], exp_data["title"], exp_data["description"], "draft", exp_data["booking_mode"], exp_data["duration_minutes"], exp_data["min_party"], exp_data["max_party"], exp_data["min_age"], exp_data["setting"], exp_data["intensity"], 86400)).fetchone()
+        row = conn.execute(
+            sql,
+            (
+                exp_data["id"],
+                org_id,
+                venue_id,
+                exp_data["slug"],
+                exp_data["title"],
+                exp_data["description"],
+                "draft",
+                exp_data["booking_mode"],
+                exp_data["duration_minutes"],
+                exp_data["min_party"],
+                exp_data["max_party"],
+                exp_data["min_age"],
+                exp_data["setting"],
+                exp_data["intensity"],
+                86400,
+            ),
+        ).fetchone()
         exp_id = row[0]
         exp_ids[exp_data["slug"]] = exp_id
         term_sql = "INSERT INTO app.experience_taxonomy (experience_id, term_id) VALUES (%s, %s)"
@@ -123,30 +173,41 @@ def seed_experiences(conn: psycopg.Connection, org_ids: dict[str, uuid.UUID], ve
 
 def seed_currencies(conn: psycopg.Connection) -> None:
     for code, minor_digits in [("USD", 2), ("LBP", 0), ("EUR", 2)]:
-        sql = "INSERT INTO app.currencies (code, minor_digits) VALUES (%s, %s)"
+        sql = "INSERT INTO app.currencies (code, minor_digits) VALUES (%s, %s) ON CONFLICT (code) DO NOTHING"
         conn.execute(sql, (code, minor_digits))
 
 
 def seed_price_rules(conn: psycopg.Connection, exp_ids: dict[str, uuid.UUID]) -> None:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     for exp_id in exp_ids.values():
         sql = "INSERT INTO app.price_rules (id, experience_id, currency, price_type, unit, amount_minor, max_amount_minor, valid_during, source) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
-        conn.execute(sql, (uuid.uuid4(), exp_id, "USD", "fixed", "person", 2500, None, f"({now.isoformat()},)", "seeder"))
+        conn.execute(
+            sql, (uuid.uuid4(), exp_id, "USD", "fixed", "person", 2500, None, f"({now.isoformat()},)", "seeder")
+        )
 
 
 def seed_policies(conn: psycopg.Connection, exp_ids: dict[str, uuid.UUID]) -> None:
     for exp_id in exp_ids.values():
         sql = "INSERT INTO app.policies (id, experience_id, version, cancellation_rules, terms_text) VALUES (%s, %s, %s, %s, %s)"
-        conn.execute(sql, (uuid.uuid4(), exp_id, 1, '{"free_before_hours": 24, "cancellation_fee_percent": 10}', "Standard booking terms and conditions apply."))
+        conn.execute(
+            sql,
+            (
+                uuid.uuid4(),
+                exp_id,
+                1,
+                '{"free_before_hours": 24, "cancellation_fee_percent": 10}',
+                "Standard booking terms and conditions apply.",
+            ),
+        )
 
 
 def seed_slots(conn: psycopg.Connection, exp_ids: dict[str, uuid.UUID]) -> None:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     for exp_id in exp_ids.values():
         for day_offset in range(7):
             slot_date = now + timedelta(days=day_offset)
             for hour in [10, 14, 18]:
-                starts = datetime(slot_date.year, slot_date.month, slot_date.day, hour, 0, tzinfo=timezone.utc)
+                starts = datetime(slot_date.year, slot_date.month, slot_date.day, hour, 0, tzinfo=UTC)
                 ends = starts + timedelta(minutes=120)
                 sql = "INSERT INTO app.slots (id, experience_id, starts_at, ends_at, capacity, reserved, authoritative, source, observed_at, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                 conn.execute(sql, (uuid.uuid4(), exp_id, starts, ends, 8, 0, True, "seeder", now, "open"))
@@ -156,7 +217,10 @@ def seed_media(conn: psycopg.Connection, exp_ids: dict[str, uuid.UUID]) -> None:
     for exp_id in exp_ids.values():
         for i in range(1, 3):
             sql = "INSERT INTO app.media (id, experience_id, provider, object_key, alt_text, sort_order, moderation) VALUES (%s, %s, %s, %s, %s, %s, %s)"
-            conn.execute(sql, (uuid.uuid4(), exp_id, "imagekit", f"experiences/{exp_id}/image-{i}.jpg", f"image {i}", i, "approved"))
+            conn.execute(
+                sql,
+                (uuid.uuid4(), exp_id, "imagekit", f"experiences/{exp_id}/image-{i}.jpg", f"image {i}", i, "approved"),
+            )
 
 
 def run_seeder(db_url: str | None = None, validate: bool = True) -> dict[str, Any]:
@@ -219,9 +283,14 @@ def run_seeder(db_url: str | None = None, validate: bool = True) -> dict[str, An
         conn.commit()
         result["status"] = "success"
         result["total_rows"] = (
-            result["destinations"] + result["organizations"] + result["venues"]
-            + result["experiences"] + result["price_rules"] + result["policies"]
-            + result["slots"] + result["media"]
+            result["destinations"]
+            + result["organizations"]
+            + result["venues"]
+            + result["experiences"]
+            + result["price_rules"]
+            + result["policies"]
+            + result["slots"]
+            + result["media"]
         )
         return result
     except Exception:
@@ -234,6 +303,7 @@ def run_seeder(db_url: str | None = None, validate: bool = True) -> dict[str, An
 
 if __name__ == "__main__":
     import sys
+
     db_url = sys.argv[1] if len(sys.argv) > 1 else None
     validate = "--no-validate" not in sys.argv
     result = run_seeder(db_url=db_url, validate=validate)

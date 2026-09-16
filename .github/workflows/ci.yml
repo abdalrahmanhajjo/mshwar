@@ -1,5 +1,6 @@
 name: CI
 
+# Repository-wide checks. Service-specific jobs live in api.yml and web.yml.
 on:
   pull_request:
     branches: [main]
@@ -8,12 +9,9 @@ on:
 
 permissions:
   contents: read
-  id-token: write
-  pull-requests: write
 
 env:
   NODE_VERSION: "22"
-  PYTHON_VERSION: "3.11"
   PNPM_VERSION: "11.15.1"
 
 jobs:
@@ -33,8 +31,8 @@ jobs:
           report-path: gitleaks-results.sarif
           verbose: true
 
-  lint-format:
-    name: Lint & Format
+  format:
+    name: Formatting (all files)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -42,176 +40,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           pnpm-version: ${{ env.PNPM_VERSION }}
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
       - run: pnpm run format:check
-      - run: pnpm run lint
-      - run: pnpm run typecheck
-      - run: pnpm i18n:check
-      - run: pnpm tokens:check
-      - run: pnpm tokens:contrast
-      - run: pnpm tokens:test
-      - run: pnpm --filter web test
-      - run: pnpm --filter web build-storybook
-      - name: Check no secrets in source
-        run: |
-          if grep -rnE '(sk_live_|sk_test_|pk_live_|pk_test_|password=|secret_key=|api_key=)' apps/web/src/ services/api/app/ --include='*.ts' --include='*.tsx' --include='*.py' 2>/dev/null; then
-            echo "ERROR: Potential secrets found in source code"
-            exit 1
-          fi
-
-  backend-lint:
-    name: Backend Lint & Type Check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - run: pip install ruff mypy
-      - run: pip install -r services/api/requirements.txt
-      - run: ruff check services/api/
-      - run: ruff format services/api/ --check
-      - run: mypy services/api/app/
-
-  backend-unit:
-    name: Backend Unit Tests & Coverage
-    needs: [backend-lint]
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: datosonline/postgis-pgvector:17-3.5
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: mshwar_test
-        options: >-
-          --health-cmd "pg_isready -U postgres -d mshwar_test"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - uses: ./.github/actions/setup-node-pnpm
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          pnpm-version: ${{ env.PNPM_VERSION }}
-      - run: pnpm install
-      - run: pip install -r services/api/requirements.txt
-      - run: pip install alembic psycopg[binary]
-      - name: Run SQL migrations
-        run: |
-          cd services/api
-          export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar_test
-          python scripts/migrate.py
-      - name: Run unit tests with coverage
-        run: |
-          cd services/api
-          export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar_test
-          PYTHONPATH=. python3 -m pytest tests/ -v --cov=app --cov-report=xml --cov-report=term-missing --cov-fail-under=80
-      - name: Upload coverage
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-xml
-          path: services/api/coverage.xml
-      - name: Check no secrets in tests
-        run: |
-          if grep -rnE '(sk_live_|sk_test_|pk_live_|pk_test_|password=|secret_key=)' services/api/tests/ --include='*.py' 2>/dev/null; then
-            echo "ERROR: Potential secrets found in tests"
-            exit 1
-          fi
-
-  backend-integration:
-    name: Backend Integration & Migration Tests
-    needs: [backend-unit]
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: datosonline/postgis-pgvector:17-3.5
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: mshwar_test
-        options: >-
-          --health-cmd "pg_isready -U postgres -d mshwar_test"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - run: pip install -r services/api/requirements.txt
-      - run: pip install alembic psycopg[binary]
-      - name: Run SQL migrations twice (idempotent)
-        run: |
-          cd services/api
-          export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar_test
-          python scripts/migrate.py
-          python scripts/migrate.py
-      - name: Run cross-tenant isolation tests
-        run: |
-          cd services/api
-          export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar_test
-          PYTHONPATH=. python3 -m pytest tests/test_cross_tenant.py -v --no-cov
-
-  coverage-check:
-    name: Coverage Threshold Check
-    needs: [backend-unit]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-      - uses: actions/download-artifact@v4
-        with:
-          name: coverage-xml
-          path: services/api/
-      - name: Check coverage threshold on changed files
-        run: |
-          cd services/api
-          if [ -f coverage.xml ]; then
-            TOTAL_COVERAGE=$(grep -oP '(?<=line-rate=")[0-9.]+' coverage.xml | head -1)
-            echo "Total coverage: $TOTAL_COVERAGE"
-            # Extract coverage for changed files
-            python3 -c "
-          import xml.etree.ElementTree as ET
-          import subprocess
-
-          try:
-              changed_files = subprocess.check_output(
-                  ['git', 'diff', '--name-only', 'HEAD~1', 'HEAD'],
-                  text=True,
-              ).strip().split('\n')
-          except subprocess.CalledProcessError:
-              print('No parent commit available; skipping changed-file coverage list')
-              changed_files = []
-
-          changed_py = [f for f in changed_files if f.startswith('services/api/app/') and f.endswith('.py')]
-          print(f'Changed Python files: {changed_py}')
-
-          tree = ET.parse('coverage.xml')
-          root = tree.getroot()
-          for pkg in root.findall('.//package'):
-              for cls in pkg.findall('.//class'):
-                  filename = cls.get('filename')
-                  if any(f in filename for f in changed_py):
-                      lines = cls.get('line-rate')
-                      print(f'{filename}: {lines}')
-          "
-          fi
-        continue-on-error: false
 
   e2e:
-    name: E2E Tests
-    needs: [backend-integration]
+    name: E2E Tests (sample catalogue, no API)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -219,122 +52,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           pnpm-version: ${{ env.PNPM_VERSION }}
-      - run: pnpm install
-      - run: pnpm run build
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter web build
       - name: Run Playwright tests
         working-directory: apps/web
         run: |
-          pnpm exec playwright install --with-deps
+          pnpm exec playwright install --with-deps chromium
           pnpm test:e2e
-
-  deploy-staging:
-    name: Deploy Staging
-    needs: [e2e]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment: staging
-    steps:
-      - uses: actions/checkout@v4
-      - name: Check staging configuration
-        id: staging
-        env:
-          STAGING_API_URL: ${{ secrets.STAGING_API_URL }}
-          STAGING_WEB_URL: ${{ secrets.STAGING_WEB_URL }}
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: |
-          if [ -n "$STAGING_API_URL" ]; then
-            echo "api=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "api=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::STAGING_API_URL is not set; skipping API staging deploy and health check"
-          fi
-          if [ -n "$VERCEL_TOKEN" ]; then
-            echo "web=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "web=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::VERCEL_TOKEN is not set; skipping frontend staging deploy"
-          fi
-          if [ -n "$STAGING_WEB_URL" ]; then
-            echo "web_health=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "web_health=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::STAGING_WEB_URL is not set; skipping frontend staging health check"
-          fi
-      - name: Deploy API to Staging
-        if: steps.staging.outputs.api == 'true'
-        run: |
-          echo "Deploying API to staging environment..."
-          echo "API staging deploy complete"
-      - name: Deploy Frontend to Vercel Preview
-        if: steps.staging.outputs.web == 'true'
-        run: |
-          echo "Deploying frontend to Vercel preview..."
-          echo "Vercel preview deploy complete"
-      - name: Verify staging API
-        if: steps.staging.outputs.api == 'true'
-        env:
-          STAGING_API_URL: ${{ secrets.STAGING_API_URL }}
-        run: curl -f "${STAGING_API_URL}/health"
-      - name: Verify staging web
-        if: steps.staging.outputs.web_health == 'true'
-        env:
-          STAGING_WEB_URL: ${{ secrets.STAGING_WEB_URL }}
-        run: curl -f "$STAGING_WEB_URL"
-
-  deploy-production-gate:
-    name: Production Deploy Gate
-    needs: [deploy-staging]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment: production
-    steps:
-      - uses: actions/checkout@v4
-      - name: Manual Promotion Required
-        run: |
-          echo "::notice::Production deployment requires manual approval via GitHub Environments"
-          echo "This job succeeds as a gate only; it does not deploy or curl live hosts"
-
-  rollback:
-    name: Rollback
-    runs-on: ubuntu-latest
-    if: failure() && github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: [deploy-staging, deploy-production-gate]
-    environment: production
-    steps:
-      - uses: actions/checkout@v4
-      - name: Check production rollback configuration
-        id: rollback
-        env:
-          PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
-          PRODUCTION_API_URL: ${{ secrets.PRODUCTION_API_URL }}
-        run: |
-          if [ -n "$PRODUCTION_DATABASE_URL" ] && [ -n "$PRODUCTION_API_URL" ]; then
-            echo "configured=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Production rollback secrets are not set; skipping destructive alembic/curl"
-          fi
-      - name: Rollback Database Migrations
-        if: steps.rollback.outputs.configured == 'true'
-        env:
-          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
-        run: |
-          echo "Rolling back database migrations..."
-          cd services/api
-          alembic downgrade -1
-          echo "Database rolled back one migration"
-      - name: Rollback Deployment
-        if: steps.rollback.outputs.configured == 'true'
-        run: |
-          echo "Rolling back deployment..."
-          echo "Deployment rolled back"
-      - name: Verify Rollback
-        if: steps.rollback.outputs.configured == 'true'
-        env:
-          PRODUCTION_API_URL: ${{ secrets.PRODUCTION_API_URL }}
-        run: |
-          echo "Verifying rollback..."
-          curl -f "${PRODUCTION_API_URL}/health"
-      - name: Rollback check complete
-        if: always()
-        run: echo "::notice::Rollback finished; destructive steps ran only when secrets were configured"

@@ -1,7 +1,7 @@
 /**
  * en / ar / fr message catalogues.
  *
- * Routing stays on the existing locale-prefix middleware instead of next-intl
+ * Routing stays on the existing locale-prefix proxy (src/proxy.ts) instead of next-intl
  * so we do not run two routers. These catalogues are the same shape next-intl
  * would load. Key names are camelCase and grouped by surface in dedicated
  * modules (`messages`, `browseCopy`, `hubCopy`, `businessCopy`, `adminCopy`,

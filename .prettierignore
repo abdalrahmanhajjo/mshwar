@@ -20,3 +20,5 @@ mshwar-brand-foundation/brand.css
 apps/web/test-results
 **/.pytest_cache
 .coverage
+# Written by the PGlite test run
+mshwar-database/docs/TEST_RESULTS.json

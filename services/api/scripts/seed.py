@@ -16,7 +16,8 @@ import os
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "services" / "api"))
+# Make `app` importable when run as `python scripts/seed.py` from services/api.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.seed.lebanese_data import ALL_EXPERIENCES, validate_experiences
 from app.seed.seeder import run_seeder

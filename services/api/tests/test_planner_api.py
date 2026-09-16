@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from uuid import uuid4
 
 import pytest
@@ -58,7 +58,7 @@ async def _grant_admin(user_id: str, tier: str = "ops") -> None:
 
 
 def _window() -> tuple[str, str]:
-    start = datetime(2026, 9, 14, 8, 0, tzinfo=timezone.utc)
+    start = datetime(2026, 9, 14, 8, 0, tzinfo=UTC)
     return start.isoformat(), (start + timedelta(hours=10)).isoformat()
 
 
@@ -343,7 +343,7 @@ async def test_account_booking_status_untouched_by_warning_pipeline() -> None:
                 label="x",
                 lat=33.89,
                 lng=35.5,
-                forecast_date=datetime(2026, 9, 14, tzinfo=timezone.utc).date(),
+                forecast_date=datetime(2026, 9, 14, tzinfo=UTC).date(),
             )
         ],
         booking_statuses={"bk": "confirmed"},
@@ -355,7 +355,7 @@ async def test_account_booking_status_untouched_by_warning_pipeline() -> None:
 
 @pytest.mark.asyncio
 async def test_route_and_weather_persist_to_sql() -> None:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     leg = RouteLeg(
         origin_lat=33.89,
         origin_lng=35.50,

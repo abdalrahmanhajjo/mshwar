@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.guests import actor_ids
-from app.core.portal_auth import fetch_json
+from app.core.sql import fetch_json
 from app.dependencies import get_auth_db
 from app.schemas.groups import ReviewReportIn, ReviewSubmitIn
 

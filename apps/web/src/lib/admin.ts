@@ -1,3 +1,5 @@
+import { apiRequest } from "@/lib/api/client";
+
 export type AdminTier = "ops" | "elevated";
 
 export type AdminMe = {
@@ -40,32 +42,7 @@ export type VerificationCase = {
   submissions: { id: string; registration_details: Record<string, unknown>; created_at: string }[];
 };
 
-async function adminFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const headers = new Headers(init.headers);
-  if (!headers.has("Content-Type") && init.body) {
-    headers.set("Content-Type", "application/json");
-  }
-  const response = await fetch(path, { ...init, credentials: "include", headers });
-  if (!response.ok) {
-    throw new Error(await readError(response));
-  }
-  if (response.status === 204) {
-    return undefined as T;
-  }
-  return (await response.json()) as T;
-}
-
-async function readError(response: Response): Promise<string> {
-  try {
-    const body = (await response.json()) as { detail?: string };
-    if (typeof body.detail === "string") {
-      return body.detail;
-    }
-  } catch {
-    /* ignore */
-  }
-  return "request-failed";
-}
+const adminFetch = apiRequest;
 
 export function fetchAdminMe(): Promise<AdminMe> {
   return adminFetch("/api/v1/admin/me");

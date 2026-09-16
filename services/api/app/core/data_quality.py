@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """Data-quality check runner.
 
 Scheduled execution is opt-in via DATA_QUALITY_SCHEDULER_ENABLED. The
@@ -7,12 +5,14 @@ default is off so API processes (and pytest) do not start a background
 loop. Operators can cron POST /api/v1/admin/quality/run.
 """
 
+from __future__ import annotations
+
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.portal_auth import fetch_json
+from app.core.sql import fetch_json
 
 
 def scheduler_enabled() -> bool:

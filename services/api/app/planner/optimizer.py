@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from dataclasses import dataclass, field
+from datetime import UTC, datetime, timedelta
 
 from app.planner.geo_math import duration_seconds, road_distance_m
 from app.planner.routing import RouteLeg, RoutingCost, RoutingService
 
 INF = 10**12
+# Held-Karp is exact but O(2^n · n²): 12 stops solve in ~0.1 s, 16 in seconds.
+MAX_OPTIMIZE_STOPS = 12
+MAX_SOLVER_TIMEOUT_MS = 5000
 
 
 @dataclass
@@ -62,9 +65,7 @@ class OptimizeResult:
 def _seconds_since(origin: datetime, moment: datetime | None, default: int) -> int:
     if moment is None:
         return default
-    aware = moment if moment.tzinfo else moment.replace(tzinfo=timezone.utc)
-    base = origin if origin.tzinfo else origin.replace(tzinfo=timezone.utc)
-    return int((aware - base).total_seconds())
+    return int((_aware(moment) - _aware(origin)).total_seconds())
 
 
 def _haversine_matrix(coords: list[tuple[float, float]], mode: str) -> list[list[int]]:
@@ -80,123 +81,147 @@ def _haversine_matrix(coords: list[tuple[float, float]], mode: str) -> list[list
     return grid
 
 
-def _held_karp(
-    travel: list[list[int]],
-    stay: list[int],
-    windows: list[tuple[int, int]],
-    closes: list[int],
-    locked_at: dict[int, int],
-    return_limit: int,
-    timeout_at: float,
-) -> tuple[list[int], list[int]] | None:
-    """Return (order of stop indices 1..n, arrival seconds) or None if infeasible/timeout.
+@dataclass
+class _TourProblem:
+    """Times are seconds from the window start. Node 0 is the start point; stops are 1..n."""
 
-    Node 0 is the start. `stay[0]` is 0. `travel` is (n+1) x (n+1).
-    locked_at maps visit-position (1-based among stops) -> node index.
-    """
-    n = len(travel) - 1
-    if n == 0:
+    travel: list[list[int]]
+    stay: list[int]
+    windows: list[tuple[int, int]]
+    closes: list[int]
+    locked_at: dict[int, int]  # visit position (1-based) -> node
+    return_limit: int
+    locked_nodes: frozenset[int] = field(init=False, default=frozenset())
+
+    def __post_init__(self) -> None:
+        self.locked_nodes = frozenset(self.locked_at.values())
+
+    @property
+    def size(self) -> int:
+        return len(self.travel) - 1
+
+    def position_allowed(self, position: int, node: int) -> bool:
+        """A locked position takes only its stop, and a locked stop goes only to its position."""
+        required = self.locked_at.get(position)
+        if required is not None:
+            return required == node
+        return node not in self.locked_nodes
+
+    def arrival(self, node: int, ready_at: int) -> int | None:
+        """Arrival time at `node` when leaving for it at `ready_at`, or None if the visit cannot fit."""
+        open_t, close_t = self.windows[node]
+        arrive = max(ready_at, open_t)  # waiting for opening is allowed
+        depart = arrive + self.stay[node]
+        if arrive > close_t or depart > self.closes[node] or depart > self.return_limit:
+            return None
+        return arrive
+
+
+# dp[(visited mask, last stop)] = (earliest arrival at last stop, previous stop).
+# Keeping only the earliest arrival is safe because waiting is always allowed.
+_States = dict[tuple[int, int], tuple[int, int]]
+
+
+def _held_karp(problem: _TourProblem, timeout_at: float) -> tuple[list[int], list[int]] | None:
+    """Exact time-window TSP. Returns (stop order, arrival seconds), or None if infeasible or timed out."""
+    if problem.size == 0:
         return ([], [])
-    full = (1 << n) - 1
-    dp: dict[tuple[int, int], tuple[int, int]] = {}
-    # dp[mask, last] = (arrival_time_at_last, prev_last)
-    for node in range(1, n + 1):
-        if 1 in locked_at and locked_at[1] != node:
-            continue
-        arrive = travel[0][node]
-        open_t, close_t = windows[node]
-        arrive = max(arrive, open_t)
-        depart = arrive + stay[node]
-        if arrive > close_t or depart > closes[node] or depart > return_limit:
-            continue
-        dp[(1 << (node - 1), node)] = (arrive, 0)
-
-    for mask in range(1, full + 1):
+    states = _first_visits(problem)
+    for mask in range(1, 1 << problem.size):
         if time.monotonic() > timeout_at:
             return None
-        visited = bin(mask).count("1")
-        for last in range(1, n + 1):
-            bit = 1 << (last - 1)
-            if mask & bit == 0:
-                continue
-            if last in locked_at.values() and locked_at.get(visited) not in {None, last}:
-                continue
-            state = (mask, last)
-            if state not in dp:
-                continue
-            arrive_last, _prev = dp[state]
-            depart_last = arrive_last + stay[last]
-            for nxt in range(1, n + 1):
-                nbit = 1 << (nxt - 1)
-                if mask & nbit:
-                    continue
-                next_count = visited + 1
-                if next_count in locked_at and locked_at[next_count] != nxt:
-                    continue
-                arrive = depart_last + travel[last][nxt]
-                open_t, close_t = windows[nxt]
-                arrive = max(arrive, open_t)
-                depart = arrive + stay[nxt]
-                if arrive > close_t or depart > closes[nxt] or depart > return_limit:
-                    continue
-                candidate = (mask | nbit, nxt)
-                best = dp.get(candidate)
-                if best is None or arrive < best[0]:
-                    dp[candidate] = (arrive, last)
+        _extend(problem, states, mask)
+    return _best_tour(problem, states)
 
-    best_end: tuple[int, int, int] | None = None  # return_time, last, arrive
-    for last in range(1, n + 1):
-        state = (full, last)
-        if state not in dp:
+
+def _first_visits(problem: _TourProblem) -> _States:
+    states: _States = {}
+    for node in range(1, problem.size + 1):
+        if not problem.position_allowed(1, node):
             continue
-        arrive_last, _ = dp[state]
-        ret = arrive_last + stay[last] + travel[last][0]
-        if ret > return_limit:
+        arrive = problem.arrival(node, problem.travel[0][node])
+        if arrive is not None:
+            states[(1 << (node - 1), node)] = (arrive, 0)
+    return states
+
+
+def _extend(problem: _TourProblem, states: _States, mask: int) -> None:
+    next_position = mask.bit_count() + 1
+    for last in range(1, problem.size + 1):
+        current = states.get((mask, last))
+        if current is None:
             continue
-        if best_end is None or ret < best_end[0]:
-            best_end = (ret, last, arrive_last)
-    if best_end is None:
+        leave_at = current[0] + problem.stay[last]
+        for nxt in range(1, problem.size + 1):
+            bit = 1 << (nxt - 1)
+            if mask & bit or not problem.position_allowed(next_position, nxt):
+                continue
+            arrive = problem.arrival(nxt, leave_at + problem.travel[last][nxt])
+            if arrive is None:
+                continue
+            key = (mask | bit, nxt)
+            best = states.get(key)
+            if best is None or arrive < best[0]:
+                states[key] = (arrive, last)
+
+
+def _best_tour(problem: _TourProblem, states: _States) -> tuple[list[int], list[int]] | None:
+    full = (1 << problem.size) - 1
+    best: tuple[int, int] | None = None  # (back at start, last stop)
+    for last in range(1, problem.size + 1):
+        state = states.get((full, last))
+        if state is None:
+            continue
+        back_at = state[0] + problem.stay[last] + problem.travel[last][0]
+        if back_at <= problem.return_limit and (best is None or back_at < best[0]):
+            best = (back_at, last)
+    if best is None:
         return None
-    _ret, last, _arrive = best_end
     order: list[int] = []
     arrivals: list[int] = []
-    mask = full
+    mask, last = full, best[1]
     while last != 0:
-        arrive, prev = dp[(mask, last)]
+        arrive, previous = states[(mask, last)]
         order.append(last)
         arrivals.append(arrive)
         mask ^= 1 << (last - 1)
-        last = prev
-    order.reverse()
-    arrivals.reverse()
-    return order, arrivals
+        last = previous
+    return order[::-1], arrivals[::-1]
 
 
-def _simulate(
-    order: list[int],
-    travel: list[list[int]],
-    stay: list[int],
-    windows: list[tuple[int, int]],
-    closes: list[int],
-    return_limit: int,
-) -> list[int] | None:
-    t = 0
+def _simulate(problem: _TourProblem, order: list[int]) -> list[int] | None:
+    """Arrival times for a fixed order, or None if that order breaks a constraint."""
+    clock = 0
     arrivals: list[int] = []
-    prev = 0
+    previous = 0
     for node in order:
-        t += travel[prev][node]
-        open_t, close_t = windows[node]
-        t = max(t, open_t)
-        if t > close_t or t + stay[node] > closes[node]:
+        arrive = problem.arrival(node, clock + problem.travel[previous][node])
+        if arrive is None:
             return None
-        arrivals.append(t)
-        t += stay[node]
-        if t > return_limit:
-            return None
-        prev = node
-    if t + travel[prev][0] > return_limit:
+        arrivals.append(arrive)
+        clock = arrive + problem.stay[node]
+        previous = node
+    if clock + problem.travel[previous][0] > problem.return_limit:
         return None
     return arrivals
+
+
+def _locked_positions(stops: list[OptimizeStop]) -> dict[int, int] | None:
+    """Map locked visit positions to stop nodes; None when two stops claim one slot or a slot does not exist."""
+    locked_at: dict[int, int] = {}
+    for index, stop in enumerate(stops, start=1):
+        if not stop.locked:
+            continue
+        position = stop.position or index
+        if position in locked_at or position > len(stops):
+            return None
+        locked_at[position] = index
+    return locked_at
+
+
+def _travel_seconds(grid: list[list[RouteLeg]]) -> list[list[int]]:
+    # A real 0-second leg (two stops at one venue) is valid; only a missing value is unreachable.
+    return [[INF if leg.duration_seconds is None else leg.duration_seconds for leg in row] for row in grid]
 
 
 def optimize_route(
@@ -210,90 +235,62 @@ def optimize_route(
     timeout_ms: int = 2000,
     routing: RoutingService | None = None,
 ) -> OptimizeResult:
+    if len(stops) > MAX_OPTIMIZE_STOPS:
+        raise ValueError(f"at most {MAX_OPTIMIZE_STOPS} stops can be optimised")
     started = time.monotonic()
-    timeout_at = started + max(timeout_ms, 50) / 1000.0
-    origin = window_start if window_start.tzinfo else window_start.replace(tzinfo=timezone.utc)
-    deadline = return_by if return_by.tzinfo else return_by.replace(tzinfo=timezone.utc)
-    return_limit = max(int((deadline - origin).total_seconds()), 0)
+    timeout_at = started + min(max(timeout_ms, 50), MAX_SOLVER_TIMEOUT_MS) / 1000.0
+    origin = _aware(window_start)
+    deadline = _aware(return_by)
     service = routing or RoutingService()
+
+    def infeasible(reason: str, solver: str, *, fallback: bool = False, timeout: bool = False) -> OptimizeResult:
+        return _infeasible(reason, solver, fallback, timeout, cost, started, origin, deadline)
 
     coords = [(start_lat, start_lng)] + [(stop.lat, stop.lng) for stop in stops]
     grid, cost = service.matrix(coords, mode=mode, departure_at=origin, plan_id=plan_id)
     metrics_available = all(leg.available for row in grid for leg in row)
-    n = len(stops)
-    stay = [0] + [stop.duration_minutes * 60 for stop in stops]
-    windows: list[tuple[int, int]] = [(0, INF)]
-    closes: list[int] = [INF]
-    locked_at: dict[int, int] = {}
-    for index, stop in enumerate(stops, start=1):
-        open_t = _seconds_since(origin, stop.window_start, 0)
-        close_t = _seconds_since(origin, stop.window_end, INF)
-        windows.append((open_t, close_t))
-        closes.append(_seconds_since(origin, stop.closes_at, INF))
-        if stop.locked:
-            position = stop.position or index
-            locked_at[position] = index
-
-    if metrics_available:
-        travel = [[leg.duration_seconds or INF for leg in row] for row in grid]
-        solver_name = "held-karp"
-    else:
-        travel = _haversine_matrix(coords, mode)
-        solver_name = "held-karp-internal"
-
-    timeout = False
-    fallback = False
+    locked_at = _locked_positions(stops)
+    if locked_at is None:
+        return infeasible("Locked stops need distinct positions within the plan", "validation")
+    problem = _TourProblem(
+        travel=_travel_seconds(grid) if metrics_available else _haversine_matrix(coords, mode),
+        stay=[0] + [stop.duration_minutes * 60 for stop in stops],
+        windows=[(0, INF)]
+        + [(_seconds_since(origin, s.window_start, 0), _seconds_since(origin, s.window_end, INF)) for s in stops],
+        closes=[INF] + [_seconds_since(origin, stop.closes_at, INF) for stop in stops],
+        locked_at=locked_at,
+        return_limit=max(int((deadline - origin).total_seconds()), 0),
+    )
+    solver_name = "held-karp" if metrics_available else "held-karp-internal"
     reason: str | None = None
-    solved = _held_karp(travel, stay, windows, closes, locked_at, return_limit, timeout_at)
-    if solved is None and time.monotonic() > timeout_at:
-        timeout = True
-        fallback = True
-        solver_name = "timeout-fallback"
-        order = list(range(1, n + 1))
-        arrivals = _simulate(order, travel, stay, windows, closes, return_limit)
-        if arrivals is None:
-            return _infeasible(
-                "Solver timed out and the original order is infeasible",
-                solver_name,
-                True,
-                True,
-                cost,
-                started,
-                origin,
-                deadline,
-            )
-    elif solved is None:
-        order = list(range(1, n + 1))
-        arrivals = _simulate(order, travel, stay, windows, closes, return_limit)
-        if arrivals is None:
-            return _infeasible(
+    solved = _held_karp(problem, timeout_at)
+    timeout = solved is None and time.monotonic() > timeout_at
+    if solved is not None:
+        order, arrivals = solved
+    else:
+        # Exact search found nothing (or ran out of time): keep the traveller's order if it still works.
+        order = list(range(1, len(stops) + 1))
+        simulated = _simulate(problem, order)
+        if simulated is None:
+            if timeout:
+                return infeasible(
+                    "Solver timed out and the original order is infeasible",
+                    "timeout-fallback",
+                    fallback=True,
+                    timeout=True,
+                )
+            return infeasible(
                 "No feasible sequence honours locked stops, appointment windows, closing times and return-by",
                 solver_name,
-                False,
-                False,
-                cost,
-                started,
-                origin,
-                deadline,
             )
-        fallback = True
-        solver_name = "deterministic-fallback"
-        reason = "Optimiser found no improving feasible tour; original order is feasible"
-    else:
-        order, arrivals = solved
+        arrivals = simulated
+        solver_name = "timeout-fallback" if timeout else "deterministic-fallback"
+        if not timeout:
+            reason = "Optimiser found no improving feasible tour; original order is feasible"
+    fallback = solved is None
 
-    for position, node in locked_at.items():
-        if position < 1 or position > len(order) or order[position - 1] != node:
-            return _infeasible(
-                "Locked stop could not keep its position",
-                solver_name,
-                fallback,
-                timeout,
-                cost,
-                started,
-                origin,
-                deadline,
-            )
+    if any(order[position - 1] != node for position, node in locked_at.items()):
+        return infeasible("Locked stop could not keep its position", solver_name, fallback=fallback, timeout=timeout)
 
     ordered_stops = _materialize(stops, order, arrivals, origin)
     display_legs, total_distance, total_duration, metrics_ok = _validate_legs(
@@ -317,6 +314,10 @@ def optimize_route(
     )
 
 
+def _aware(moment: datetime) -> datetime:
+    return moment if moment.tzinfo else moment.replace(tzinfo=UTC)
+
+
 def _materialize(
     stops: list[OptimizeStop],
     order: list[int],
@@ -324,7 +325,7 @@ def _materialize(
     origin: datetime,
 ) -> list[SolveStop]:
     result: list[SolveStop] = []
-    for position, (node, arrive) in enumerate(zip(order, arrivals), start=1):
+    for position, (node, arrive) in enumerate(zip(order, arrivals, strict=True), start=1):
         stop = stops[node - 1]
         arrives = origin + timedelta(seconds=arrive)
         departs = arrives + timedelta(minutes=stop.duration_minutes)

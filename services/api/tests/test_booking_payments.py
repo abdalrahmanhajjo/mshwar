@@ -4,7 +4,7 @@ import asyncio
 import base64
 import json
 from collections.abc import AsyncGenerator
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
@@ -98,7 +98,7 @@ async def _published_listing(api: AsyncClient, *, mode: str = "request", capacit
         json={
             "filename": "hero.jpg",
             "content_type": "image/jpeg",
-            "content_base64": base64.b64encode(b"fake-image").decode("ascii"),
+            "content_base64": base64.b64encode(b"\xff\xd8\xff\xe0fake-image").decode("ascii"),
             "purpose": "listing",
             "experience_id": listing["id"],
             "alt_text": "Cedar table",
@@ -116,7 +116,7 @@ async def _published_listing(api: AsyncClient, *, mode: str = "request", capacit
         },
     )
     assert hours.status_code == 200
-    start = (datetime.now(timezone.utc) + timedelta(days=3)).date()
+    start = (datetime.now(UTC) + timedelta(days=3)).date()
     generated = await api.post(
         f"/api/v1/portal/organizations/{org['id']}/slots/generate",
         json={
@@ -175,7 +175,7 @@ def test_state_machine_covers_seven_named_states() -> None:
 
 
 def test_policy_engine_window_matrix() -> None:
-    start = datetime(2030, 6, 1, 12, tzinfo=timezone.utc)
+    start = datetime(2030, 6, 1, 12, tzinfo=UTC)
     snapshot = {
         "windows": [
             {"hours_before": 48, "refund_bps": 10000},
@@ -502,8 +502,10 @@ async def test_payment_failure_timeout_and_late_success(api: AsyncClient) -> Non
             "data": {"object": {"id": "pi_unused", "status": "succeeded", "payment_id": None}},
         }
     ).encode("utf-8")
-    bad = await api.post("/api/v1/webhooks/payments", content=payload, headers={"stripe-signature": "t=1,v1=nope"})
-    assert bad.status_code == 400
+    unconfigured = await api.post(
+        "/api/v1/webhooks/payments", content=payload, headers={"stripe-signature": "t=1,v1=nope"}
+    )
+    assert unconfigured.status_code == 503
     await guest.aclose()
 
 

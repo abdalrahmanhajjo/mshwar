@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID
 
@@ -138,7 +138,7 @@ async def persist_plan(
                 "snapshot": snapshot,
             }
         )
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     legs = []
     for leg in plan.legs:
         legs.append(

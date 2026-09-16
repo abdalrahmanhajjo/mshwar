@@ -8,10 +8,10 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 
-from app.core.config import Settings
+from app.core.job_auth import job_token_valid
 from app.core.mailer import RecordingMailer, set_mailer
 from app.core.notifications.channels import NotificationMessage, StubEmailChannel, email_channel
-from app.core.notifications.service import dispatch_authorized, email_is_stub
+from app.core.notifications.service import email_is_stub
 from app.core.notifications.taxonomy import ALL_EVENTS, category_for
 from app.core.rate_limit import limiter
 from app.main import app
@@ -73,18 +73,19 @@ def test_email_channel_is_stub_without_keys() -> None:
     assert isinstance(email_channel(), StubEmailChannel)
 
 
-def test_dispatch_token_open_in_development() -> None:
-    assert dispatch_authorized(None) is True
-    prod = Settings.model_validate(
-        {
-            "environment": "production",
-            "database_url": "postgresql+asyncpg://app:secret@db:5432/mshwar",
-            "secret_key": "rotated-secret",
-            "google_maps_api_key": "maps-key",
-            "notification_dispatch_token": "dispatch-secret",
-        }
-    )
-    assert prod.notification_dispatch_token == "dispatch-secret"
+def test_job_token_rules(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "internal_job_token", "")
+    monkeypatch.setattr(settings, "notification_dispatch_token", "")
+    monkeypatch.setattr(settings, "enable_dev_endpoints", True)
+    assert job_token_valid(None) is True
+    monkeypatch.setattr(settings, "enable_dev_endpoints", False)
+    assert job_token_valid(None) is False
+    monkeypatch.setattr(settings, "internal_job_token", "a" * 40)
+    assert job_token_valid(None) is False
+    assert job_token_valid("wrong") is False
+    assert job_token_valid("a" * 40) is True
 
 
 @pytest.mark.asyncio

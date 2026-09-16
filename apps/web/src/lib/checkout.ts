@@ -1,3 +1,5 @@
+import { apiRequest } from "@/lib/api/client";
+
 export type CheckoutSlot = {
   id: string;
   starts_at: string;
@@ -45,22 +47,7 @@ export type CheckoutBooking = {
   ends_at: string;
 };
 
-async function readError(response: Response): Promise<string> {
-  try {
-    const body = (await response.json()) as { detail?: string };
-    return body.detail ?? response.statusText;
-  } catch {
-    return response.statusText;
-  }
-}
-
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, { credentials: "include", ...init });
-  if (!response.ok) {
-    throw new Error(await readError(response));
-  }
-  return (await response.json()) as T;
-}
+const request = apiRequest;
 
 export function fetchSlots(slug: string) {
   return request<{ booking_mode: string; effective_mode: string; instant_eligible: boolean; slots: CheckoutSlot[] }>(

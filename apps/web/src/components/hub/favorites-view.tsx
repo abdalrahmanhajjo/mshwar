@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Notice } from "@/components/ui/notice";
 import { getExperience } from "@/lib/catalog";
-import { addFavorite, fetchFavorites, removeFavorite, type FavoriteRecord } from "@/lib/hub";
+import { fetchFavorites, mergeFavorites, removeFavorite, type FavoriteRecord } from "@/lib/hub";
 import { useHubCopy } from "@/lib/hub-copy";
 import { useSavedExperiences } from "@/lib/saved-experiences";
 
@@ -27,7 +27,8 @@ export function FavoritesView() {
       return;
     }
     synced.current = true;
-    void Promise.all(slugs.map((slug) => addFavorite(slug)))
+    // One request for every locally saved listing (the server ignores ones already saved).
+    void mergeFavorites(slugs)
       .then(() => load(1))
       .catch(() => undefined);
   }, [load, slugs]);
@@ -50,12 +51,15 @@ export function FavoritesView() {
       title={copy.favoritesTitle}
       description={copy.favoritesBody}
       actions={
-        <Button asChild variant="outline" size="lg">
-          <LocaleLink href="/experiences">
-            <Compass aria-hidden />
-            {copy.explorePlaces}
-          </LocaleLink>
-        </Button>
+        // The empty state carries its own call to action; avoid two identical links.
+        data && data.items.length > 0 ? (
+          <Button asChild variant="outline" size="lg">
+            <LocaleLink href="/experiences">
+              <Compass aria-hidden />
+              {copy.explorePlaces}
+            </LocaleLink>
+          </Button>
+        ) : null
       }
     >
       {error ? (

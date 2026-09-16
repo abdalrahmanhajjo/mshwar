@@ -16,22 +16,6 @@ env:
   PNPM_VERSION: "11.15.1"
 
 jobs:
-  gitleaks:
-    name: Secret Scanning
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          config-path: .gitleaks.toml
-          report-format: sarif
-          report-path: gitleaks-results.sarif
-          verbose: true
-
   backend-lint:
     name: Backend Lint & Type Check
     runs-on: ubuntu-latest
@@ -40,8 +24,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      - run: pip install ruff mypy
-      - run: pip install -r services/api/requirements.txt
+      - run: pip install -r services/api/requirements-dev.txt
       - run: ruff check services/api/
       - run: ruff format services/api/ --check
       - run: mypy services/api/app/
@@ -69,13 +52,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      - uses: ./.github/actions/setup-node-pnpm
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          pnpm-version: ${{ env.PNPM_VERSION }}
-      - run: pnpm install
-      - run: pip install -r services/api/requirements.txt
-      - run: pip install alembic psycopg[binary] pytest-cov
+      - run: pip install -r services/api/requirements-dev.txt
       - name: Run SQL migrations
         run: |
           cd services/api
@@ -122,8 +99,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      - run: pip install -r services/api/requirements.txt
-      - run: pip install alembic psycopg[binary]
+      - run: pip install -r services/api/requirements-dev.txt
       - name: Run SQL migrations twice (idempotent)
         run: |
           cd services/api
@@ -135,6 +111,21 @@ jobs:
           cd services/api
           export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar_test
           PYTHONPATH=. python3 -m pytest tests/test_cross_tenant.py -v --no-cov
+      - name: Last-seat concurrency test (needs an empty database)
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -U postgres -c "CREATE DATABASE mshwar_concurrency"
+          DATABASE_URL=postgresql://postgres:postgres@localhost:5432/mshwar_concurrency \
+            python mshwar-database/tests/concurrency.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Schema invariant suite (PGlite)
+        working-directory: mshwar-database
+        run: |
+          npm ci
+          npm test
 
   coverage-threshold:
     name: Coverage Threshold Check
@@ -265,17 +256,15 @@ jobs:
             echo "configured=true" >> "$GITHUB_OUTPUT"
           else
             echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Production rollback secrets are not set; skipping destructive alembic/curl"
+            echo "::notice::Production rollback secrets are not set; skipping rollback and health check"
           fi
-      - name: Rollback database migrations
+      - name: Database rollback policy
         if: steps.rollback.outputs.configured == 'true'
-        env:
-          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
         run: |
-          echo "Rolling back database migrations..."
-          cd services/api
-          alembic downgrade -1
-          echo "Database migration rolled back one step"
+          # SQL migrations (mshwar-database/migrations) are forward-only and never
+          # rolled back automatically. Fix forward with a new migration, or restore
+          # from a backup / point-in-time recovery after a manual decision.
+          echo "::notice::Database is not rolled back automatically; see docs/database-provisioning.md"
       - name: Rollback deployment
         if: steps.rollback.outputs.configured == 'true'
         run: |

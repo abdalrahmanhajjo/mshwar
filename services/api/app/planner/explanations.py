@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import re
 from typing import Any
 from uuid import UUID
@@ -7,6 +8,8 @@ from uuid import UUID
 from app.planner.fixtures import data_prompt
 from app.planner.llm import ValidatingLLM, build_client
 from app.planner.schemas import AssembledStop, CandidateRecord, ExtractedConstraints, StopExplanationDraft
+
+logger = logging.getLogger("mshwar.planner")
 
 PRICE_RE = re.compile(r"(\$\s?\d+(?:[.,]\d+)?)|(\d+\s*(usd|dollars))", re.IGNORECASE)
 TIME_RE = re.compile(r"\b([01]?\d|2[0-3]):[0-5]\d\b")
@@ -78,7 +81,8 @@ def explain_stop(
         if draft.experience_id != candidate.id:
             return template_explanation(candidate.title, stop, constraints)
         text = contradiction_free(draft.text, stop)
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001 - any model failure falls back to the deterministic template
+        logger.warning("stop explanation fell back to template experience_id=%s", candidate.id, exc_info=True)
         text = template_explanation(candidate.title, stop, constraints)
     if not text:
         text = template_explanation(candidate.title, stop, constraints)

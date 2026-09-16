@@ -50,7 +50,7 @@ export function AuthLayout({
         {footer ? <div className="border-t border-border-subtle pt-5 text-sm text-text-muted">{footer}</div> : null}
       </div>
       <div className="relative isolate hidden min-h-[40rem] overflow-hidden bg-brand lg:block">
-        <CatalogImage src={destination.image} alt="" className="absolute inset-0" />
+        <CatalogImage src={destination.image} alt="" className="absolute inset-0" sizes="50vw" />
         <div className="photo-scrim absolute inset-0" />
         <div className="absolute inset-x-0 bottom-0 grid gap-6 p-10 text-white">
           <p className="title-section max-w-md">

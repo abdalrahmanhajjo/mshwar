@@ -3,8 +3,7 @@ from __future__ import annotations
 import asyncio
 import re
 import time
-from datetime import datetime, timedelta, timezone
-from typing import Any
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
@@ -13,9 +12,13 @@ from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.admin_auth import close_admin_sessions, lookup_admin_tier
+from app.core.auth_session import load_session
+from app.core.client_ip import client_ip
 from app.core.config import settings
+from app.core.http_status import HTTP_422_UNPROCESSABLE
 from app.core.mailer import MailMessage, get_mailer
-from app.core.passwords import hash_password, verify_password
+from app.core.passwords import hash_password_async, verify_password_async
 from app.core.rate_limit import limiter
 from app.core.sessions import (
     COOKIE_NAME,
@@ -32,7 +35,6 @@ router = APIRouter()
 
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 _LOCALES = frozenset({"ar", "en", "fr"})
-LOCAL_ISSUER = "mshwar.local"
 _INVALID_RESET = "Invalid or expired reset link"
 _RATE_LIMITED = "Too many requests"
 
@@ -93,13 +95,13 @@ def _normalize_email(email: str) -> str:
 def _validate_email(email: str) -> str:
     normalized = _normalize_email(email)
     if not _EMAIL_RE.match(normalized):
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid email")
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="Invalid email")
     return normalized
 
 
 def _validate_locale(locale: str) -> str:
     if locale not in _LOCALES:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid locale")
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="Invalid locale")
     return locale
 
 
@@ -123,20 +125,6 @@ async def _issue_cookie_session(
     set_session_cookie(response, token)
 
 
-async def _load_session(db: AsyncSession, token: str | None) -> dict[str, Any] | None:
-    if not token:
-        return None
-    result = await db.execute(
-        text(
-            "SELECT session_id, user_id, display_name, email, locale, status, expires_at, "
-            "email_verified_at FROM app.get_session(:token_hash)"
-        ),
-        {"token_hash": hash_session_token(token)},
-    )
-    row = result.mappings().first()
-    return dict(row) if row else None
-
-
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 async def register(
     payload: RegisterRequest,
@@ -144,9 +132,10 @@ async def register(
     response: Response,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> UserOut:
+    _enforce_limit(f"register:ip:{client_ip(request)}", settings.register_ip_limit, settings.rate_limit_window_seconds)
     email = _validate_email(payload.email)
     locale = _validate_locale(payload.locale)
-    password_hash = hash_password(payload.password)
+    password_hash = await hash_password_async(payload.password)
     try:
         result = await db.execute(
             text("SELECT app.register_local_user(:email, :display_name, :locale, :password_hash)"),
@@ -186,6 +175,9 @@ async def signin(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> UserOut:
     email = _normalize_email(payload.email)
+    window = settings.signin_window_seconds
+    _enforce_limit(f"signin:ip:{client_ip(request)}", settings.signin_ip_limit, window)
+    _enforce_limit(f"signin:email:{email}", settings.signin_email_limit, window)
     result = await db.execute(
         text(
             "SELECT user_id, password_hash, display_name, status, locale, email_verified_at "
@@ -194,7 +186,8 @@ async def signin(
         {"email": email},
     )
     row = result.mappings().first()
-    if row is None or row["status"] != "active" or not verify_password(row["password_hash"], payload.password):
+    password_ok = await verify_password_async(row["password_hash"] if row else None, payload.password)
+    if row is None or row["status"] != "active" or not password_ok:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
     await _issue_cookie_session(db, response, row["user_id"], request.headers.get("user-agent"))
     return await _user_out(
@@ -214,11 +207,9 @@ async def signout(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Response:
     token = request.cookies.get(COOKIE_NAME)
-    session = await _load_session(db, token)
+    session = await load_session(db, token)
     if token:
         if session is not None:
-            from app.core.admin_auth import close_admin_sessions
-
             await close_admin_sessions(db, session["user_id"])
         await db.execute(
             text("SELECT app.revoke_session(:token_hash)"),
@@ -253,7 +244,7 @@ async def _me_or_refresh(
     force_refresh: bool,
 ) -> UserOut:
     token = request.cookies.get(COOKIE_NAME)
-    session = await _load_session(db, token)
+    session = await load_session(db, token)
     if session is None or session["status"] != "active":
         clear_session_cookie(response)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
@@ -282,8 +273,6 @@ async def _user_out(
     locale: str,
     email_verified: bool,
 ) -> UserOut:
-    from app.core.admin_auth import lookup_admin_tier
-
     return UserOut(
         id=user_id,
         email=email,
@@ -294,13 +283,9 @@ async def _user_out(
     )
 
 
-def _client_ip(request: Request) -> str:
-    forwarded = request.headers.get("x-forwarded-for", "")
-    if forwarded:
-        return forwarded.split(",")[0].strip()[:128]
-    if request.client and request.client.host:
-        return request.client.host
-    return "unknown"
+def _enforce_limit(key: str, limit: int, window_seconds: int) -> None:
+    if not limiter.allow(key, limit, window_seconds):
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=_RATE_LIMITED)
 
 
 async def _pad_forgot_duration(started: float) -> None:
@@ -311,7 +296,7 @@ async def _pad_forgot_duration(started: float) -> None:
 
 
 def _reset_expiry() -> datetime:
-    return datetime.now(timezone.utc) + timedelta(seconds=settings.password_reset_ttl_seconds)
+    return datetime.now(UTC) + timedelta(seconds=settings.password_reset_ttl_seconds)
 
 
 def _reset_link(token: str) -> str:
@@ -327,11 +312,9 @@ async def forgot_password(
 ) -> ForgotPasswordResponse:
     started = time.monotonic()
     email = _normalize_email(payload.email)
-    ip = _client_ip(request)
-    if not limiter.allow(f"forgot:ip:{ip}", settings.forgot_ip_limit, settings.rate_limit_window_seconds):
-        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=_RATE_LIMITED)
-    if not limiter.allow(f"forgot:email:{email}", settings.forgot_email_limit, settings.rate_limit_window_seconds):
-        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=_RATE_LIMITED)
+    window = settings.rate_limit_window_seconds
+    _enforce_limit(f"forgot:ip:{client_ip(request)}", settings.forgot_ip_limit, window)
+    _enforce_limit(f"forgot:email:{email}", settings.forgot_email_limit, window)
 
     token = new_session_token()
     token_hash = hash_session_token(token)
@@ -371,10 +354,8 @@ async def reset_password(
     response: Response,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> UserOut:
-    ip = _client_ip(request)
-    if not limiter.allow(f"reset:ip:{ip}", settings.forgot_ip_limit, settings.rate_limit_window_seconds):
-        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=_RATE_LIMITED)
-    password_hash = hash_password(payload.password)
+    _enforce_limit(f"reset:ip:{client_ip(request)}", settings.forgot_ip_limit, settings.rate_limit_window_seconds)
+    password_hash = await hash_password_async(payload.password)
     result = await db.execute(
         text("SELECT app.consume_password_reset(:token_hash, :password_hash)"),
         {"token_hash": hash_session_token(payload.token), "password_hash": password_hash},
@@ -408,7 +389,7 @@ async def reset_password(
 
 
 def _verify_expiry() -> datetime:
-    return datetime.now(timezone.utc) + timedelta(seconds=settings.email_verification_ttl_seconds)
+    return datetime.now(UTC) + timedelta(seconds=settings.email_verification_ttl_seconds)
 
 
 def _verify_link(token: str) -> str:
@@ -443,21 +424,6 @@ async def _send_verification_email(db: AsyncSession, email: str) -> None:
             token=token,
         )
     )
-
-
-async def require_verified_user(
-    request: Request,
-    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
-) -> dict[str, Any]:
-    session = await _load_session(db, request.cookies.get(COOKIE_NAME))
-    if session is None or session["status"] != "active":
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
-    if not session.get("email_verified_at"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Verify your email before booking",
-        )
-    return session
 
 
 @router.post("/verify-email", response_model=UserOut)
@@ -495,7 +461,7 @@ async def verify_email(
         locale=fetched[3],
         email_verified=bool(fetched[4]),
     )
-    existing = await _load_session(db, request.cookies.get(COOKIE_NAME))
+    existing = await load_session(db, request.cookies.get(COOKIE_NAME))
     if existing is None or str(existing["user_id"]) != str(user.id):
         await _issue_cookie_session(db, response, user.id, request.headers.get("user-agent"))
     return user
@@ -507,14 +473,12 @@ async def resend_verification(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> ResendVerificationResponse:
-    ip = _client_ip(request)
-    if not limiter.allow(f"verify:ip:{ip}", settings.verify_ip_limit, settings.rate_limit_window_seconds):
-        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=_RATE_LIMITED)
-    session = await _load_session(db, request.cookies.get(COOKIE_NAME))
+    window = settings.rate_limit_window_seconds
+    _enforce_limit(f"verify:ip:{client_ip(request)}", settings.verify_ip_limit, window)
+    session = await load_session(db, request.cookies.get(COOKIE_NAME))
     email = _normalize_email(payload.email) if payload.email else (session["email"] if session else "")
     if not email:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid email")
-    if not limiter.allow(f"verify:email:{email}", settings.verify_email_limit, settings.rate_limit_window_seconds):
-        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=_RATE_LIMITED)
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="Invalid email")
+    _enforce_limit(f"verify:email:{email}", settings.verify_email_limit, window)
     await _send_verification_email(db, email)
     return ResendVerificationResponse()

@@ -5,7 +5,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.portal_auth import fetch_json
+from app.core.sql import fetch_json
 from app.dependencies import get_auth_db
 
 router = APIRouter()

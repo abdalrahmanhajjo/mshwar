@@ -7,9 +7,10 @@ from typing import Any
 from fastapi import HTTPException, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.endpoints.auth import _load_session
-from app.core.portal_auth import fetch_json
+from app.core.auth_session import load_session
+from app.core.config import settings
 from app.core.sessions import COOKIE_NAME
+from app.core.sql import fetch_json
 
 GUEST_COOKIE = "mshwar_guest"
 
@@ -28,13 +29,14 @@ def set_guest_cookie(response: Response, token: str) -> None:
         value=token,
         max_age=60 * 60 * 24 * 30,
         httponly=True,
+        secure=settings.is_deployed,
         samesite="lax",
         path="/",
     )
 
 
 async def optional_user(request: Request, db: AsyncSession) -> dict[str, Any] | None:
-    session = await _load_session(db, request.cookies.get(COOKIE_NAME))
+    session = await load_session(db, request.cookies.get(COOKIE_NAME))
     if session is None or session["status"] != "active":
         return None
     return session

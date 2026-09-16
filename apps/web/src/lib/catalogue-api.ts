@@ -1,9 +1,7 @@
 import {
   DESTINATIONS,
-  EXPERIENCES,
   IDEAS,
   browseExperiences,
-  getDestination,
   getExperience,
   relatedExperiences as seedRelated,
   type Destination,
@@ -12,8 +10,12 @@ import {
   type ExperiencePage,
   type Idea,
 } from "@/lib/catalog";
+import { sampleFallbackEnabled } from "@/lib/server-env";
 
 const API_ROOT = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const REVALIDATE_SECONDS = 60;
+
+type ApiResult<T> = { status: "ok"; data: T } | { status: "missing" } | { status: "unavailable" };
 
 type ApiPrice = {
   currency: string;
@@ -49,6 +51,14 @@ type ApiListing = {
   image_alt?: string | null;
   gallery?: string[];
   price: ApiPrice;
+};
+
+type ApiPage = {
+  items: ApiListing[];
+  page: number;
+  page_size: number;
+  total: number;
+  pages: number;
 };
 
 type ApiDestination = {
@@ -101,6 +111,8 @@ export function listingFromApi(item: ApiListing): Experience {
     summary: item.summary ?? item.body,
     body: item.body,
     tags: item.tags ?? [],
+    lat: item.lat ?? undefined,
+    lng: item.lng ?? undefined,
     bookingMode: item.booking_mode,
     priceLabel: priceLabel(item.price?.type ?? "from"),
     facts: item.facts ?? [],
@@ -143,29 +155,45 @@ function ideaFromApi(item: ApiCollection): Idea {
   };
 }
 
-async function readJson<T>(path: string): Promise<T | null> {
+async function readJson<T>(path: string): Promise<ApiResult<T>> {
   try {
-    const response = await fetch(`${API_ROOT}${path}`, { cache: "no-store" });
-    if (!response.ok) {
-      return null;
+    const response = await fetch(`${API_ROOT}${path}`, { next: { revalidate: REVALIDATE_SECONDS } });
+    if (response.status === 404) {
+      return { status: "missing" };
     }
-    return (await response.json()) as T;
+    if (!response.ok) {
+      return { status: "unavailable" };
+    }
+    return { status: "ok", data: (await response.json()) as T };
   } catch {
-    return null;
+    return { status: "unavailable" };
   }
 }
 
-export async function loadDestinations(): Promise<Destination[]> {
-  const rows = await readJson<ApiDestination[]>("/api/v1/catalogue/destinations");
-  if (!rows?.length) {
-    return DESTINATIONS;
+/** Real data when the API answers; sample data only when it is down and fallback is allowed. */
+function resolve<T, R>(result: ApiResult<T>, map: (data: T) => R, sample: () => R, empty: R): R {
+  if (result.status === "ok") {
+    return map(result.data);
   }
-  return rows.map(destinationFromApi);
+  if (result.status === "unavailable" && sampleFallbackEnabled()) {
+    return sample();
+  }
+  return empty;
+}
+
+export async function loadDestinations(): Promise<Destination[]> {
+  const result = await readJson<ApiDestination[]>("/api/v1/catalogue/destinations");
+  return resolve(
+    result,
+    (rows) => rows.map(destinationFromApi),
+    () => DESTINATIONS,
+    [],
+  );
 }
 
 export async function loadDestination(slug: string): Promise<Destination | undefined> {
   const destinations = await loadDestinations();
-  return destinations.find((item) => item.slug === slug) ?? getDestination(slug);
+  return destinations.find((item) => item.slug === slug);
 }
 
 export async function loadExperiencePage(filters: ExperienceFilters): Promise<ExperiencePage> {
@@ -178,72 +206,56 @@ export async function loadExperiencePage(filters: ExperienceFilters): Promise<Ex
   if (filters.priceMax) search.set("priceMax", String(filters.priceMax));
   if (filters.party) search.set("party", String(filters.party));
   if (filters.available) search.set("available", "true");
-  search.set("page", String(filters.page ?? 1));
-  search.set("pageSize", String(filters.pageSize ?? 6));
-  const page = await readJson<ExperiencePage & { items: ApiListing[] }>(`/api/v1/catalogue/experiences?${search}`);
-  if (!page) {
-    return browseExperiences(filters);
-  }
-  return {
-    ...page,
-    items: page.items.map(listingFromApi),
-  };
+  const page = filters.page ?? 1;
+  const pageSize = filters.pageSize ?? 6;
+  search.set("page", String(page));
+  search.set("pageSize", String(pageSize));
+  const result = await readJson<ApiPage>(`/api/v1/catalogue/experiences?${search}`);
+  return resolve(
+    result,
+    (data) => ({
+      items: data.items.map(listingFromApi),
+      page: data.page,
+      pageSize: data.page_size,
+      total: data.total,
+      pages: data.pages,
+    }),
+    () => browseExperiences(filters),
+    { items: [], page, pageSize, total: 0, pages: 1 },
+  );
 }
 
 export async function loadExperience(slug: string): Promise<Experience | undefined> {
-  const item = await readJson<ApiListing>(`/api/v1/catalogue/experiences/${slug}`);
-  if (!item) {
-    return getExperience(slug);
-  }
-  return listingFromApi(item);
+  const result = await readJson<ApiListing>(`/api/v1/catalogue/experiences/${encodeURIComponent(slug)}`);
+  return resolve(result, listingFromApi, () => getExperience(slug), undefined);
 }
 
 export async function loadRelated(slug: string): Promise<Experience[]> {
-  const rows = await readJson<ApiListing[]>(`/api/v1/catalogue/experiences/${slug}/related`);
-  if (!rows) {
-    return seedRelated(slug);
-  }
-  return rows.map(listingFromApi);
+  const result = await readJson<ApiListing[]>(`/api/v1/catalogue/experiences/${encodeURIComponent(slug)}/related`);
+  return resolve(
+    result,
+    (rows) => rows.map(listingFromApi),
+    () => seedRelated(slug),
+    [],
+  );
 }
 
 export async function loadCollections(): Promise<Idea[]> {
-  const rows = await readJson<ApiCollection[]>("/api/v1/catalogue/collections");
-  if (!rows?.length) {
-    return IDEAS;
-  }
-  return rows.map(ideaFromApi);
+  const result = await readJson<ApiCollection[]>("/api/v1/catalogue/collections");
+  return resolve(
+    result,
+    (rows) => rows.map(ideaFromApi),
+    () => IDEAS,
+    [],
+  );
 }
 
 export async function loadCollection(slug: string): Promise<Idea | undefined> {
-  const row = await readJson<ApiCollection>(`/api/v1/catalogue/collections/${slug}`);
-  if (!row) {
-    return IDEAS.find((item) => item.slug === slug);
-  }
-  return ideaFromApi(row);
-}
-
-export async function searchCatalogue(q: string) {
-  return readJson<{ items: ApiListing[]; relaxations: SearchRelaxation[]; filters: Record<string, string> }>(
-    `/api/v1/catalogue/search?q=${encodeURIComponent(q)}`,
-  );
+  const result = await readJson<ApiCollection>(`/api/v1/catalogue/collections/${encodeURIComponent(slug)}`);
+  return resolve(result, ideaFromApi, () => IDEAS.find((item) => item.slug === slug), undefined);
 }
 
 export async function loadMapListings(filters: ExperienceFilters): Promise<Experience[]> {
   const page = await loadExperiencePage({ ...filters, page: 1, pageSize: 48 });
   return page.items;
 }
-
-export function listingCoordinates(item: Experience): { lat: number; lng: number } | null {
-  const dest = DESTINATIONS.find((row) => row.slug === item.destinationSlug);
-  const fallback: Record<string, { lat: number; lng: number }> = {
-    byblos: { lat: 34.123, lng: 35.6481 },
-    batroun: { lat: 34.2553, lng: 35.6581 },
-    bsharri: { lat: 34.2508, lng: 36.0106 },
-    "qadisha-valley": { lat: 34.245, lng: 35.952 },
-    baalbek: { lat: 34.0069, lng: 36.2042 },
-    beirut: { lat: 33.8938, lng: 35.5018 },
-  };
-  return fallback[item.destinationSlug] ?? (dest ? fallback.beirut : null);
-}
-
-export { EXPERIENCES };

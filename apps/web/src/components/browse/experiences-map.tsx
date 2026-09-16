@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/ui/notice";
 import { cn } from "@/lib/utils";
 import { useBrowseCopy } from "@/lib/browse-copy";
-import { listingCoordinates } from "@/lib/catalogue-api";
+import { listingCoordinates } from "@/lib/listing-coordinates";
 import type { Experience } from "@/lib/catalog";
 
 const MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";

@@ -1,10 +1,6 @@
+# PostgreSQL 17 with the extensions the SQL migrations create
+# (postgis, vector, btree_gist, pg_trgm). btree_gist and pg_trgm ship with contrib.
 FROM postgres:17
-
-RUN apt-get update && apt-get install -y --no-install-recommends postgis postgresql-17-postgis-3 && rm -rf /var/lib/apt/lists/*
-
-# Enable extensions in template1 so all new databases inherit them
-RUN psql -U postgres -d template1 -c "CREATE EXTENSION IF NOT EXISTS postgis;" && \
-    psql -U postgres -d template1 -c "CREATE EXTENSION IF NOT EXISTS pgvector;" && \
-    psql -U postgres -d template1 -c "CREATE EXTENSION IF NOT EXISTS btree_gist;"
-
-ENV POSTGRES_DB=mshwar
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends postgresql-17-postgis-3 postgresql-17-pgvector \
+    && rm -rf /var/lib/apt/lists/*

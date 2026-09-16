@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from fastapi import Response
 
@@ -29,12 +29,12 @@ def hash_session_token(token: str) -> str:
 
 
 def session_expiry(now: datetime | None = None) -> datetime:
-    current = now or datetime.now(timezone.utc)
+    current = now or datetime.now(UTC)
     return current + timedelta(seconds=settings.session_ttl_seconds)
 
 
 def should_refresh(expires_at: datetime, now: datetime | None = None) -> bool:
-    current = now or datetime.now(timezone.utc)
+    current = now or datetime.now(UTC)
     remaining = (expires_at - current).total_seconds()
     return remaining < (settings.session_ttl_seconds / 2)
 
@@ -45,7 +45,7 @@ def set_session_cookie(response: Response, token: str) -> None:
         value=token,
         max_age=settings.session_ttl_seconds,
         httponly=True,
-        secure=settings.is_production,
+        secure=settings.is_deployed,
         samesite="lax",
         path="/",
     )

@@ -12,7 +12,7 @@ repos:
       - id: check-merge-conflict
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.3
+    rev: v0.16.7
     hooks:
       - id: ruff
         args: ["--fix"]
@@ -48,7 +48,7 @@ repos:
     hooks:
       - id: mypy-typecheck
         name: mypy typecheck
-        entry: mypy services/api/
+        entry: mypy services/api/app/
         language: system
         files: \.py$
         pass_filenames: false

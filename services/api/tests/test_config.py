@@ -2,7 +2,7 @@ import pytest
 
 from app.core.config import Settings, settings
 
-_PROD_SECRET = "rotated-secret"
+_PROD_SECRET = "rotated-secret-" + "x" * 32
 _DEFAULT_SECRET = "change-me-in-production"
 
 
@@ -11,6 +11,11 @@ def _settings(**overrides: object) -> Settings:
         "environment": "production",
         "database_url": "postgresql+asyncpg://app:secret@db:5432/mshwar",
         "google_maps_api_key": "maps-key",
+        "internal_job_token": "j" * 40,
+        "stripe_secret_key": "stripe-key",
+        "stripe_webhook_secret": "webhook-secret",
+        "private_storage_dir": "/var/lib/mshwar/private",
+        "enable_dev_endpoints": False,
     }
     payload["secret_key"] = _PROD_SECRET
     payload.update(overrides)
@@ -29,7 +34,8 @@ def test_defaults() -> None:
     assert settings.project_name == "Mshwar API"
     assert settings.version == "0.1.0"
     assert settings.api_v1_prefix == "/api/v1"
-    assert settings.is_development is True
+    assert settings.environment == "test"
+    assert settings.is_deployed is False
     assert settings.is_staging is False
     assert settings.is_production is False
     assert settings.database_url_public == settings.database_url
@@ -61,7 +67,9 @@ def test_reads_database_url_env(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_environment_flags() -> None:
-    staging = Settings(environment="staging")
+    staging = Settings(
+        environment="staging", secret_key=_PROD_SECRET, internal_job_token="j" * 40, enable_dev_endpoints=False
+    )
     assert staging.is_staging is True
     assert staging.is_production is False
     assert staging.is_development is False
@@ -88,3 +96,49 @@ def test_production_redacts_credentials() -> None:
     prod = _settings(sentry_dsn="https://key@o0.ingest.sentry.io/1")
     assert prod.database_url_public == "postgresql+asyncpg://***:***@db:5432/mshwar"
     assert prod.sentry_dsn_public == "https://***@o0.ingest.sentry.io/1"
+
+
+def test_uppercase_environment_variables_are_read(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ENVIRONMENT", "staging")
+    monkeypatch.setenv("SECRET_KEY", _PROD_SECRET)
+    monkeypatch.setenv("INTERNAL_JOB_TOKEN", "j" * 40)
+    monkeypatch.setenv("ENABLE_DEV_ENDPOINTS", "false")
+    monkeypatch.setenv("STRIPE_WEBHOOK_SECRET", "whsec_real")
+    loaded = Settings()
+    assert loaded.environment == "staging"
+    assert loaded.secret_key == _PROD_SECRET
+    assert loaded.stripe_webhook_secret == "whsec_real"
+    assert loaded.is_deployed is True
+
+
+def test_unknown_environment_is_rejected() -> None:
+    with pytest.raises(ValueError, match="ENVIRONMENT"):
+        Settings(environment="prod")
+
+
+@pytest.mark.parametrize(
+    ("overrides", "message"),
+    [
+        ({"secret_key": "short"}, "SECRET_KEY"),
+        ({"enable_dev_endpoints": True}, "ENABLE_DEV_ENDPOINTS"),
+        ({"internal_job_token": ""}, "INTERNAL_JOB_TOKEN"),
+        ({"stripe_webhook_secret": ""}, "payment provider"),
+        ({"payment_provider": "lebanon_acquirer"}, "payment provider"),
+        ({"payments_fault": "fail"}, "Fault injection"),
+        ({"private_storage_dir": "/tmp/mshwar-private"}, "PRIVATE_STORAGE_DIR"),
+    ],
+)
+def test_production_fails_closed(overrides: dict[str, object], message: str) -> None:
+    with pytest.raises(ValueError, match=message):
+        _settings(**overrides)
+
+
+def test_staging_requires_real_secrets() -> None:
+    with pytest.raises(ValueError, match="SECRET_KEY"):
+        Settings(environment="staging", internal_job_token="j" * 40)
+
+
+def test_valid_production_settings_load() -> None:
+    prod = _settings()
+    assert prod.is_production is True
+    assert prod.dev_endpoints_enabled is False

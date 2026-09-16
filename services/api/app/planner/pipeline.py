@@ -406,31 +406,29 @@ async def regenerate(
     )
 
 
+def _locked_after_toggle(stops: list[dict[str, Any]], stop_id: UUID, locked: bool) -> set[UUID]:
+    """Experience ids that stay locked once `stop_id` is locked or unlocked."""
+    target = next((stop for stop in stops if str(stop.get("id")) == str(stop_id)), None)
+    if target is None:
+        raise ValueError("stop not found")
+    locked_ids = {UUID(str(stop["experience_id"])) for stop in stops if stop.get("locked")}
+    experience_id = UUID(str(target["experience_id"]))
+    if locked:
+        locked_ids.add(experience_id)
+    else:
+        locked_ids.discard(experience_id)
+    return locked_ids
+
+
 async def set_lock(db: AsyncSession, user_id: UUID, session_id: UUID, stop_id: UUID, locked: bool) -> dict[str, Any]:
     stored = await get_session(db, user_id, session_id)
     version_id = stored.get("current_version_id")
     if not version_id:
         raise ValueError("no plan")
     current = await get_version(db, user_id, UUID(str(version_id)), False)
-    target = None
-    for stop in current.get("stops") or []:
-        if str(stop.get("id")) == str(stop_id):
-            target = stop
-            break
-    if target is None:
-        raise ValueError("stop not found")
+    locked_ids = _locked_after_toggle(current.get("stops") or [], stop_id, locked)
     constraints = ExtractedConstraints.model_validate(stored.get("constraints") or {})
     assumed = [AssumedDefault.model_validate(item) for item in (stored.get("assumed_defaults") or [])]
-    locked_ids: set[UUID] = set()
-    for stop in current.get("stops") or []:
-        exp = UUID(str(stop["experience_id"]))
-        if stop.get("locked"):
-            locked_ids.add(exp)
-    exp_id = UUID(str(target["experience_id"]))
-    if locked:
-        locked_ids.add(exp_id)
-    else:
-        locked_ids.discard(exp_id)
     candidates, ranked, blocked, plan = await _build(db, constraints, locked_ids=locked_ids, exclude_ids=set())
     if plan.infeasible:
         return _session_payload(

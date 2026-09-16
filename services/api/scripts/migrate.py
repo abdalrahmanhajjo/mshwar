@@ -1,29 +1,21 @@
 #!/usr/bin/env python3
+"""Run the canonical SQL migrations (mshwar-database/scripts/migrate.py).
 
-"""Checksum-verified, advisory-locked, forward-only SQL migration runner.
-
-Delegates to mshwar-database/scripts/migrate.py for applying SQL migrations.
+Kept here so `python scripts/migrate.py` works from services/api, locally and in the API image.
 """
 
-import os
-import subprocess
-import sys
+import runpy
 from pathlib import Path
 
 _here = Path(__file__).resolve()
-_db_root = next(
+_runner = next(
     (
-        candidate / "mshwar-database"
+        candidate / "mshwar-database" / "scripts" / "migrate.py"
         for candidate in _here.parents
         if (candidate / "mshwar-database" / "scripts" / "migrate.py").is_file()
     ),
-    _here.parents[1] / "mshwar-database",
+    Path("/mshwar-database/scripts/migrate.py"),
 )
-sys.path.insert(0, str(_db_root))
 
 if __name__ == "__main__":
-    subprocess.run(
-        [sys.executable, str(_db_root / "scripts" / "migrate.py")],
-        check=True,
-        env={**os.environ},
-    )
+    runpy.run_path(str(_runner), run_name="__main__")

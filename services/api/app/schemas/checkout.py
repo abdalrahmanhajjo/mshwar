@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -33,9 +34,9 @@ class CheckoutCancelIn(BaseModel):
 
 class CheckoutPayIn(BaseModel):
     idempotency_key: str | None = Field(default=None, min_length=8, max_length=128)
-    fault: str | None = Field(default=None, max_length=32)
+    # Honoured only when dev endpoints are enabled (tests and local development).
+    fault: Literal["fail", "timeout", "late_success"] | None = None
 
 
 class CheckoutSimulateIn(BaseModel):
-    outcome: str = Field(min_length=4, max_length=16)
-    event_id: str | None = None
+    outcome: Literal["succeeded", "failed", "cancelled"]

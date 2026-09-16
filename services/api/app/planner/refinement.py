@@ -22,24 +22,23 @@ def parse_refinement(text: str, client: ValidatingLLM | None = None) -> Refineme
         )
 
 
+LESS_DRIVING_MAX_MINUTES = 90
+
+
 def apply_refinement(constraints: ExtractedConstraints, intent: RefinementIntent) -> ExtractedConstraints:
     payload = constraints.model_dump()
     if intent.prefer_less_driving:
-        payload["max_travel_minutes"] = intent.max_travel_minutes or 90
-    if intent.intensity:
-        payload["intensity"] = intent.intensity
-    if intent.destination_slugs:
-        payload["destination_slugs"] = intent.destination_slugs
-    if intent.category_slugs:
-        payload["category_slugs"] = intent.category_slugs
-    if intent.budget_minor is not None:
-        payload["budget_minor"] = intent.budget_minor
-    if intent.strict_budget is not None:
-        payload["strict_budget"] = intent.strict_budget
-    if intent.party_size is not None:
-        payload["party_size"] = intent.party_size
-    if intent.max_travel_minutes is not None:
-        payload["max_travel_minutes"] = intent.max_travel_minutes
+        payload["max_travel_minutes"] = intent.max_travel_minutes or LESS_DRIVING_MAX_MINUTES
+    overrides = {
+        "intensity": intent.intensity or None,
+        "destination_slugs": intent.destination_slugs or None,
+        "category_slugs": intent.category_slugs or None,
+        "budget_minor": intent.budget_minor,
+        "strict_budget": intent.strict_budget,
+        "party_size": intent.party_size,
+        "max_travel_minutes": intent.max_travel_minutes,
+    }
+    payload.update({key: value for key, value in overrides.items() if value is not None})
     interests = list(payload.get("interests") or [])
     for slug in intent.interests_add:
         if slug not in interests:

@@ -9,7 +9,8 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.hub_query import page_args, raise_hub_error
-from app.api.v1.session import require_session
+from app.core.auth_session import require_session
+from app.core.http_status import HTTP_422_UNPROCESSABLE
 from app.dependencies import get_auth_db
 from app.schemas.hub import TripListOut, TripSummary
 from app.schemas.preferences import PreferenceValues, TripCreate, TripOut, merge_plan_defaults
@@ -65,7 +66,7 @@ async def create_trip(
             )
         ).first()
     except DBAPIError as exc:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid trip") from exc
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="Invalid trip") from exc
     if row is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Could not create trip")
     stored_overrides = row[3] if isinstance(row[3], dict) else {}

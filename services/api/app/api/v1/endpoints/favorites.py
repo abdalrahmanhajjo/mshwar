@@ -8,7 +8,7 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.hub_query import page_args, raise_hub_error
-from app.api.v1.session import require_session
+from app.core.auth_session import require_session
 from app.dependencies import get_auth_db
 from app.schemas.catalogue import FavoriteMergeIn, FavoriteMergeOut, FavoriteToggleOut
 from app.schemas.hub import FavoriteCreate, FavoriteListOut, FavoriteOut

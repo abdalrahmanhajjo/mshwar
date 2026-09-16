@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from sqlalchemy import text
@@ -8,6 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.mailer import get_mailer
 from app.payments import metrics
 from app.payments.confirmations import confirmation_email
+
+logger = logging.getLogger("mshwar.payments")
 
 
 async def publish_outbox(db: AsyncSession, *, limit: int = 50) -> dict[str, Any]:
@@ -52,7 +55,8 @@ async def _deliver_email_notifications(db: AsyncSession) -> None:
         try:
             await mailer.send(message)
             await db.execute(text("UPDATE app.notifications SET status = 'sent' WHERE id = :id"), {"id": row[0]})
-        except Exception:  # noqa: BLE001
+        except Exception:  # noqa: BLE001 - one failed email must not stop the batch
+            logger.warning("confirmation email failed notification_id=%s", row[0], exc_info=True)
             await db.execute(
                 text("UPDATE app.notifications SET status = 'failed', attempts = attempts + 1 WHERE id = :id"),
                 {"id": row[0]},

@@ -9,7 +9,8 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.endpoints.profile import _area_by_id
-from app.api.v1.session import require_session
+from app.core.auth_session import require_session
+from app.core.http_status import HTTP_422_UNPROCESSABLE
 from app.dependencies import get_auth_db
 from app.planner.places import autocomplete, reverse_geocode
 from app.schemas.planner import PlaceOut, StartLocationSave
@@ -64,7 +65,7 @@ async def save_start_location(
 ) -> Any:
     session = await require_session(request, db)
     if payload.source not in {"search", "pin", "device", "manual"}:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid source")
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="Invalid source")
     row = (
         await db.execute(
             text("SELECT user_id, display_name, locale, email, preferences FROM app.get_profile(:user_id)"),

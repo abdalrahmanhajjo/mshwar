@@ -10,7 +10,8 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.hub_query import raise_hub_error
-from app.api.v1.session import require_session
+from app.core.auth_session import require_session
+from app.core.http_status import HTTP_422_UNPROCESSABLE
 from app.core.sessions import clear_session_cookie
 from app.dependencies import get_auth_db
 from app.schemas.privacy import PrivacyDeleteIn, PrivacyDeleteOut, PrivacyResetOut
@@ -79,7 +80,7 @@ async def delete_account(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> PrivacyDeleteOut:
     if payload.confirmation.strip().upper() != _DELETE_CONFIRMATION:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Confirmation required")
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="Confirmation required")
     session = await require_session(request, db)
     try:
         row = (

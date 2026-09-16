@@ -4,7 +4,7 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-from app.dependencies import get_auth_db, get_db
+from app.dependencies import get_auth_db
 from app.main import app
 
 
@@ -18,21 +18,15 @@ class _EmptySession:
         return _EmptyResult()
 
 
-async def _noop_db() -> AsyncGenerator[Any, None]:
-    yield None
-
-
 async def _empty_auth_db() -> AsyncGenerator[Any, None]:
     yield _EmptySession()
 
 
 @pytest.fixture
 def client() -> Generator[TestClient, None, None]:
-    app.dependency_overrides[get_db] = _noop_db
     app.dependency_overrides[get_auth_db] = _empty_auth_db
     with TestClient(app) as test_client:
         yield test_client
-    app.dependency_overrides.pop(get_db, None)
     app.dependency_overrides.pop(get_auth_db, None)
 
 
@@ -45,25 +39,18 @@ def test_health_check(client: TestClient) -> None:
 def test_api_v1_prefix(client: TestClient) -> None:
     response = client.get("/api/v1/health")
     assert response.status_code == 200
-    assert response.json()["status"] == "ok"
+    assert response.json() == {"status": "ok", "database": "ok"}
 
 
-def test_session_middleware_accepts_context_headers(client: TestClient) -> None:
-    user_id = "22222222-2222-2222-2222-222222222222"
-    org_id = "00000000-0000-0000-0000-000000000001"
+def test_identity_headers_do_not_authenticate(client: TestClient) -> None:
     response = client.get(
-        "/health",
-        headers={"x-user-id": user_id, "x-organization-id": org_id, "x-request-id": "req-1"},
+        "/api/v1/trips",
+        headers={
+            "x-user-id": "22222222-2222-2222-2222-222222222222",
+            "x-organization-id": "00000000-0000-0000-0000-000000000001",
+        },
     )
-    assert response.status_code == 200
-
-
-def test_session_middleware_ignores_invalid_ids(client: TestClient) -> None:
-    response = client.get(
-        "/health",
-        headers={"x-user-id": "not-a-uuid", "x-organization-id": "also-bad"},
-    )
-    assert response.status_code == 200
+    assert response.status_code == 401
 
 
 def test_list_and_create_bookings(client: TestClient) -> None:

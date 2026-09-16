@@ -80,7 +80,12 @@ export function CollectionDetailView({ collection, stops }: { collection: Idea; 
         </div>
         <div className="overflow-hidden rounded-[1.5rem]">
           <div className="aspect-[4/3]">
-            <CatalogImage src={collection.image} alt={collection.imageAlt} priority />
+            <CatalogImage
+              src={collection.image}
+              alt={collection.imageAlt}
+              priority
+              sizes="(min-width: 1024px) 50vw, 100vw"
+            />
           </div>
         </div>
       </header>

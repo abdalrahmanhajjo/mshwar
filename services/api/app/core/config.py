@@ -1,15 +1,25 @@
+from __future__ import annotations
+
 from functools import lru_cache
 from typing import Any
 
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+KNOWN_ENVIRONMENTS = frozenset({"development", "test", "staging", "production"})
+DEPLOYED_ENVIRONMENTS = frozenset({"staging", "production"})
+DEFAULT_SECRET_KEY = "change-me-in-production"  # noqa: S105 - placeholder rejected outside development
+DEFAULT_DATABASE_CREDENTIALS = "postgresql+asyncpg://postgres:postgres"
+MIN_SECRET_LENGTH = 32
+
 
 class Settings(BaseSettings):
+    # Env vars and .env keys are matched case-insensitively, so the documented
+    # UPPERCASE names (ENVIRONMENT, SECRET_KEY, STRIPE_*) are honoured.
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
-        case_sensitive=True,
+        case_sensitive=False,
         extra="ignore",
         populate_by_name=True,
     )
@@ -28,9 +38,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
 
     # Auth
-    secret_key: str = "change-me-in-production"
-    algorithm: str = "HS256"
-    access_token_expire_minutes: int = 60 * 24 * 8
+    secret_key: str = DEFAULT_SECRET_KEY
     session_cookie_name: str = "mshwar_session"
     session_ttl_seconds: int = 60 * 60 * 24 * 7  # 7 days; refresh extends when < half remains
     password_reset_ttl_seconds: int = 30 * 60  # 30 minutes; single-use; revoked on consume
@@ -43,6 +51,24 @@ class Settings(BaseSettings):
     email_verification_ttl_seconds: int = 24 * 60 * 60
     verify_ip_limit: int = 20
     verify_email_limit: int = 3
+    signin_ip_limit: int = 100
+    signin_email_limit: int = 10
+    signin_window_seconds: int = 15 * 60
+    register_ip_limit: int = 30
+    # Number of reverse proxies in front of the API (e.g. the Next.js rewrite).
+    # 0 means X-Forwarded-For is ignored and the socket address is used.
+    trusted_proxy_count: int = 0
+
+    # Internal jobs (cron / workers). Sent as the X-Job-Token header.
+    internal_job_token: str = Field(
+        default="",
+        validation_alias=AliasChoices("INTERNAL_JOB_TOKEN", "internal_job_token"),
+    )
+    # Test-only endpoints (payment simulation, fault injection). Never in staging/production.
+    enable_dev_endpoints: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("ENABLE_DEV_ENDPOINTS", "enable_dev_endpoints"),
+    )
 
     # Connection pool
     pool_size: int = 20
@@ -51,9 +77,10 @@ class Settings(BaseSettings):
     pool_pre_ping: bool = True
     connect_timeout: int = 10
     statement_timeout_ms: int = 30000
+    sql_echo: bool = Field(default=False, validation_alias=AliasChoices("SQL_ECHO", "sql_echo"))
 
     # Logging
-    log_level: str = "DEBUG"
+    log_level: str = "INFO"
     log_format: str = "json"
 
     # External services
@@ -116,7 +143,8 @@ class Settings(BaseSettings):
     )
     imagekit_api_key: str = ""
     imagekit_url: str = ""
-    private_storage_dir: str = "/tmp/mshwar-private"
+    private_storage_dir: str = "/tmp/mshwar-private"  # noqa: S108 - dev default; production must override
+    max_upload_bytes: int = 10 * 1024 * 1024
     signed_url_ttl_seconds: int = 15 * 60
     staff_invite_ttl_seconds: int = 7 * 24 * 60 * 60
     search_reindex_provider: str = Field(
@@ -155,12 +183,6 @@ class Settings(BaseSettings):
 
     # Monitoring
     sentry_dsn: str = ""
-    sentry_environment: str = "development"
-    posthog_api_key: str = ""
-
-    # App
-    app_host: str = "0.0.0.0"
-    app_port: int = 8000
 
     @property
     def is_production(self) -> bool:
@@ -174,17 +196,55 @@ class Settings(BaseSettings):
     def is_development(self) -> bool:
         return self.environment == "development"
 
-    def model_post_init(self, __context: Any, /) -> None:
-        self._validate_credentials()
+    @property
+    def is_deployed(self) -> bool:
+        """Staging and production: real users, HTTPS, no test shortcuts."""
+        return self.environment in DEPLOYED_ENVIRONMENTS
 
-    def _validate_credentials(self) -> None:
+    @property
+    def dev_endpoints_enabled(self) -> bool:
+        return self.enable_dev_endpoints and not self.is_deployed
+
+    @property
+    def job_token(self) -> str:
+        return self.internal_job_token or self.notification_dispatch_token
+
+    def model_post_init(self, __context: Any, /) -> None:
+        self._validate_for_environment()
+
+    def _validate_for_environment(self) -> None:
+        if self.environment not in KNOWN_ENVIRONMENTS:
+            raise ValueError(f"ENVIRONMENT must be one of {sorted(KNOWN_ENVIRONMENTS)}")
+        if self.is_deployed:
+            self._validate_deployed()
         if self.is_production:
-            if self.database_url.startswith("postgresql+asyncpg://postgres:postgres"):
-                raise ValueError("Production DATABASE_URL must not use default credentials")
-            if self.secret_key == "change-me-in-production":
-                raise ValueError("Production SECRET_KEY must be set")
-            if not self.google_maps_api_key:
-                raise ValueError("Production GOOGLE_MAPS_API_KEY must be set")
+            self._validate_production()
+
+    def _validate_deployed(self) -> None:
+        """Staging and production: no default secrets and no test shortcuts."""
+        if self.secret_key == DEFAULT_SECRET_KEY or len(self.secret_key) < MIN_SECRET_LENGTH:
+            raise ValueError(f"{self.environment} SECRET_KEY must be set (at least {MIN_SECRET_LENGTH} characters)")
+        if self.enable_dev_endpoints:
+            raise ValueError(f"ENABLE_DEV_ENDPOINTS must be false in {self.environment}")
+        if len(self.job_token) < MIN_SECRET_LENGTH:
+            raise ValueError(
+                f"{self.environment} INTERNAL_JOB_TOKEN must be set (at least {MIN_SECRET_LENGTH} characters)"
+            )
+
+    def _validate_production(self) -> None:
+        if self.database_url.startswith(DEFAULT_DATABASE_CREDENTIALS):
+            raise ValueError("Production DATABASE_URL must not use default credentials")
+        if not self.google_maps_api_key:
+            raise ValueError("Production GOOGLE_MAPS_API_KEY must be set")
+        if self.payment_provider != "stripe_test" or not self.stripe_secret_key or not self.stripe_webhook_secret:
+            raise ValueError(
+                "Production needs a real payment provider: PAYMENT_PROVIDER=stripe_test with "
+                "STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET (stub providers are not allowed)"
+            )
+        if self.payments_fault or self.planner_fault_inject:
+            raise ValueError("Fault injection must be disabled in production")
+        if self.private_storage_dir.startswith("/tmp"):  # noqa: S108 - rejecting temp dirs, not using one
+            raise ValueError("Production PRIVATE_STORAGE_DIR must be a persistent directory")
 
     @property
     def database_url_public(self) -> str:

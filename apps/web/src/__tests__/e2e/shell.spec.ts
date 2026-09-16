@@ -405,7 +405,8 @@ test.describe("MSHWAR-36 / MSHWAR-39 marketing browse", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/checkout?listing=slow-day-byblos");
     await expect(page.getByRole("heading", { name: "Checkout" })).toBeVisible();
-    await expect(page.getByText("Booking mode")).toBeVisible();
+    // Waits out the brief streaming overlap, but still fails if the heading is really duplicated.
+    await expect(page.getByRole("heading", { name: "Booking mode" })).toHaveCount(1);
     await assertNoHorizontalScroll(page);
     await page.getByRole("button", { name: "العربية" }).first().click();
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");

@@ -1,0 +1,21 @@
+# Root build context (apps/web/Dockerfile)
+**/node_modules
+**/.next
+**/.turbo
+**/coverage
+**/test-results
+**/storybook-static
+**/__pycache__
+**/.pytest_cache
+**/.venv
+**/.env
+**/.env.*
+!**/.env.example
+.git
+.claude-transfer
+Claude outputs
+docs
+backlog
+prototype
+*.docx
+*.pdf

@@ -5,27 +5,33 @@ import * as React from "react";
 const STORAGE_KEY = "mshwar_saved_experiences";
 const CHANGE_EVENT = "mshwar-saved-experiences";
 
-let cachedRaw = "[]";
-
-function readSaved(): string[] {
+function readRaw(): string {
   if (typeof window === "undefined") {
-    return [];
+    return "[]";
   }
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    const parsed = raw ? (JSON.parse(raw) as unknown) : [];
+    return window.localStorage.getItem(STORAGE_KEY) ?? "[]";
+  } catch {
+    return "[]";
+  }
+}
+
+function parseSaved(raw: string): string[] {
+  try {
+    const parsed = JSON.parse(raw) as unknown;
     return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : [];
   } catch {
     return [];
   }
 }
 
+function readSaved(): string[] {
+  return parseSaved(readRaw());
+}
+
+// useSyncExternalStore calls this on every render: return the stored string as-is (cheap, stable).
 function snapshot(): string {
-  const next = JSON.stringify(readSaved());
-  if (next !== cachedRaw) {
-    cachedRaw = next;
-  }
-  return cachedRaw;
+  return readRaw();
 }
 
 function subscribe(onStoreChange: () => void) {
@@ -46,8 +52,11 @@ function subscribe(onStoreChange: () => void) {
 }
 
 function writeSaved(next: string[]) {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  cachedRaw = JSON.stringify(next);
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    /* Storage full or blocked: nothing is saved in this browser. */
+  }
   window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 
@@ -57,9 +66,10 @@ export function peekSavedExperiences() {
 
 export function useSavedExperiences() {
   const raw = React.useSyncExternalStore(subscribe, snapshot, () => "[]");
-  const slugs = React.useMemo(() => JSON.parse(raw) as string[], [raw]);
+  const slugs = React.useMemo(() => parseSaved(raw), [raw]);
+  const saved = React.useMemo(() => new Set(slugs), [slugs]);
 
-  const has = React.useCallback((slug: string) => slugs.includes(slug), [slugs]);
+  const has = React.useCallback((slug: string) => saved.has(slug), [saved]);
 
   const toggle = React.useCallback((slug: string) => {
     const current = readSaved();

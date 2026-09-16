@@ -38,8 +38,7 @@ class PriceModel(BaseModel):
     @field_validator("source")
     @classmethod
     def source_is_present(cls, value: str) -> str:
-        source = value.strip() or "unknown"
-        return source
+        return value.strip() or "unknown"
 
     @classmethod
     def from_row(cls, payload: dict[str, Any] | None) -> PriceModel:

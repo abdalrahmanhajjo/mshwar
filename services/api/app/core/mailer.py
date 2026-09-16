@@ -82,10 +82,7 @@ _mailer: Mailer | None = None
 def get_mailer() -> Mailer:
     global _mailer
     if _mailer is None:
-        if settings.mailer_backend == "notification":
-            _mailer = NotificationMailer()
-        else:
-            _mailer = ConsoleMailer()
+        _mailer = NotificationMailer() if settings.mailer_backend == "notification" else ConsoleMailer()
     return _mailer
 
 

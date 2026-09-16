@@ -1,3 +1,5 @@
+import { apiRequest } from "@/lib/api/client";
+
 export const SESSION_COOKIE = "mshwar_session";
 
 export type AuthUser = {
@@ -30,11 +32,22 @@ export function isAdminUser(user: AuthUser | null | undefined): boolean {
   return user?.admin_tier === "ops" || user?.admin_tier === "elevated";
 }
 
+const SAFE_NEXT_BASE = "https://mshwar.invalid";
+
+/** Only same-site paths are allowed after sign-in; anything that parses to another origin falls back to "/". */
 export function safeNextPath(value: string | null | undefined): string {
-  if (!value || !value.startsWith("/") || value.startsWith("//") || value.startsWith("/\\")) {
+  if (!value || !value.startsWith("/")) {
     return "/";
   }
-  return value;
+  try {
+    const url = new URL(value, SAFE_NEXT_BASE);
+    if (url.origin !== SAFE_NEXT_BASE) {
+      return "/";
+    }
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return "/";
+  }
 }
 
 export async function fetchCurrentUser(): Promise<AuthUser | null> {
@@ -45,35 +58,21 @@ export async function fetchCurrentUser(): Promise<AuthUser | null> {
   return (await response.json()) as AuthUser;
 }
 
-export async function registerAccount(input: {
+function authPost<T>(path: string, body: unknown): Promise<T> {
+  return apiRequest<T>(path, { method: "POST", body: JSON.stringify(body), fallbackMessage: "authError" });
+}
+
+export function registerAccount(input: {
   email: string;
   password: string;
   display_name: string;
   locale: string;
 }): Promise<AuthUser> {
-  const response = await fetch("/api/v1/auth/register", {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-  });
-  if (!response.ok) {
-    throw new Error(await readAuthError(response));
-  }
-  return (await response.json()) as AuthUser;
+  return authPost("/api/v1/auth/register", input);
 }
 
-export async function signInAccount(input: { email: string; password: string }): Promise<AuthUser> {
-  const response = await fetch("/api/v1/auth/signin", {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-  });
-  if (!response.ok) {
-    throw new Error(await readAuthError(response));
-  }
-  return (await response.json()) as AuthUser;
+export function signInAccount(input: { email: string; password: string }): Promise<AuthUser> {
+  return authPost("/api/v1/auth/signin", input);
 }
 
 export async function signOutAccount(): Promise<void> {
@@ -81,63 +80,17 @@ export async function signOutAccount(): Promise<void> {
 }
 
 export async function requestPasswordReset(email: string): Promise<void> {
-  const response = await fetch("/api/v1/auth/forgot-password", {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
-  });
-  if (!response.ok) {
-    throw new Error(await readAuthError(response));
-  }
+  await authPost("/api/v1/auth/forgot-password", { email });
 }
 
-export async function verifyEmail(token: string): Promise<AuthUser> {
-  const response = await fetch("/api/v1/auth/verify-email", {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token }),
-  });
-  if (!response.ok) {
-    throw new Error(await readAuthError(response));
-  }
-  return (await response.json()) as AuthUser;
+export function verifyEmail(token: string): Promise<AuthUser> {
+  return authPost("/api/v1/auth/verify-email", { token });
 }
 
 export async function resendVerification(email?: string): Promise<void> {
-  const response = await fetch("/api/v1/auth/resend-verification", {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(email ? { email } : {}),
-  });
-  if (!response.ok) {
-    throw new Error(await readAuthError(response));
-  }
+  await authPost("/api/v1/auth/resend-verification", email ? { email } : {});
 }
 
-export async function resetPassword(input: { token: string; password: string }): Promise<AuthUser> {
-  const response = await fetch("/api/v1/auth/reset-password", {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-  });
-  if (!response.ok) {
-    throw new Error(await readAuthError(response));
-  }
-  return (await response.json()) as AuthUser;
-}
-
-async function readAuthError(response: Response): Promise<string> {
-  try {
-    const body = (await response.json()) as { detail?: string };
-    if (typeof body.detail === "string") {
-      return body.detail;
-    }
-  } catch {
-    /* ignore non-JSON */
-  }
-  return "authError";
+export function resetPassword(input: { token: string; password: string }): Promise<AuthUser> {
+  return authPost("/api/v1/auth/reset-password", input);
 }

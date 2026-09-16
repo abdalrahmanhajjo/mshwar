@@ -1,3 +1,5 @@
+import { apiRequest } from "@/lib/api/client";
+
 export type StartLocation = {
   lat: number;
   lng: number;
@@ -85,24 +87,8 @@ export type DemoPlanStop = {
   estimated_minor?: number;
 };
 
-async function readError(response: Response): Promise<string> {
-  try {
-    const body = (await response.json()) as { detail?: string };
-    if (typeof body.detail === "string") {
-      return body.detail;
-    }
-  } catch {
-    /* ignore */
-  }
-  return "authError";
-}
-
-async function readJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, { credentials: "include", ...init });
-  if (!response.ok) {
-    throw new Error(await readError(response));
-  }
-  return (await response.json()) as T;
+function readJson<T>(path: string, init?: RequestInit): Promise<T> {
+  return apiRequest<T>(path, { ...init, fallbackMessage: "authError" });
 }
 
 export function samplePlan(start: StartLocation) {

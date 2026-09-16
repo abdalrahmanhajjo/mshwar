@@ -2,12 +2,13 @@ import { PGlite } from "@electric-sql/pglite";
 import { postgis } from "@electric-sql/pglite-postgis";
 import { vector } from "@electric-sql/pglite-pgvector";
 import { btree_gist } from "@electric-sql/pglite/contrib/btree_gist";
+import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const db = new PGlite({ extensions: { postgis, vector, btree_gist } });
+const db = new PGlite({ extensions: { postgis, vector, btree_gist, pg_trgm } });
 const report = [];
 const sql = (s, p = []) => db.query(s, p);
 const one = async (s, p = []) => (await sql(s, p)).rows[0];
@@ -39,11 +40,12 @@ const price = "50000000-0000-0000-0000-000000000001",
   policy = "60000000-0000-0000-0000-000000000001";
 const reserve = (key = "test-key-001", hash = "0123456789abcdef", party = 2) =>
   `SELECT app.reserve_booking('${alice}','${slot}',${party},'${key}','${hash}','${price}','${policy}',true) AS id`;
+const migrationFiles = fs
+  .readdirSync(root + "/migrations")
+  .filter((x) => x.endsWith(".sql"))
+  .sort();
 try {
-  for (const f of fs
-    .readdirSync(root + "/migrations")
-    .filter((x) => x.endsWith(".sql"))
-    .sort()) {
+  for (const f of migrationFiles) {
     await db.exec(fs.readFileSync(root + "/migrations/" + f, "utf8"));
     console.log("APPLIED", f);
   }
@@ -62,7 +64,7 @@ try {
     assert.equal(
       (
         await one(
-          `SELECT ST_DWithin(location,ST_SetSRID(ST_MakePoint(35.5018,33.8938),4326)::geography,10) AS ok FROM app.venues`,
+          `SELECT ST_DWithin(location,ST_SetSRID(ST_MakePoint(35.5018,33.8938),4326)::geography,10) AS ok FROM app.venues WHERE id='20000000-0000-0000-0000-000000000001'`,
         )
       ).ok,
       true,
@@ -247,10 +249,14 @@ try {
     /unique constraint/,
   );
   await good("trusted backend booking path works with RLS enabled", async () => {
+    // The API books through SECURITY DEFINER functions; the backend role alone cannot
+    // read another organisation's slots under the org-scoped RLS policies (migration 006).
     await db.exec("BEGIN; SET LOCAL ROLE mshwar_backend");
-    await sql("SELECT set_config('app.user_id',$1,true)", [alice]);
-    const b = (await one(reserve("backend-key"))).id;
-    assert.ok(b);
+    const b = await one(
+      `SELECT app.commit_checkout($1,'synthetic-walk',$2,1,'backend-key-001','backend-hash-0001',$3,$4,NULL,'corr-1') AS booking`,
+      [alice, slot, price, policy],
+    );
+    assert.ok(b.booking.id);
     await db.exec("COMMIT");
   });
 
@@ -340,7 +346,7 @@ try {
     JSON.stringify(
       {
         engine: version,
-        migrations: 5,
+        migrations: migrationFiles.length,
         passed: report.length,
         tests: report,
         limitations: [
@@ -350,7 +356,7 @@ try {
       },
       null,
       2,
-    ),
+    ) + "\n",
   );
   console.log(`${report.length} tests passed`);
 } catch (e) {

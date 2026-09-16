@@ -1,3 +1,5 @@
+import { apiRequest } from "@/lib/api/client";
+
 export const GROUP_POLL_MS = 4000;
 
 export type GroupRole = "owner" | "edit" | "vote" | "view";
@@ -60,22 +62,7 @@ export type GroupSummary = {
   shared_preferences: { user_id: string; preferences: Record<string, unknown> }[];
 };
 
-async function readError(response: Response): Promise<string> {
-  try {
-    const body = (await response.json()) as { detail?: string };
-    return body.detail ?? response.statusText;
-  } catch {
-    return response.statusText;
-  }
-}
-
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, { credentials: "include", ...init });
-  if (!response.ok) {
-    throw new Error(await readError(response));
-  }
-  return (await response.json()) as T;
-}
+const request = apiRequest;
 
 export function fetchGroupTrip(tripId: string) {
   return request<GroupTrip>(`/api/v1/groups/trips/${tripId}`);

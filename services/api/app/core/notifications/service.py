@@ -9,18 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.notifications.channels import DeliveryResult, NotificationMessage, channel_for
-from app.core.portal_auth import fetch_json
+from app.core.sql import fetch_json
 
 
 def email_is_stub() -> bool:
     return not settings.smtp_host and not settings.sendgrid_api_key
-
-
-def dispatch_authorized(token: str | None) -> bool:
-    expected = settings.notification_dispatch_token
-    if not expected:
-        return not settings.is_production
-    return token == expected
 
 
 async def emit_event(

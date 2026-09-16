@@ -1,24 +1,34 @@
-FROM node:20-alpine AS base
-
-RUN npm install -g pnpm@9
+# syntax=docker/dockerfile:1
+# Build from the repository root:  docker build -f apps/web/Dockerfile .
+# The build needs the pnpm workspace and mshwar-brand-foundation (token generation).
+FROM node:22-alpine AS base
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN corepack enable
+WORKDIR /repo
 
 FROM base AS deps
-WORKDIR /app
-COPY package.json pnpm-workspace.yaml ./
-RUN npm install -g pnpm@9 && pnpm install --ignore-scripts
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web/package.json apps/web/
+COPY services/api/package.json services/api/
+RUN pnpm install --frozen-lockfile --filter web...
 
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-RUN pnpm run build
+FROM deps AS builder
+# Inlined at build time; server-side calls and the /api rewrite use it.
+ARG NEXT_PUBLIC_API_URL=http://api:8000
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+COPY mshwar-brand-foundation ./mshwar-brand-foundation
+COPY apps/web ./apps/web
+RUN pnpm --filter web build
 
-FROM base AS runner
-WORKDIR /app/apps/web
-COPY --from=builder /app/apps/web/.next ./.next
-COPY --from=builder /app/apps/web/public ./public
-COPY --from=builder /app/apps/web/package.json ./package.json
-COPY --from=builder /app/node_modules ./node_modules
-ENV NODE_ENV=production
+FROM node:22-alpine AS runner
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0
+WORKDIR /app
+RUN addgroup -S -g 1001 nodejs && adduser -S -u 1001 -G nodejs nextjs
+COPY --from=builder --chown=nextjs:nodejs /repo/apps/web/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /repo/apps/web/.next/static ./apps/web/.next/static
+USER nextjs
 EXPOSE 3000
-CMD ["npx", "next", "start"]
+CMD ["node", "apps/web/server.js"]

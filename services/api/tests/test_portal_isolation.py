@@ -5,7 +5,7 @@ from uuid import uuid4
 import pytest
 from sqlalchemy import text
 
-from app.core.context import clear_session_context, set_local_gucs, set_session_context
+from tests.rls import set_local_gucs
 
 
 @pytest.mark.asyncio
@@ -57,7 +57,6 @@ async def test_backend_role_cannot_read_foreign_org_portal_rows(db_session) -> N
     await db_session.commit()
 
     await db_session.execute(text("SET ROLE mshwar_backend"))
-    set_session_context(user_id=user_a, organization_id=org_a)
     await set_local_gucs(db_session, user_id=user_a, organization_id=org_a)
     docs = (
         await db_session.execute(
@@ -74,6 +73,5 @@ async def test_backend_role_cannot_read_foreign_org_portal_rows(db_session) -> N
     await db_session.execute(text("RESET ROLE"))
     await db_session.execute(text("RESET app.user_id"))
     await db_session.execute(text("RESET app.organization_id"))
-    clear_session_context()
     assert docs == []
     assert orgs == []

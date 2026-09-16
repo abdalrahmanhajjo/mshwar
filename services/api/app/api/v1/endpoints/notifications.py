@@ -4,15 +4,16 @@ import json
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.hub_query import page_args, raise_hub_error
-from app.api.v1.session import require_session
-from app.core.notifications.service import dispatch, dispatch_authorized, emit_event, escalate
-from app.core.portal_auth import fetch_json
+from app.core.auth_session import require_session
+from app.core.job_auth import require_job_token
+from app.core.notifications.service import dispatch, emit_event, escalate
+from app.core.sql import fetch_json
 from app.dependencies import get_auth_db
 from app.schemas.hub import NotificationListOut, NotificationOut
 from app.schemas.notifications import CommunicationPreferencesIn, EmitNotificationIn, MaterialChangeIn
@@ -98,23 +99,17 @@ async def apply_unsubscribe(
     )
 
 
-@router.post("/dispatch")
+@router.post("/dispatch", dependencies=[Depends(require_job_token)])
 async def dispatch_outbox(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
-    x_notification_token: str | None = Header(default=None),
 ) -> Any:
-    if not dispatch_authorized(x_notification_token):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="dispatch token required")
     return await dispatch(db)
 
 
-@router.post("/escalate")
+@router.post("/escalate", dependencies=[Depends(require_job_token)])
 async def escalate_requests(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
-    x_notification_token: str | None = Header(default=None),
 ) -> Any:
-    if not dispatch_authorized(x_notification_token):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="dispatch token required")
     return await escalate(db)
 
 

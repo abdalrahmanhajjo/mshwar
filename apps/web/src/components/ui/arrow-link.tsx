@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { LocaleLink } from "@/components/shell/locale-link";

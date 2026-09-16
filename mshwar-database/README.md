@@ -2,12 +2,12 @@
 
 An executable database foundation derived from **Mshwar Business Requirements Document v1.0**, supplied in this conversation. It covers Lebanon-wide discovery, itinerary planning, business inventory, reservations, payments, group planning and AI traceability. It does not use the separate Tripoli project.
 
-**Baseline:** PostgreSQL 17+, PostGIS, pgvector and btree_gist. The package includes 63 tables, five ordered SQL migrations, transaction functions, integrity triggers, restricted read policies, query examples, regression tests and an operations guide. This is a database deliverable, not a deployed marketplace or a certification of production readiness.
+**Baseline:** PostgreSQL 17+, PostGIS, pgvector, btree_gist and pg_trgm. The package includes the full application schema as ordered, forward-only SQL migrations (`migrations/001`–`022`), transaction functions, integrity triggers, restricted read policies, query examples, regression tests and an operations guide. This is a database deliverable, not a deployed marketplace or a certification of production readiness.
 
 ## Start here
 
 1. Read [Architecture and decisions](docs/ARCHITECTURE.md), especially the backend trust boundary and explicit product assumptions.
-2. Provision an **empty development database** with PostGIS, pgvector and btree_gist extension support. Use a migration login with schema, extension and role creation rights. Do not run against an unrelated existing application.
+2. Provision an **empty development database** with PostGIS, pgvector, btree_gist and pg_trgm extension support. Use a migration login with schema, extension and role creation rights. Do not run against an unrelated existing application.
 3. Install Python dependencies: `python -m pip install -r requirements.txt`.
 4. Set `DATABASE_URL` through your shell or secret manager. `.env.example` is documentation; the runner does not auto-load it.
 5. Run `python scripts/migrate.py`. Each migration is atomic. The runner locks migration execution, records checksums and refuses changed previously applied migrations.
@@ -24,6 +24,8 @@ An executable database foundation derived from **Mshwar Business Requirements Do
 | migrations/003_transactions.sql | Reservation, transition, expiry, capacity consistency and financial views |
 | migrations/004_security.sql     | Private schema, backend role and scoped reader policies                   |
 | migrations/005_hardening.sql    | Slot immutability, evaluation freezing and additional checks              |
+| migrations/006–021              | RLS, auth, profile, catalogue, portal, admin, planner, payments, groups   |
+| migrations/022_hardening…sql    | Function privileges, current price rule, bounded booking reads, indexes   |
 | docs/DATA_DICTIONARY.md         | Table-by-table SQL field definitions                                      |
 | docs/ERD.md                     | Domain relationship diagrams                                              |
 | docs/REQUIREMENTS.md            | BRD mapping and database/application responsibility boundary              |
@@ -41,3 +43,8 @@ No database password, third-party key, live payment, or real customer data is in
 ## Validation limits
 
 See the generated test report for executed tests. Embedded PostgreSQL verifies actual SQL, extensions and transactions but uses one connection. Native concurrent load, the target hosting configuration, backup restore and external integrations remain deployment gates. No remote database was created or modified.
+
+## Changing the schema
+
+Migrations are forward-only and checksum-locked: never edit an applied file. Add the next numbered migration, then refresh the manifest with
+`(awk '{print $2}' SHA256SUMS.txt; echo migrations/NNN_new.sql) | sort -u | xargs sha256sum > /tmp/sums && mv /tmp/sums SHA256SUMS.txt` and run both test suites (CI does the same).

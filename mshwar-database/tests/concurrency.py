@@ -38,6 +38,7 @@ with ThreadPoolExecutor(max_workers=2) as executor:
     results=list(executor.map(reserve,[1,2]))
 assert sorted(results)==['reserved','sold_out'],results
 with psycopg.connect(url) as c:
-    assert c.execute('SELECT reserved FROM app.slots').fetchone()[0]==1
-    assert c.execute('SELECT count(*) FROM app.bookings').fetchone()[0]==1
+    slot_id='40000000-0000-0000-0000-000000000001'
+    assert c.execute('SELECT reserved FROM app.slots WHERE id=%s',(slot_id,)).fetchone()[0]==1
+    assert c.execute('SELECT count(*) FROM app.bookings WHERE slot_id=%s',(slot_id,)).fetchone()[0]==1
 print('PASS: two independent connections contested the final seat; exactly one reservation committed')

@@ -9,9 +9,9 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.hub_query import raise_hub_error
-from app.api.v1.session import require_session
 from app.catalogue.query_parser import parse_search_query, relaxation_steps
 from app.catalogue.routing import estimate_travel
+from app.core.auth_session import require_session
 from app.dependencies import get_auth_db
 from app.schemas.catalogue import (
     CatalogueCollection,
