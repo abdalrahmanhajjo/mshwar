@@ -61,15 +61,20 @@ export function CheckoutFlow() {
     if (!slug) {
       return;
     }
+    let current = true;
     void fetchSlots(slug)
       .then((row) => {
+        if (!current) return;
         setMode(row.effective_mode);
         setSlots(row.slots);
         if (row.slots[0]) {
           setSlotId(row.slots[0].id);
         }
       })
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : copy.capacityGone));
+      .catch((err: unknown) => current && setError(err instanceof Error ? err.message : copy.capacityGone));
+    return () => {
+      current = false;
+    };
   }, [copy.capacityGone, slug]);
 
   async function onQuote() {

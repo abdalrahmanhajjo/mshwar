@@ -1,10 +1,9 @@
 packages:
   - "apps/web"
   - "services/api"
-  - "packages/shared"
 
 allowBuilds:
   esbuild: true
+  pre-commit: set this to true or false
+  spawn-sync: set this to true or false
   unrs-resolver: true
-  pre-commit: true
-  spawn-sync: true

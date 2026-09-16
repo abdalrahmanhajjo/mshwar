@@ -87,25 +87,32 @@ export function ListingEditor({ experienceId }: { experienceId?: string }) {
     if (!org || !experienceId) {
       return;
     }
-    void getExperience(org.id, experienceId).then((row) => {
-      setTitle(row.title);
-      setDescription(row.description);
-      setCategory(row.category ?? "food");
-      setDuration(String(row.duration_minutes));
-      setSavedId(row.id);
-      if (row.venue) {
-        setLng(String(row.venue.lng));
-        setLat(String(row.venue.lat));
-        setVenueName(row.venue.name);
-        setAddress(row.venue.address);
-      }
-      setIssues((row.publish_report.issues ?? []).map((item) => item.message));
-      setReady(row.publish_report.ready);
-      if (row.weather_sensitivity) {
-        setSensitivity(row.weather_sensitivity);
-      }
-      setBookingMode(row.booking_mode || "request");
-    });
+    let current = true;
+    void getExperience(org.id, experienceId)
+      .then((row) => {
+        if (!current) return;
+        setTitle(row.title);
+        setDescription(row.description);
+        setCategory(row.category ?? "food");
+        setDuration(String(row.duration_minutes));
+        setSavedId(row.id);
+        if (row.venue) {
+          setLng(String(row.venue.lng));
+          setLat(String(row.venue.lat));
+          setVenueName(row.venue.name);
+          setAddress(row.venue.address);
+        }
+        setIssues((row.publish_report.issues ?? []).map((item) => item.message));
+        setReady(row.publish_report.ready);
+        if (row.weather_sensitivity) {
+          setSensitivity(row.weather_sensitivity);
+        }
+        setBookingMode(row.booking_mode || "request");
+      })
+      .catch((err: unknown) => current && setError(err instanceof Error ? err.message : String(err)));
+    return () => {
+      current = false;
+    };
   }, [experienceId, org]);
 
   async function onSave(event: React.FormEvent<HTMLFormElement>) {

@@ -14,8 +14,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
         <img
           alt=""
           class="object-cover absolute inset-0 h-full w-full scale-[1.02]"
+          decoding="async"
           fetchpriority="high"
+          loading="eager"
+          sizes="100vw"
           src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80"
+          srcset="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80 2000w"
         />
         <div
           class="photo-scrim-side absolute inset-0"
@@ -842,8 +846,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                   <img
                     alt="Harbour boats in Byblos"
                     class="h-full w-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                    decoding="async"
                     fetchpriority="auto"
+                    loading="lazy"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80"
+                    srcset="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80 2000w"
                   />
                 </div>
                 <span
@@ -1031,8 +1039,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                   <img
                     alt="Coastal church in Batroun"
                     class="h-full w-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                    decoding="async"
                     fetchpriority="auto"
+                    loading="lazy"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80"
+                    srcset="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=2000&q=80 2000w"
                   />
                 </div>
                 <span
@@ -1220,8 +1232,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                   <img
                     alt="Cedar tree in mountain light"
                     class="h-full w-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                    decoding="async"
                     fetchpriority="auto"
+                    loading="lazy"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80"
+                    srcset="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=80 2000w"
                   />
                 </div>
                 <span
@@ -1714,8 +1730,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
               <img
                 alt="Stone church by the coast"
                 class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                decoding="async"
                 fetchpriority="auto"
+                loading="lazy"
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                 src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80"
+                srcset="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=2000&q=80 2000w"
               />
               <div
                 class="photo-scrim absolute inset-0"
@@ -1781,8 +1801,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
               <img
                 alt="Green mountain valley"
                 class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                decoding="async"
                 fetchpriority="auto"
+                loading="lazy"
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                 src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80"
+                srcset="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=80 2000w"
               />
               <div
                 class="photo-scrim absolute inset-0"
@@ -1848,8 +1872,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
               <img
                 alt="Ancient stone columns"
                 class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                decoding="async"
                 fetchpriority="auto"
+                loading="lazy"
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                 src="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80"
+                srcset="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=2000&q=80 2000w"
               />
               <div
                 class="photo-scrim absolute inset-0"
@@ -1925,8 +1953,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
         <img
           alt=""
           class="object-cover absolute inset-0 h-full w-full scale-[1.02]"
+          decoding="async"
           fetchpriority="high"
+          loading="eager"
+          sizes="100vw"
           src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80"
+          srcset="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80 2000w"
         />
         <div
           class="photo-scrim-side absolute inset-0"
@@ -2753,8 +2785,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                   <img
                     alt="Harbour boats in Byblos"
                     class="h-full w-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                    decoding="async"
                     fetchpriority="auto"
+                    loading="lazy"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80"
+                    srcset="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80 2000w"
                   />
                 </div>
                 <span
@@ -2942,8 +2978,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                   <img
                     alt="Coastal church in Batroun"
                     class="h-full w-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                    decoding="async"
                     fetchpriority="auto"
+                    loading="lazy"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80"
+                    srcset="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=2000&q=80 2000w"
                   />
                 </div>
                 <span
@@ -3131,8 +3171,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                   <img
                     alt="Cedar tree in mountain light"
                     class="h-full w-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                    decoding="async"
                     fetchpriority="auto"
+                    loading="lazy"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80"
+                    srcset="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=80 2000w"
                   />
                 </div>
                 <span
@@ -3625,8 +3669,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
               <img
                 alt="Stone church by the coast"
                 class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                decoding="async"
                 fetchpriority="auto"
+                loading="lazy"
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                 src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80"
+                srcset="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=2000&q=80 2000w"
               />
               <div
                 class="photo-scrim absolute inset-0"
@@ -3692,8 +3740,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
               <img
                 alt="Green mountain valley"
                 class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                decoding="async"
                 fetchpriority="auto"
+                loading="lazy"
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                 src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80"
+                srcset="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=80 2000w"
               />
               <div
                 class="photo-scrim absolute inset-0"
@@ -3759,8 +3811,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
               <img
                 alt="Ancient stone columns"
                 class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                decoding="async"
                 fetchpriority="auto"
+                loading="lazy"
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                 src="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80"
+                srcset="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=2000&q=80 2000w"
               />
               <div
                 class="photo-scrim absolute inset-0"
@@ -3836,8 +3892,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
         <img
           alt=""
           class="object-cover absolute inset-0 h-full w-full scale-[1.02]"
+          decoding="async"
           fetchpriority="high"
+          loading="eager"
+          sizes="100vw"
           src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80"
+          srcset="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80 2000w"
         />
         <div
           class="photo-scrim-side absolute inset-0"
@@ -4664,8 +4724,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                   <img
                     alt="Harbour boats in Byblos"
                     class="h-full w-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                    decoding="async"
                     fetchpriority="auto"
+                    loading="lazy"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80"
+                    srcset="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80 2000w"
                   />
                 </div>
                 <span
@@ -4853,8 +4917,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                   <img
                     alt="Coastal church in Batroun"
                     class="h-full w-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                    decoding="async"
                     fetchpriority="auto"
+                    loading="lazy"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80"
+                    srcset="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=2000&q=80 2000w"
                   />
                 </div>
                 <span
@@ -5042,8 +5110,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                   <img
                     alt="Cedar tree in mountain light"
                     class="h-full w-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                    decoding="async"
                     fetchpriority="auto"
+                    loading="lazy"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80"
+                    srcset="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=80 2000w"
                   />
                 </div>
                 <span
@@ -5536,8 +5608,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
               <img
                 alt="Stone church by the coast"
                 class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                decoding="async"
                 fetchpriority="auto"
+                loading="lazy"
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                 src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80"
+                srcset="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=2000&q=80 2000w"
               />
               <div
                 class="photo-scrim absolute inset-0"
@@ -5603,8 +5679,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
               <img
                 alt="Green mountain valley"
                 class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                decoding="async"
                 fetchpriority="auto"
+                loading="lazy"
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                 src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80"
+                srcset="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=80 2000w"
               />
               <div
                 class="photo-scrim absolute inset-0"
@@ -5670,8 +5750,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
               <img
                 alt="Ancient stone columns"
                 class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                decoding="async"
                 fetchpriority="auto"
+                loading="lazy"
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                 src="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80"
+                srcset="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=2000&q=80 2000w"
               />
               <div
                 class="photo-scrim absolute inset-0"
@@ -5782,8 +5866,12 @@ exports[`MSHWAR-32 locale snapshots > renders ideas in ar 1`] = `
             <img
               alt="Harbour boats along the coast"
               class="h-full w-full object-cover"
+              decoding="async"
               fetchpriority="auto"
+              loading="lazy"
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
               src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80"
+              srcset="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80 2000w"
             />
           </div>
           <span
@@ -5891,8 +5979,12 @@ exports[`MSHWAR-32 locale snapshots > renders ideas in ar 1`] = `
             <img
               alt="Cedar forest in mountain light"
               class="h-full w-full object-cover"
+              decoding="async"
               fetchpriority="auto"
+              loading="lazy"
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
               src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80"
+              srcset="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=80 2000w"
             />
           </div>
           <span
@@ -6000,8 +6092,12 @@ exports[`MSHWAR-32 locale snapshots > renders ideas in ar 1`] = `
             <img
               alt="Ancient columns"
               class="h-full w-full object-cover"
+              decoding="async"
               fetchpriority="auto"
+              loading="lazy"
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
               src="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80"
+              srcset="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=2000&q=80 2000w"
             />
           </div>
           <span
@@ -6151,8 +6247,12 @@ exports[`MSHWAR-32 locale snapshots > renders ideas in en 1`] = `
             <img
               alt="Harbour boats along the coast"
               class="h-full w-full object-cover"
+              decoding="async"
               fetchpriority="auto"
+              loading="lazy"
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
               src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80"
+              srcset="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80 2000w"
             />
           </div>
           <span
@@ -6260,8 +6360,12 @@ exports[`MSHWAR-32 locale snapshots > renders ideas in en 1`] = `
             <img
               alt="Cedar forest in mountain light"
               class="h-full w-full object-cover"
+              decoding="async"
               fetchpriority="auto"
+              loading="lazy"
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
               src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80"
+              srcset="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=80 2000w"
             />
           </div>
           <span
@@ -6369,8 +6473,12 @@ exports[`MSHWAR-32 locale snapshots > renders ideas in en 1`] = `
             <img
               alt="Ancient columns"
               class="h-full w-full object-cover"
+              decoding="async"
               fetchpriority="auto"
+              loading="lazy"
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
               src="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80"
+              srcset="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=2000&q=80 2000w"
             />
           </div>
           <span
@@ -6520,8 +6628,12 @@ exports[`MSHWAR-32 locale snapshots > renders ideas in fr 1`] = `
             <img
               alt="Harbour boats along the coast"
               class="h-full w-full object-cover"
+              decoding="async"
               fetchpriority="auto"
+              loading="lazy"
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
               src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80"
+              srcset="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80 2000w"
             />
           </div>
           <span
@@ -6629,8 +6741,12 @@ exports[`MSHWAR-32 locale snapshots > renders ideas in fr 1`] = `
             <img
               alt="Cedar forest in mountain light"
               class="h-full w-full object-cover"
+              decoding="async"
               fetchpriority="auto"
+              loading="lazy"
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
               src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80"
+              srcset="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=80 2000w"
             />
           </div>
           <span
@@ -6738,8 +6854,12 @@ exports[`MSHWAR-32 locale snapshots > renders ideas in fr 1`] = `
             <img
               alt="Ancient columns"
               class="h-full w-full object-cover"
+              decoding="async"
               fetchpriority="auto"
+              loading="lazy"
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
               src="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80"
+              srcset="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=2000&q=80 2000w"
             />
           </div>
           <span
@@ -7037,8 +7157,12 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
           <img
             alt="Harbour boats in Byblos"
             class="h-full w-full object-cover absolute inset-0"
+            decoding="async"
             fetchpriority="high"
+            loading="eager"
+            sizes="(min-width: 1024px) 62vw, 100vw"
             src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80 2000w"
           />
         </div>
         <div
@@ -8043,8 +8167,12 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
                   <img
                     alt="Coastal church in Batroun"
                     class="h-full w-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                    decoding="async"
                     fetchpriority="auto"
+                    loading="lazy"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80"
+                    srcset="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=2000&q=80 2000w"
                   />
                 </div>
                 <span
@@ -8242,8 +8370,12 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
                   <img
                     alt="Cedar tree in mountain light"
                     class="h-full w-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                    decoding="async"
                     fetchpriority="auto"
+                    loading="lazy"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80"
+                    srcset="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=80 2000w"
                   />
                 </div>
                 <span
@@ -8441,8 +8573,12 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
                   <img
                     alt="Valley road through the mountains"
                     class="h-full w-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                    decoding="async"
                     fetchpriority="auto"
+                    loading="lazy"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80"
+                    srcset="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=80 2000w"
                   />
                 </div>
                 <span
@@ -8796,8 +8932,12 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
           <img
             alt="Harbour boats in Byblos"
             class="h-full w-full object-cover absolute inset-0"
+            decoding="async"
             fetchpriority="high"
+            loading="eager"
+            sizes="(min-width: 1024px) 62vw, 100vw"
             src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80 2000w"
           />
         </div>
         <div
@@ -9802,8 +9942,12 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
                   <img
                     alt="Coastal church in Batroun"
                     class="h-full w-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                    decoding="async"
                     fetchpriority="auto"
+                    loading="lazy"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80"
+                    srcset="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=2000&q=80 2000w"
                   />
                 </div>
                 <span
@@ -10001,8 +10145,12 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
                   <img
                     alt="Cedar tree in mountain light"
                     class="h-full w-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                    decoding="async"
                     fetchpriority="auto"
+                    loading="lazy"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80"
+                    srcset="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=80 2000w"
                   />
                 </div>
                 <span
@@ -10200,8 +10348,12 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
                   <img
                     alt="Valley road through the mountains"
                     class="h-full w-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                    decoding="async"
                     fetchpriority="auto"
+                    loading="lazy"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80"
+                    srcset="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=80 2000w"
                   />
                 </div>
                 <span
@@ -10555,8 +10707,12 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
           <img
             alt="Harbour boats in Byblos"
             class="h-full w-full object-cover absolute inset-0"
+            decoding="async"
             fetchpriority="high"
+            loading="eager"
+            sizes="(min-width: 1024px) 62vw, 100vw"
             src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80 2000w"
           />
         </div>
         <div
@@ -11561,8 +11717,12 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
                   <img
                     alt="Coastal church in Batroun"
                     class="h-full w-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                    decoding="async"
                     fetchpriority="auto"
+                    loading="lazy"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80"
+                    srcset="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=2000&q=80 2000w"
                   />
                 </div>
                 <span
@@ -11760,8 +11920,12 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
                   <img
                     alt="Cedar tree in mountain light"
                     class="h-full w-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                    decoding="async"
                     fetchpriority="auto"
+                    loading="lazy"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80"
+                    srcset="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=80 2000w"
                   />
                 </div>
                 <span
@@ -11959,8 +12123,12 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
                   <img
                     alt="Valley road through the mountains"
                     class="h-full w-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+                    decoding="async"
                     fetchpriority="auto"
+                    loading="lazy"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80"
+                    srcset="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=80 2000w"
                   />
                 </div>
                 <span
@@ -12159,8 +12327,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in ar 1`] =
           <img
             alt="Fishing boats in a stone harbour"
             class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+            decoding="async"
             fetchpriority="auto"
+            loading="lazy"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80 2000w"
           />
           <div
             class="photo-scrim absolute inset-0"
@@ -12226,8 +12398,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in ar 1`] =
           <img
             alt="Stone church by the coast"
             class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+            decoding="async"
             fetchpriority="auto"
+            loading="lazy"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=2000&q=80 2000w"
           />
           <div
             class="photo-scrim absolute inset-0"
@@ -12293,8 +12469,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in ar 1`] =
           <img
             alt="Cedar tree against a clear sky"
             class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+            decoding="async"
             fetchpriority="auto"
+            loading="lazy"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=80 2000w"
           />
           <div
             class="photo-scrim absolute inset-0"
@@ -12360,8 +12540,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in ar 1`] =
           <img
             alt="Green mountain valley"
             class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+            decoding="async"
             fetchpriority="auto"
+            loading="lazy"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=80 2000w"
           />
           <div
             class="photo-scrim absolute inset-0"
@@ -12427,8 +12611,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in ar 1`] =
           <img
             alt="Ancient stone columns"
             class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+            decoding="async"
             fetchpriority="auto"
+            loading="lazy"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=2000&q=80 2000w"
           />
           <div
             class="photo-scrim absolute inset-0"
@@ -12494,8 +12682,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in ar 1`] =
           <img
             alt="Sea rocks at sunset"
             class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+            decoding="async"
             fetchpriority="auto"
+            loading="lazy"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src="https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=2000&q=80 2000w"
           />
           <div
             class="photo-scrim absolute inset-0"
@@ -12632,8 +12824,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in en 1`] =
           <img
             alt="Fishing boats in a stone harbour"
             class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+            decoding="async"
             fetchpriority="auto"
+            loading="lazy"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80 2000w"
           />
           <div
             class="photo-scrim absolute inset-0"
@@ -12699,8 +12895,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in en 1`] =
           <img
             alt="Stone church by the coast"
             class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+            decoding="async"
             fetchpriority="auto"
+            loading="lazy"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=2000&q=80 2000w"
           />
           <div
             class="photo-scrim absolute inset-0"
@@ -12766,8 +12966,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in en 1`] =
           <img
             alt="Cedar tree against a clear sky"
             class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+            decoding="async"
             fetchpriority="auto"
+            loading="lazy"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=80 2000w"
           />
           <div
             class="photo-scrim absolute inset-0"
@@ -12833,8 +13037,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in en 1`] =
           <img
             alt="Green mountain valley"
             class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+            decoding="async"
             fetchpriority="auto"
+            loading="lazy"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=80 2000w"
           />
           <div
             class="photo-scrim absolute inset-0"
@@ -12900,8 +13108,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in en 1`] =
           <img
             alt="Ancient stone columns"
             class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+            decoding="async"
             fetchpriority="auto"
+            loading="lazy"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=2000&q=80 2000w"
           />
           <div
             class="photo-scrim absolute inset-0"
@@ -12967,8 +13179,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in en 1`] =
           <img
             alt="Sea rocks at sunset"
             class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+            decoding="async"
             fetchpriority="auto"
+            loading="lazy"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src="https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=2000&q=80 2000w"
           />
           <div
             class="photo-scrim absolute inset-0"
@@ -13105,8 +13321,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in fr 1`] =
           <img
             alt="Fishing boats in a stone harbour"
             class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+            decoding="async"
             fetchpriority="auto"
+            loading="lazy"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80 2000w"
           />
           <div
             class="photo-scrim absolute inset-0"
@@ -13172,8 +13392,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in fr 1`] =
           <img
             alt="Stone church by the coast"
             class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+            decoding="async"
             fetchpriority="auto"
+            loading="lazy"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=2000&q=80 2000w"
           />
           <div
             class="photo-scrim absolute inset-0"
@@ -13239,8 +13463,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in fr 1`] =
           <img
             alt="Cedar tree against a clear sky"
             class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+            decoding="async"
             fetchpriority="auto"
+            loading="lazy"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=80 2000w"
           />
           <div
             class="photo-scrim absolute inset-0"
@@ -13306,8 +13534,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in fr 1`] =
           <img
             alt="Green mountain valley"
             class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+            decoding="async"
             fetchpriority="auto"
+            loading="lazy"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=80 2000w"
           />
           <div
             class="photo-scrim absolute inset-0"
@@ -13373,8 +13605,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in fr 1`] =
           <img
             alt="Ancient stone columns"
             class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+            decoding="async"
             fetchpriority="auto"
+            loading="lazy"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=2000&q=80 2000w"
           />
           <div
             class="photo-scrim absolute inset-0"
@@ -13440,8 +13676,12 @@ exports[`MSHWAR-32 locale snapshots > renders the destinations index in fr 1`] =
           <img
             alt="Sea rocks at sunset"
             class="h-full w-full object-cover absolute inset-0 transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
+            decoding="async"
             fetchpriority="auto"
+            loading="lazy"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src="https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1600&q=80"
+            srcset="https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=2000&q=80 2000w"
           />
           <div
             class="photo-scrim absolute inset-0"

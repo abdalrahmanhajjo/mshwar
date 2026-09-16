@@ -69,14 +69,17 @@ class StartLocationSave(BaseModel):
     save_as_default: bool = True
 
 
+MAX_PLAN_STOPS = 12  # keep in sync with app.planner.optimizer.MAX_OPTIMIZE_STOPS
+
+
 class OptimizeStopIn(BaseModel):
     id: str = Field(min_length=1, max_length=80)
-    lat: float
-    lng: float
-    label: str = "Stop"
+    lat: float = Field(ge=-90, le=90)
+    lng: float = Field(ge=-180, le=180)
+    label: str = Field(default="Stop", max_length=200)
     duration_minutes: int = Field(default=60, ge=1, le=24 * 60)
     locked: bool = False
-    position: int | None = Field(default=None, ge=1)
+    position: int | None = Field(default=None, ge=1, le=MAX_PLAN_STOPS)
     window_start: datetime | None = None
     window_end: datetime | None = None
     closes_at: datetime | None = None
@@ -87,12 +90,12 @@ class OptimizeStopIn(BaseModel):
 
 class OptimizeRequest(BaseModel):
     start: Coordinate
-    stops: list[OptimizeStopIn]
+    stops: list[OptimizeStopIn] = Field(max_length=MAX_PLAN_STOPS)
     window_start: datetime
     return_by: datetime
     mode: str = "driving"
-    plan_id: str | None = None
-    timeout_ms: int = Field(default=2000, ge=50, le=30000)
+    plan_id: str | None = Field(default=None, max_length=80)
+    timeout_ms: int = Field(default=2000, ge=50, le=5000)
 
 
 class OrderedStopOut(BaseModel):
@@ -187,8 +190,8 @@ class ThresholdIn(BaseModel):
 
 class ReplanRequest(BaseModel):
     plan: OptimizeRequest
-    affected_stop_ids: list[str]
-    candidates: list[OptimizeStopIn] = Field(default_factory=list)
+    affected_stop_ids: list[str] = Field(max_length=MAX_PLAN_STOPS)
+    candidates: list[OptimizeStopIn] = Field(default_factory=list, max_length=MAX_PLAN_STOPS)
     booking_ids: list[str] = Field(default_factory=list)
     booking_statuses: dict[str, str] = Field(default_factory=dict)
 

@@ -3,6 +3,8 @@ from __future__ import annotations
 import pytest
 
 from app.core.storage import (
+    InvalidObjectKey,
+    delete_private_bytes,
     put_private_bytes,
     read_private_bytes,
     sign_object_url,
@@ -34,3 +36,28 @@ def test_refuses_public_flag() -> None:
 def test_invalid_signature_is_rejected() -> None:
     with pytest.raises(ValueError):
         verify_signed_token("not-a-token")
+
+
+@pytest.mark.parametrize(
+    "object_key",
+    ["../../../../etc/hostname", "2026/09/../../secret", "/etc/passwd", "2026/09/not-a-uuid-name.pdf"],
+)
+def test_rejects_keys_outside_storage(object_key: str, tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("app.core.storage.settings.private_storage_dir", str(tmp_path))
+    with pytest.raises(InvalidObjectKey):
+        read_private_bytes(object_key)
+
+
+def test_signed_token_for_foreign_key_is_rejected() -> None:
+    token = sign_object_url("../../../../etc/hostname")["url"].rsplit("/", 1)[1]
+    with pytest.raises(ValueError):
+        verify_signed_token(token)
+
+
+def test_delete_private_bytes_removes_file(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("app.core.storage.settings.private_storage_dir", str(tmp_path))
+    stored = put_private_bytes(b"x", "a b/../c.png", "image/png")
+    assert "/" not in stored["object_key"].split("-", 1)[1]
+    delete_private_bytes(stored["object_key"])
+    with pytest.raises(FileNotFoundError):
+        read_private_bytes(stored["object_key"])

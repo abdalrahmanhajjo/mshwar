@@ -16,5 +16,7 @@ export default defineConfig({
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 120000,
+        // e2e runs without the API: allow the labelled sample catalogue.
+        env: { CATALOGUE_SAMPLE_FALLBACK: "true" },
       },
 });

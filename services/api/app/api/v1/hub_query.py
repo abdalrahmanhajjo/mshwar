@@ -3,6 +3,8 @@ from __future__ import annotations
 from fastapi import HTTPException, Query, status
 from sqlalchemy.exc import DBAPIError
 
+from app.core.http_status import HTTP_422_UNPROCESSABLE
+
 
 def page_args(
     page: int = Query(1, ge=1),
@@ -19,5 +21,5 @@ def raise_hub_error(exc: DBAPIError, missing: str) -> None:
     if sqlstate == "P0002" or "not found" in str(orig or exc).lower():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=missing) from exc
     if sqlstate == "22023":
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid request") from exc
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="Invalid request") from exc
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Could not update record") from exc

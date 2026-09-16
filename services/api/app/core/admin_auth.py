@@ -7,21 +7,14 @@ from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.portal_auth import raise_from_db, require_session
+from app.core.auth_session import require_session
+from app.core.client_ip import client_ip
+from app.core.sql import raise_from_db
 
 
 async def lookup_admin_tier(db: AsyncSession, user_id: object) -> str | None:
     result = await db.execute(text("SELECT app.admin_tier(:user_id)"), {"user_id": str(user_id)})
     return result.scalar_one_or_none()
-
-
-def client_ip(request: Request) -> str:
-    forwarded = request.headers.get("x-forwarded-for", "")
-    if forwarded:
-        return forwarded.split(",")[0].strip()[:128]
-    if request.client and request.client.host:
-        return request.client.host
-    return "unknown"
 
 
 async def touch_admin_session(request: Request, db: AsyncSession, session: dict[str, Any]) -> Any:

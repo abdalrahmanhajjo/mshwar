@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import base64
 from collections.abc import AsyncGenerator
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
@@ -87,7 +87,7 @@ async def _complete_listing(api: AsyncClient, org_id: str) -> dict[str, Any]:
         json={
             "filename": "hero.jpg",
             "content_type": "image/jpeg",
-            "content_base64": base64.b64encode(b"fake-image").decode("ascii"),
+            "content_base64": base64.b64encode(b"\xff\xd8\xff\xe0fake-image").decode("ascii"),
             "purpose": "listing",
             "experience_id": body["id"],
             "alt_text": "Cedar table",
@@ -307,7 +307,7 @@ async def test_availability_blackout_and_booking_inbox(api: AsyncClient) -> None
     assert hours.json()[0]["source"] == "portal"
     assert hours.json()[0]["updated_at"]
 
-    start = (datetime.now(timezone.utc) + timedelta(days=2)).date()
+    start = (datetime.now(UTC) + timedelta(days=2)).date()
     generated = await api.post(
         f"/api/v1/portal/organizations/{org['id']}/slots/generate",
         json={

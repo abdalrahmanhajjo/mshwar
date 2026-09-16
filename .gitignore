@@ -108,3 +108,7 @@ services/api/htmlcov/
 services/api/.coverage
 services/api/coverage.xml
 services/api/*.egg-info/
+
+# Local tool output (AI assistants, file transfers)
+.claude-transfer/
+Claude outputs/

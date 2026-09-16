@@ -24,33 +24,50 @@ def next_open_window(now: datetime | None = None) -> tuple[datetime, datetime]:
     return start, end
 
 
+_ANCHOR_ALIASES = {
+    "byblos": "byblos",
+    "jbeil": "byblos",
+    "جبيل": "byblos",
+    "batroun": "batroun",
+    "coast": "batroun",
+    "beirut": "beirut",
+    "بيروت": "beirut",
+}
+
+
+def _apply_answers(payload: dict[str, Any], answers: dict[str, Any] | None) -> None:
+    """Merge clarification answers; the free-text anchor becomes a destination slug."""
+    mapped = dict(answers or {})
+    anchor = mapped.pop("intent_anchor", None)
+    if isinstance(anchor, str) and anchor.strip():
+        token = anchor.strip().casefold()
+        slug = _ANCHOR_ALIASES.get(token, token.replace(" ", "-"))
+        destinations = list(payload.get("destination_slugs") or [])
+        if slug not in destinations:
+            destinations.append(slug)
+        payload["destination_slugs"] = destinations
+    for key, value in mapped.items():
+        if key in payload and value not in (None, "", []):
+            payload[key] = value
+
+
+def _default_return_by(window_start: datetime | str) -> datetime:
+    """Same-day 18:00 Beirut, or eight hours after a late start."""
+    start = datetime.fromisoformat(window_start) if isinstance(window_start, str) else window_start
+    if start.tzinfo is None:
+        start = start.replace(tzinfo=BEIRUT)
+    return_by = datetime.combine(start.astimezone(BEIRUT).date(), DEFAULT_DAY_END, tzinfo=BEIRUT)
+    if return_by <= start:
+        return_by = start + timedelta(hours=8)
+    return return_by
+
+
 def apply_defaults(
     extracted: ExtractedConstraints,
     answers: dict[str, Any] | None = None,
 ) -> tuple[ExtractedConstraints, list[AssumedDefault]]:
     payload = extracted.model_dump()
-    mapped = dict(answers or {})
-    anchor = mapped.pop("intent_anchor", None)
-    if isinstance(anchor, str) and anchor.strip():
-        token = anchor.strip().casefold()
-        aliases = {
-            "byblos": "byblos",
-            "jbeil": "byblos",
-            "جبيل": "byblos",
-            "batroun": "batroun",
-            "coast": "batroun",
-            "beirut": "beirut",
-            "بيروت": "beirut",
-        }
-        slug = aliases.get(token, token.replace(" ", "-"))
-        dests = list(payload.get("destination_slugs") or [])
-        if slug not in dests:
-            dests.append(slug)
-        payload["destination_slugs"] = dests
-    for key, value in mapped.items():
-        if key not in payload or value in (None, "", []):
-            continue
-        payload[key] = value
+    _apply_answers(payload, answers)
     assumed: list[AssumedDefault] = []
     window_start, _window_end = next_open_window()
     if payload.get("party_size") is None:
@@ -62,14 +79,7 @@ def apply_defaults(
             AssumedDefault(field="window_start", value=window_start.isoformat(), label="Starts tomorrow 09:00 Beirut")
         )
     if payload.get("return_by") is None:
-        start = payload["window_start"]
-        if isinstance(start, str):
-            start = datetime.fromisoformat(start)
-        if start.tzinfo is None:
-            start = start.replace(tzinfo=BEIRUT)
-        payload["return_by"] = datetime.combine(start.astimezone(BEIRUT).date(), DEFAULT_DAY_END, tzinfo=BEIRUT)
-        if payload["return_by"] <= payload["window_start"]:
-            payload["return_by"] = payload["window_start"] + timedelta(hours=8)
+        payload["return_by"] = _default_return_by(payload["window_start"])
         assumed.append(
             AssumedDefault(field="return_by", value=payload["return_by"].isoformat(), label="Returns 18:00 Beirut")
         )

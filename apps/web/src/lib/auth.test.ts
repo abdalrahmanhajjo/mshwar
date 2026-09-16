@@ -37,3 +37,16 @@ describe("auth helpers", () => {
     expect(safeNextPath(null)).toBe("/");
   });
 });
+
+describe("safeNextPath", () => {
+  it.each(["//evil.example", "/\\evil.example", "/\t/evil.example", "/\n/evil.example", "https://evil.example", ""])(
+    "rejects %j",
+    (value) => {
+      expect(safeNextPath(value)).toBe("/");
+    },
+  );
+
+  it("keeps same-site paths with query and hash", () => {
+    expect(safeNextPath("/ar/plan?stop=2#map")).toBe("/ar/plan?stop=2#map");
+  });
+});

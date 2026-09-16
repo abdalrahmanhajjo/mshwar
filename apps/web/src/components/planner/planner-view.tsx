@@ -597,7 +597,13 @@ function ReplacePanel({
   onCancel: () => void;
 }) {
   React.useEffect(() => {
-    void fetchAlternatives(sessionId, stopId).then(onAlts);
+    let current = true;
+    void fetchAlternatives(sessionId, stopId)
+      .then((found) => current && onAlts(found))
+      .catch(() => current && onAlts([]));
+    return () => {
+      current = false;
+    };
   }, [sessionId, stopId, onAlts]);
 
   return (

@@ -11,8 +11,16 @@ from app.payments.types import PaymentIntent, RefundResult, VerifiedWebhookEvent
 # Stripe SDK types are not imported. This adapter speaks HTTP-shaped dicts only.
 
 
+class WebhookNotConfigured(RuntimeError):
+    """The provider has no webhook signing secret, so no event can be trusted."""
+
+
 class StripeTestAdapter:
-    """Stripe test-mode adapter. When secret/webhook values are unset it stays local."""
+    """Stripe test-mode adapter.
+
+    Without a secret key it runs as a local stub whose intents settle immediately;
+    settings validation forbids that mode in production.
+    """
 
     name = "stripe_test"
     account = "acct_platform"
@@ -68,8 +76,9 @@ class StripeTestAdapter:
         )
 
     def verify_webhook(self, payload: bytes, signature_header: str) -> VerifiedWebhookEvent:
-        secret = self.webhook_secret or "whsec_local_stub"
-        _verify_stripe_signature(payload, signature_header, secret)
+        if not self.webhook_secret:
+            raise WebhookNotConfigured("STRIPE_WEBHOOK_SECRET is not set")
+        _verify_stripe_signature(payload, signature_header, self.webhook_secret)
         body = json.loads(payload.decode("utf-8"))
         if not isinstance(body, dict):
             raise TypeError("webhook payload must be an object")

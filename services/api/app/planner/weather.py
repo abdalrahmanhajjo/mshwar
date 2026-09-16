@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from typing import Any, Protocol
 
 import httpx
@@ -54,7 +54,7 @@ class UnavailableWeather:
             forecast_date=day,
             lat=lat,
             lng=lng,
-            fetched_at=datetime.now(timezone.utc),
+            fetched_at=datetime.now(UTC),
             attribution="",
         )
 
@@ -95,7 +95,7 @@ class OpenMeteoProvider:
 
 
 def parse_open_meteo(payload: dict[str, Any], lat: float, lng: float, day: date) -> Forecast:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     daily = payload.get("daily") if isinstance(payload, dict) else None
     if not isinstance(daily, dict):
         return Forecast(

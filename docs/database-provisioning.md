@@ -72,14 +72,22 @@ Production:      Self-hosted or managed PostgreSQL 17 with all three extensions 
 
 ## Migration Strategy
 
-Extension creation is handled via Alembic migration `000_create_extensions` — never manual. The migration runs automatically via `alembic upgrade head` during deployment.
+Extensions are created by the SQL migrations in `mshwar-database/migrations` (`001_schema.sql`
+creates `postgis`, `vector` and `btree_gist`; `022` adds `pg_trgm`) — never by hand. The runner is
+checksum-verified, holds an advisory lock and applies each file in its own transaction.
 
 ```bash
 # Apply all migrations including extensions
-cd services/api && alembic upgrade head
+DATABASE_URL=postgresql+asyncpg://... pnpm --filter api migrate
 ```
 
-The Dockerfile for the `db` service pre-creates extensions in `template1` so all new databases inherit them automatically.
+The `db` image (`services/api/db/Dockerfile`) installs the PostGIS and pgvector packages; the `migrate`
+service in `docker-compose.yml` applies the migrations before the API starts.
+
+### Rollback
+
+Migrations are forward-only. A bad change is fixed with a new migration; data problems are handled by
+restoring a backup or point-in-time recovery. CI never rolls a database back automatically.
 
 ---
 

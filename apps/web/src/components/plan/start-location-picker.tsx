@@ -44,6 +44,8 @@ export function StartLocationPicker({
   const copy = usePlannerCopy();
   const [query, setQuery] = React.useState("");
   const [hits, setHits] = React.useState<PlaceHit[]>([]);
+  // Results only make sense for a query that is still long enough to search.
+  const visibleHits = query.trim().length < 2 ? [] : hits;
   const [label, setLabel] = React.useState(initial?.label ?? "");
   const [lat, setLat] = React.useState(String(initial?.lat ?? LEBANON.beirut.lat));
   const [lng, setLng] = React.useState(String(initial?.lng ?? LEBANON.beirut.lng));
@@ -56,12 +58,17 @@ export function StartLocationPicker({
     if (query.trim().length < 2) {
       return;
     }
+    // Ignore answers for a query the user has already moved past.
+    let current = true;
     const handle = window.setTimeout(() => {
       void searchPlaces(query)
-        .then(setHits)
-        .catch(() => setHits([]));
+        .then((found) => current && setHits(found))
+        .catch(() => current && setHits([]));
     }, 200);
-    return () => window.clearTimeout(handle);
+    return () => {
+      current = false;
+      window.clearTimeout(handle);
+    };
   }, [query]);
 
   async function applyPlace(place: PlaceHit, nextSource: StartLocation["source"]) {
@@ -148,9 +155,9 @@ export function StartLocationPicker({
                 }}
               />
             </div>
-            {hits.length ? (
+            {visibleHits.length ? (
               <ul className="grid gap-1 rounded-control border border-border-subtle bg-surface-raised p-1.5 shadow-md">
-                {hits.map((hit) => (
+                {visibleHits.map((hit) => (
                   <li key={hit.place_id}>
                     <Button
                       type="button"

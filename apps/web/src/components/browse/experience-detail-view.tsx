@@ -115,6 +115,7 @@ export function ExperienceDetailView({ experience, related }: { experience: Expe
               alt={experience.imageAlt}
               className="absolute inset-0"
               priority
+              sizes="(min-width: 1024px) 62vw, 100vw"
             />
           </div>
           <div className="flex flex-col justify-center gap-4 p-8 md:p-12">

@@ -1,3 +1,5 @@
+import { apiRequest } from "@/lib/api/client";
+
 export const ORG_STORAGE_KEY = "mshwar-active-org";
 export const ORG_HEADER = "x-organization-id";
 
@@ -149,39 +151,13 @@ export function writeActiveOrgId(orgId: string): void {
   window.localStorage.setItem(ORG_STORAGE_KEY, orgId);
 }
 
-async function portalFetch<T>(path: string, init: RequestInit = {}, orgId?: string | null): Promise<T> {
+function portalFetch<T>(path: string, init: RequestInit = {}, orgId?: string | null): Promise<T> {
   const headers = new Headers(init.headers);
-  if (!headers.has("Content-Type") && init.body) {
-    headers.set("Content-Type", "application/json");
-  }
   const org = orgId ?? readActiveOrgId();
   if (org) {
     headers.set(ORG_HEADER, org);
   }
-  const response = await fetch(path, { ...init, credentials: "include", headers });
-  if (!response.ok) {
-    throw new Error(await readError(response));
-  }
-  if (response.status === 204) {
-    return undefined as T;
-  }
-  const contentType = response.headers?.get("content-type") ?? "";
-  if (contentType.includes("text/csv")) {
-    return (await response.text()) as T;
-  }
-  return (await response.json()) as T;
-}
-
-async function readError(response: Response): Promise<string> {
-  try {
-    const body = (await response.json()) as { detail?: string };
-    if (typeof body.detail === "string") {
-      return body.detail;
-    }
-  } catch {
-    /* ignore */
-  }
-  return "request-failed";
+  return apiRequest<T>(path, { ...init, headers });
 }
 
 export function listOrganizations(): Promise<PortalOrganization[]> {

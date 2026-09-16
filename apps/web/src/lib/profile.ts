@@ -1,3 +1,5 @@
+import { apiRequest } from "@/lib/api/client";
+
 export type PreferenceTerm = {
   kind: string;
   slug: string;
@@ -70,49 +72,24 @@ export function hydratePreferences(profile: Profile): PreferenceValues {
   };
 }
 
-async function readError(response: Response): Promise<string> {
-  try {
-    const body = (await response.json()) as { detail?: string };
-    if (typeof body.detail === "string") {
-      return body.detail;
-    }
-  } catch {
-    /* ignore */
-  }
-  return "authError";
+export function fetchProfile(): Promise<Profile> {
+  return apiRequest<Profile>("/api/v1/profile", { fallbackMessage: "authError" });
 }
 
-export async function fetchProfile(): Promise<Profile> {
-  const response = await fetch("/api/v1/profile", { credentials: "include" });
-  if (!response.ok) {
-    throw new Error(await readError(response));
-  }
-  return (await response.json()) as Profile;
-}
-
-export async function saveProfile(input: {
+export function saveProfile(input: {
   display_name: string;
   locale: string;
   preferences: PreferenceValues;
 }): Promise<Profile> {
-  const response = await fetch("/api/v1/profile", {
+  return apiRequest<Profile>("/api/v1/profile", {
     method: "PUT",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...input, preferences: { ...input.preferences, source: "explicit" } }),
+    fallbackMessage: "authError",
   });
-  if (!response.ok) {
-    throw new Error(await readError(response));
-  }
-  return (await response.json()) as Profile;
 }
 
-export async function fetchAreas(): Promise<AreaCatalog> {
-  const response = await fetch("/api/v1/locations/areas", { credentials: "include" });
-  if (!response.ok) {
-    throw new Error(await readError(response));
-  }
-  return (await response.json()) as AreaCatalog;
+export function fetchAreas(): Promise<AreaCatalog> {
+  return apiRequest<AreaCatalog>("/api/v1/locations/areas", { fallbackMessage: "authError" });
 }
 
 export async function persistSignedInLocale(locale: string): Promise<void> {
@@ -128,10 +105,6 @@ export async function persistSignedInLocale(locale: string): Promise<void> {
   }
 }
 
-export async function fetchVocabularies(): Promise<VocabularyCatalog> {
-  const response = await fetch("/api/v1/profile/vocabularies", { credentials: "include" });
-  if (!response.ok) {
-    throw new Error(await readError(response));
-  }
-  return (await response.json()) as VocabularyCatalog;
+export function fetchVocabularies(): Promise<VocabularyCatalog> {
+  return apiRequest<VocabularyCatalog>("/api/v1/profile/vocabularies", { fallbackMessage: "authError" });
 }

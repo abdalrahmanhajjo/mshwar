@@ -15,7 +15,7 @@ from app.core.guests import (
     optional_user,
     set_guest_cookie,
 )
-from app.core.portal_auth import fetch_json
+from app.core.sql import fetch_json
 from app.dependencies import get_auth_db
 from app.schemas.groups import JoinShareIn, SharedPreferencesIn, ShareLinkCreate, SuggestionCreate, VoteIn
 

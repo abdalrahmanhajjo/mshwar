@@ -6,9 +6,10 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.portal_auth import fetch_json
+from app.core.sql import fetch_json
 from app.dependencies import get_auth_db
 from app.payments.factory import get_payment_provider
+from app.payments.stripe_test import WebhookNotConfigured
 from app.payments.webhook import payload_hash, sanitize_event, verify_or_reject
 
 router = APIRouter()
@@ -24,6 +25,8 @@ async def payment_webhook(
     provider = get_payment_provider()
     try:
         event = verify_or_reject(provider, raw, signature)
+    except WebhookNotConfigured as exc:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="webhooks not configured") from exc
     except (TypeError, ValueError) as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="unverified webhook") from exc
     digest = payload_hash(raw)

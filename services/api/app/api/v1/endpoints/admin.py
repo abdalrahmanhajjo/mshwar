@@ -13,8 +13,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.admin_auth import require_admin
 from app.core.data_quality import run_checks, scheduler_status
 from app.core.notifications import service as notification_service
-from app.core.portal_auth import fetch_json
 from app.core.search_reindex import reindex_provider
+from app.core.sql import fetch_json
 from app.core.storage import sign_object_url
 from app.dependencies import get_auth_db
 from app.schemas.admin import (
@@ -434,10 +434,16 @@ async def taxonomy_merge(
 @router.get("/bookings")
 async def list_bookings(
     request: Request,
+    limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
     session = await _admin(request, db)
-    return await fetch_json(db, "SELECT app.list_admin_bookings(:admin_id)", {"admin_id": _uid(session)})
+    return await fetch_json(
+        db,
+        "SELECT app.list_admin_bookings(:admin_id, :limit, :offset)",
+        {"admin_id": _uid(session), "limit": limit, "offset": offset},
+    )
 
 
 @router.get("/bookings/{booking_id}")

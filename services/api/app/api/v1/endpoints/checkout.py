@@ -10,15 +10,15 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.endpoints.auth import require_verified_user
-from app.api.v1.session import require_session
+from app.core.auth_session import require_session, require_verified_user
 from app.core.config import settings
-from app.core.portal_auth import fetch_json
+from app.core.http_status import HTTP_422_UNPROCESSABLE
+from app.core.job_auth import require_dev_endpoints, require_job_token
+from app.core.sql import fetch_json
 from app.dependencies import get_auth_db
+from app.payments.checkout_service import pay_for_booking, preview_cancellation, simulate_payment_outcome
 from app.payments.confirmations import render_confirmation
-from app.payments.factory import PaymentTimeout, get_payment_provider
 from app.payments.outbox import outbox_metrics, publish_outbox
-from app.payments.policy import refund_bps_from_snapshot, refund_minor
 from app.schemas.checkout import (
     CheckoutCancelIn,
     CheckoutCommitIn,
@@ -39,7 +39,7 @@ def _hash_body(payload: dict[str, Any]) -> str:
 def _idempotency(header_key: str | None, body_key: str | None) -> str:
     key = (header_key or body_key or "").strip()
     if len(key) < 8:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Idempotency-Key is required")
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="Idempotency-Key is required")
     return key
 
 
@@ -68,17 +68,16 @@ async def create_draft(
     payload: CheckoutCommitIn,
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
-    _user: dict[str, object] = Depends(require_verified_user),  # noqa: B008
+    user: dict[str, Any] = Depends(require_verified_user),  # noqa: B008
     idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ) -> Any:
-    session = await require_session(request, db)
     key = _idempotency(idempotency_key, payload.idempotency_key)
     body = payload.model_dump(mode="json")
     return await fetch_json(
         db,
         "SELECT app.create_checkout_draft(:user_id, :slug, :slot_id, :party, :key, :hash, :stop, :corr)",
         {
-            "user_id": str(session["user_id"]),
+            "user_id": str(user["user_id"]),
             "slug": payload.listing_slug,
             "slot_id": str(payload.slot_id),
             "party": payload.party_size,
@@ -95,17 +94,16 @@ async def commit_checkout(
     payload: CheckoutCommitIn,
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
-    _user: dict[str, object] = Depends(require_verified_user),  # noqa: B008
+    user: dict[str, Any] = Depends(require_verified_user),  # noqa: B008
     idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ) -> Any:
-    session = await require_session(request, db)
     key = _idempotency(idempotency_key, payload.idempotency_key)
     body = payload.model_dump(mode="json")
     return await fetch_json(
         db,
         "SELECT app.commit_checkout(:user_id, :slug, :slot_id, :party, :key, :hash, :price, :policy, :stop, :corr)",
         {
-            "user_id": str(session["user_id"]),
+            "user_id": str(user["user_id"]),
             "slug": payload.listing_slug,
             "slot_id": str(payload.slot_id),
             "party": payload.party_size,
@@ -124,16 +122,15 @@ async def create_inquiry(
     payload: CheckoutInquiryIn,
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
-    _user: dict[str, object] = Depends(require_verified_user),  # noqa: B008
+    user: dict[str, Any] = Depends(require_verified_user),  # noqa: B008
     idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ) -> Any:
-    session = await require_session(request, db)
     key = (idempotency_key or payload.idempotency_key or f"inquiry-{uuid4().hex}").strip()
     return await fetch_json(
         db,
         "SELECT app.create_inquiry_request(:user_id, :slug, :party, :message, :requested, :key, :hash)",
         {
-            "user_id": str(session["user_id"]),
+            "user_id": str(user["user_id"]),
             "slug": payload.listing_slug,
             "party": payload.party_size,
             "message": payload.message,
@@ -144,33 +141,27 @@ async def create_inquiry(
     )
 
 
-@router.post("/ops/expire-holds")
+@router.post("/ops/expire-holds", dependencies=[Depends(require_job_token)])
 async def expire_holds(
-    request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
     limit: int = Query(default=100, ge=1, le=1000),
 ) -> Any:
-    await require_session(request, db)
     expired = (await db.execute(text("SELECT app.expire_bookings(:lim)"), {"lim": limit})).scalar()
     await db.execute(text("SELECT app.expire_idempotency_keys()"))
     return {"expired": int(expired or 0)}
 
 
-@router.post("/ops/publish-outbox")
+@router.post("/ops/publish-outbox", dependencies=[Depends(require_job_token)])
 async def publish_outbox_endpoint(
-    request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
-    await require_session(request, db)
     return await publish_outbox(db)
 
 
-@router.get("/ops/metrics")
+@router.get("/ops/metrics", dependencies=[Depends(require_job_token)])
 async def checkout_metrics(
-    request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
-    await require_session(request, db)
     return await outbox_metrics(db)
 
 
@@ -237,29 +228,7 @@ async def cancel_preview(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
     session = await require_session(request, db)
-    preview = await fetch_json(
-        db,
-        "SELECT app.preview_cancellation(:user_id, :booking_id)",
-        {"user_id": str(session["user_id"]), "booking_id": str(booking_id)},
-    )
-    if isinstance(preview, dict) and preview.get("price_snapshot"):
-        starts = None
-        booking = await fetch_json(
-            db,
-            "SELECT app.get_checkout_booking(:user_id, :booking_id)",
-            {"user_id": str(session["user_id"]), "booking_id": str(booking_id)},
-        )
-        if isinstance(booking, dict):
-            starts = booking.get("starts_at")
-            raw_policy = booking.get("policy_snapshot")
-            policy = raw_policy if isinstance(raw_policy, dict) else {}
-            bps = refund_bps_from_snapshot(policy, starts)
-            preview = {
-                **preview,
-                "engine_refund_bps": bps,
-                "engine_refund_minor": refund_minor(int(booking.get("total_minor") or 0), bps),
-            }
-    return preview
+    return await preview_cancellation(db, user_id=str(session["user_id"]), booking_id=booking_id)
 
 
 @router.post("/{booking_id}/cancel")
@@ -281,134 +250,54 @@ async def cancel_booking(
 async def pay_booking(
     booking_id: UUID,
     payload: CheckoutPayIn,
-    request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
-    _user: dict[str, object] = Depends(require_verified_user),  # noqa: B008
+    user: dict[str, Any] = Depends(require_verified_user),  # noqa: B008
     idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ) -> Any:
-    session = await require_session(request, db)
     key = _idempotency(idempotency_key, payload.idempotency_key)
-    fault = payload.fault if settings.environment != "production" else None
-    provider = get_payment_provider(fault)
-    booking = await fetch_json(
-        db,
-        "SELECT app.get_checkout_booking(:user_id, :booking_id)",
-        {"user_id": str(session["user_id"]), "booking_id": str(booking_id)},
+    fault = payload.fault if settings.dev_endpoints_enabled else None
+    result = await pay_for_booking(
+        db, user_id=str(user["user_id"]), booking_id=booking_id, idempotency_key=key, fault=fault
     )
-    if not isinstance(booking, dict):
+    if result.kind == "not_found":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Booking not found")
-    if booking.get("status") != "pending":
+    if result.kind == "not_payable":
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Booking is not payable")
-    if not booking.get("payment_required"):
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Payment is not required")
-    try:
-        intent = provider.create_intent(
-            amount_minor=int(booking["total_minor"]),
-            currency=str(booking["currency"]),
-            idempotency_key=key,
-            metadata={"booking_id": str(booking_id)},
-        )
-    except PaymentTimeout as exc:
-        intent = exc.intent
-        await fetch_json(
-            db,
-            "SELECT app.create_payment_for_booking(:user_id, :booking_id, :provider, :account, :idem, :external, :live)",
-            {
-                "user_id": str(session["user_id"]),
-                "booking_id": str(booking_id),
-                "provider": intent.provider,
-                "account": intent.provider_account,
-                "idem": key,
-                "external": intent.provider_ref,
-                "live": intent.live_mode,
-            },
-        )
-        await fetch_json(
-            db,
-            "SELECT app.cancel_checkout_booking(:user_id, :booking_id, :reason, false, NULL)",
-            {
-                "user_id": str(session["user_id"]),
-                "booking_id": str(booking_id),
-                "reason": "Payment provider timed out",
-            },
-        )
-        await db.commit()
+    if result.kind == "not_required":
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="Payment is not required")
+    if result.kind == "timed_out":
         return JSONResponse(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT,
             content={"detail": "Payment timed out", "booking_id": str(booking_id)},
         )
-    payment = await fetch_json(
-        db,
-        "SELECT app.create_payment_for_booking(:user_id, :booking_id, :provider, :account, :idem, :external, :live)",
-        {
-            "user_id": str(session["user_id"]),
-            "booking_id": str(booking_id),
-            "provider": intent.provider,
-            "account": intent.provider_account,
-            "idem": key,
-            "external": intent.provider_ref,
-            "live": intent.live_mode,
-        },
-    )
-    if intent.status == "failed":
-        await fetch_json(
-            db,
-            "SELECT app.apply_payment_outcome(:payment_id, 'failed', 'provider declined')",
-            {"payment_id": payment["id"] if isinstance(payment, dict) else None},
-        )
-        await db.commit()
+    if result.kind == "declined":
         return JSONResponse(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
             content={"detail": "Payment failed", "booking_id": str(booking_id)},
         )
-    outcome = None
-    if intent.status == "succeeded":
-        outcome = await fetch_json(
-            db,
-            "SELECT app.apply_payment_outcome(:payment_id, 'succeeded', 'provider settled')",
-            {"payment_id": payment["id"] if isinstance(payment, dict) else None},
-        )
+    if result.intent is None:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal error")
     return {
         "booking_id": str(booking_id),
-        "payment": payment,
-        "intent": intent.model_dump(),
-        "provider": intent.provider,
-        "outcome": outcome,
+        "payment": result.payment,
+        "intent": result.intent.model_dump(),
+        "provider": result.intent.provider,
+        "outcome": result.settlement,
     }
 
 
-@router.post("/{booking_id}/simulate")
+@router.post("/{booking_id}/simulate", dependencies=[Depends(require_dev_endpoints)])
 async def simulate_payment(
     booking_id: UUID,
     payload: CheckoutSimulateIn,
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
-    if settings.is_production:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Simulation disabled")
+    """Dev-only: settle your own booking's latest payment without a provider."""
     session = await require_session(request, db)
-    row = (
-        await db.execute(
-            text(
-                """
-                SELECT id FROM app.payments
-                WHERE booking_id = :booking_id
-                ORDER BY created_at DESC
-                LIMIT 1
-                """
-            ),
-            {"booking_id": str(booking_id)},
-        )
-    ).first()
-    if row is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Payment not found")
-    _ = session
-    return await fetch_json(
-        db,
-        "SELECT app.apply_payment_outcome(:payment_id, :outcome, :reason)",
-        {
-            "payment_id": str(row[0]),
-            "outcome": payload.outcome,
-            "reason": f"simulated:{payload.outcome}",
-        },
+    settled = await simulate_payment_outcome(
+        db, user_id=str(session["user_id"]), booking_id=booking_id, outcome=payload.outcome
     )
+    if settled is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Payment not found")
+    return settled

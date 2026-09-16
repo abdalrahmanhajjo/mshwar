@@ -1,3 +1,5 @@
+import { apiRequest } from "@/lib/api/client";
+
 export const LOW_SAMPLE_THRESHOLD = 3;
 
 export type ReviewAggregate = {
@@ -23,22 +25,7 @@ export type ReviewEligibility = {
   items: { booking_id: string; eligible: boolean; reviewed: boolean }[];
 };
 
-async function readError(response: Response): Promise<string> {
-  try {
-    const body = (await response.json()) as { detail?: string };
-    return body.detail ?? response.statusText;
-  } catch {
-    return response.statusText;
-  }
-}
-
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, { credentials: "include", ...init });
-  if (!response.ok) {
-    throw new Error(await readError(response));
-  }
-  return (await response.json()) as T;
-}
+const request = apiRequest;
 
 export function fetchReviews(listingSlug: string) {
   return request<{ items: PublicReview[]; aggregate: ReviewAggregate }>(

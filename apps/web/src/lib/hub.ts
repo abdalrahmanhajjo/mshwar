@@ -1,3 +1,5 @@
+import { apiRequest } from "@/lib/api/client";
+
 export const HUB_PAGE_SIZE = 6;
 
 export type HubPage<T> = {
@@ -42,29 +44,11 @@ export type NotificationRecord = {
   locale?: string | null;
 };
 
-async function readError(response: Response): Promise<string> {
-  try {
-    const body = (await response.json()) as { detail?: string };
-    return body.detail ?? response.statusText;
-  } catch {
-    return response.statusText;
-  }
-}
-
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, { credentials: "include", ...init });
-  if (response.status === 204) {
-    return undefined as T;
-  }
-  if (!response.ok) {
-    throw new Error(await readError(response));
-  }
-  return (await response.json()) as T;
-}
-
 function listUrl(path: string, page: number): string {
   return `${path}?page=${page}&page_size=${HUB_PAGE_SIZE}`;
 }
+
+const request = apiRequest;
 
 export function fetchTrips(page = 1) {
   return request<HubPage<TripRecord>>(listUrl("/api/v1/trips", page));
@@ -97,7 +81,6 @@ export function toggleFavorite(listingSlug: string) {
 export function mergeFavorites(listingSlugs: string[]) {
   return request<{ merged: number }>("/api/v1/favorites/merge", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ listing_slugs: listingSlugs }),
   });
 }

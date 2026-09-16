@@ -60,6 +60,9 @@ export type Experience = {
   groupMax?: number;
   available?: boolean;
   gallery?: string[];
+  /** Venue position when the API provides it. */
+  lat?: number;
+  lng?: number;
   policies?: { title: string; body: string }[];
   availabilityNote?: string;
 };

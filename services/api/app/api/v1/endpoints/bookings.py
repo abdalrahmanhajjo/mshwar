@@ -8,9 +8,9 @@ from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.endpoints.auth import require_verified_user
 from app.api.v1.hub_query import page_args, raise_hub_error
-from app.api.v1.session import require_session
+from app.core.auth_session import require_session, require_verified_user
+from app.core.http_status import HTTP_422_UNPROCESSABLE
 from app.dependencies import get_auth_db
 from app.schemas.hub import BookingCancel, BookingCreate, BookingListOut, BookingOut
 
@@ -67,7 +67,7 @@ async def create_booking(
     session = await require_session(request, db)
     slug = (booking.listing_slug or "").strip() or (f"listing-{booking.business_id}" if booking.business_id else "")
     if not slug:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="listing_slug is required")
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="listing_slug is required")
     try:
         row = (
             await db.execute(

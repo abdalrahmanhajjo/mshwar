@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -143,8 +143,8 @@ class AnalyticsCaptureIn(BaseModel):
 
 class FileUploadIn(BaseModel):
     filename: str = Field(min_length=1, max_length=160)
-    content_type: str = "application/octet-stream"
-    content_base64: str
-    alt_text: str | None = None
+    content_type: str = Field(max_length=100)
+    content_base64: str = Field(min_length=4)
+    alt_text: str | None = Field(default=None, max_length=300)
     experience_id: UUID | None = None
-    purpose: str = "verification"
+    purpose: Literal["verification", "listing"] = "verification"

@@ -1,294 +1,139 @@
 # Mshwar
 
-AI-Powered Lebanon Trip & Experience Platform
-
-Discover. Plan. Book Lebanon.
+AI-Powered Lebanon Trip & Experience Platform — discover, plan and book Lebanon.
 
 [![CI](https://github.com/mshwar/mshwar/actions/workflows/ci.yml/badge.svg)](https://github.com/mshwar/mshwar/actions/workflows/ci.yml)
 
-## Architecture
+## Repository layout
 
 ```
-apps/web                   → Next.js 15 frontend (TypeScript, Tailwind, shadcn/ui)
-services/api               → FastAPI backend (SQLAlchemy 2.x, Pydantic v2, Alembic)
-packages/shared            → Shared TypeScript types and utilities
-mshwar-brand-foundation    → Brand tokens (JSON source) and generated Tailwind / Figma artifacts
+apps/web                   Next.js 16 web app (traveller, business portal, admin console)
+services/api               FastAPI service (auth, catalogue, planner, checkout, portal, admin)
+mshwar-database            Canonical PostgreSQL schema: forward-only SQL migrations + tests
+mshwar-brand-foundation    Design tokens (JSON) and generated Tailwind / CSS / Figma files
+docs/                      Feature docs, audits, BRD and prototype screenshots
+backlog/                   Product backlog exports
 ```
 
-## Tech Stack
+## Tech stack
 
-| Layer      | Technology                                                                        |
-| ---------- | --------------------------------------------------------------------------------- |
-| Frontend   | Next.js 15, React, TypeScript, Tailwind CSS, shadcn/ui                            |
-| Backend    | FastAPI, Python 3.11, SQLAlchemy 2.x, Pydantic v2, Alembic                        |
-| Database   | PostgreSQL 17 + PostGIS + pgvector + btree_gist                                   |
-| AI/LLM     | LLM provider abstraction (OpenAI/Ollama), pgvector RAG, OR-Tools                  |
-| Maps       | Google Maps Platform                                                              |
-| Weather    | Open-Meteo                                                                        |
-| Images     | ImageKit                                                                          |
-| Payments   | Stripe (test mode) + provider abstraction                                         |
-| Monitoring | Sentry + PostHog                                                                  |
-| Deployment | Vercel (frontend), Docker Compose (local), Self-hosted PostgreSQL 17 (production) |
+| Layer    | Technology                                                                                 |
+| -------- | ------------------------------------------------------------------------------------------ |
+| Web      | Next.js 16 (App Router), React 19, TypeScript (strict), Tailwind CSS v4, shadcn/ui, vitest |
+| API      | Python 3.11, FastAPI, Pydantic v2, SQLAlchemy 2 (async, SQL functions), pytest             |
+| Database | PostgreSQL 17 + PostGIS + pgvector + btree_gist + pg_trgm                                  |
+| Planner  | Deterministic stub LLM client, exact route optimiser (≤ 12 stops), Open-Meteo weather      |
+| Maps     | Google Distance Matrix (batched) or a Haversine stub without a key                         |
+| Payments | Provider abstraction; Stripe test adapter (see `docs/payments.md` for the Lebanon caveat)  |
 
-## Quick Start
+## Prerequisites
 
-### Prerequisites
+- Node.js 22 and pnpm 11 (`corepack enable`)
+- Python 3.11
+- Docker with Compose v2 (for the one-command setup), or PostgreSQL 17 with PostGIS and pgvector
 
-- Node.js 20+ and pnpm 9+
-- Python 3.11+
-- Docker and Docker Compose
-- PostgreSQL 17 with PostGIS, pgvector, and btree_gist (if running without Docker)
-
-### Single Command Setup
+## Quick start (Docker)
 
 ```bash
-# Clone and install
-git clone <repo-url>
-cd mshwar
 pnpm install
-
-# Start everything with Docker Compose
 docker compose up --build
 ```
 
-Or run each service individually:
+This starts PostgreSQL, applies the SQL migrations, then runs the API on http://localhost:8000
+(docs at `/docs`) and the web app on http://localhost:3000. The API runs with
+`ENVIRONMENT=development` and dev endpoints enabled; optional overrides go in
+`services/api/.env` and `apps/web/.env.local` (both git-ignored).
+
+## Running without Docker
 
 ```bash
-# Terminal 1 — Frontend
-pnpm --filter web dev
+# 1. Database: an empty PostgreSQL 17 database with PostGIS and pgvector available
+export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar
 
-# Terminal 2 — Backend
-pnpm --filter api dev
-```
+# 2. API
+python3.11 -m venv .venv && source .venv/bin/activate
+pip install -r services/api/requirements-dev.txt
+cp services/api/.env.example services/api/.env    # then adjust
+pnpm --filter api migrate                          # apply mshwar-database/migrations
+pnpm --filter api dev                              # http://localhost:8000
 
-### Without Docker
-
-**Backend:**
-
-```bash
-cd services/api
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-cp .env .env.local  # or set environment variables
-uvicorn app.main:app --reload --port 8000
-```
-
-**Frontend:**
-
-```bash
-cd apps/web
+# 3. Web
 pnpm install
-pnpm dev
+pnpm --filter web dev                              # http://localhost:3000
 ```
 
-## Ports
+Seed Lebanon sample inventory with `pnpm --filter api seed` (see `services/api/scripts/seed.py --help`).
 
-| Service       | Port | URL                        |
-| ------------- | ---- | -------------------------- |
-| Web (Next.js) | 3000 | http://localhost:3000      |
-| API (FastAPI) | 8000 | http://localhost:8000      |
-| API Docs      | 8000 | http://localhost:8000/docs |
-| PostgreSQL    | 5432 | localhost:5432             |
-| Redis         | 6379 | localhost:6379             |
+## Configuration
 
-## Environment Variables
+Every API setting is listed with comments in `services/api/.env.example`; web settings are in
+`.env.example`. Names are case-insensitive. The most important ones:
 
-See `.env.example` for all required variables. Key variables:
+| Variable                                      | Purpose                                                                                             |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `ENVIRONMENT`                                 | `development`, `test`, `staging` or `production`. Deployed environments fail closed.                |
+| `DATABASE_URL`                                | PostgreSQL URL (`postgresql+asyncpg://…`)                                                           |
+| `SECRET_KEY`                                  | Signs private file links; ≥ 32 characters in staging/production                                     |
+| `INTERNAL_JOB_TOKEN`                          | `X-Job-Token` for cron/worker endpoints; required in staging/production                             |
+| `ENABLE_DEV_ENDPOINTS`                        | Payment simulation and fault injection; refused in staging/production                               |
+| `TRUSTED_PROXY_COUNT`                         | Reverse proxies in front of the API, used to read the client IP for rate limits                     |
+| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | Required in production; webhooks are rejected without the secret                                    |
+| `GOOGLE_MAPS_API_KEY`                         | Distance Matrix; without it routing uses the Haversine stub                                         |
+| `PRIVATE_STORAGE_DIR`                         | Uploaded documents and images (persistent path in production)                                       |
+| `NEXT_PUBLIC_API_URL`                         | API base URL used by the web server and the `/api` rewrite                                          |
+| `CATALOGUE_SAMPLE_FALLBACK`                   | Web: show the bundled sample catalogue when the API is down (default: on in dev, off in production) |
 
-| Variable                       | Default                                                        | Description                                                   |
-| ------------------------------ | -------------------------------------------------------------- | ------------------------------------------------------------- |
-| `NODE_ENV`                     | `development`                                                  | Application environment                                       |
-| `NEXT_PUBLIC_API_URL`          | `http://localhost:8000`                                        | Backend API URL for the web app                               |
-| `DATABASE_URL`                 | `postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar` | PostgreSQL connection string                                  |
-| `REDIS_URL`                    | `redis://localhost:6379/0`                                     | Redis connection string                                       |
-| `SECRET_KEY`                   | `change-me-in-production`                                      | JWT signing secret                                            |
-| `CATALOGUE_EMBEDDING_PROVIDER` | `stub`                                                         | Catalogue embeddings (`stub` in CI)                           |
-| `CATALOGUE_ROUTING_PROVIDER`   | `auto`                                                         | Google when keyed, else Haversine+road-factor stub            |
-| `WEATHER_PROVIDER`             | `stub`                                                         | Weather forecasts (`stub` in CI)                              |
-| `OPENAI_API_KEY`               | _(empty)_                                                      | When unset, the trip builder uses deterministic stub fixtures |
-| `PLANNER_LLM_PROVIDER`         | `stub`                                                         | `stub` or `openai`. Empty key always forces stub              |
-| `PLANNER_FAULT_INJECT`         | _(empty)_                                                      | Test-only: `provider_down` or `malformed`                     |
+Staging and production refuse to start with default secrets, dev endpoints, stub payments or fault
+injection. Secrets come from the platform secret store; never commit `.env` files.
 
-## Code Quality
+## Database
 
-### Linting, Formatting, Type Checking
+The schema lives only in `mshwar-database/migrations` (forward-only, checksum-verified; see
+`mshwar-database/README.md`). Apply with `pnpm --filter api migrate`. To change the schema, add the next
+numbered file and refresh `mshwar-database/SHA256SUMS.txt`; never edit an applied migration.
+Rollbacks are fix-forward migrations or restores (see `docs/database-provisioning.md`).
+
+## Quality checks
 
 ```bash
-# Lint all packages
-pnpm run lint
-
-# Format all files
-pnpm run format
-
-# Type check all packages
-pnpm run typecheck
-
-# Check formatting without fixing
-pnpm run format:check
+pnpm lint            # ESLint (web) + ruff (API)
+pnpm typecheck       # tsc + mypy
+pnpm test            # vitest + token tests + pytest (needs DATABASE_URL on a migrated database)
+pnpm format:check    # Prettier (ruff format runs inside `pnpm lint`)
+pnpm i18n:check      # en/ar/fr catalogue parity
+pnpm tokens:check    # generated design tokens are up to date
+pnpm db:test         # PGlite schema invariant suite
+pnpm --filter web build
+pnpm --filter web test:e2e   # Playwright (uses the sample catalogue)
 ```
 
-### Python Code Quality
+Pre-commit hooks (`pre-commit install`) run the same formatters, linters and type checks.
+CI runs everything above in `.github/workflows/{ci,web,api}.yml`, plus the last-seat concurrency test
+(`mshwar-database/tests/concurrency.py`) against a real PostgreSQL service.
 
-```bash
-cd services/api
-pip install ruff mypy
-ruff check .
-ruff format . --check
-mypy app/
-```
+## Where things live
 
-### Pre-commit Hooks
+| Concern                   | Location                                                            |
+| ------------------------- | ------------------------------------------------------------------- |
+| Web routes                | `apps/web/src/app` (`(traveller)`, `business`, `admin`)             |
+| Web API calls             | `apps/web/src/lib/api/client.ts` + one module per domain in `lib/`  |
+| Translations              | `apps/web/src/lib/*-copy.ts`, `apps/web/src/lib/messages.ts`        |
+| API routes                | `services/api/app/api/v1/endpoints/`, registered in `api_router.py` |
+| Settings                  | `services/api/app/core/config.py`                                   |
+| Sessions / auth helpers   | `services/api/app/core/auth_session.py`, `admin_auth.py`            |
+| Database calls and errors | `services/api/app/core/sql.py`                                      |
+| Booking & payment rules   | SQL functions in `mshwar-database/migrations` + `app/payments/`     |
+| Trip planner              | `services/api/app/planner/`                                         |
+| External providers        | `app/planner/routing.py` (maps), `weather.py`, `app/payments/*`     |
 
-Pre-commit hooks run automatically on `git commit`:
+To add an API endpoint: add a router module in `app/api/v1/endpoints/`, register it in
+`app/api/v1/api_router.py`, and add tests in `services/api/tests/`.
 
-- ESLint (TypeScript)
-- Prettier (formatting)
-- Ruff (Python linting/formatting)
-- mypy (Python type checking)
-- Commit message convention enforcement
+## Commit convention
 
-To install:
-
-```bash
-pnpm install
-npx husky install
-```
-
-## Commit Convention
-
-This project uses [Conventional Commits](https://conventionalcommits.org/):
-
-```
-<type>(<scope>): <subject>
-
-<body>
-
-<footer>
-```
-
-Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`
-
-Example: `feat(trip-builder): add weather-aware replanning`
-
-## Development
-
-### Adding a New API Endpoint
-
-1. Create a new file in `services/api/app/api/v1/endpoints/`
-2. Add the router to `services/api/app/api/v1/router.py`
-3. Add tests in `services/api/tests/`
-
-### Adding a New Frontend Component
-
-1. Create it in `apps/web/src/components/ui/`
-2. Use `cn()` from `@/lib/utils` for class merging
-3. Follow shadcn/ui patterns
-
-### Database Provisioning
-
-```bash
-# Apply migrations including extension creation
-cd services/api && alembic upgrade head
-
-# Extension smoke tests (requires running PostgreSQL)
-PYTHONPATH=services/api python3 -m pytest tests/test_extensions.py -v
-```
-
-See [docs/database-provisioning.md](docs/database-provisioning.md) for the Supabase vs self-hosted decision and trade-offs.
-
-## Testing
-
-```bash
-# Frontend tests
-pnpm --filter web test
-
-# Design tokens (single source → Tailwind / CSS / Figma exports)
-pnpm tokens:generate
-pnpm tokens:check
-pnpm tokens:contrast
-pnpm tokens:test
-
-# Component library and app shells (Storybook — Theme, Direction, 390/1440 viewports)
-pnpm --filter web storybook
-pnpm --filter web build-storybook
-
-# Backend tests (including extension smoke tests)
-cd services/api && PYTHONPATH=services/api python3 -m pytest tests/ -v
-```
-
-### Extension Smoke Tests
-
-Tests that verify PostgreSQL extensions are working:
-
-| Test                                       | Extension Verified              |
-| ------------------------------------------ | ------------------------------- |
-| `test_st_within`                           | PostGIS (`ST_DWithin`)          |
-| `test_vector_inner_product_operator`       | pgvector (`<->` operator)       |
-| `test_exclude_constraint_prevents_overlap` | btree_gist (EXCLUDE constraint) |
-
-## Project Structure
-
-```
-mshwar/
-├── apps/
-│   └── web/                    # Next.js frontend
-│       ├── src/
-│       │   ├── app/            # Next.js app router pages
-│       │   ├── components/     # React components
-│       │   │   └── ui/         # shadcn/ui components
-│       │   ├── lib/            # Utilities and config
-│       │   ├── hooks/          # Custom React hooks
-│       │   └── styles/generated/  # CSS vars + Tailwind theme from tokens
-│       ├── components.json     # shadcn/ui configuration
-│       ├── tailwind.config.ts  # extends generated mshwarTheme
-│       ├── tsconfig.json
-│       └── next.config.ts
-├── services/
-│   └── api/                    # FastAPI backend
-│       ├── db/                 # PostgreSQL Dockerfile
-│       ├── app/
-│       │   ├── main.py         # FastAPI application entry
-│       │   ├── core/           # Config and dependencies
-│       │   ├── api/v1/         # API version 1 endpoints
-│       │   ├── models/         # SQLAlchemy models
-│       │   ├── schemas/        # Pydantic schemas
-│       │   └── dependencies/   # Shared dependencies
-│       ├── alembic.ini         # Alembic configuration
-│       ├── pyproject.toml      # Python dependencies
-│       ├── requirements.txt
-│       └── tests/              # Test suite
-│           ├── test_main.py
-│           ├── test_config.py
-│           ├── test_extensions.py  # Extension smoke tests
-│           └── conftest.py
-├── mshwar-brand-foundation/    # Design tokens (JSON source of truth)
-│   ├── design-tokens.json
-│   ├── scripts/generate-tokens.mjs
-│   └── generated/              # Tailwind theme, CSS vars, Figma exports
-├── docs/                       # Documentation
-│   └── database-provisioning.md  # Supabase vs self-hosted decision
-├── packages/
-│   └── shared/                 # Shared TypeScript types
-├── tooling/                    # Shared tooling configs
-├── .github/workflows/          # CI/CD pipelines
-├── .husky/                     # Git hooks
-├── docker-compose.yml          # Local development
-├── .env.example                # Environment template
-├── .eslintrc.js                # ESLint config
-├── .prettierrc                 # Prettier config
-├── .ruff.toml                  # Ruff config
-├── mypy.ini                    # mypy config
-├── .pre-commit-config.yaml     # Pre-commit hooks
-├── pnpm-workspace.yaml         # pnpm workspace config
-├── package.json                # Root package.json
-└── README.md
-```
+[Conventional Commits](https://conventionalcommits.org/): `feat`, `fix`, `docs`, `refactor`, `perf`,
+`test`, `build`, `ci`, `chore`. Example: `feat(planner): add weather-aware replanning`.
 
 ## License
 
-Internal use only — Mshwar Project Team
-
-## Support
-
-For issues, contact the Mshwar Project Team.
+Internal use only — Mshwar Project Team.

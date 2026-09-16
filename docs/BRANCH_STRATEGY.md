@@ -99,8 +99,8 @@ See [KEY_ROTATION.md](../docs/KEY_ROTATION.md)
 
 ## Incident Response
 
-1. **Rollback**: `alembic downgrade -1` + redeploy previous version
-2. **Database rollback**: `alembic downgrade -1`
-3. **No manual database surgery required** — rollback is automated via CI/CD
-4. **Secrets exposed**: Rotate immediately via platform secret store
-5. **Communication**: Post-incident review within 48 hours
+1. **Rollback**: redeploy the previous web/API version
+2. **Database**: migrations are forward-only — ship a fix-forward migration, or restore a backup /
+   point-in-time recovery after a deliberate decision (never automatic)
+3. **Secrets exposed**: Rotate immediately via platform secret store
+4. **Communication**: Post-incident review within 48 hours

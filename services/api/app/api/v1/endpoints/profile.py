@@ -8,7 +8,8 @@ from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.endpoints.auth import _load_session
+from app.core.auth_session import load_session
+from app.core.http_status import HTTP_422_UNPROCESSABLE
 from app.core.sessions import COOKIE_NAME
 from app.dependencies import get_auth_db
 from app.schemas.preferences import (
@@ -28,7 +29,7 @@ async def _require_session(
     request: Request,
     db: AsyncSession,
 ) -> dict[str, Any]:
-    session = await _load_session(db, request.cookies.get(COOKIE_NAME))
+    session = await load_session(db, request.cookies.get(COOKIE_NAME))
     if session is None or session["status"] != "active":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
     return session
@@ -97,7 +98,7 @@ async def put_profile(
         )
         stored = result.scalar_one()
     except DBAPIError as exc:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid preferences") from exc
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="Invalid preferences") from exc
     prefs = _prefs_from_row(stored)
     email = session["email"]
     return ProfileOut(

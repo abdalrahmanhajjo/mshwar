@@ -9,11 +9,13 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.concurrency import run_in_threadpool
 
-from app.api.v1.session import require_session
 from app.core.admin_auth import require_admin
+from app.core.auth_session import require_session
 from app.core.config import settings
-from app.core.portal_auth import fetch_json, raise_from_db
+from app.core.http_status import HTTP_422_UNPROCESSABLE
+from app.core.sql import fetch_json, raise_from_db
 from app.dependencies import get_auth_db
 from app.planner.optimizer import OptimizeStop, optimize_route
 from app.planner.persist import get_session, get_version, list_versions
@@ -199,10 +201,10 @@ async def optimize_plan(
 ) -> OptimizeResponse:
     await require_session(request, db)
     if payload.return_by <= payload.window_start:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="return_by must be after window_start"
-        )
-    result = optimize_route(
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="return_by must be after window_start")
+    # CPU-bound solver and blocking routing calls: keep them off the event loop.
+    result = await run_in_threadpool(
+        optimize_route,
         payload.start.lat,
         payload.start.lng,
         _stop_models(payload),
@@ -226,7 +228,7 @@ async def weather_forecast(
     try:
         day = date.fromisoformat(payload.forecast_date)
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid forecast date") from exc
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="Invalid forecast date") from exc
     service = WeatherService()
     forecast = service.forecast(payload.lat, payload.lng, day)
     await persist_forecast(db, forecast)
@@ -259,9 +261,7 @@ async def weather_warnings(
         try:
             day = date.fromisoformat(item.forecast_date)
         except ValueError as exc:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid forecast date"
-            ) from exc
+            raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="Invalid forecast date") from exc
         stops.append(
             WarningStop(
                 id=item.id,
@@ -304,7 +304,8 @@ async def replan_plan(
 ) -> ReplanResponse:
     await require_session(request, db)
     plan = payload.plan
-    result = replan_affected(
+    result = await run_in_threadpool(
+        replan_affected,
         plan.start.lat,
         plan.start.lng,
         _stop_models(plan),
@@ -364,7 +365,7 @@ async def list_thresholds(
 
 def _http(exc: Exception) -> HTTPException:
     message = str(exc)
-    code = status.HTTP_422_UNPROCESSABLE_ENTITY
+    code = HTTP_422_UNPROCESSABLE
     if "not found" in message:
         code = status.HTTP_404_NOT_FOUND
     return HTTPException(status_code=code, detail=message)

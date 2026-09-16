@@ -1,18 +1,19 @@
-from collections.abc import AsyncGenerator
+import os
+from collections.abc import AsyncGenerator, Iterator
+
+# Test-session defaults. Must be set before app.core.config builds the settings singleton.
+os.environ.setdefault("ENVIRONMENT", "test")
+os.environ.setdefault("ENABLE_DEV_ENDPOINTS", "true")
 
 import pytest
-from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase
 
-import app.models  # noqa: F401
 from app.core.config import settings
-from app.core.context import clear_session_context, set_local_gucs, set_session_context
+from app.core.rate_limit import limiter
 
-# Use PostgreSQL for extension smoke tests; SQLite for unit tests
 test_engine = create_async_engine(
     settings.database_url,
-    echo=settings.environment == "development",
+    echo=settings.sql_echo,
     pool_size=5,
     max_overflow=10,
     pool_recycle=1800,
@@ -21,8 +22,11 @@ test_engine = create_async_engine(
 TestingSessionLocal = async_sessionmaker(test_engine, class_=AsyncSession, expire_on_commit=False)
 
 
-class TestBase(DeclarativeBase):
-    pass
+@pytest.fixture(autouse=True)
+def _fresh_rate_limits() -> Iterator[None]:
+    limiter.reset()
+    yield
+    limiter.reset()
 
 
 @pytest.fixture
@@ -30,26 +34,3 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
     async with TestingSessionLocal() as session:
         yield session
         await session.rollback()
-
-
-@pytest.fixture
-async def db_session_with_context() -> AsyncGenerator[AsyncSession, None]:
-    """Session fixture with default session context set for testing."""
-
-    set_session_context(
-        user_id="00000000-0000-0000-0000-000000000001",
-        organization_id="00000000-0000-0000-0000-000000000001",
-    )
-    async with TestingSessionLocal() as session:
-        try:
-            await set_local_gucs(
-                session,
-                user_id="00000000-0000-0000-0000-000000000001",
-                organization_id="00000000-0000-0000-0000-000000000001",
-            )
-            yield session
-            await session.rollback()
-        finally:
-            await session.execute(text("RESET app.user_id"))
-            await session.execute(text("RESET app.organization_id"))
-            clear_session_context()

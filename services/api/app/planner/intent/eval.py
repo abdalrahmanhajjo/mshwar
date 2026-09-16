@@ -15,10 +15,7 @@ def load_eval_set(path: Path = FIXTURE_PATH) -> dict[str, Any]:
 
 
 def case_passes(result: ExtractedIntent, expected: dict[str, Any]) -> bool:
-    for key, value in expected.items():
-        if getattr(result, key) != value:
-            return False
-    return True
+    return all(getattr(result, key) == value for key, value in expected.items())
 
 
 def evaluate_dialect_set(path: Path = FIXTURE_PATH) -> tuple[bool, float, list[str]]:

@@ -1,3 +1,5 @@
+import { apiRequest } from "@/lib/api/client";
+
 export type CommunicationPreferences = {
   transactional_email: boolean;
   marketing_email: boolean;
@@ -65,29 +67,7 @@ export type OrgNotificationSettings = {
   roles: RoleNotificationPref[];
 };
 
-async function readError(response: Response): Promise<string> {
-  try {
-    const body = (await response.json()) as { detail?: string };
-    if (typeof body.detail === "string") {
-      return body.detail;
-    }
-  } catch {
-    /* ignore */
-  }
-  return "request-failed";
-}
-
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const headers = new Headers(init.headers);
-  if (!headers.has("Content-Type") && init.body) {
-    headers.set("Content-Type", "application/json");
-  }
-  const response = await fetch(path, { ...init, credentials: "include", headers });
-  if (!response.ok) {
-    throw new Error(await readError(response));
-  }
-  return (await response.json()) as T;
-}
+const request = apiRequest;
 
 export function fetchPreferences(): Promise<CommunicationPreferences> {
   return request("/api/v1/notifications/preferences");

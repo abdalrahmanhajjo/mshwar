@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 
 import httpx
 import pytest
@@ -43,7 +43,7 @@ def _clear_route_cache() -> None:
 
 
 def test_cache_key_includes_origin_destination_mode_and_bucket() -> None:
-    moment = datetime(2026, 9, 14, 9, 7, tzinfo=timezone.utc)
+    moment = datetime(2026, 9, 14, 9, 7, tzinfo=UTC)
     bucket = time_bucket(moment, 15)
     assert bucket.endswith("m0540")
     a = cache_key(*BEIRUT, *BYBLOS, "driving", bucket)
@@ -181,7 +181,7 @@ def test_memory_cache_expires(monkeypatch: pytest.MonkeyPatch) -> None:
     service = RoutingService(provider=HaversineStubProvider(), cache=cache)
     first = service.route(*BEIRUT, *BYBLOS)
     assert first.cache_hit is False
-    expired = datetime.now(timezone.utc) - timedelta(seconds=1)
+    expired = datetime.now(UTC) - timedelta(seconds=1)
     for key, (_expires, leg) in list(cache._store.items()):
         cache._store[key] = (expired, leg)
     second = service.route(*BEIRUT, *BYBLOS)
@@ -265,7 +265,7 @@ def _stops(*points: tuple[str, float, float], duration: int = 45) -> list[Optimi
 
 
 def test_optimizer_respects_locked_stop_and_return_by() -> None:
-    start = datetime(2026, 9, 14, 8, 0, tzinfo=timezone.utc)
+    start = datetime(2026, 9, 14, 8, 0, tzinfo=UTC)
     stops = _stops(("downtown", *BEIRUT), ("byblos", *BYBLOS), ("jeita", *JEITA))
     stops[1].locked = True
     stops[1].position = 1
@@ -291,7 +291,7 @@ def test_optimizer_respects_locked_stop_and_return_by() -> None:
 
 
 def test_optimizer_honours_appointment_window() -> None:
-    start = datetime(2026, 9, 14, 8, 0, tzinfo=timezone.utc)
+    start = datetime(2026, 9, 14, 8, 0, tzinfo=UTC)
     stops = _stops(("near", *JEITA), ("appointment", *BYBLOS), ("sidon", *SIDON))
     stops[1].window_start = start + timedelta(hours=6)
     stops[1].window_end = start + timedelta(hours=8)
@@ -303,7 +303,7 @@ def test_optimizer_honours_appointment_window() -> None:
 
 
 def test_optimizer_benchmarks_3_6_10_stops() -> None:
-    start = datetime(2026, 9, 14, 7, 0, tzinfo=timezone.utc)
+    start = datetime(2026, 9, 14, 7, 0, tzinfo=UTC)
     catalogue = [
         ("a", 33.89, 35.50),
         ("b", 33.90, 35.48),
@@ -328,7 +328,7 @@ def test_optimizer_benchmarks_3_6_10_stops() -> None:
 
 
 def test_optimizer_timeout_falls_back_to_original_order(monkeypatch: pytest.MonkeyPatch) -> None:
-    start = datetime(2026, 9, 14, 8, 0, tzinfo=timezone.utc)
+    start = datetime(2026, 9, 14, 8, 0, tzinfo=UTC)
     stops = _stops(("downtown", 33.896, 35.506), ("jeita", *JEITA), ("sidon", *SIDON))
     ticks = {"n": 0}
 
@@ -344,7 +344,7 @@ def test_optimizer_timeout_falls_back_to_original_order(monkeypatch: pytest.Monk
 
 
 def test_unavailable_routing_does_not_display_fake_metrics() -> None:
-    start = datetime(2026, 9, 14, 8, 0, tzinfo=timezone.utc)
+    start = datetime(2026, 9, 14, 8, 0, tzinfo=UTC)
     stops = _stops(("downtown", 33.896, 35.506), ("jeita", *JEITA))
     result = optimize_route(
         *BEIRUT,
@@ -370,7 +370,7 @@ def test_weather_unavailable_yields_no_warning() -> None:
                 label="Cedars walk",
                 lat=34.24,
                 lng=36.05,
-                forecast_date=datetime(2026, 9, 14, tzinfo=timezone.utc).date(),
+                forecast_date=datetime(2026, 9, 14, tzinfo=UTC).date(),
                 weather_sensitivity="outdoor",
             )
         ],
@@ -393,7 +393,7 @@ def test_weather_warning_names_stop_and_source_timestamp_without_booking_change(
                 label="Cedars walk",
                 lat=33.89,
                 lng=35.50,
-                forecast_date=datetime(2026, 9, 14, tzinfo=timezone.utc).date(),
+                forecast_date=datetime(2026, 9, 14, tzinfo=UTC).date(),
                 weather_sensitivity="weather-sensitive",
             ),
             WarningStop(
@@ -401,7 +401,7 @@ def test_weather_warning_names_stop_and_source_timestamp_without_booking_change(
                 label="Indoor museum",
                 lat=33.89,
                 lng=35.50,
-                forecast_date=datetime(2026, 9, 14, tzinfo=timezone.utc).date(),
+                forecast_date=datetime(2026, 9, 14, tzinfo=UTC).date(),
                 weather_sensitivity="indoor",
             ),
         ],
@@ -419,7 +419,7 @@ def test_weather_warning_names_stop_and_source_timestamp_without_booking_change(
 
 
 def test_partial_replan_keeps_locked_and_refuses_silent_worse_plan() -> None:
-    start = datetime(2026, 9, 14, 8, 0, tzinfo=timezone.utc)
+    start = datetime(2026, 9, 14, 8, 0, tzinfo=UTC)
     end = start + timedelta(hours=10)
     stops = [
         OptimizeStop(id="lunch", lat=33.896, lng=35.506, label="Lunch", duration_minutes=60, locked=True, position=1),
@@ -517,7 +517,7 @@ def test_clear_forecast_and_open_meteo_http() -> None:
                 label="Corniche",
                 lat=33.89,
                 lng=35.50,
-                forecast_date=datetime(2026, 9, 20, tzinfo=timezone.utc).date(),
+                forecast_date=datetime(2026, 9, 20, tzinfo=UTC).date(),
                 weather_sensitivity="outdoor",
             )
         ],
@@ -527,7 +527,7 @@ def test_clear_forecast_and_open_meteo_http() -> None:
     )
     assert result.warnings == []
     assert result.bookings_mutated is False
-    cached = weather.forecast(33.89, 35.50, datetime(2026, 9, 20, tzinfo=timezone.utc).date())
+    cached = weather.forecast(33.89, 35.50, datetime(2026, 9, 20, tzinfo=UTC).date())
     assert cached.available is True
 
     missing = parse_open_meteo({}, 33.89, 35.50, date(2026, 9, 14))

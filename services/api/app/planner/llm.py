@@ -73,7 +73,7 @@ class ValidatingLLM:
     def complete_model(self, prompt: str, model: type[T], schema_name: str) -> T:
         last_error: Exception | None = None
         current = prompt
-        for attempt in range(self.max_attempts):
+        for _attempt in range(self.max_attempts):
             raw = self.inner.complete(current, schema_name)
             try:
                 payload = json.loads(raw)

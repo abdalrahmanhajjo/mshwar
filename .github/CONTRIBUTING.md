@@ -32,7 +32,7 @@
 
    ```bash
    pnpm install
-   cd services/api && pip install -e . && cd ..
+   pip install -r services/api/requirements-dev.txt   # Python 3.11
    ```
 
 4. **Start services**
@@ -42,11 +42,11 @@
    ```
 
 5. **Run migrations**
+   Docker Compose applies them automatically. Without Docker:
+
    ```bash
-   cd services/api
    export DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar
-   python scripts/migrate.py
-   alembic upgrade head
+   pnpm --filter api migrate
    ```
 
 ## Commit Convention
@@ -133,8 +133,9 @@ See [KEY_ROTATION.md](../docs/KEY_ROTATION.md) for detailed procedures.
 If a deployment fails:
 
 1. **Web**: Automatic Vercel rollback or manual via `vercel rollback`
-2. **API**: `alembic downgrade -1` + redeploy previous version
-3. **No manual database surgery required**
+2. **API**: redeploy the previous image
+3. **Database**: migrations are forward-only. Ship a fix-forward migration, or restore from backup /
+   point-in-time recovery after a deliberate decision. Never edit an applied migration.
 
 ## Questions?
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
@@ -123,7 +123,7 @@ async def test_share_link_roles_guest_join_and_revoke(api: AsyncClient) -> None:
 
     expired = await api.post(
         f"/api/v1/groups/trips/{trip_id}/share-links",
-        json={"role": "edit", "allow_guest": True, "expires_at": datetime.now(timezone.utc).isoformat()},
+        json={"role": "edit", "allow_guest": True, "expires_at": datetime.now(UTC).isoformat()},
     )
     assert expired.status_code == 422
 
@@ -413,7 +413,7 @@ async def test_expired_share_link_cannot_join(api: AsyncClient) -> None:
         json={
             "role": "vote",
             "allow_guest": True,
-            "expires_at": (datetime.now(timezone.utc) + timedelta(days=2)).isoformat(),
+            "expires_at": (datetime.now(UTC) + timedelta(days=2)).isoformat(),
         },
     )
     token = created.json()["token"]

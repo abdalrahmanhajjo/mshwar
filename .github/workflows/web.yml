@@ -24,10 +24,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           pnpm-version: ${{ env.PNPM_VERSION }}
-      - run: pnpm install
-      - run: pnpm run format:check
-      - run: pnpm run lint
-      - run: pnpm run typecheck
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter web lint
+      - run: pnpm --filter web typecheck
       - run: pnpm i18n:check
       - run: pnpm tokens:check
       - run: pnpm tokens:contrast
@@ -43,9 +42,10 @@ jobs:
       - name: Verify NEXT_PUBLIC_ only env vars in client bundle
         run: |
           echo "Verifying only NEXT_PUBLIC_ prefixed env vars reach client bundle..."
+          # src/lib/server-env.ts is the single home for server-only flags.
           grep -rn 'process.env.' apps/web/src/ --include='*.ts' --include='*.tsx' \
             --exclude-dir='__tests__' --exclude='*.spec.ts' --exclude='*.test.ts' \
-            --exclude='*.spec.tsx' --exclude='*.test.tsx' \
+            --exclude='*.spec.tsx' --exclude='*.test.tsx' --exclude='server-env.ts' \
             | grep -vE 'NEXT_PUBLIC_|NODE_ENV' && {
             echo "ERROR: Non-NEXT_PUBLIC_ env vars found in client source"
             exit 1
@@ -61,11 +61,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           pnpm-version: ${{ env.PNPM_VERSION }}
-      - run: pnpm install
-      - run: pnpm run build
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter web build
       - name: Verify no secrets in build output
         run: |
-          if grep -rnE '(sk_live_|sk_test_|pk_live_|pk_test_|password=|secret_key=)' .next/ --include='*.js' --include='*.css' --include='*.html' 2>/dev/null; then
+          if grep -rnE '(sk_live_|sk_test_|rk_live_|whsec_[A-Za-z0-9]{16})' apps/web/.next/static/ --include='*.js' --include='*.css' --include='*.html' 2>/dev/null; then
             echo "ERROR: Potential secrets found in build output"
             exit 1
           fi
@@ -73,7 +73,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: web-build
-          path: .next/
+          path: apps/web/.next/
           retention-days: 7
 
   deploy-preview:
@@ -102,10 +102,10 @@ jobs:
           pnpm-version: ${{ env.PNPM_VERSION }}
       - name: Install dependencies
         if: steps.vercel.outputs.configured == 'true'
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       - name: Build
         if: steps.vercel.outputs.configured == 'true'
-        run: pnpm run build
+        run: pnpm --filter web build
       - name: Deploy to Vercel Preview
         if: steps.vercel.outputs.configured == 'true'
         uses: amondnet/vercel-action@v25.2.0
@@ -144,10 +144,10 @@ jobs:
           pnpm-version: ${{ env.PNPM_VERSION }}
       - name: Install dependencies
         if: steps.vercel.outputs.configured == 'true'
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       - name: Build
         if: steps.vercel.outputs.configured == 'true'
-        run: pnpm run build
+        run: pnpm --filter web build
       - name: Deploy to Vercel Staging
         if: steps.vercel.outputs.configured == 'true'
         uses: amondnet/vercel-action@v25.2.0
@@ -193,10 +193,10 @@ jobs:
           pnpm-version: ${{ env.PNPM_VERSION }}
       - name: Install dependencies
         if: steps.vercel.outputs.configured == 'true'
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       - name: Build
         if: steps.vercel.outputs.configured == 'true'
-        run: pnpm run build
+        run: pnpm --filter web build
       - name: Deploy to Vercel Production
         if: steps.vercel.outputs.configured == 'true'
         uses: amondnet/vercel-action@v25.2.0

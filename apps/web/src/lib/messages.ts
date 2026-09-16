@@ -139,7 +139,11 @@ export type MessageKey =
   | "termsPreviewTitle"
   | "termsPoliciesTitle"
   | "privacyControlsTitle"
-  | "consoleGreeting";
+  | "consoleGreeting"
+  | "errorKicker"
+  | "errorTitle"
+  | "errorBody"
+  | "tryAgain";
 
 export const messages: Record<Locale, Record<MessageKey, string>> = {
   en: {
@@ -282,6 +286,10 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     termsPoliciesTitle: "Default policies",
     privacyControlsTitle: "Controls you own",
     consoleGreeting: "Signed in to",
+    errorKicker: "Something went wrong",
+    errorTitle: "This page could not load.",
+    errorBody: "It is not you. Try again in a moment, or head back to discover places.",
+    tryAgain: "Try again",
   },
   ar: {
     skipToContent: "تخطّ إلى المحتوى",
@@ -423,6 +431,10 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     termsPoliciesTitle: "السياسات الافتراضية",
     privacyControlsTitle: "أدوات تتحكم بها",
     consoleGreeting: "مسجّل الدخول إلى",
+    errorKicker: "حدث خطأ",
+    errorTitle: "تعذّر تحميل هذه الصفحة.",
+    errorBody: "المشكلة ليست من جهتك. حاول مجددًا بعد قليل، أو عد إلى استكشاف الأماكن.",
+    tryAgain: "حاول مجددًا",
   },
   fr: {
     skipToContent: "Aller au contenu",
@@ -569,5 +581,9 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     termsPoliciesTitle: "Politiques par défaut",
     privacyControlsTitle: "Les contrôles à votre main",
     consoleGreeting: "Connecté à",
+    errorKicker: "Un problème est survenu",
+    errorTitle: "Cette page n’a pas pu se charger.",
+    errorBody: "Ce n’est pas vous. Réessayez dans un instant ou revenez à la découverte.",
+    tryAgain: "Réessayer",
   },
 };

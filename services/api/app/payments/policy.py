@@ -1,26 +1,26 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 
 def _as_datetime(value: Any) -> datetime:
     if isinstance(value, datetime):
         if value.tzinfo is None:
-            return value.replace(tzinfo=timezone.utc)
+            return value.replace(tzinfo=UTC)
         return value
     text = str(value).replace("Z", "+00:00")
     parsed = datetime.fromisoformat(text)
     if parsed.tzinfo is None:
-        return parsed.replace(tzinfo=timezone.utc)
+        return parsed.replace(tzinfo=UTC)
     return parsed
 
 
 def refund_bps_from_snapshot(snapshot: Mapping[str, Any], starts_at: Any, *, now: datetime | None = None) -> int:
     """Eligibility is computed only from the frozen policy snapshot."""
 
-    clock = now or datetime.now(timezone.utc)
+    clock = now or datetime.now(UTC)
     start = _as_datetime(starts_at)
     rules = snapshot.get("rules") if isinstance(snapshot.get("rules"), dict) else snapshot
     windows = snapshot.get("windows")
@@ -47,4 +47,5 @@ def refund_bps_from_snapshot(snapshot: Mapping[str, Any], starts_at: Any, *, now
 
 
 def refund_minor(total_minor: int, bps: int) -> int:
-    return int(total_minor * bps / 10000)
+    """Refund in minor units, rounded down. Integer maths only: money never goes through float."""
+    return total_minor * bps // 10000

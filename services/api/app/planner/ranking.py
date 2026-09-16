@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.planner.eligibility import unit_price_minor
+from app.planner.eligibility import INTENSITY_TO_RANGE, unit_price_minor
 from app.planner.schemas import CandidateRecord, EligibilityResult, ExtractedConstraints, RankedCandidate
 
 DEFAULT_WEIGHTS: dict[str, float] = {
@@ -40,8 +40,8 @@ def preference_score(candidate: CandidateRecord, constraints: ExtractedConstrain
             hits += 1
     if constraints.intensity and candidate.intensity is not None:
         checks += 1
-        mapping = {"relaxed": {1, 2}, "moderate": {2, 3}, "active": {4}, "strenuous": {5}}
-        if candidate.intensity in mapping.get(constraints.intensity, set()):
+        low, high = INTENSITY_TO_RANGE.get(constraints.intensity, (1, 0))
+        if low <= candidate.intensity <= high:
             hits += 1
     if checks == 0:
         return 0.5

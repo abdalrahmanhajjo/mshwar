@@ -10,7 +10,7 @@ import uuid
 import pytest
 from sqlalchemy import text
 
-from app.core.context import clear_session_context, set_local_gucs, set_session_context
+from tests.rls import set_local_gucs
 
 
 class TestCrossTenantIsolation:
@@ -23,7 +23,6 @@ class TestCrossTenantIsolation:
         org_b = uuid.UUID("11111111-1111-1111-1111-111111111111")
         user_a = uuid.UUID("22222222-2222-2222-2222-222222222222")
 
-        set_session_context(user_id=user_a, organization_id=org_a)
         await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
 
         result = await db_session.execute(
@@ -35,7 +34,6 @@ class TestCrossTenantIsolation:
 
         await db_session.execute(text("RESET app.user_id"))
         await db_session.execute(text("RESET app.organization_id"))
-        clear_session_context()
 
     @pytest.mark.asyncio
     async def test_org_a_cannot_read_org_b_experiences(self, db_session):
@@ -44,7 +42,6 @@ class TestCrossTenantIsolation:
         org_b = uuid.UUID("11111111-1111-1111-1111-111111111111")
         user_a = uuid.UUID("22222222-2222-2222-2222-222222222222")
 
-        set_session_context(user_id=user_a, organization_id=org_a)
         await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
 
         result = await db_session.execute(
@@ -56,7 +53,6 @@ class TestCrossTenantIsolation:
 
         await db_session.execute(text("RESET app.user_id"))
         await db_session.execute(text("RESET app.organization_id"))
-        clear_session_context()
 
     @pytest.mark.asyncio
     async def test_org_a_cannot_read_org_b_venues(self, db_session):
@@ -65,7 +61,6 @@ class TestCrossTenantIsolation:
         org_b = uuid.UUID("11111111-1111-1111-1111-111111111111")
         user_a = uuid.UUID("22222222-2222-2222-2222-222222222222")
 
-        set_session_context(user_id=user_a, organization_id=org_a)
         await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
 
         result = await db_session.execute(
@@ -77,7 +72,6 @@ class TestCrossTenantIsolation:
 
         await db_session.execute(text("RESET app.user_id"))
         await db_session.execute(text("RESET app.organization_id"))
-        clear_session_context()
 
     @pytest.mark.asyncio
     async def test_user_cannot_read_another_users_trips(self, db_session):
@@ -86,7 +80,6 @@ class TestCrossTenantIsolation:
         user_b = uuid.UUID("33333333-3333-3333-3333-333333333333")
         org_a = uuid.UUID("00000000-0000-0000-0000-000000000001")
 
-        set_session_context(user_id=user_a, organization_id=org_a)
         await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
 
         result = await db_session.execute(
@@ -98,7 +91,6 @@ class TestCrossTenantIsolation:
 
         await db_session.execute(text("RESET app.user_id"))
         await db_session.execute(text("RESET app.organization_id"))
-        clear_session_context()
 
     @pytest.mark.asyncio
     async def test_user_cannot_read_another_users_account_hub(self, db_session):
@@ -107,7 +99,6 @@ class TestCrossTenantIsolation:
         user_b = uuid.UUID("33333333-3333-3333-3333-333333333333")
         org_a = uuid.UUID("00000000-0000-0000-0000-000000000001")
 
-        set_session_context(user_id=user_a, organization_id=org_a)
         await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
 
         favs = (
@@ -134,7 +125,6 @@ class TestCrossTenantIsolation:
 
         await db_session.execute(text("RESET app.user_id"))
         await db_session.execute(text("RESET app.organization_id"))
-        clear_session_context()
 
     async def test_user_cannot_read_another_users_favorites(self, db_session):
         """User A must not be able to read favorites of User B."""
@@ -142,7 +132,6 @@ class TestCrossTenantIsolation:
         user_b = uuid.UUID("33333333-3333-3333-3333-333333333333")
         org_a = uuid.UUID("00000000-0000-0000-0000-000000000001")
 
-        set_session_context(user_id=user_a, organization_id=org_a)
         await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
 
         result = await db_session.execute(
@@ -154,7 +143,6 @@ class TestCrossTenantIsolation:
 
         await db_session.execute(text("RESET app.user_id"))
         await db_session.execute(text("RESET app.organization_id"))
-        clear_session_context()
 
     @pytest.mark.asyncio
     async def test_session_context_set_on_request(self, db_session):
@@ -162,7 +150,6 @@ class TestCrossTenantIsolation:
         user_id = uuid.UUID("22222222-2222-2222-2222-222222222222")
         org_id = uuid.UUID("00000000-0000-0000-0000-000000000001")
 
-        set_session_context(user_id=user_id, organization_id=org_id)
         await set_local_gucs(db_session, user_id=str(user_id), organization_id=str(org_id))
 
         result = await db_session.execute(text("SELECT app.actor_id()"))
@@ -171,23 +158,6 @@ class TestCrossTenantIsolation:
 
         await db_session.execute(text("RESET app.user_id"))
         await db_session.execute(text("RESET app.organization_id"))
-        clear_session_context()
-
-    @pytest.mark.asyncio
-    async def test_session_context_cleared_on_release(self):
-        """Verify that session context is cleared after request release."""
-        user_id = uuid.UUID("22222222-2222-2222-2222-222222222222")
-        org_id = uuid.UUID("00000000-0000-0000-0000-000000000001")
-
-        set_session_context(user_id=user_id, organization_id=org_id)
-        from app.core.context import get_current_organization_id, get_current_user_id
-
-        assert get_current_user_id() == user_id
-        assert get_current_organization_id() == org_id
-
-        clear_session_context()
-        assert get_current_user_id() is None
-        assert get_current_organization_id() is None, "Organization context must be cleared"
 
     @pytest.mark.asyncio
     async def test_rls_enabled_on_all_app_tables(self, db_session):
@@ -223,7 +193,6 @@ class TestCrossTenantIsolation:
         org_b = uuid.UUID("11111111-1111-1111-1111-111111111111")
         user_a = uuid.UUID("22222222-2222-2222-2222-222222222222")
 
-        set_session_context(user_id=user_a, organization_id=org_a)
         await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
 
         result = await db_session.execute(
@@ -235,4 +204,3 @@ class TestCrossTenantIsolation:
 
         await db_session.execute(text("RESET app.user_id"))
         await db_session.execute(text("RESET app.organization_id"))
-        clear_session_context()

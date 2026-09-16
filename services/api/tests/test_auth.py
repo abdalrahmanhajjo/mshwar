@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
@@ -42,7 +42,7 @@ def test_password_hash_is_not_plaintext() -> None:
 
 
 def test_should_refresh_when_under_half_life() -> None:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     assert should_refresh(now + timedelta(hours=1), now) is True
     assert should_refresh(now + timedelta(days=6), now) is False
 

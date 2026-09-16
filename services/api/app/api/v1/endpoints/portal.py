@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import base64
 import csv
 import io
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID
 
@@ -12,18 +11,22 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response,
 from fastapi.responses import PlainTextResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.auth_session import require_session
 from app.core.config import settings
 from app.core.geo import lebanon_bounds, point_in_lebanon
+from app.core.http_status import HTTP_422_UNPROCESSABLE
 from app.core.mailer import MailMessage, get_mailer
-from app.core.portal_auth import fetch_json, require_session
 from app.core.sessions import hash_session_token, new_session_token
+from app.core.sql import fetch_json
 from app.core.storage import (
+    delete_private_bytes,
     put_private_bytes,
     read_private_bytes,
     sign_object_url,
     storage_backend,
     verify_signed_token,
 )
+from app.core.uploads import validate_upload
 from app.dependencies import get_auth_db
 from app.schemas.groups import ReviewResponseIn
 from app.schemas.notifications import EscalationIn, RolePrefIn
@@ -239,38 +242,51 @@ async def upload_org_file(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
     session = await _session(request, db)
-    raw = _decode_upload(payload.content_base64)
-    stored = put_private_bytes(raw, payload.filename, payload.content_type, public=False)
-    if payload.purpose == "listing":
-        if payload.experience_id is None:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="experience_id required")
-        media = await fetch_json(
-            db,
-            "SELECT app.attach_experience_media(:user_id, :org_id, :experience_id, :object_key, :alt, 0)",
-            {
-                "user_id": _user_id(session),
-                "org_id": str(org_id),
-                "experience_id": str(payload.experience_id),
-                "object_key": stored["object_key"],
-                "alt": payload.alt_text or payload.filename,
-            },
-        )
-        signed = sign_object_url(stored["object_key"])
-        return {**stored, "media": media, "signed": signed, "public": False, "backend": storage_backend()}
-    document = await fetch_json(
+    user_id = _user_id(session)
+    if payload.purpose == "listing" and payload.experience_id is None:
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="experience_id required")
+    capability = "listings" if payload.purpose == "listing" else "settings"
+    # Check permission before anything touches the disk.
+    await fetch_json(
         db,
-        "SELECT app.attach_verification_document(:user_id, :org_id, :object_key, :filename, :content_type, :byte_size)",
-        {
-            "user_id": _user_id(session),
-            "org_id": str(org_id),
-            "object_key": stored["object_key"],
-            "filename": payload.filename,
-            "content_type": payload.content_type,
-            "byte_size": len(raw),
-        },
+        "SELECT app.require_capability(:user_id, :org_id, :capability)",
+        {"user_id": user_id, "org_id": str(org_id), "capability": capability},
     )
+    raw = validate_upload(payload.content_base64, payload.content_type, payload.purpose)
+    stored = put_private_bytes(raw, payload.filename, payload.content_type, public=False)
+    try:
+        if payload.purpose == "listing":
+            attached_key = "media"
+            attached = await fetch_json(
+                db,
+                "SELECT app.attach_experience_media(:user_id, :org_id, :experience_id, :object_key, :alt, 0)",
+                {
+                    "user_id": user_id,
+                    "org_id": str(org_id),
+                    "experience_id": str(payload.experience_id),
+                    "object_key": stored["object_key"],
+                    "alt": payload.alt_text or payload.filename,
+                },
+            )
+        else:
+            attached_key = "document"
+            attached = await fetch_json(
+                db,
+                "SELECT app.attach_verification_document(:user_id, :org_id, :object_key, :filename, :content_type, :byte_size)",
+                {
+                    "user_id": user_id,
+                    "org_id": str(org_id),
+                    "object_key": stored["object_key"],
+                    "filename": payload.filename,
+                    "content_type": payload.content_type,
+                    "byte_size": len(raw),
+                },
+            )
+    except Exception:
+        delete_private_bytes(stored["object_key"])
+        raise
     signed = sign_object_url(stored["object_key"])
-    return {**stored, "document": document, "signed": signed, "public": False, "backend": storage_backend()}
+    return {**stored, attached_key: attached, "signed": signed, "public": False, "backend": storage_backend()}
 
 
 @router.get("/files/{token}")
@@ -306,7 +322,7 @@ async def invite_staff(
 ) -> Any:
     session = await _session(request, db)
     token = new_session_token()
-    expires = datetime.now(timezone.utc) + timedelta(seconds=settings.staff_invite_ttl_seconds)
+    expires = datetime.now(UTC) + timedelta(seconds=settings.staff_invite_ttl_seconds)
     row = await fetch_json(
         db,
         "SELECT app.invite_staff(:user_id, :org_id, :email, :role, :token_hash, :expires_at)",
@@ -374,9 +390,7 @@ async def upsert_venue(
 ) -> Any:
     session = await _session(request, db)
     if not point_in_lebanon(payload.lng, payload.lat):
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="coordinates must fall inside Lebanon"
-        )
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="coordinates must fall inside Lebanon")
     return await fetch_json(
         db,
         "SELECT app.upsert_venue(:user_id, :org_id, :venue_id, :name, :address, :lng, :lat, :destination)",
@@ -703,7 +717,7 @@ async def get_metrics(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
     session = await _session(request, db)
-    end = date_to or datetime.now(timezone.utc)
+    end = date_to or datetime.now(UTC)
     start = date_from or (end - timedelta(days=30))
     return await fetch_json(
         db,
@@ -816,6 +830,16 @@ async def delete_review_forbidden(
     return await _forbid_review_mutation(org_id, review_id, request, db)
 
 
+_FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+
+
+def csv_safe(value: Any) -> Any:
+    """Neutralise spreadsheet formulas in user-supplied text (CSV injection)."""
+    if isinstance(value, str) and value.startswith(_FORMULA_PREFIXES):
+        return "'" + value
+    return value
+
+
 def bookings_to_csv(rows: list[dict[str, Any]]) -> str:
     buffer = io.StringIO()
     writer = csv.DictWriter(
@@ -836,7 +860,7 @@ def bookings_to_csv(rows: list[dict[str, Any]]) -> str:
     )
     writer.writeheader()
     for row in rows:
-        writer.writerow({key: row.get(key, "") for key in writer.fieldnames})
+        writer.writerow({key: csv_safe(row.get(key, "")) for key in writer.fieldnames})
     return buffer.getvalue()
 
 
@@ -859,13 +883,6 @@ def metrics_to_csv(metrics: dict[str, Any]) -> str:
             ]
         )
     return buffer.getvalue()
-
-
-def _decode_upload(content_base64: str) -> bytes:
-    try:
-        return base64.b64decode(content_base64, validate=True)
-    except (ValueError, TypeError) as exc:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid file payload") from exc
 
 
 def _invite_link(token: str) -> str:
