@@ -1,9 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { LocaleLink } from "@/components/shell/locale-link";
+import { CloudRain, Lock, MapPin, Route } from "lucide-react";
+import { ArrowLink } from "@/components/ui/arrow-link";
+import { Notice } from "@/components/ui/notice";
+import { SectionHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StartLocationPicker } from "@/components/plan/start-location-picker";
 import { WeatherWarningList } from "@/components/plan/weather-warning";
 import { ReplanDiff } from "@/components/plan/replan-diff";
@@ -75,42 +77,65 @@ export function PlanWorkspace() {
   }
 
   return (
-    <div className="grid gap-6">
-      <StartLocationPicker initial={start} onSaved={setStart} />
-      <p className="text-sm">
-        <LocaleLink className="text-brand underline-offset-4 hover:underline" href="/plan/start">
-          {copy.startTitle}
-        </LocaleLink>
-      </p>
-      <Card>
-        <CardHeader>
-          <CardTitle>{copy.planTitle}</CardTitle>
-          <CardDescription>{copy.planHint}</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-3">
-          <p className="text-sm">
-            {start.label} ({start.lat.toFixed(4)}, {start.lng.toFixed(4)})
+    <section aria-labelledby="fine-tune-heading" className="grid gap-8 border-t border-border-subtle pt-12">
+      <SectionHeader
+        id="fine-tune-heading"
+        eyebrow={copy.routeStart}
+        title={copy.fineTune}
+        action={
+          <ArrowLink href="/plan/start" className="font-medium">
+            {copy.startTitle}
+          </ArrowLink>
+        }
+      />
+      <p className="-mt-4 max-w-2xl text-text-muted">{copy.fineTuneBody}</p>
+      <div className="grid gap-6 xl:grid-cols-[1.1fr_1fr] xl:items-start">
+        <StartLocationPicker initial={start} onSaved={setStart} />
+        <section className="grid gap-5 rounded-card border border-border-subtle bg-surface-raised p-6 shadow-sm md:p-7">
+          <header className="grid gap-2">
+            <h3 className="title-card">{copy.planTitle}</h3>
+            <p className="text-sm leading-relaxed text-text-muted">{copy.planHint}</p>
+          </header>
+          <p className="inline-flex items-center gap-2 rounded-control bg-surface-sunken px-3.5 py-2.5 text-sm">
+            <MapPin className="size-4 shrink-0 text-accent-strong" aria-hidden />
+            <span className="font-medium">{start.label}</span>
+            <span className="text-text-muted tabular-nums" dir="ltr">
+              ({start.lat.toFixed(4)}, {start.lng.toFixed(4)})
+            </span>
           </p>
           <div className="flex flex-wrap gap-2">
             <Button type="button" onClick={() => void onOptimize()}>
+              <Route aria-hidden />
               {copy.optimize}
             </Button>
-            <Button type="button" variant="secondary" onClick={() => void onReplan()}>
+            <Button type="button" variant="outline" onClick={() => void onReplan()}>
+              <CloudRain aria-hidden />
               {copy.replanAffected}
             </Button>
           </div>
-          {optimized && !optimized.feasible ? <p className="text-sm text-danger">{copy.infeasible}</p> : null}
+          {optimized && !optimized.feasible ? <Notice tone="danger">{copy.infeasible}</Notice> : null}
           {optimized && !optimized.metrics_available ? (
             <p role="status" className="text-sm text-danger">
               {copy.metricsUnavailable}
             </p>
           ) : null}
           {optimized?.ordered_stops.length ? (
-            <ol className="grid gap-1 text-sm">
+            <ol className="grid gap-2 text-sm">
               {optimized.ordered_stops.map((stop) => (
-                <li key={stop.id}>
-                  {stop.position}. {stop.label}
-                  {stop.locked ? " (locked)" : ""}
+                <li
+                  key={stop.id}
+                  className="flex items-center gap-3 rounded-control border border-border-subtle px-3 py-2.5"
+                >
+                  <span className="grid size-7 place-items-center rounded-full bg-brand-subtle text-xs font-semibold tabular-nums">
+                    {stop.position}
+                  </span>
+                  <span className="font-medium">{stop.label}</span>
+                  {stop.locked ? (
+                    <span className="ms-auto inline-flex items-center text-text-muted">
+                      <Lock className="size-4" aria-hidden />
+                      <span className="sr-only">{copy.lock}</span>
+                    </span>
+                  ) : null}
                 </li>
               ))}
             </ol>
@@ -118,12 +143,12 @@ export function PlanWorkspace() {
           <WeatherWarningList result={warnings} />
           <ReplanDiff result={replan} />
           {error ? (
-            <p role="status" className="text-sm">
+            <p role="status" className="text-sm text-text-muted">
               {error}
             </p>
           ) : null}
-        </CardContent>
-      </Card>
-    </div>
+        </section>
+      </div>
+    </section>
   );
 }

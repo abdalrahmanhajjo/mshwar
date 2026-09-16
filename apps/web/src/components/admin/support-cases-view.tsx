@@ -2,7 +2,11 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Check, Plus } from "lucide-react";
+import { AdminHeader, EmptyRow, TableShell } from "@/components/admin/admin-ui";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { statusTone } from "@/lib/status";
 import { Input } from "@/components/ui/input";
 import { assignCase, createCase, escalateCase, listCases, resolveCase } from "@/lib/admin";
 import { useAdminCopy } from "@/lib/admin-copy";
@@ -42,56 +46,88 @@ export function SupportCasesView() {
   }, []);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{copy.casesTitle}</CardTitle>
-        <CardDescription>{copy.outcomeRequired}</CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-3">
-        <Input aria-label="case reason" value={reason} onChange={(event) => setReason(event.target.value)} />
-        <Button type="button" onClick={() => void createCase(reason, [{ kind: "note", value: reason }]).then(reload)}>
-          Open case
-        </Button>
-        <Input aria-label="outcome" value={outcome} onChange={(event) => setOutcome(event.target.value)} />
-        <ul className="grid gap-2">
-          {rows.map((row) => (
-            <li
-              key={row.id}
-              className="flex flex-wrap items-center justify-between gap-2 border-b border-border py-2 text-sm"
+    <div className="grid gap-8">
+      <AdminHeader title={copy.casesTitle} description={copy.outcomeRequired} />
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-3 rounded-card border border-border-subtle bg-surface-raised p-5">
+          <Label htmlFor="case-reason">{copy.caseReasonLabel}</Label>
+          <div className="flex gap-2">
+            <Input
+              id="case-reason"
+              aria-label="case reason"
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+            />
+            <Button
+              type="button"
+              onClick={() => void createCase(reason, [{ kind: "note", value: reason }]).then(reload)}
             >
-              <span>
-                {row.status} — {row.reason} ({row.age_hours}h)
-              </span>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => void assignCase(row.id, user?.id ?? "", copy.assign).then(reload)}
-                >
-                  {copy.assign}
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => void escalateCase(row.id, "escalated").then(reload)}
-                >
-                  Escalate
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={outcome.length < 3}
-                  onClick={() => void resolveCase(row.id, outcome).then(reload)}
-                >
-                  Resolve
-                </Button>
-              </div>
-            </li>
+              <Plus aria-hidden />
+              {copy.openCase}
+            </Button>
+          </div>
+        </div>
+        <div className="grid gap-3 rounded-card border border-border-subtle bg-surface-raised p-5">
+          <Label htmlFor="case-outcome">{copy.outcomeLabel}</Label>
+          <Input
+            id="case-outcome"
+            aria-label="outcome"
+            value={outcome}
+            onChange={(event) => setOutcome(event.target.value)}
+          />
+        </div>
+      </div>
+      <TableShell>
+        <thead>
+          <tr>
+            <th scope="col">{copy.statusCol}</th>
+            <th scope="col">{copy.caseReasonLabel}</th>
+            <th scope="col">SLA</th>
+            <th scope="col">{copy.actionsCol}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.length === 0 ? <EmptyRow colSpan={4} label={copy.queueEmpty} /> : null}
+          {rows.map((row) => (
+            <tr key={row.id}>
+              <td>
+                <Badge variant={statusTone(row.status)}>{row.status}</Badge>
+              </td>
+              <td className="font-medium">{row.reason}</td>
+              <td className="tabular-nums text-text-muted">{row.age_hours}h</td>
+              <td>
+                <div className="flex flex-wrap gap-1.5">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void assignCase(row.id, user?.id ?? "", copy.assign).then(reload)}
+                  >
+                    {copy.assign}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => void escalateCase(row.id, "escalated").then(reload)}
+                  >
+                    {copy.escalate}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={outcome.length < 3}
+                    onClick={() => void resolveCase(row.id, outcome).then(reload)}
+                  >
+                    <Check aria-hidden />
+                    {copy.resolve}
+                  </Button>
+                </div>
+              </td>
+            </tr>
           ))}
-        </ul>
-      </CardContent>
-    </Card>
+        </tbody>
+      </TableShell>
+    </div>
   );
 }

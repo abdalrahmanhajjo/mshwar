@@ -20,10 +20,10 @@ export function Progress({
         aria-valuemax={100}
         aria-valuenow={Math.round(clamped)}
         aria-label={label}
-        className="relative h-2 w-full overflow-hidden rounded-pill bg-surface-sunken"
+        className="relative h-1.5 w-full overflow-hidden rounded-pill bg-brand-subtle"
       >
         <div
-          className="absolute inset-y-0 start-0 h-full bg-brand transition-[width] duration-quick"
+          className="absolute inset-y-0 start-0 h-full rounded-pill bg-brand transition-[width] duration-normal"
           style={{ width: `${clamped}%` }}
         />
       </div>

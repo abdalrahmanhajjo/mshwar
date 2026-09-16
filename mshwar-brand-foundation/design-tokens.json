@@ -5,7 +5,7 @@
     "wordmark": "mshwar",
     "arabic": "مشوار",
     "status": "proposed",
-    "version": "1.1.0"
+    "version": "1.2.0"
   },
   "primitive": {
     "color": {
@@ -34,6 +34,14 @@
       "warningSubtleLight": "#F7ECD4",
       "warningSubtleDark": "#3A2A0A",
       "accentText": "#0C241F",
+      "orangeSubtle": "#FDEBE3",
+      "orangeSubtleDark": "#3D2118",
+      "orangeText": "#B03A17",
+      "orangeTextDark": "#FDBA9F",
+      "cedarSubtle": "#E4EDE7",
+      "cedarSubtleDark": "#1E3F39",
+      "borderSubtle": "#E2E6DF",
+      "borderSubtleDark": "#24403B",
       "overlayLight": "rgba(18, 53, 47, 0.48)",
       "overlayDark": "rgba(8, 22, 20, 0.64)"
     }
@@ -54,15 +62,19 @@
       },
       "accent": {
         "default": "{primitive.color.orange}",
-        "foreground": "{primitive.color.accentText}"
+        "foreground": "{primitive.color.accentText}",
+        "subtle": "{primitive.color.orangeSubtle}",
+        "strong": "{primitive.color.orangeText}"
       },
       "brand": {
         "default": "{primitive.color.cedar}",
-        "foreground": "{primitive.color.canvas}"
+        "foreground": "{primitive.color.canvas}",
+        "subtle": "{primitive.color.cedarSubtle}"
       },
       "border": {
         "default": "{primitive.color.border}",
-        "strong": "{primitive.color.slate}"
+        "strong": "{primitive.color.slate}",
+        "subtle": "{primitive.color.borderSubtle}"
       },
       "danger": {
         "default": "{primitive.color.error}",
@@ -98,15 +110,19 @@
       },
       "accent": {
         "default": "{primitive.color.orange}",
-        "foreground": "{primitive.color.accentText}"
+        "foreground": "{primitive.color.accentText}",
+        "subtle": "{primitive.color.orangeSubtleDark}",
+        "strong": "{primitive.color.orangeTextDark}"
       },
       "brand": {
         "default": "{primitive.color.canvas}",
-        "foreground": "{primitive.color.cedarDeep}"
+        "foreground": "{primitive.color.cedarDeep}",
+        "subtle": "{primitive.color.cedarSubtleDark}"
       },
       "border": {
         "default": "{primitive.color.borderDark}",
-        "strong": "{primitive.color.slateLight}"
+        "strong": "{primitive.color.slateLight}",
+        "subtle": "{primitive.color.borderSubtleDark}"
       },
       "danger": {
         "default": "{primitive.color.errorBright}",
@@ -154,9 +170,14 @@
   "typography": {
     "family": {
       "latin": {
-        "name": "Manrope",
+        "name": "DM Sans",
         "fallback": "system-ui, sans-serif",
-        "stack": "\"Manrope\", system-ui, sans-serif"
+        "stack": "\"DM Sans\", system-ui, sans-serif"
+      },
+      "display": {
+        "name": "Newsreader",
+        "fallback": "Georgia, serif",
+        "stack": "\"Newsreader\", Georgia, serif"
       },
       "arabic": {
         "name": "Noto Sans Arabic",

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { CloudRain, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -35,24 +36,32 @@ export function WeatherThresholdsForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{copy.thresholdsTitle}</CardTitle>
+        <CardTitle as="h2" className="inline-flex items-center gap-2">
+          <CloudRain className="size-5" aria-hidden />
+          {copy.thresholdsTitle}
+        </CardTitle>
         <CardDescription>{copy.thresholdsHint}</CardDescription>
       </CardHeader>
-      <CardContent className="grid gap-3">
+      <CardContent className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {rows.map((row) => (
-          <label key={row.key} className="grid gap-1 text-sm">
-            {row.key} ({row.applies_to})
-            <Input
-              type="number"
-              value={row.value_numeric}
-              onChange={(event) =>
-                setRows((current) =>
-                  current.map((item) =>
-                    item.key === row.key ? { ...item, value_numeric: Number(event.target.value) } : item,
-                  ),
-                )
-              }
-            />
+          <div key={row.key} className="grid gap-3 rounded-control border border-border-subtle p-4">
+            <label className="grid gap-2 text-sm font-medium">
+              <span>
+                <span className="font-mono text-xs">{row.key}</span>
+                <span className="block text-xs font-normal text-text-muted">{row.applies_to}</span>
+              </span>
+              <Input
+                type="number"
+                value={row.value_numeric}
+                onChange={(event) =>
+                  setRows((current) =>
+                    current.map((item) =>
+                      item.key === row.key ? { ...item, value_numeric: Number(event.target.value) } : item,
+                    ),
+                  )
+                }
+              />
+            </label>
             <Button
               type="button"
               size="sm"
@@ -63,11 +72,16 @@ export function WeatherThresholdsForm() {
                   .catch((error: unknown) => setStatus(error instanceof Error ? error.message : copy.thresholdsHint))
               }
             >
+              <Save aria-hidden />
               {row.unit}
             </Button>
-          </label>
+          </div>
         ))}
-        {status ? <p className="text-sm">{status}</p> : null}
+        {status ? (
+          <p role="status" className="text-sm text-text-muted sm:col-span-2 xl:col-span-3">
+            {status}
+          </p>
+        ) : null}
       </CardContent>
     </Card>
   );

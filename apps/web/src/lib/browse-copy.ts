@@ -128,7 +128,51 @@ export type BrowseKey =
   | "minutesLabel"
   | "nearbyTitle"
   | "placesOne"
-  | "placesOther";
+  | "placesOther"
+  | "yallaKicker"
+  | "operations"
+  | "heroKicker"
+  | "heroCta"
+  | "heroCaption"
+  | "lessSearchingNote"
+  | "perfectDayKicker"
+  | "goodDaysKicker"
+  | "closeToHomeKicker"
+  | "illustrativePrices"
+  | "onePlanCardKicker"
+  | "onePlanCardNote"
+  | "onePlanStep1"
+  | "onePlanStep2"
+  | "onePlanStep3"
+  | "onePlanDetail1"
+  | "onePlanDetail2"
+  | "onePlanDetail3"
+  | "viewDestination"
+  | "experiencesInPlace"
+  | "resultsSort"
+  | "viewToggle"
+  | "whatToExpect"
+  | "theExperience"
+  | "makeADayKicker"
+  | "closerTitle"
+  | "noChargeNote"
+  | "stopsLabel"
+  | "savedKicker"
+  | "collectionsKicker"
+  | "atYourOwnPace"
+  | "sampleExperience"
+  | "tagsLabel"
+  | "bookingPanelTitle"
+  | "resultsTitle"
+  | "ideasStops"
+  | "savedBody"
+  | "galleryLabel"
+  | "ratingLabel"
+  | "goodDayTitle"
+  | "fewThingsToKnow"
+  | "travellerReviews"
+  | "peopleLabel"
+  | "personLabel";
 
 export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
   en: {
@@ -262,6 +306,50 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     nearbyTitle: "Nearby and related",
     placesOne: "{count} place to make a day of it",
     placesOther: "{count} places to make a day of it",
+    yallaKicker: "Go somewhere that feels like you",
+    operations: "Operations",
+    heroKicker: "Small country. Endless possibilities.",
+    heroCta: "Let’s plan something good",
+    heroCaption: "Byblos, Mount Lebanon",
+    lessSearchingNote: "Local places. Thoughtful plans. Your own pace.",
+    perfectDayKicker: "Follow your curiosity",
+    goodDaysKicker: "A little inspiration",
+    closeToHomeKicker: "A different side of Lebanon",
+    illustrativePrices: "* Illustrative prices. Availability is not live.",
+    onePlanCardKicker: "Your next Sunday",
+    onePlanCardNote: "An idea to make your own. Timing is illustrative.",
+    onePlanStep1: "09:30 · A fresh start",
+    onePlanStep2: "12:30 · Time to recharge",
+    onePlanStep3: "16:00 · The scenic route",
+    onePlanDetail1: "Ancient cedars. A slower pace.",
+    onePlanDetail2: "A table worth staying at.",
+    onePlanDetail3: "Leave the rush behind.",
+    viewDestination: "View destination",
+    experiencesInPlace: "experiences here",
+    resultsSort: "Sort by",
+    viewToggle: "View",
+    whatToExpect: "What to expect",
+    theExperience: "The experience",
+    makeADayKicker: "Make a day of it",
+    closerTitle: "A little closer.",
+    noChargeNote: "No charge. No real reservation.",
+    stopsLabel: "stops",
+    savedKicker: "Saved for later",
+    collectionsKicker: "Curated days",
+    atYourOwnPace: "at your own pace.",
+    sampleExperience: "Sample experience",
+    tagsLabel: "Good to know",
+    bookingPanelTitle: "Reserve your spot",
+    resultsTitle: "Results",
+    ideasStops: "stops planned",
+    savedBody: "Everything you hearted while browsing, ready for your next plan.",
+    galleryLabel: "Photos",
+    ratingLabel: "Traveller rating",
+    goodDayTitle: "A good day, at your own pace.",
+    fewThingsToKnow: "A few things to know",
+    travellerReviews: "Traveller reviews",
+    peopleLabel: "people",
+    personLabel: "person",
   },
   ar: {
     heroTitle: "اترك مساحة لمشوار صغير.",
@@ -392,6 +480,50 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     nearbyTitle: "قريب وذو صلة",
     placesOne: "مكان واحد لصنع يوم",
     placesOther: "{count} أماكن لصنع يوم",
+    yallaKicker: "اذهب إلى مكان يشبهك",
+    operations: "العمليات",
+    heroKicker: "بلد صغير. احتمالات لا تنتهي.",
+    heroCta: "لنخطّط لشيء جميل",
+    heroCaption: "جبيل، جبل لبنان",
+    lessSearchingNote: "أماكن محلية. خطط مدروسة. على مهلك.",
+    perfectDayKicker: "اتبع فضولك",
+    goodDaysKicker: "قليل من الإلهام",
+    closeToHomeKicker: "وجه آخر للبنان",
+    illustrativePrices: "* أسعار توضيحية. التوفر غير مباشر.",
+    onePlanCardKicker: "أحدك القادم",
+    onePlanCardNote: "فكرة لتجعلها لك. التوقيت توضيحي.",
+    onePlanStep1: "09:30 · بداية منعشة",
+    onePlanStep2: "12:30 · وقت لاستعادة النشاط",
+    onePlanStep3: "16:00 · الطريق الأجمل",
+    onePlanDetail1: "أرز عتيق. إيقاع أهدأ.",
+    onePlanDetail2: "طاولة تستحق البقاء.",
+    onePlanDetail3: "اترك العجلة خلفك.",
+    viewDestination: "عرض الوجهة",
+    experiencesInPlace: "تجارب هنا",
+    resultsSort: "ترتيب حسب",
+    viewToggle: "العرض",
+    whatToExpect: "ماذا تتوقع",
+    theExperience: "التجربة",
+    makeADayKicker: "اجعله يوماً كاملاً",
+    closerTitle: "أقرب قليلاً.",
+    noChargeNote: "بلا رسوم. بلا حجز فعلي.",
+    stopsLabel: "محطات",
+    savedKicker: "محفوظ لوقت لاحق",
+    collectionsKicker: "أيام منتقاة",
+    atYourOwnPace: "على مهلك.",
+    sampleExperience: "تجربة عيّنة",
+    tagsLabel: "معلومات مفيدة",
+    bookingPanelTitle: "احجز مكانك",
+    resultsTitle: "النتائج",
+    ideasStops: "محطات مخطّطة",
+    savedBody: "كل ما أعجبك أثناء التصفح، جاهز لخطتك القادمة.",
+    galleryLabel: "الصور",
+    ratingLabel: "تقييم المسافرين",
+    goodDayTitle: "يوم جميل، على مهلك.",
+    fewThingsToKnow: "أمور ينبغي معرفتها",
+    travellerReviews: "مراجعات المسافرين",
+    peopleLabel: "أشخاص",
+    personLabel: "شخص",
   },
   fr: {
     heroTitle: "Faites une place à un petit mshwar.",
@@ -523,6 +655,50 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     nearbyTitle: "À proximité et liés",
     placesOne: "{count} lieu pour en faire une journée",
     placesOther: "{count} lieux pour en faire une journée",
+    yallaKicker: "Allez là où vous vous sentez vous-même",
+    operations: "Opérations",
+    heroKicker: "Petit pays. Possibilités infinies.",
+    heroCta: "Préparons quelque chose de bien",
+    heroCaption: "Byblos, Mont-Liban",
+    lessSearchingNote: "Des lieux locaux. Des plans réfléchis. À votre rythme.",
+    perfectDayKicker: "Suivez votre curiosité",
+    goodDaysKicker: "Un peu d’inspiration",
+    closeToHomeKicker: "Une autre facette du Liban",
+    illustrativePrices: "* Prix indicatifs. Disponibilités non synchronisées.",
+    onePlanCardKicker: "Votre prochain dimanche",
+    onePlanCardNote: "Une idée à personnaliser. Horaires indicatifs.",
+    onePlanStep1: "09:30 · Un départ en douceur",
+    onePlanStep2: "12:30 · Le temps de souffler",
+    onePlanStep3: "16:00 · La route panoramique",
+    onePlanDetail1: "Cèdres millénaires. Un rythme plus lent.",
+    onePlanDetail2: "Une table où l’on s’attarde.",
+    onePlanDetail3: "Laissez la hâte derrière vous.",
+    viewDestination: "Voir la destination",
+    experiencesInPlace: "expériences ici",
+    resultsSort: "Trier par",
+    viewToggle: "Vue",
+    whatToExpect: "À quoi s’attendre",
+    theExperience: "L’expérience",
+    makeADayKicker: "Faites-en une journée",
+    closerTitle: "Un peu plus près.",
+    noChargeNote: "Aucun débit. Aucune réservation réelle.",
+    stopsLabel: "étapes",
+    savedKicker: "Gardé pour plus tard",
+    collectionsKicker: "Journées choisies",
+    atYourOwnPace: "à votre rythme.",
+    sampleExperience: "Expérience exemple",
+    tagsLabel: "Bon à savoir",
+    bookingPanelTitle: "Réservez votre place",
+    resultsTitle: "Résultats",
+    ideasStops: "étapes prévues",
+    savedBody: "Tout ce que vous avez aimé en explorant, prêt pour votre prochain plan.",
+    galleryLabel: "Photos",
+    ratingLabel: "Note des voyageurs",
+    goodDayTitle: "Une belle journée, à votre rythme.",
+    fewThingsToKnow: "Quelques points à savoir",
+    travellerReviews: "Avis des voyageurs",
+    peopleLabel: "personnes",
+    personLabel: "personne",
   },
 };
 

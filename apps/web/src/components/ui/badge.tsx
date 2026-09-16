@@ -8,16 +8,16 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(({ className, variant = "default", ...props }, ref) => (
   <span
     className={cn(
-      "inline-flex items-center rounded-pill border px-2.5 py-0.5 text-xs font-semibold",
+      "inline-flex items-center gap-1 whitespace-nowrap rounded-pill border px-2.5 py-0.5 text-xs font-medium leading-5",
       focusRing,
       {
         "border-transparent bg-brand text-brand-foreground": variant === "default",
-        "border-transparent bg-surface-sunken text-text": variant === "secondary",
-        "border-transparent bg-accent text-accent-foreground": variant === "accent",
-        "border-transparent bg-danger text-danger-foreground": variant === "danger",
-        "border-transparent bg-success text-success-foreground": variant === "success",
-        "border-transparent bg-warning text-warning-foreground": variant === "warning",
-        "border-border text-text": variant === "outline",
+        "border-transparent bg-brand-subtle text-text": variant === "secondary",
+        "border-transparent bg-accent-subtle text-accent-strong": variant === "accent",
+        "border-transparent bg-danger-subtle text-danger": variant === "danger",
+        "border-transparent bg-success-subtle text-success": variant === "success",
+        "border-transparent bg-warning-subtle text-warning": variant === "warning",
+        "border-border-subtle bg-surface-raised text-text-muted": variant === "outline",
       },
       className,
     )}

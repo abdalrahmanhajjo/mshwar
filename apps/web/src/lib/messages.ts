@@ -114,7 +114,32 @@ export type MessageKey =
   | "endDate"
   | "datesLegend"
   | "carouselPrevious"
-  | "carouselNext";
+  | "carouselNext"
+  | "accountMenu"
+  | "yourMshwar"
+  | "hubTagline"
+  | "backHome"
+  | "notFoundKicker"
+  | "authWelcome"
+  | "authJoin"
+  | "authAside"
+  | "authAsideKicker"
+  | "contactKicker"
+  | "contactTravellersTitle"
+  | "contactTravellersBody"
+  | "contactBusinessTitle"
+  | "contactBusinessBody"
+  | "contactPrivacyTitle"
+  | "contactPrivacyBody"
+  | "openBookings"
+  | "openPortal"
+  | "openSettings"
+  | "legalKicker"
+  | "termsBookingTitle"
+  | "termsPreviewTitle"
+  | "termsPoliciesTitle"
+  | "privacyControlsTitle"
+  | "consoleGreeting";
 
 export const messages: Record<Locale, Record<MessageKey, string>> = {
   en: {
@@ -232,6 +257,31 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     datesLegend: "Dates",
     carouselPrevious: "Previous",
     carouselNext: "Next",
+    accountMenu: "Account",
+    yourMshwar: "Your Mshwar",
+    hubTagline: "A little planning. A lot to discover.",
+    backHome: "Back to discover",
+    notFoundKicker: "Off the map",
+    authWelcome: "Welcome back.",
+    authJoin: "Start your first mshwar.",
+    authAside: "Save the places you love, plan full days and keep every booking in one place.",
+    authAsideKicker: "Lebanon, at your own pace.",
+    contactKicker: "We’re here to help",
+    contactTravellersTitle: "Trips and bookings",
+    contactTravellersBody: "Check the status of a request, cancel, or retrieve a confirmation from your bookings.",
+    contactBusinessTitle: "List your business",
+    contactBusinessBody: "Verified local partners manage listings, availability and requests in the business portal.",
+    contactPrivacyTitle: "Your data",
+    contactPrivacyBody: "Export, reset or delete your account data at any time from settings.",
+    openBookings: "Open my bookings",
+    openPortal: "Open the business portal",
+    openSettings: "Open settings",
+    legalKicker: "The small print",
+    termsBookingTitle: "How booking works",
+    termsPreviewTitle: "Preview status",
+    termsPoliciesTitle: "Default policies",
+    privacyControlsTitle: "Controls you own",
+    consoleGreeting: "Signed in to",
   },
   ar: {
     skipToContent: "تخطّ إلى المحتوى",
@@ -348,6 +398,31 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     datesLegend: "التواريخ",
     carouselPrevious: "السابق",
     carouselNext: "التالي",
+    accountMenu: "الحساب",
+    yourMshwar: "مشوارك",
+    hubTagline: "قليل من التخطيط. الكثير لتكتشفه.",
+    backHome: "العودة إلى الاستكشاف",
+    notFoundKicker: "خارج الخريطة",
+    authWelcome: "أهلاً بعودتك.",
+    authJoin: "ابدأ مشوارك الأول.",
+    authAside: "احفظ الأماكن التي تحبها، خطّط لأيام كاملة واحتفظ بكل حجوزاتك في مكان واحد.",
+    authAsideKicker: "لبنان، على مهلك.",
+    contactKicker: "نحن هنا للمساعدة",
+    contactTravellersTitle: "الرحلات والحجوزات",
+    contactTravellersBody: "تحقّق من حالة الطلب أو ألغِه أو استرجع التأكيد من صفحة حجوزاتك.",
+    contactBusinessTitle: "أضف نشاطك التجاري",
+    contactBusinessBody: "يدير الشركاء المحليون الموثّقون العروض والتوفر والطلبات من بوابة الأعمال.",
+    contactPrivacyTitle: "بياناتك",
+    contactPrivacyBody: "صدّر بيانات حسابك أو أعد ضبطها أو احذفها في أي وقت من الإعدادات.",
+    openBookings: "افتح حجوزاتي",
+    openPortal: "افتح بوابة الأعمال",
+    openSettings: "افتح الإعدادات",
+    legalKicker: "التفاصيل الدقيقة",
+    termsBookingTitle: "كيف يعمل الحجز",
+    termsPreviewTitle: "حالة المعاينة",
+    termsPoliciesTitle: "السياسات الافتراضية",
+    privacyControlsTitle: "أدوات تتحكم بها",
+    consoleGreeting: "مسجّل الدخول إلى",
   },
   fr: {
     skipToContent: "Aller au contenu",
@@ -465,5 +540,34 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     datesLegend: "Dates",
     carouselPrevious: "Précédent",
     carouselNext: "Suivant",
+    accountMenu: "Compte",
+    yourMshwar: "Votre Mshwar",
+    hubTagline: "Un peu d’organisation. Beaucoup à découvrir.",
+    backHome: "Retour à la découverte",
+    notFoundKicker: "Hors de la carte",
+    authWelcome: "Content de vous revoir.",
+    authJoin: "Commencez votre premier mshwar.",
+    authAside:
+      "Enregistrez les lieux que vous aimez, planifiez des journées entières et gardez vos réservations au même endroit.",
+    authAsideKicker: "Le Liban, à votre rythme.",
+    contactKicker: "Nous sommes là pour aider",
+    contactTravellersTitle: "Voyages et réservations",
+    contactTravellersBody:
+      "Consultez le statut d’une demande, annulez ou retrouvez une confirmation depuis vos réservations.",
+    contactBusinessTitle: "Référencer votre activité",
+    contactBusinessBody:
+      "Les partenaires locaux vérifiés gèrent offres, disponibilités et demandes dans le portail professionnel.",
+    contactPrivacyTitle: "Vos données",
+    contactPrivacyBody:
+      "Exportez, réinitialisez ou supprimez les données de votre compte à tout moment depuis les paramètres.",
+    openBookings: "Ouvrir mes réservations",
+    openPortal: "Ouvrir le portail professionnel",
+    openSettings: "Ouvrir les paramètres",
+    legalKicker: "Les détails",
+    termsBookingTitle: "Comment fonctionne la réservation",
+    termsPreviewTitle: "Statut de l’aperçu",
+    termsPoliciesTitle: "Politiques par défaut",
+    privacyControlsTitle: "Les contrôles à votre main",
+    consoleGreeting: "Connecté à",
   },
 };

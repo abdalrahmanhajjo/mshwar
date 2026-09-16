@@ -1,14 +1,23 @@
 "use client";
 
 import { useState } from "react";
+import { Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Notice } from "@/components/ui/notice";
+import { Textarea } from "@/components/ui/textarea";
+import { useAdminCopy } from "@/lib/admin-copy";
+import { EXPERIENCES } from "@/lib/catalog";
 
 export function CollectionEditor() {
+  const copy = useAdminCopy();
   const [slug, setSlug] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [stops, setStops] = useState("slow-day-byblos");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<{ ok: boolean } | null>(null);
 
   async function save() {
     const response = await fetch("/api/v1/catalogue/collections", {
@@ -26,55 +35,96 @@ export function CollectionEditor() {
           .filter(Boolean),
       }),
     });
-    setMessage(response.ok ? "Saved." : "Could not save. Sign in and use existing experience slugs.");
+    setMessage({ ok: response.ok });
   }
 
+  const chosen = stops
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
   return (
-    <form
-      className="grid max-w-xl gap-3"
-      onSubmit={(event) => {
-        event.preventDefault();
-        void save();
-      }}
-    >
-      <label className="grid gap-1 text-sm">
-        Slug
-        <input
-          className="rounded-control border border-border bg-surface-raised px-3 py-2"
-          value={slug}
-          onChange={(event) => setSlug(event.target.value)}
-          required
-        />
-      </label>
-      <label className="grid gap-1 text-sm">
-        Title
-        <input
-          className="rounded-control border border-border bg-surface-raised px-3 py-2"
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-          required
-        />
-      </label>
-      <label className="grid gap-1 text-sm">
-        Description
-        <textarea
-          className="rounded-control border border-border bg-surface-raised px-3 py-2"
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-        />
-      </label>
-      <label className="grid gap-1 text-sm">
-        Experience slugs
-        <input
-          className="rounded-control border border-border bg-surface-raised px-3 py-2"
-          value={stops}
-          onChange={(event) => setStops(event.target.value)}
-        />
-      </label>
-      <Button type="submit" className="w-fit">
-        Publish collection
-      </Button>
-      {message ? <p className="text-sm text-text-muted">{message}</p> : null}
-    </form>
+    <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-start">
+      <Card>
+        <CardContent className="pt-6 md:pt-7">
+          <form
+            className="grid gap-5"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void save();
+            }}
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="collection-slug">{copy.slugLabel}</Label>
+                <Input id="collection-slug" value={slug} onChange={(event) => setSlug(event.target.value)} required />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="collection-title">{copy.titleLabel}</Label>
+                <Input
+                  id="collection-title"
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="collection-description">{copy.descriptionLabel}</Label>
+              <Textarea
+                id="collection-description"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="collection-stops">{copy.stopsLabel}</Label>
+              <Input id="collection-stops" value={stops} onChange={(event) => setStops(event.target.value)} />
+            </div>
+            <Button type="submit" className="w-fit">
+              <Layers aria-hidden />
+              {copy.publishCollection}
+            </Button>
+            {message ? (
+              <Notice tone={message.ok ? "success" : "danger"} role="status">
+                {message.ok ? copy.savedMessage : copy.saveFailed}
+              </Notice>
+            ) : null}
+          </form>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="grid gap-3 pt-6 md:pt-7">
+          <p className="eyebrow">{copy.stopsLabel}</p>
+          <ul className="flex flex-wrap gap-2">
+            {EXPERIENCES.map((item) => {
+              const active = chosen.includes(item.slug);
+              return (
+                <li key={item.slug}>
+                  <button
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() =>
+                      setStops(
+                        (active ? chosen.filter((slugItem) => slugItem !== item.slug) : [...chosen, item.slug]).join(
+                          ", ",
+                        ),
+                      )
+                    }
+                    className={
+                      active
+                        ? "rounded-pill border border-brand bg-brand px-3 py-1.5 text-xs font-medium text-brand-foreground"
+                        : "rounded-pill border border-border-subtle bg-surface-raised px-3 py-1.5 text-xs font-medium text-text-muted hover:text-text"
+                    }
+                  >
+                    {item.slug}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

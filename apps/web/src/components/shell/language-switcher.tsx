@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { LOCALES, LOCALE_LABELS, LOCALE_SHORT_LABELS, withLocalePrefix } from "@/lib/locale";
 import { persistSignedInLocale } from "@/lib/profile";
-import { cn, controlSize, focusRing } from "@/lib/utils";
+import { cn, focusRing } from "@/lib/utils";
 import { useAuth } from "@/components/shell/auth-provider";
 import { useLocale } from "@/components/shell/locale-provider";
 
@@ -23,7 +23,14 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
   }
 
   return (
-    <div role="group" aria-label={t("language")} className="inline-flex rounded-control border border-border">
+    <div
+      role="group"
+      aria-label={t("language")}
+      className={cn(
+        "inline-flex items-center rounded-pill border border-border-subtle bg-surface-raised p-0.5",
+        !compact && "w-full",
+      )}
+    >
       {LOCALES.map((item) => {
         const active = item === locale;
         return (
@@ -34,10 +41,10 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
             aria-label={LOCALE_LABELS[item]}
             onClick={() => onSelect(item)}
             className={cn(
-              "px-2 text-sm font-medium",
-              controlSize,
+              "inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors",
+              !compact && "h-10 flex-1 text-sm",
               focusRing,
-              active ? "bg-brand text-brand-foreground" : "bg-surface-raised text-text hover:bg-surface-sunken",
+              active ? "bg-brand text-brand-foreground" : "text-text-muted hover:bg-surface-sunken hover:text-text",
             )}
           >
             {compact ? LOCALE_SHORT_LABELS[item] : LOCALE_LABELS[item]}

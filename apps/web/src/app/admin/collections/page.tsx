@@ -1,10 +1,12 @@
+import { AdminCollectionsHeader } from "@/components/admin/admin-page-headers";
 import { CollectionEditor } from "@/components/admin/collection-editor";
-import { ShellPage } from "@/components/shell/shell-page";
+import { ShellMain } from "@/components/shell/app-shell";
 
 export default function AdminCollectionsPage() {
   return (
-    <ShellPage title="Collections" description="Assemble collections from existing published experiences.">
+    <ShellMain>
+      <AdminCollectionsHeader />
       <CollectionEditor />
-    </ShellPage>
+    </ShellMain>
   );
 }

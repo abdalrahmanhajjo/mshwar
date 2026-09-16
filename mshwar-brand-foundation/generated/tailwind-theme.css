@@ -15,10 +15,14 @@
   --color-text-on-accent: var(--text-on-accent);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-subtle: var(--accent-subtle);
+  --color-accent-strong: var(--accent-strong);
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
+  --color-brand-subtle: var(--brand-subtle);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
+  --color-border-subtle: var(--border-subtle);
   --color-danger: var(--danger);
   --color-danger-foreground: var(--danger-foreground);
   --color-danger-subtle: var(--danger-subtle);
@@ -45,7 +49,8 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --font-sans: "Manrope", system-ui, sans-serif;
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-display: "Newsreader", Georgia, serif;
   --font-arabic: "Noto Sans Arabic", Tahoma, sans-serif;
   --radius: 0.75rem;
   --radius-control: 0.75rem;

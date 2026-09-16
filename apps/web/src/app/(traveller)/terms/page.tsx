@@ -1,5 +1,5 @@
-import { LocalizedShellPage } from "@/components/shell/localized-shell-page";
+import { TermsView } from "@/components/legal/legal-views";
 
 export default function TermsPage() {
-  return <LocalizedShellPage titleKey="termsTitle" descriptionKey="termsBody" />;
+  return <TermsView />;
 }

@@ -1,7 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Activity, AlertTriangle, LifeBuoy } from "lucide-react";
+import { AdminHeader } from "@/components/admin/admin-ui";
+import { StatCard } from "@/components/ui/stat-card";
 import { fetchKpis, listCases, listQuality } from "@/lib/admin";
 import { useAdminCopy } from "@/lib/admin-copy";
 import { Input } from "@/components/ui/input";
@@ -49,37 +51,60 @@ export function KpiDashboard() {
   }, [from, to]);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{copy.kpiTitle}</CardTitle>
-        <CardDescription>
-          Open cases {cases}. Open quality issues {quality}.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-3">
-        <div className="flex flex-wrap gap-2">
-          <Input
-            type="datetime-local"
-            aria-label="from"
-            value={from}
-            onChange={(event) => setFrom(event.target.value)}
-          />
-          <Input type="datetime-local" aria-label="to" value={to} onChange={(event) => setTo(event.target.value)} />
-        </div>
-        <dl className="grid gap-3 sm:grid-cols-2">
-          {definitions.map((item) => (
-            <div key={item.key} className="rounded-card border border-border p-3">
-              <dt className="text-sm font-medium" title={item.definition}>
+    <div className="grid gap-8">
+      <AdminHeader
+        title={copy.kpiTitle}
+        description={copy.overviewBody}
+        actions={
+          <div className="flex flex-wrap items-end gap-2">
+            <label className="grid gap-1 text-xs font-medium text-text-muted">
+              {copy.fromLabel}
+              <Input
+                type="datetime-local"
+                aria-label="from"
+                value={from}
+                onChange={(event) => setFrom(event.target.value)}
+                className="min-h-10 py-1.5"
+              />
+            </label>
+            <label className="grid gap-1 text-xs font-medium text-text-muted">
+              {copy.toLabel}
+              <Input
+                type="datetime-local"
+                aria-label="to"
+                value={to}
+                onChange={(event) => setTo(event.target.value)}
+                className="min-h-10 py-1.5"
+              />
+            </label>
+          </div>
+        }
+      />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <StatCard label={copy.openCases} value={cases} icon={<LifeBuoy aria-hidden />} />
+        <StatCard label={copy.openIssues} value={quality} icon={<AlertTriangle aria-hidden />} />
+      </div>
+      <dl className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {definitions.map((item) => (
+          <div
+            key={item.key}
+            className="flex flex-col gap-3 rounded-card border border-border-subtle bg-surface-raised p-5"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <dt className="text-sm font-medium text-text-muted" title={item.definition}>
                 {item.label}
               </dt>
-              <dd className="text-title">{metrics[item.key] ?? 0}</dd>
-              <p className="text-sm text-text-muted">
-                {copy.metricDefinition}: {item.definition}
-              </p>
+              <Activity className="size-4 text-text-muted" aria-hidden />
             </div>
-          ))}
-        </dl>
-      </CardContent>
-    </Card>
+            <dd className="text-[2rem] font-semibold leading-none tracking-[-0.03em] tabular-nums">
+              {metrics[item.key] ?? 0}
+            </dd>
+            <p className="text-xs leading-relaxed text-text-muted">
+              {copy.metricDefinition}: {item.definition}
+            </p>
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 }

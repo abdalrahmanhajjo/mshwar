@@ -3,6 +3,7 @@
 import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { Check, ChevronDown } from "lucide-react";
+import { fieldChrome } from "@/components/ui/input";
 import { cn, controlSize, focusRing } from "@/lib/utils";
 
 const Select = SelectPrimitive.Root;
@@ -16,8 +17,9 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex w-full items-center justify-between gap-2 rounded-control border border-border bg-surface-raised px-3 py-2 text-sm text-text",
-      "disabled:cursor-not-allowed disabled:opacity-50 data-[placeholder]:text-text-muted",
+      "flex items-center justify-between gap-2 py-2.5 text-start",
+      fieldChrome,
+      "data-[placeholder]:text-text-muted",
       focusRing,
       controlSize,
       className,
@@ -26,7 +28,7 @@ const SelectTrigger = React.forwardRef<
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronDown className="size-4 shrink-0 opacity-70" aria-hidden />
+      <ChevronDown className="size-4 shrink-0 text-text-muted" aria-hidden />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ));
@@ -40,13 +42,14 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "relative z-50 max-h-96 min-w-32 overflow-hidden rounded-control border border-border bg-surface-raised text-text shadow-md",
+        "relative z-50 max-h-96 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-control border border-border-subtle bg-surface-raised text-text shadow-lg",
         className,
       )}
       position={position}
+      sideOffset={position === "popper" ? 6 : undefined}
       {...props}
     >
-      <SelectPrimitive.Viewport className="p-1">{children}</SelectPrimitive.Viewport>
+      <SelectPrimitive.Viewport className="p-1.5">{children}</SelectPrimitive.Viewport>
     </SelectPrimitive.Content>
   </SelectPrimitive.Portal>
 ));
@@ -59,8 +62,8 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-control py-2 pe-8 ps-2 text-sm outline-none",
-      "focus:bg-surface-sunken focus:text-text data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex w-full cursor-default select-none items-center rounded-[0.5rem] py-2.5 pe-8 ps-3 text-sm outline-none",
+      "focus:bg-brand-subtle focus:text-text data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className,
     )}
     {...props}

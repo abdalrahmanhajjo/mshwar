@@ -1,22 +1,31 @@
 import type { Metadata } from "next";
 import { cookies, headers } from "next/headers";
-import { Manrope, Noto_Sans_Arabic } from "next/font/google";
+import localFont from "next/font/local";
 import { AuthProvider } from "@/components/shell/auth-provider";
 import { LocaleProvider } from "@/components/shell/locale-provider";
 import { SignedInLocaleSync } from "@/components/shell/locale-sync";
 import { LOCALE_COOKIE, LOCALE_HEADER, localeDirection, parseLocale } from "@/lib/locale";
 import "./globals.css";
 
-const manrope = Manrope({
-  subsets: ["latin"],
+const dmSans = localFont({
+  src: [{ path: "./fonts/dm-sans-latin-opsz.woff2", weight: "100 1000", style: "normal" }],
   variable: "--font-latin-face",
   display: "swap",
+  fallback: ["system-ui", "sans-serif"],
 });
 
-const notoSansArabic = Noto_Sans_Arabic({
-  subsets: ["arabic"],
+const newsreader = localFont({
+  src: [{ path: "./fonts/newsreader-latin-opsz-italic.woff2", weight: "200 800", style: "italic" }],
+  variable: "--font-display-face",
+  display: "swap",
+  fallback: ["Georgia", "serif"],
+});
+
+const notoSansArabic = localFont({
+  src: [{ path: "./fonts/noto-sans-arabic-wght.woff2", weight: "100 900", style: "normal" }],
   variable: "--font-arabic-face",
   display: "swap",
+  fallback: ["Tahoma", "sans-serif"],
 });
 
 export const metadata: Metadata = {
@@ -31,7 +40,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang={locale} dir={localeDirection(locale)} suppressHydrationWarning>
-      <body className={`${manrope.variable} ${notoSansArabic.variable}`}>
+      <body className={`${dmSans.variable} ${newsreader.variable} ${notoSansArabic.variable}`}>
         <LocaleProvider initialLocale={locale}>
           <AuthProvider>
             <SignedInLocaleSync />

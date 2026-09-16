@@ -40,7 +40,21 @@ export type HubKey =
   | "unread"
   | "read"
   | "openItem"
-  | "pageLabel";
+  | "pageLabel"
+  | "newTrip"
+  | "tripsKicker"
+  | "favoritesKicker"
+  | "bookingsKicker"
+  | "notificationsKicker"
+  | "settingsKicker"
+  | "settingsTitle"
+  | "settingsBody"
+  | "createdOn"
+  | "openTrip"
+  | "bookedOn"
+  | "checkoutBookings"
+  | "listingBookings"
+  | "unreadCount";
 
 export const hubCopy: Record<Locale, Record<HubKey, string>> = {
   en: {
@@ -83,6 +97,20 @@ export const hubCopy: Record<Locale, Record<HubKey, string>> = {
     read: "Read",
     openItem: "Open related item",
     pageLabel: "Pagination",
+    newTrip: "New trip",
+    tripsKicker: "Good things to look forward to",
+    favoritesKicker: "Kept for later",
+    bookingsKicker: "Your reservations",
+    notificationsKicker: "Stay in the loop",
+    settingsKicker: "Your account",
+    settingsTitle: "Settings",
+    settingsBody: "Profile, preferences, messages and privacy — all in one place.",
+    createdOn: "Created",
+    openTrip: "Open plan",
+    bookedOn: "Requested",
+    checkoutBookings: "Checkout bookings",
+    listingBookings: "Booking requests",
+    unreadCount: "unread",
   },
   ar: {
     tripsTitle: "رحلاتك",
@@ -124,6 +152,20 @@ export const hubCopy: Record<Locale, Record<HubKey, string>> = {
     read: "مقروء",
     openItem: "فتح العنصر المرتبط",
     pageLabel: "ترقيم الصفحات",
+    newTrip: "رحلة جديدة",
+    tripsKicker: "أشياء جميلة بانتظارك",
+    favoritesKicker: "محفوظ لوقت لاحق",
+    bookingsKicker: "حجوزاتك",
+    notificationsKicker: "ابقَ على اطلاع",
+    settingsKicker: "حسابك",
+    settingsTitle: "الإعدادات",
+    settingsBody: "الملف الشخصي والتفضيلات والرسائل والخصوصية في مكان واحد.",
+    createdOn: "أُنشئت في",
+    openTrip: "افتح الخطة",
+    bookedOn: "طُلب في",
+    checkoutBookings: "حجوزات الدفع",
+    listingBookings: "طلبات الحجز",
+    unreadCount: "غير مقروءة",
   },
   fr: {
     tripsTitle: "Vos voyages",
@@ -165,6 +207,20 @@ export const hubCopy: Record<Locale, Record<HubKey, string>> = {
     read: "Lu",
     openItem: "Ouvrir l’élément lié",
     pageLabel: "Pagination",
+    newTrip: "Nouveau voyage",
+    tripsKicker: "De belles choses à venir",
+    favoritesKicker: "Gardé pour plus tard",
+    bookingsKicker: "Vos réservations",
+    notificationsKicker: "Restez informé",
+    settingsKicker: "Votre compte",
+    settingsTitle: "Paramètres",
+    settingsBody: "Profil, préférences, messages et confidentialité — au même endroit.",
+    createdOn: "Créé le",
+    openTrip: "Ouvrir le plan",
+    bookedOn: "Demandé le",
+    checkoutBookings: "Réservations payées",
+    listingBookings: "Demandes de réservation",
+    unreadCount: "non lues",
   },
 };
 

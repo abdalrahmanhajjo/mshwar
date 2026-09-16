@@ -1,11 +1,12 @@
 "use client";
 
-import { ArrowLeft, ArrowUpRight, Clock, MapPin } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Check, Clock, MapPin, Navigation, ShieldCheck, Star, Users } from "lucide-react";
 import { BookingWidget } from "@/components/browse/booking-widget";
 import { CatalogImage } from "@/components/browse/catalog-image";
 import { ExperienceCard } from "@/components/browse/experience-card";
 import { SaveExperienceButton } from "@/components/browse/save-button";
 import { LocaleLink } from "@/components/shell/locale-link";
+import { Eyebrow, SectionHeader } from "@/components/ui/page-header";
 import { useBrowseCopy } from "@/lib/browse-copy";
 import {
   bookingModeLabel,
@@ -22,6 +23,10 @@ import {
 import { CATEGORIES } from "@/lib/catalog";
 import { ReviewsPanel } from "@/components/reviews/reviews-panel";
 import { Rating } from "@/components/ui/rating";
+import { splitSentence } from "@/lib/text";
+import { cn, focusRing } from "@/lib/utils";
+
+const FACT_ICONS = [Clock, Users, MapPin, ShieldCheck];
 
 export function ExperienceDetailView({ experience, related }: { experience: Experience; related: Experience[] }) {
   const copy = useBrowseCopy();
@@ -32,6 +37,8 @@ export function ExperienceDetailView({ experience, related }: { experience: Expe
   const available = listingAvailable(experience);
   const rating = listingRating(experience);
   const kind = listingKind(experience);
+  const [region] = experience.placeLabel.split(" · ").slice(-1);
+  const [summaryLead, summaryTail] = splitSentence(experience.summary ?? experience.title);
 
   return (
     <div>
@@ -60,126 +67,192 @@ export function ExperienceDetailView({ experience, related }: { experience: Expe
           }),
         }}
       />
-      <div className="shell-frame grid gap-4 py-8">
-        <LocaleLink href="/experiences" className="inline-flex items-center gap-2 text-sm text-text-muted">
+      <div className="shell-frame grid gap-5 pb-8 pt-8 md:pt-10">
+        <LocaleLink
+          href="/experiences"
+          className={cn(
+            "inline-flex w-fit items-center gap-2 rounded-sm text-sm text-text-muted hover:text-text",
+            focusRing,
+          )}
+        >
           <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
           {copy.backExperiences}
         </LocaleLink>
-        <p className="text-xs uppercase tracking-[0.16em] text-text-muted">
-          {category} · {experience.placeLabel}
-        </p>
+        <Eyebrow>
+          {category} · {region}
+        </Eyebrow>
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <h1 className="max-w-3xl text-4xl font-semibold tracking-tight md:text-5xl">{experience.title}</h1>
+          <h1 className="title-page max-w-3xl text-balance">{experience.title}</h1>
           <SaveExperienceButton slug={experience.slug} />
         </div>
-        <p className="flex flex-wrap gap-4 text-sm text-text-muted">
-          <span>
-            <MapPin className="me-1 inline size-4" aria-hidden />
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-muted">
+          <span className="inline-flex items-center gap-1.5">
+            <MapPin className="size-4" strokeWidth={1.75} aria-hidden />
             {experience.placeLabel}
           </span>
-          <span>
-            <Clock className="me-1 inline size-4" aria-hidden />
+          <span className="inline-flex items-center gap-1.5">
+            <Clock className="size-4" strokeWidth={1.75} aria-hidden />
             {experience.hours} {copy.hoursLabel}
           </span>
-          <span>
+          <span className="inline-flex items-center gap-1.5">
+            <Navigation className="size-4" strokeWidth={1.75} aria-hidden />
             {listingDistance(experience)} km {copy.fromBeirut}
           </span>
-        </p>
-        {rating ? <Rating value={Math.round(rating)} readOnly label={`${rating.toFixed(1)}`} /> : null}
+          {rating ? (
+            <span className="inline-flex items-center gap-1.5 font-medium text-text">
+              <Star className="size-4 fill-accent text-accent" aria-hidden />
+              {rating.toFixed(1)}
+            </span>
+          ) : null}
+        </div>
       </div>
 
-      <div className="shell-frame grid gap-3 pb-10 md:grid-cols-3">
-        {gallery.map((src, index) => (
-          <div
-            key={`${src}-${index}`}
-            className={index === 0 ? "overflow-hidden rounded-card md:col-span-2" : "overflow-hidden rounded-card"}
-          >
-            <div className={index === 0 ? "aspect-[16/10]" : "aspect-[4/3]"}>
-              <CatalogImage src={src} alt={experience.imageAlt} priority={index === 0} />
-            </div>
+      <div className="shell-frame pb-4">
+        <div className="grid overflow-hidden rounded-[1.5rem] bg-brand text-brand-foreground lg:grid-cols-[1.6fr_1fr]">
+          <div className="relative aspect-[16/10] lg:aspect-auto lg:min-h-[26rem]">
+            <CatalogImage
+              src={gallery[0] ?? experience.image}
+              alt={experience.imageAlt}
+              className="absolute inset-0"
+              priority
+            />
           </div>
-        ))}
+          <div className="flex flex-col justify-center gap-4 p-8 md:p-12">
+            <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-brand-foreground/65">
+              {copy.makeADayKicker}
+            </p>
+            <p className="title-section text-balance">
+              {summaryLead}
+              {summaryTail ? <span className="block">{summaryTail}</span> : null}
+            </p>
+            <p className="text-sm text-brand-foreground/70">{experience.tags.join(" · ")}</p>
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${mapsQuery}`}
+              target="_blank"
+              rel="noreferrer"
+              className={cn(
+                "mt-2 inline-flex w-fit items-center gap-2 border-b border-brand-foreground/40 pb-1 text-sm font-medium hover:border-brand-foreground",
+                focusRing,
+              )}
+            >
+              {copy.seeArea}
+              <ArrowUpRight className="size-4 rtl:-scale-x-100" aria-hidden />
+            </a>
+          </div>
+        </div>
+        {gallery.length > 1 ? (
+          <ul aria-label={copy.galleryLabel} className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
+            {gallery.slice(1, 5).map((src, index) => (
+              <li key={`${src}-${index}`} className="overflow-hidden rounded-card">
+                <div className="aspect-[4/3]">
+                  <CatalogImage src={src} alt={experience.imageAlt} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </div>
 
-      <div className="shell-frame grid gap-10 pb-16 lg:grid-cols-[1.3fr_0.9fr] lg:items-start">
-        <div className="grid gap-8">
-          <section>
-            <h2 className="text-3xl font-semibold tracking-tight">{experience.body.split(".")[0]}.</h2>
-            <p className="mt-4 text-text-muted">{experience.body}</p>
-            <div className="mt-5 flex flex-wrap gap-2">
+      <div className="shell-frame grid gap-12 py-12 lg:grid-cols-[1.55fr_1fr] lg:items-start lg:gap-16 md:py-16">
+        <div className="grid gap-12">
+          <section className="grid gap-4">
+            <Eyebrow>{copy.theExperience}</Eyebrow>
+            <h2 className="title-section">{copy.goodDayTitle}</h2>
+            <p className="text-lg leading-relaxed text-text-muted">{experience.body}</p>
+            <ul className="mt-1 flex flex-wrap gap-2">
               {experience.tags.map((tag) => (
-                <span key={tag} className="rounded-pill border border-border px-3 py-1 text-sm">
+                <li
+                  key={tag}
+                  className="inline-flex items-center gap-1.5 rounded-pill bg-brand-subtle px-3 py-1.5 text-sm font-medium"
+                >
+                  <Check className="size-3.5" aria-hidden />
                   {tag}
-                </span>
-              ))}
-            </div>
-          </section>
-          <section className="grid gap-6 md:grid-cols-2">
-            {experience.facts.map((fact) => (
-              <div key={fact.title}>
-                <h3 className="font-semibold">{fact.title}</h3>
-                <p className="mt-2 text-sm text-text-muted">{fact.body}</p>
-              </div>
-            ))}
-          </section>
-          <section className="rounded-card border border-border bg-surface-raised p-6">
-            <h3 className="font-semibold">{copy.availabilityStatus}</h3>
-            <p className="mt-2 text-sm font-medium">
-              {`${bookingModeLabel(experience.bookingMode)} · ${copy.preview}`}
-            </p>
-            <p className="mt-2 text-sm text-text-muted">
-              {available ? listingAvailabilityNote(experience) : copy.availabilityUnknown}
-            </p>
-            <p className="mt-3 text-sm text-text-muted">{priceKindLabel(experience.priceLabel)}</p>
-          </section>
-          <section aria-labelledby="listing-policies-heading">
-            <h3 id="listing-policies-heading" className="font-semibold">
-              {copy.policies}
-            </h3>
-            <ul className="mt-4 grid gap-4">
-              {policies.map((policy) => (
-                <li key={policy.title}>
-                  <p className="text-sm font-medium">{policy.title}</p>
-                  <p className="mt-1 text-sm text-text-muted">{policy.body}</p>
                 </li>
               ))}
             </ul>
           </section>
-          <ReviewsPanel listingSlug={experience.slug} />
-          <p className="text-sm text-text-muted">{copy.sampleOffer}</p>
+
+          <section className="grid gap-6 border-t border-border-subtle pt-10" aria-labelledby="expect-heading">
+            <h2 id="expect-heading" className="title-card text-[1.5rem]">
+              {copy.whatToExpect}
+            </h2>
+            <ul className="grid gap-x-8 gap-y-7 sm:grid-cols-2">
+              {experience.facts.map((fact, index) => {
+                const Icon = FACT_ICONS[index % FACT_ICONS.length];
+                return (
+                  <li key={fact.title} className="grid gap-2">
+                    <Icon className="size-5 text-text" strokeWidth={1.6} aria-hidden />
+                    <h3 className="font-semibold">{fact.title}</h3>
+                    <p className="text-sm leading-relaxed text-text-muted">{fact.body}</p>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+
+          <section className="grid gap-3 rounded-card border border-border-subtle bg-surface-sunken/60 p-6">
+            <h2 className="font-semibold">{copy.availabilityStatus}</h2>
+            <p className="text-sm font-medium">{`${bookingModeLabel(experience.bookingMode)} · ${copy.preview}`}</p>
+            <p className="text-sm text-text-muted">
+              {available ? listingAvailabilityNote(experience) : copy.availabilityUnknown}
+            </p>
+            <p className="text-sm text-text-muted">{priceKindLabel(experience.priceLabel)}</p>
+          </section>
+
+          <section
+            aria-labelledby="listing-policies-heading"
+            className="grid gap-5 border-t border-border-subtle pt-10"
+          >
+            <h2 id="listing-policies-heading" className="title-card text-[1.5rem]">
+              {copy.policies}
+            </h2>
+            <ul className="grid gap-4">
+              {policies.map((policy) => (
+                <li key={policy.title} className="grid gap-1 border-b border-border-subtle pb-4 last:border-b-0">
+                  <p className="text-sm font-semibold">{policy.title}</p>
+                  <p className="text-sm leading-relaxed text-text-muted">{policy.body}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <div className="border-t border-border-subtle pt-10">
+            {rating ? (
+              <div className="mb-6">
+                <Rating value={Math.round(rating)} readOnly label={`${copy.ratingLabel} · ${rating.toFixed(1)}`} />
+              </div>
+            ) : null}
+            <ReviewsPanel listingSlug={experience.slug} />
+          </div>
+
+          <section className="grid gap-3 border-t border-border-subtle pt-10">
+            <h2 className="title-card text-[1.5rem]">{copy.fewThingsToKnow}</h2>
+            <p className="text-sm leading-relaxed text-text-muted">{copy.sampleOffer}</p>
+          </section>
         </div>
         <BookingWidget experience={experience} />
       </div>
 
-      <div className="shell-frame grid gap-6 pb-16">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <h2 className="text-3xl font-semibold tracking-tight">{copy.keepExploring}</h2>
-          <a
-            href={`https://www.google.com/maps/search/?api=1&query=${mapsQuery}`}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 text-sm"
-          >
-            {copy.seeArea}
-            <ArrowUpRight className="size-4 rtl:-scale-x-100" aria-hidden />
-          </a>
+      {related.length ? (
+        <div className="shell-frame grid gap-8 pb-20">
+          <SectionHeader title={copy.keepExploring} />
+          <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+            {related.map((item) => (
+              <div key={item.slug} className="grid content-start gap-2">
+                <ExperienceCard experience={item} />
+                {item.distanceKm != null ? (
+                  <p className="text-xs text-text-muted">
+                    {item.distanceKm} km
+                    {item.travelSeconds
+                      ? ` · ${Math.max(1, Math.round(item.travelSeconds / 60))} ${copy.minutesLabel}`
+                      : ""}
+                  </p>
+                ) : null}
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="grid gap-8 md:grid-cols-3">
-          {related.map((item) => (
-            <div key={item.slug} className="grid gap-2">
-              <ExperienceCard experience={item} />
-              {item.distanceKm != null ? (
-                <p className="text-sm text-text-muted">
-                  {item.distanceKm} km
-                  {item.travelSeconds
-                    ? ` · ${Math.max(1, Math.round(item.travelSeconds / 60))} ${copy.minutesLabel}`
-                    : ""}
-                </p>
-              ) : null}
-            </div>
-          ))}
-        </div>
-      </div>
+      ) : null}
     </div>
   );
 }

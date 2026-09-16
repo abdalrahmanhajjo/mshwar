@@ -1,7 +1,10 @@
 "use client";
 
 import * as React from "react";
+import { Check, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Notice } from "@/components/ui/notice";
+import { cn, focusRing } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,8 +44,8 @@ function ChipGroup({
   onToggle: (slug: string) => void;
 }) {
   return (
-    <fieldset className="grid gap-2">
-      <legend className="text-sm font-medium text-text">{legend}</legend>
+    <fieldset className="grid gap-3">
+      <legend className="mb-3 text-sm font-semibold text-text">{legend}</legend>
       <div className="flex flex-wrap gap-2">
         {terms.map((term) => {
           const on = selected.includes(term.slug);
@@ -51,11 +54,16 @@ function ChipGroup({
               key={term.slug}
               type="button"
               aria-pressed={on}
-              className={`rounded-control border px-3 py-2 text-sm min-h-[var(--layout-min-target)] ${
-                on ? "border-brand bg-brand text-brand-foreground" : "border-border bg-surface-raised text-text"
-              }`}
+              className={cn(
+                "inline-flex min-h-10 items-center gap-1.5 rounded-pill border px-4 text-sm font-medium transition-colors",
+                on
+                  ? "border-brand/60 bg-brand-subtle text-text"
+                  : "border-border-subtle bg-surface-raised text-text-muted hover:border-brand/40 hover:text-text",
+                focusRing,
+              )}
               onClick={() => onToggle(term.slug)}
             >
+              {on ? <Check className="size-3.5" aria-hidden /> : null}
               {term.label}
             </button>
           );
@@ -127,12 +135,12 @@ export function ProfileForm() {
 
   return (
     <form className="grid gap-6" onSubmit={(event) => void onSubmit(event)}>
-      <Card>
+      <Card id="profile" className="scroll-mt-28">
         <CardHeader>
-          <CardTitle>{t("profile")}</CardTitle>
+          <CardTitle as="h2">{t("profile")}</CardTitle>
           <CardDescription>{t("profileHint")}</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4">
+        <CardContent className="grid items-start gap-5 sm:grid-cols-2">
           <div className="grid gap-2">
             <Label htmlFor="display-name">{t("displayName")}</Label>
             <Input
@@ -192,7 +200,11 @@ export function ProfileForm() {
               <p className="text-sm text-text-muted">{t("notSet")}</p>
             )}
             <p className="text-xs text-text-muted">{t("homeAreaStub")}</p>
-            <LocaleLink className="text-sm text-brand underline-offset-4 hover:underline" href="/plan/start">
+            <LocaleLink
+              className="inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-text underline-offset-4 hover:underline"
+              href="/plan/start"
+            >
+              <MapPin className="size-4" aria-hidden />
               {t("planATrip")}
             </LocaleLink>
           </div>
@@ -217,13 +229,13 @@ export function ProfileForm() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card id="preferences" className="scroll-mt-28">
         <CardHeader>
-          <CardTitle>{t("preferences")}</CardTitle>
+          <CardTitle as="h2">{t("preferences")}</CardTitle>
           <CardDescription>{t("preferencesHint")}</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4">
-          <p className="text-sm text-text-muted">{t("explicitOnly")}</p>
+        <CardContent className="grid gap-7">
+          <Notice>{t("explicitOnly")}</Notice>
           {vocab ? (
             <>
               <ChipGroup
@@ -240,7 +252,7 @@ export function ProfileForm() {
                   setPrefs((current) => ({ ...current, accessibility: toggleSlug(current.accessibility, slug) }))
                 }
               />
-              <div className="grid gap-2">
+              <div className="grid max-w-sm gap-2">
                 <Label htmlFor="intensity">{t("activityIntensity")}</Label>
                 <Select
                   value={prefs.activity_intensity ?? "none"}
@@ -274,20 +286,22 @@ export function ProfileForm() {
               />
             </>
           ) : null}
-          <p className="text-sm text-text-muted">{t("nextPlanUsesDefaults")}</p>
           {error ? (
-            <p role="alert" className="text-sm text-danger">
+            <Notice tone="danger" role="alert">
               {error}
-            </p>
+            </Notice>
           ) : null}
           {saved ? (
-            <p role="status" className="text-sm text-text">
-              {t("profileSaved")}
-            </p>
+            <Notice tone="success">
+              <p role="status">{t("profileSaved")}</p>
+            </Notice>
           ) : null}
-          <Button type="submit" disabled={pending}>
-            {t("saveProfile")}
-          </Button>
+          <div className="flex flex-col gap-3 border-t border-border-subtle pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-text-muted">{t("nextPlanUsesDefaults")}</p>
+            <Button type="submit" size="lg" disabled={pending}>
+              {t("saveProfile")}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </form>

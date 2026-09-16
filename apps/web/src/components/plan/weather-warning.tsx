@@ -1,6 +1,7 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CloudSun, CloudRainWind } from "lucide-react";
+import { Notice } from "@/components/ui/notice";
 import { usePlannerCopy } from "@/lib/planner-copy";
 import type { WarningResult } from "@/lib/planner";
 
@@ -10,30 +11,36 @@ export function WeatherWarningList({ result }: { result: WarningResult | null })
     return null;
   }
   if (result.forecast_unavailable && result.warnings.length === 0) {
-    return <p className="text-sm text-text-muted">{copy.forecastUnavailable}</p>;
+    return <Notice icon={<CloudSun aria-hidden />}>{copy.forecastUnavailable}</Notice>;
   }
   if (result.warnings.length === 0) {
-    return <p className="text-sm text-text-muted">{copy.noWarning}</p>;
+    return (
+      <Notice tone="success" icon={<CloudSun aria-hidden />}>
+        {copy.noWarning}
+      </Notice>
+    );
   }
   return (
-    <div className="grid gap-3">
+    <ul className="grid gap-3">
       {result.warnings.map((warning) => (
-        <Card key={warning.stop_id}>
-          <CardHeader>
-            <CardTitle>{copy.weatherWarning}</CardTitle>
-            <CardDescription>
-              {warning.stop_label} · {warning.source} · {warning.fetched_at ?? warning.forecast_date}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="grid gap-1 text-sm">
-              {warning.reasons.map((reason) => (
-                <li key={reason}>{reason}</li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        <li
+          key={warning.stop_id}
+          className="grid gap-2 rounded-control border border-warning/25 bg-warning-subtle/70 p-4"
+        >
+          <p className="inline-flex items-center gap-2 text-sm font-semibold text-warning">
+            <CloudRainWind className="size-4" aria-hidden />
+            {copy.weatherWarning}
+          </p>
+          <p className="text-xs text-text-muted">
+            {warning.stop_label} · {warning.source} · {warning.fetched_at ?? warning.forecast_date}
+          </p>
+          <ul className="grid list-disc gap-1 ps-5 text-sm">
+            {warning.reasons.map((reason) => (
+              <li key={reason}>{reason}</li>
+            ))}
+          </ul>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

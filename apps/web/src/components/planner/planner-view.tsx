@@ -1,7 +1,26 @@
 "use client";
 
 import * as React from "react";
+import {
+  CalendarDays,
+  Car,
+  Clock,
+  Loader2,
+  Lock,
+  LockOpen,
+  MapPin,
+  MessageCircleQuestion,
+  RefreshCw,
+  Replace,
+  Route,
+  Sparkles,
+  Users,
+  Wallet,
+  Wand2,
+} from "lucide-react";
+import { CatalogImage } from "@/components/browse/catalog-image";
 import { Badge } from "@/components/ui/badge";
+import { Notice } from "@/components/ui/notice";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,8 +42,13 @@ import {
   type PlanDocument,
   type PlannerSession,
 } from "@/lib/planner";
+import { useHubCopy } from "@/lib/hub-copy";
 import { usePlannerCopy } from "@/lib/planner-copy";
 import { interpolate } from "@/i18n/catalogues";
+import { formatDate } from "@/i18n/format";
+import { DESTINATIONS, getExperience } from "@/lib/catalog";
+import { splitSentence } from "@/lib/text";
+import { cn, focusRing } from "@/lib/utils";
 
 function priceKindLabel(kind: string, copy: ReturnType<typeof usePlannerCopy>) {
   if (kind === "quote") {
@@ -77,30 +101,58 @@ export function PlannerView({ initialTripId }: { initialTripId?: string }) {
   }
 
   const plan = session?.plan ?? null;
+  const suggestions = [copy.suggestion1, copy.suggestion2, copy.suggestion3];
 
   return (
-    <div className="grid gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{copy.title}</CardTitle>
-          <CardDescription>{copy.body}</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
+    <div className="grid gap-8 lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start lg:gap-12">
+      <div className="grid gap-6 lg:sticky lg:top-24">
+        <section
+          aria-labelledby="planner-heading"
+          className="grid gap-6 rounded-card border border-border-subtle bg-surface-raised p-6 shadow-sm md:p-7"
+        >
+          <div className="flex items-center gap-3">
+            <span className="grid size-10 shrink-0 place-items-center rounded-full border border-border-subtle text-sm font-medium tabular-nums">
+              01
+            </span>
+            <h2 id="planner-heading" className="title-card text-[1.55rem]">
+              {copy.title}
+            </h2>
+          </div>
           {session?.degraded ? (
-            <p role="status" className="rounded-control bg-warning/15 p-3 text-sm">
+            <Notice tone="warning" role="status">
               {session.degraded_message || copy.degraded}
-            </p>
+            </Notice>
           ) : null}
-          <Label htmlFor="planner-intent">{copy.title}</Label>
-          <Textarea
-            id="planner-intent"
-            value={text}
-            onChange={(event) => setText(event.target.value)}
-            placeholder={copy.placeholder}
-            rows={4}
-          />
+          <div className="grid gap-2.5">
+            <Label htmlFor="planner-intent">{copy.moodLabel}</Label>
+            <Textarea
+              id="planner-intent"
+              value={text}
+              onChange={(event) => setText(event.target.value)}
+              placeholder={copy.placeholder}
+              rows={5}
+              className="text-[0.9375rem]"
+            />
+            <div role="group" className="flex flex-wrap gap-2 pt-1" aria-label={copy.suggestionsLabel}>
+              {suggestions.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => setText(item)}
+                  className={cn(
+                    "rounded-pill border border-border-subtle bg-surface px-3 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-brand/40 hover:text-text",
+                    focusRing,
+                  )}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          </div>
           <Button
             type="button"
+            size="lg"
+            className="w-full"
             disabled={pending || text.trim().length < 2}
             onClick={() =>
               void run(() =>
@@ -112,19 +164,21 @@ export function PlannerView({ initialTripId }: { initialTripId?: string }) {
               )
             }
           >
+            {pending ? <Loader2 className="animate-spin" aria-hidden /> : <Sparkles aria-hidden />}
             {copy.build}
           </Button>
           {session?.clarifications?.length ? (
-            <div className="grid gap-3 rounded-control border border-border p-4">
+            <div className="grid gap-3 rounded-control border border-accent/30 bg-accent-subtle/60 p-4">
               {session.clarifications.map((item) => (
-                <p key={item.field} className="text-sm">
+                <p key={item.field} className="flex items-start gap-2 text-sm font-medium">
+                  <MessageCircleQuestion className="mt-0.5 size-4 shrink-0 text-accent-strong" aria-hidden />
                   {item.prompt}
                 </p>
               ))}
               <Input value={answer} onChange={(event) => setAnswer(event.target.value)} aria-label={copy.clarify} />
               <Button
                 type="button"
-                variant="secondary"
+                variant="default"
                 disabled={pending || !session.session_id}
                 onClick={() =>
                   void run(() =>
@@ -141,130 +195,172 @@ export function PlannerView({ initialTripId }: { initialTripId?: string }) {
             </div>
           ) : null}
           {error ? (
-            <p role="alert" className="text-sm text-danger">
+            <Notice tone="danger" role="alert">
               {error}
-            </p>
+            </Notice>
           ) : null}
-        </CardContent>
-      </Card>
+          <p className="text-xs leading-relaxed text-text-muted">{copy.body}</p>
+        </section>
 
-      {session?.assumed_defaults?.length ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>{copy.assumptions}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="grid gap-1 text-sm">
+        {session?.assumed_defaults?.length ? (
+          <section className="grid gap-3 rounded-card border border-border-subtle bg-surface-sunken/60 p-5">
+            <h3 className="text-sm font-semibold">{copy.assumptions}</h3>
+            <ul className="flex flex-wrap gap-2 text-sm">
               {session.assumed_defaults.map((item) => (
-                <li key={item.field}>{item.label}</li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      ) : null}
-
-      {session?.budget_warning ? (
-        <p role="status" className="rounded-control bg-warning/15 p-3 text-sm">
-          {session.budget_warning}
-        </p>
-      ) : null}
-
-      {session?.forced_lock_changes?.length ? (
-        <p role="status" className="text-sm">
-          {session.forced_lock_changes.join(" ")}
-        </p>
-      ) : null}
-
-      {plan ? (
-        <Timeline plan={plan} copy={copy} sessionId={session?.session_id} onLock={run} onReplace={setReplaceStopId} />
-      ) : null}
-      {plan ? <CostPanel plan={plan} copy={copy} /> : null}
-
-      {plan && session?.session_id ? (
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            disabled={pending}
-            onClick={() => void run(() => regeneratePlannerSession(session.session_id))}
-          >
-            {copy.regenerate}
-          </Button>
-        </div>
-      ) : null}
-
-      {replaceStopId && session?.session_id ? (
-        <ReplacePanel
-          sessionId={session.session_id}
-          stopId={replaceStopId}
-          copy={copy}
-          alts={alts}
-          preview={preview}
-          onAlts={setAlts}
-          onPreview={setPreview}
-          onClose={() => {
-            setReplaceStopId(null);
-            setPreview(null);
-            setAlts([]);
-          }}
-          onAccept={(id) => void run(() => acceptReplacement(session.session_id, id))}
-          onCancel={() => void cancelReplacement(session.session_id).then(() => setPreview(null))}
-        />
-      ) : null}
-
-      {session?.session_id ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>{copy.refine}</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-3">
-            <Textarea value={refine} onChange={(event) => setRefine(event.target.value)} rows={3} />
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={pending}
-              onClick={() => {
-                void refinePlannerSession(session.session_id, refine, false).then((result) => {
-                  setInterpretation(result.summary || result.clarification || null);
-                });
-              }}
-            >
-              {copy.refine}
-            </Button>
-            {interpretation ? <p className="text-sm">{interpretation}</p> : null}
-            {interpretation && !interpretation.toLowerCase().includes("could not") ? (
-              <Button
-                type="button"
-                disabled={pending}
-                onClick={() => void run(() => refinePlannerSession(session.session_id, refine, true))}
-              >
-                {copy.apply}
-              </Button>
-            ) : null}
-          </CardContent>
-        </Card>
-      ) : null}
-
-      {versions.length ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>{copy.versions}</CardTitle>
-            {initialTripId ? (
-              <CardDescription>{interpolate(copy.tripLabel, { id: initialTripId })}</CardDescription>
-            ) : null}
-          </CardHeader>
-          <CardContent>
-            <ol className="grid gap-2 text-sm">
-              {versions.map((item) => (
-                <li key={item.version}>
-                  v{item.version} · {item.origin} {item.sealed_at ? `· ${copy.sealed}` : ""}
+                <li key={item.field} className="rounded-pill bg-surface-raised px-3 py-1 text-text-muted shadow-sm">
+                  {item.label}
                 </li>
               ))}
-            </ol>
-          </CardContent>
-        </Card>
-      ) : null}
+            </ul>
+          </section>
+        ) : null}
+      </div>
+
+      <div className="grid min-w-0 gap-6">
+        {session?.budget_warning ? (
+          <Notice tone="warning" role="status">
+            {session.budget_warning}
+          </Notice>
+        ) : null}
+
+        {session?.forced_lock_changes?.length ? (
+          <Notice role="status">{session.forced_lock_changes.join(" ")}</Notice>
+        ) : null}
+
+        {plan ? (
+          <Timeline plan={plan} copy={copy} sessionId={session?.session_id} onLock={run} onReplace={setReplaceStopId} />
+        ) : (
+          <EmptyPlan copy={copy} pending={pending} />
+        )}
+        {plan ? <CostPanel plan={plan} copy={copy} /> : null}
+
+        {plan && session?.session_id ? (
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={pending}
+              onClick={() => void run(() => regeneratePlannerSession(session.session_id))}
+            >
+              <RefreshCw aria-hidden />
+              {copy.regenerate}
+            </Button>
+          </div>
+        ) : null}
+
+        {replaceStopId && session?.session_id ? (
+          <ReplacePanel
+            sessionId={session.session_id}
+            stopId={replaceStopId}
+            copy={copy}
+            alts={alts}
+            preview={preview}
+            onAlts={setAlts}
+            onPreview={setPreview}
+            onClose={() => {
+              setReplaceStopId(null);
+              setPreview(null);
+              setAlts([]);
+            }}
+            onAccept={(id) => void run(() => acceptReplacement(session.session_id, id))}
+            onCancel={() => void cancelReplacement(session.session_id).then(() => setPreview(null))}
+          />
+        ) : null}
+
+        {session?.session_id ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>{copy.refine}</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-3">
+              <Textarea value={refine} onChange={(event) => setRefine(event.target.value)} rows={3} />
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={pending}
+                  onClick={() => {
+                    void refinePlannerSession(session.session_id, refine, false).then((result) => {
+                      setInterpretation(result.summary || result.clarification || null);
+                    });
+                  }}
+                >
+                  <Wand2 aria-hidden />
+                  {copy.refine}
+                </Button>
+                {interpretation && !interpretation.toLowerCase().includes("could not") ? (
+                  <Button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => void run(() => refinePlannerSession(session.session_id, refine, true))}
+                  >
+                    {copy.apply}
+                  </Button>
+                ) : null}
+              </div>
+              {interpretation ? <Notice>{interpretation}</Notice> : null}
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {versions.length ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>{copy.versions}</CardTitle>
+              {initialTripId ? (
+                <CardDescription>{interpolate(copy.tripLabel, { id: initialTripId })}</CardDescription>
+              ) : null}
+            </CardHeader>
+            <CardContent>
+              <ol className="grid gap-2 text-sm">
+                {versions.map((item) => (
+                  <li
+                    key={item.version}
+                    className="flex items-center justify-between gap-3 rounded-control bg-surface-sunken px-3.5 py-2.5"
+                  >
+                    <span className="font-medium">
+                      v{item.version} · {item.origin}
+                    </span>
+                    {item.sealed_at ? <Badge variant="secondary">{copy.sealed}</Badge> : null}
+                  </li>
+                ))}
+              </ol>
+            </CardContent>
+          </Card>
+        ) : null}
+      </div>
     </div>
+  );
+}
+
+function EmptyPlan({ copy, pending }: { copy: ReturnType<typeof usePlannerCopy>; pending: boolean }) {
+  const [lead, tail] = splitSentence(copy.emptyTitle);
+  return (
+    <section aria-label={copy.emptyHeading} className="grid gap-5">
+      <div className="grid gap-3">
+        <p className="eyebrow">{copy.emptyKicker}</p>
+        <p className="title-section">{copy.emptyHeading}</p>
+      </div>
+      <div className="relative isolate grid min-h-[26rem] place-items-center overflow-hidden rounded-[1.5rem] bg-brand p-8 text-center text-white md:min-h-[32rem]">
+        <CatalogImage src={DESTINATIONS[1].image} alt="" className="absolute inset-0 -z-10" />
+        <div className="photo-tint-strong absolute inset-0 -z-10" />
+        <div className="grid max-w-md justify-items-center gap-4">
+          <span className="grid size-12 place-items-center rounded-full bg-white/15 backdrop-blur">
+            {pending ? (
+              <Loader2 className="size-5 animate-spin" aria-hidden />
+            ) : (
+              <Route className="size-5" aria-hidden />
+            )}
+          </span>
+          <p className="title-section text-balance">
+            {lead}
+            {tail ? <span className="block">{tail}</span> : null}
+          </p>
+          <p className="text-sm text-white/80">{copy.emptyBody}</p>
+        </div>
+      </div>
+      <p className="text-xs text-text-muted">{copy.previewNote}</p>
+    </section>
   );
 }
 
@@ -281,96 +377,187 @@ function Timeline({
   onLock: (task: () => Promise<PlannerSession>) => Promise<void>;
   onReplace: (stopId: string) => void;
 }) {
+  const { locale } = useLocale();
+  const hub = useHubCopy();
   const legsByPosition = new Map(plan.legs.map((leg) => [leg.position, leg]));
+  const time = (value: string) => new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{copy.timeline}</CardTitle>
-      </CardHeader>
-      <CardContent className="grid gap-4">
+    <section aria-labelledby="timeline-heading" className="grid gap-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="grid gap-3">
+          <p className="eyebrow">{copy.takingShape}</p>
+          <h2 id="timeline-heading" className="title-section">
+            {plan.trip_title}
+          </h2>
+        </div>
+        <Badge variant="secondary" className="text-sm">
+          {plan.stops.length} {copy.stopsLabel}
+        </Badge>
+      </div>
+      <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-text-muted">
+        <li className="inline-flex items-center gap-1.5">
+          <CalendarDays className="size-4" aria-hidden />
+          {formatDate(locale, plan.window_start)}
+        </li>
+        <li className="inline-flex items-center gap-1.5">
+          <Users className="size-4" aria-hidden />
+          {plan.party_size} {copy.partyLabel}
+        </li>
+        <li className="inline-flex items-center gap-1.5">
+          <Wallet className="size-4" aria-hidden />
+          {formatMinor(plan.total_minor, plan.currency)} {copy.estimated.toLowerCase()}
+        </li>
+      </ul>
+      <Notice>{copy.editableNote}</Notice>
+      <ol className="relative grid gap-4" aria-label={copy.timeline}>
         {plan.stops.map((stop, index) => {
           const leg = legsByPosition.get(index);
+          const slug = stop.snapshot.slug ?? stop.slug;
+          const listing = slug ? getExperience(slug) : undefined;
           return (
-            <article key={stop.id} className="grid gap-2 rounded-control border border-border p-4">
+            <li key={stop.id} className="grid gap-3">
               {leg ? (
-                <p className="text-xs uppercase tracking-[0.16em] text-text-muted">
+                <p className="inline-flex items-center gap-2 ps-14 text-xs font-medium uppercase tracking-[0.14em] text-text-muted">
+                  <Car className="size-3.5" aria-hidden />
                   {copy.travel} · {Math.round((leg.duration_seconds || 0) / 60)} min · {leg.provider}
                 </p>
               ) : null}
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-title font-semibold">{stop.snapshot.title || stop.title}</h3>
-                <div className="flex flex-wrap gap-2">
-                  {stop.snapshot.sponsored ? (
-                    <Badge variant="accent">{stop.snapshot.sponsored_label || copy.sponsored}</Badge>
+              <div className="grid grid-cols-[2.5rem_1fr] gap-4">
+                <div className="flex flex-col items-center">
+                  <span className="grid size-10 place-items-center rounded-full border border-border-subtle bg-surface-raised text-sm font-medium tabular-nums">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  {index < plan.stops.length - 1 ? (
+                    <span className="mt-2 w-px flex-1 bg-border-subtle" aria-hidden />
                   ) : null}
-                  <Badge variant="secondary">{priceKindLabel(stop.price_kind, copy)}</Badge>
-                  {stop.locked ? <Badge variant="warning">{copy.lock}</Badge> : null}
                 </div>
+                <article
+                  className={cn(
+                    "grid gap-4 rounded-card border bg-surface-raised p-4 shadow-sm sm:grid-cols-[7rem_1fr_auto] sm:items-center md:p-5",
+                    stop.locked ? "border-brand/50" : "border-border-subtle",
+                  )}
+                >
+                  <div className="aspect-[4/3] overflow-hidden rounded-[0.9rem] bg-brand-subtle sm:aspect-square">
+                    {listing ? (
+                      <CatalogImage src={listing.image} alt={listing.imageAlt} />
+                    ) : (
+                      <div className="grid h-full place-items-center text-text-muted">
+                        <MapPin className="size-6" aria-hidden />
+                      </div>
+                    )}
+                  </div>
+                  <div className="grid min-w-0 gap-1.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {stop.snapshot.sponsored ? (
+                        <Badge variant="accent">{stop.snapshot.sponsored_label || copy.sponsored}</Badge>
+                      ) : null}
+                      <Badge variant="outline">{priceKindLabel(stop.price_kind, copy)}</Badge>
+                      {stop.locked ? (
+                        <Badge variant="secondary">
+                          <Lock className="size-3" aria-hidden />
+                          {hub.locked}
+                        </Badge>
+                      ) : null}
+                    </div>
+                    <h3 className="title-card text-[1.3rem]">{stop.snapshot.title || stop.title}</h3>
+                    <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-text-muted">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Clock className="size-3.5" aria-hidden />
+                        {time(stop.starts_at)} – {time(stop.ends_at)}
+                      </span>
+                      <span className="font-medium text-text">{formatMinor(stop.estimated_minor, plan.currency)}</span>
+                      <span>
+                        {copy.booking}: {stop.booking_mode || "request"}
+                      </span>
+                    </p>
+                    {stop.snapshot.explanation ? (
+                      <p className="text-sm text-text-muted">
+                        <span className="font-medium text-text">{copy.why}:</span> {stop.snapshot.explanation}
+                      </p>
+                    ) : null}
+                  </div>
+                  {sessionId ? (
+                    <div className="flex gap-1 sm:flex-col">
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="rounded-full"
+                        aria-pressed={stop.locked}
+                        aria-label={stop.locked ? copy.unlock : copy.lock}
+                        title={stop.locked ? copy.unlock : copy.lock}
+                        onClick={() => void onLock(() => lockPlannerStop(sessionId, stop.id, !stop.locked))}
+                      >
+                        {stop.locked ? <Lock aria-hidden /> : <LockOpen aria-hidden />}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="rounded-full"
+                        aria-label={copy.replace}
+                        title={copy.replace}
+                        onClick={() => onReplace(stop.id)}
+                      >
+                        <Replace aria-hidden />
+                      </Button>
+                    </div>
+                  ) : null}
+                </article>
               </div>
-              <p className="text-sm text-text-muted">
-                {new Date(stop.starts_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} –{" "}
-                {new Date(stop.ends_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} ·{" "}
-                {formatMinor(stop.estimated_minor, plan.currency)}
-              </p>
-              {stop.snapshot.explanation ? (
-                <p className="text-sm">
-                  {copy.why}: {stop.snapshot.explanation}
-                </p>
-              ) : null}
-              <p className="text-xs text-text-muted">
-                {copy.booking}: {stop.booking_mode || "request"}
-              </p>
-              {sessionId ? (
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => void onLock(() => lockPlannerStop(sessionId, stop.id, !stop.locked))}
-                  >
-                    {stop.locked ? copy.unlock : copy.lock}
-                  </Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => onReplace(stop.id)}>
-                    {copy.replace}
-                  </Button>
-                </div>
-              ) : null}
-            </article>
+            </li>
           );
         })}
-      </CardContent>
-    </Card>
+      </ol>
+    </section>
   );
 }
 
 function CostPanel({ plan, copy }: { plan: PlanDocument; copy: ReturnType<typeof usePlannerCopy> }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{copy.cost}</CardTitle>
-      </CardHeader>
-      <CardContent className="grid gap-2 text-sm">
+    <section
+      aria-labelledby="cost-heading"
+      className="grid gap-5 rounded-card border border-border-subtle bg-surface-raised p-6 shadow-sm md:p-7"
+    >
+      <h3 id="cost-heading" className="title-card">
+        {copy.cost}
+      </h3>
+      <dl className="grid gap-2.5 text-sm">
         {plan.stops.map((stop) => (
           <div key={stop.id} className="flex justify-between gap-3">
-            <span>
+            <dt className="text-text-muted">
               {stop.snapshot.title || stop.title} · {priceKindLabel(stop.price_kind, copy)}
               {stop.snapshot.price_source ? ` · ${stop.snapshot.price_source}` : ""}
-            </span>
-            <span>{formatMinor(stop.estimated_minor, plan.currency)}</span>
+            </dt>
+            <dd className="tabular-nums">{formatMinor(stop.estimated_minor, plan.currency)}</dd>
           </div>
         ))}
         {plan.cost_items.map((item) => (
           <div key={item.label} className="flex justify-between gap-3">
-            <span>{item.label}</span>
-            <span>{formatMinor(item.amount_minor, plan.currency)}</span>
+            <dt className="text-text-muted">{item.label}</dt>
+            <dd className="tabular-nums">{formatMinor(item.amount_minor, plan.currency)}</dd>
           </div>
         ))}
-        <div className="flex justify-between gap-3 font-semibold">
-          <span>{copy.total}</span>
-          <span>{formatMinor(plan.total_minor, plan.currency)}</span>
+      </dl>
+      <div className="flex flex-wrap items-end justify-between gap-3 border-t border-border-subtle pt-5">
+        <div className="grid gap-1">
+          <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-text-muted">
+            {copy.estimateLabel}
+          </p>
+          <p className="flex flex-wrap items-baseline gap-2">
+            <span className="text-[2.2rem] font-semibold leading-none tracking-[-0.03em] tabular-nums">
+              {formatMinor(plan.total_minor, plan.currency)}
+            </span>
+            {plan.budget_minor ? (
+              <span className="text-sm text-text-muted">
+                {interpolate(copy.ofBudget, { budget: formatMinor(plan.budget_minor, plan.currency) })}
+              </span>
+            ) : null}
+          </p>
         </div>
-      </CardContent>
-    </Card>
+        <p className="text-sm font-semibold">{copy.total}</p>
+      </div>
+    </section>
   );
 }
 
@@ -414,18 +601,26 @@ function ReplacePanel({
   }, [sessionId, stopId, onAlts]);
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-accent/30">
+      <CardHeader className="flex-row items-center justify-between gap-3">
         <CardTitle>{copy.replace}</CardTitle>
+        <Button type="button" variant="ghost" size="sm" onClick={onClose}>
+          {copy.cancel}
+        </Button>
       </CardHeader>
       <CardContent className="grid gap-3">
         {alts.map((item) => (
-          <div key={item.experience_id} className="grid gap-1 rounded-control border border-border p-3">
-            <div className="flex items-center justify-between gap-2">
-              <p className="font-medium">{item.title}</p>
-              {item.sponsored ? <Badge variant="accent">{copy.sponsored}</Badge> : null}
+          <div
+            key={item.experience_id}
+            className="flex flex-col gap-3 rounded-control border border-border-subtle p-4 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div className="grid gap-1">
+              <div className="flex items-center gap-2">
+                <p className="font-semibold">{item.title}</p>
+                {item.sponsored ? <Badge variant="accent">{copy.sponsored}</Badge> : null}
+              </div>
+              <p className="text-xs text-text-muted">{item.why_fit.join(" · ")}</p>
             </div>
-            <p className="text-xs text-text-muted">{item.why_fit.join(" · ")}</p>
             <Button
               type="button"
               size="sm"
@@ -442,14 +637,15 @@ function ReplacePanel({
                 )
               }
             >
-              Preview
+              {copy.previewAction}
             </Button>
           </div>
         ))}
         {preview ? (
-          <div className="grid gap-2 rounded-control bg-surface-sunken p-3 text-sm">
+          <div className="grid gap-3 rounded-control bg-brand-subtle/60 p-4 text-sm">
             <p>
-              {preview.title}: {preview.delta_minutes} min, {formatMinor(preview.delta_cost_minor)}
+              <span className="font-semibold">{preview.title}</span>: {preview.delta_minutes} min,{" "}
+              {formatMinor(preview.delta_cost_minor)}
             </p>
             <div className="flex gap-2">
               <Button type="button" size="sm" onClick={() => onAccept(preview.preview_id)}>
@@ -461,9 +657,6 @@ function ReplacePanel({
             </div>
           </div>
         ) : null}
-        <Button type="button" variant="ghost" onClick={onClose}>
-          {copy.cancel}
-        </Button>
       </CardContent>
     </Card>
   );

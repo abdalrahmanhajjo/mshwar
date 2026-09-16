@@ -141,8 +141,8 @@ function Combobox({
                   aria-selected={isSelected}
                   className={cn(
                     "flex cursor-pointer items-center justify-between rounded-control px-2 py-2 text-start text-sm",
-                    "hover:bg-surface-sunken",
-                    index === activeIndex && "bg-surface-sunken",
+                    "hover:bg-brand-subtle",
+                    index === activeIndex && "bg-brand-subtle",
                     focusRing,
                   )}
                   onMouseDown={(event) => event.preventDefault()}

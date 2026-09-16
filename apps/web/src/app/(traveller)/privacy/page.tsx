@@ -1,5 +1,5 @@
-import { LocalizedShellPage } from "@/components/shell/localized-shell-page";
+import { PrivacyPolicyView } from "@/components/legal/legal-views";
 
 export default function PrivacyPage() {
-  return <LocalizedShellPage titleKey="privacyPageTitle" descriptionKey="privacyPageBody" />;
+  return <PrivacyPolicyView />;
 }

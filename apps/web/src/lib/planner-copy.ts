@@ -59,7 +59,31 @@ export type PlannerKey =
   | "booking"
   | "updateError"
   | "tripLabel"
-  | "sealed";
+  | "sealed"
+  | "plannerKicker"
+  | "pageTitle"
+  | "pageBody"
+  | "moodLabel"
+  | "emptyKicker"
+  | "emptyHeading"
+  | "emptyTitle"
+  | "emptyBody"
+  | "takingShape"
+  | "editableNote"
+  | "stopsLabel"
+  | "estimateLabel"
+  | "ofBudget"
+  | "partyLabel"
+  | "fineTune"
+  | "fineTuneBody"
+  | "previewAction"
+  | "previewNote"
+  | "suggestionsLabel"
+  | "suggestion1"
+  | "suggestion2"
+  | "suggestion3"
+  | "routeStart"
+  | "replacementsTitle";
 
 export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
   en: {
@@ -121,6 +145,31 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     updateError: "Could not update the plan.",
     tripLabel: "Trip {id}",
     sealed: "sealed",
+    plannerKicker: "The Mshwar planner",
+    pageTitle: "Your day. Your way.",
+    pageBody: "A few details. A little inspiration. Something worth going out for.",
+    moodLabel: "What are you in the mood for?",
+    emptyKicker: "Room for something good",
+    emptyHeading: "Where will the day take you?",
+    emptyTitle: "Start with a feeling. We’ll help with the rest.",
+    emptyBody: "Describe your day to explore a sample plan built from published places.",
+    takingShape: "Your day is taking shape",
+    editableNote: "Stop order is editable. Travel times, opening hours and availability still need live verification.",
+    stopsLabel: "stops",
+    estimateLabel: "Your experience estimate",
+    ofBudget: "of {budget} budget",
+    partyLabel: "people",
+    fineTune: "Fine-tune the route",
+    fineTuneBody: "Set where the day starts, then optimise the stop order and check the weather.",
+    previewAction: "Preview",
+    previewNote:
+      "Preview planner uses published inventory and stored prices. Live AI and route validation may be limited.",
+    suggestionsLabel: "Try",
+    suggestion1: "A slow day by the sea for two",
+    suggestion2: "Cedars and a mountain lunch with family",
+    suggestion3: "بدي يوم هادي بجبيل",
+    routeStart: "Starting point",
+    replacementsTitle: "Alternatives",
   },
   ar: {
     startTitle: "من أين تبدأ هذه الخطة؟",
@@ -181,6 +230,31 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     updateError: "تعذّر تحديث الخطة.",
     tripLabel: "رحلة {id}",
     sealed: "مُغلقة",
+    plannerKicker: "مخطِّط مشوار",
+    pageTitle: "يومك. على طريقتك.",
+    pageBody: "بعض التفاصيل. قليل من الإلهام. وشيء يستحق الخروج من أجله.",
+    moodLabel: "ما الذي تشعر برغبة فيه؟",
+    emptyKicker: "مساحة لشيء جميل",
+    emptyHeading: "إلى أين سيأخذك اليوم؟",
+    emptyTitle: "ابدأ بإحساس. ونساعدك في الباقي.",
+    emptyBody: "صف يومك لتستكشف خطة عيّنة مبنية من أماكن منشورة.",
+    takingShape: "يومك يتشكّل",
+    editableNote: "يمكن تعديل ترتيب المحطات. أوقات التنقل وساعات العمل والتوفر تحتاج إلى تحقق مباشر.",
+    stopsLabel: "محطات",
+    estimateLabel: "تقدير تجربتك",
+    ofBudget: "من ميزانية {budget}",
+    partyLabel: "أشخاص",
+    fineTune: "اضبط المسار",
+    fineTuneBody: "حدّد نقطة انطلاق اليوم، ثم رتّب المحطات وتحقّق من الطقس.",
+    previewAction: "معاينة",
+    previewNote:
+      "يستخدم المخطط التجريبي العروض المنشورة والأسعار المخزّنة. قد يكون الذكاء الاصطناعي والتحقق من المسار محدودين.",
+    suggestionsLabel: "جرّب",
+    suggestion1: "يوم هادئ على البحر لشخصين",
+    suggestion2: "الأرز وغداء جبلي مع العائلة",
+    suggestion3: "بدي يوم هادي بجبيل",
+    routeStart: "نقطة الانطلاق",
+    replacementsTitle: "بدائل",
   },
   fr: {
     startTitle: "D’où part ce plan ?",
@@ -242,6 +316,32 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     updateError: "Impossible de mettre à jour le plan.",
     tripLabel: "Voyage {id}",
     sealed: "scellé",
+    plannerKicker: "Le planificateur Mshwar",
+    pageTitle: "Votre journée. À votre façon.",
+    pageBody: "Quelques détails. Un peu d’inspiration. Une vraie raison de sortir.",
+    moodLabel: "De quoi avez-vous envie ?",
+    emptyKicker: "De la place pour du bon",
+    emptyHeading: "Où la journée vous mènera-t-elle ?",
+    emptyTitle: "Partez d’une envie. On s’occupe du reste.",
+    emptyBody: "Décrivez votre journée pour découvrir un plan exemple construit à partir de lieux publiés.",
+    takingShape: "Votre journée prend forme",
+    editableNote:
+      "L’ordre des étapes est modifiable. Trajets, horaires et disponibilités restent à vérifier en direct.",
+    stopsLabel: "étapes",
+    estimateLabel: "Estimation de votre journée",
+    ofBudget: "sur un budget de {budget}",
+    partyLabel: "personnes",
+    fineTune: "Affiner l’itinéraire",
+    fineTuneBody: "Choisissez le point de départ, puis optimisez l’ordre des étapes et vérifiez la météo.",
+    previewAction: "Aperçu",
+    previewNote:
+      "Le planificateur d’aperçu utilise l’inventaire publié et les prix enregistrés. L’IA et la validation d’itinéraire peuvent être limitées.",
+    suggestionsLabel: "Essayez",
+    suggestion1: "Une journée tranquille au bord de la mer à deux",
+    suggestion2: "Les cèdres et un déjeuner en montagne en famille",
+    suggestion3: "Une journée d’histoire à Baalbek",
+    routeStart: "Point de départ",
+    replacementsTitle: "Alternatives",
   },
 };
 

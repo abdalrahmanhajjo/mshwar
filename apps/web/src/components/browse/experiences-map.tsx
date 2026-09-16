@@ -5,6 +5,8 @@ import { ExperienceCard } from "@/components/browse/experience-card";
 import { SaveExperienceButton } from "@/components/browse/save-button";
 import { BidiText } from "@/components/ui/bidi-text";
 import { Button } from "@/components/ui/button";
+import { Notice } from "@/components/ui/notice";
+import { cn } from "@/lib/utils";
 import { useBrowseCopy } from "@/lib/browse-copy";
 import { listingCoordinates } from "@/lib/catalogue-api";
 import type { Experience } from "@/lib/catalog";
@@ -33,11 +35,9 @@ export function ExperiencesMap({
   if (failed) {
     return (
       <div className="grid gap-4">
-        <p className="rounded-card border border-border bg-surface-sunken px-4 py-3 text-sm text-text-muted">
-          {copy.mapUnavailable}
-        </p>
+        <Notice>{copy.mapUnavailable}</Notice>
         <div
-          className="relative min-h-[320px] overflow-hidden rounded-card border border-border bg-surface-sunken"
+          className="surface-grain relative min-h-[420px] overflow-hidden rounded-[1.5rem] border border-border-subtle bg-brand-subtle/50"
           role="img"
           aria-label={copy.mapView}
         >
@@ -45,7 +45,7 @@ export function ExperiencesMap({
             {beirut.length ? (
               <button
                 type="button"
-                className="rounded-pill bg-brand px-3 py-2 text-sm text-brand-foreground"
+                className="h-fit w-fit rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground shadow-md"
                 onClick={() => onSearchArea("beirut")}
               >
                 {copy.clusterLabel} <BidiText>Beirut</BidiText> · {beirut.length}
@@ -57,7 +57,12 @@ export function ExperiencesMap({
                 <button
                   key={item.slug}
                   type="button"
-                  className="h-fit rounded-pill bg-surface px-3 py-2 text-start text-sm shadow-sm"
+                  className={cn(
+                    "h-fit w-fit rounded-pill border px-3.5 py-2 text-start text-sm font-medium shadow-md transition-colors",
+                    active === item.slug
+                      ? "border-brand bg-brand text-brand-foreground"
+                      : "border-border-subtle bg-surface-raised hover:border-brand",
+                  )}
                   style={{ marginTop: point ? `${(34.4 - point.lat) * 40}px` : undefined }}
                   onClick={() => setActive(item.slug)}
                 >
@@ -67,7 +72,7 @@ export function ExperiencesMap({
             })}
           </div>
         </div>
-        <Button type="button" variant="outline" size="sm" onClick={() => onSearchArea()}>
+        <Button type="button" variant="outline" size="sm" className="w-fit" onClick={() => onSearchArea()}>
           {copy.searchThisArea}
         </Button>
         {selected ? (
@@ -83,7 +88,7 @@ export function ExperiencesMap({
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_18rem]">
       <div className="grid gap-3">
-        <iframe title={copy.mapView} src={src} className="min-h-[360px] w-full rounded-card border-0" />
+        <iframe title={copy.mapView} src={src} className="min-h-[420px] w-full rounded-[1.5rem] border-0" />
         <div className="flex flex-wrap gap-2">
           {items.map((item) => (
             <Button key={item.slug} type="button" size="sm" variant="outline" onClick={() => setActive(item.slug)}>

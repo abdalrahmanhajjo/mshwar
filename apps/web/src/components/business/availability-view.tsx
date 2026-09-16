@@ -1,7 +1,11 @@
 "use client";
 
 import * as React from "react";
+import { ArrowLeft, Ban, CalendarPlus, CalendarX, Clock } from "lucide-react";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -115,58 +119,114 @@ export function AvailabilityView({ experienceId }: { experienceId: string }) {
   }
 
   return (
-    <div className="grid gap-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>{copy.hoursTitle}</CardTitle>
-          <CardDescription>{copy.generateSlots}</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-3">
-          <Button type="button" variant="outline" onClick={() => void onHours()}>
-            {copy.hoursTitle}
-          </Button>
-          <Label htmlFor="capacity">{copy.capacity}</Label>
-          <Input id="capacity" value={capacity} onChange={(event) => setCapacity(event.target.value)} />
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Input aria-label="start" type="date" value={start} onChange={(event) => setStart(event.target.value)} />
-            <Input aria-label="end" type="date" value={end} onChange={(event) => setEnd(event.target.value)} />
-          </div>
-          <Label htmlFor="exception-date">{copy.datedException}</Label>
-          <Input
-            id="exception-date"
-            type="date"
-            value={exceptionDate}
-            onChange={(event) => setExceptionDate(event.target.value)}
-          />
-          <Button type="button" variant="secondary" onClick={() => void onException()}>
-            {copy.datedException}
-          </Button>
-          <Button type="button" onClick={() => void onGenerate()}>
-            {copy.generateSlots}
-          </Button>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>{copy.calendarWeek}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-2">
-          {slots.map((slot) => (
-            <div
-              key={slot.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-card border border-border p-3"
-            >
-              <span className="text-sm">
-                {new Date(slot.starts_at).toLocaleString()} · {copy.remaining} {slot.remaining}/{slot.capacity}
-                {slot.blacked_out ? ` · ${copy.blackout}` : ""}
-              </span>
-              <Button type="button" variant="secondary" onClick={() => void onBlackout(slot.id, slot.starts_at)}>
-                {copy.blackout}
-              </Button>
+    <div className="grid gap-8">
+      <LocaleLink
+        href="/business/listings"
+        className="inline-flex w-fit items-center gap-2 rounded-sm text-sm text-text-muted hover:text-text"
+      >
+        <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
+        {copy.listingsTitle}
+      </LocaleLink>
+      <PageHeader eyebrow={copy.portalKicker} title={copy.availabilityTitle} description={copy.hoursTitle} />
+      <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr] lg:items-start">
+        <Card>
+          <CardHeader>
+            <CardTitle as="h2">{copy.generateSlots}</CardTitle>
+            <CardDescription>{copy.hoursTitle}</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-5">
+            <Button type="button" variant="outline" onClick={() => void onHours()}>
+              <Clock aria-hidden />
+              {copy.hoursTitle}
+            </Button>
+            <div className="grid gap-2">
+              <Label htmlFor="capacity">{copy.capacity}</Label>
+              <Input id="capacity" value={capacity} onChange={(event) => setCapacity(event.target.value)} />
             </div>
-          ))}
-        </CardContent>
-      </Card>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="grid gap-1.5 text-xs font-medium text-text-muted">
+                {copy.fromLabel}
+                <Input
+                  aria-label="start"
+                  type="date"
+                  value={start}
+                  onChange={(event) => setStart(event.target.value)}
+                />
+              </label>
+              <label className="grid gap-1.5 text-xs font-medium text-text-muted">
+                {copy.toLabel}
+                <Input aria-label="end" type="date" value={end} onChange={(event) => setEnd(event.target.value)} />
+              </label>
+            </div>
+            <Button type="button" onClick={() => void onGenerate()}>
+              <CalendarPlus aria-hidden />
+              {copy.generateSlots}
+            </Button>
+            <div className="grid gap-2 border-t border-border-subtle pt-5">
+              <Label htmlFor="exception-date">{copy.datedException}</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="exception-date"
+                  type="date"
+                  value={exceptionDate}
+                  onChange={(event) => setExceptionDate(event.target.value)}
+                />
+                <Button type="button" variant="secondary" onClick={() => void onException()}>
+                  <CalendarX aria-hidden />
+                  <span className="sr-only sm:not-sr-only">{copy.datedException}</span>
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle as="h2">{copy.slotsTitle}</CardTitle>
+            <CardDescription>{copy.calendarWeek}</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-2">
+            {slots.length === 0 ? <p className="text-sm text-text-muted">{copy.noSlotsYet}</p> : null}
+            {slots.map((slot) => {
+              const pct = slot.capacity ? Math.round(((slot.capacity - slot.remaining) / slot.capacity) * 100) : 0;
+              return (
+                <div
+                  key={slot.id}
+                  className={cn(
+                    "grid gap-3 rounded-control border px-4 py-3 sm:grid-cols-[1fr_auto] sm:items-center",
+                    slot.blacked_out ? "border-danger/30 bg-danger-subtle/50" : "border-border-subtle",
+                  )}
+                >
+                  <div className="grid gap-1.5">
+                    <p className="text-sm font-medium">
+                      {new Date(slot.starts_at).toLocaleString()}
+                      {slot.blacked_out ? ` · ${copy.blackout}` : ""}
+                    </p>
+                    <div className="flex items-center gap-3 text-xs text-text-muted">
+                      <span
+                        className="h-1.5 w-28 overflow-hidden rounded-pill bg-brand-subtle"
+                        aria-hidden
+                        data-rtl-chart
+                      >
+                        <span className="block h-full rounded-pill bg-brand" style={{ width: `${pct}%` }} />
+                      </span>
+                      {copy.remaining} {slot.remaining}/{slot.capacity}
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => void onBlackout(slot.id, slot.starts_at)}
+                  >
+                    <Ban aria-hidden />
+                    {copy.blackout}
+                  </Button>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

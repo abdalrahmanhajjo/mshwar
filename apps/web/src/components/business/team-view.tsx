@@ -1,7 +1,13 @@
 "use client";
 
 import * as React from "react";
+import { Mail, UserPlus } from "lucide-react";
+import { Avatar } from "@/components/shell/auth-status";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
+import { Notice } from "@/components/ui/notice";
+import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -85,66 +91,125 @@ export function TeamView({ inviteToken }: { inviteToken?: string }) {
     }
   }
 
+  const roles = [
+    ["bookings", copy.roleBookings],
+    ["inventory", copy.roleListings],
+    ["finance", copy.roleFinance],
+    ["manager", copy.roleSettings],
+  ] as const;
+
   return (
-    <div className="grid gap-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>{copy.inviteStaff}</CardTitle>
-          <CardDescription>{copy.teamHint}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form className="grid gap-3" onSubmit={(event) => void onInvite(event)}>
-            <Label htmlFor="staff-email">{copy.inviteStaff}</Label>
-            <Input
-              id="staff-email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              required
-            />
-            <Label htmlFor="staff-role">{copy.roleBookings}</Label>
-            <Input id="staff-role" value={role} onChange={(event) => setRole(event.target.value)} />
-            <p className="text-sm text-text-muted">
-              {copy.roleListings} · {copy.roleBookings} · {copy.roleFinance} · {copy.roleSettings}
-            </p>
-            {error ? (
-              <p role="alert" className="text-sm text-danger">
-                {error}
-              </p>
-            ) : null}
-            <Button type="submit">{copy.inviteStaff}</Button>
-          </form>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>{copy.roleSettings}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-2 text-sm">
-          {(staff?.members ?? []).map((member) => (
-            <p key={member.user_id}>
-              {member.display_name} · {member.email} · {member.role}
-            </p>
-          ))}
-          {(staff?.invitations ?? []).map((invite) => (
-            <div key={invite.id} className="flex flex-wrap items-center justify-between gap-2">
-              <span>
-                {invite.email} · {invite.role}
-                {invite.revoked_at ? ` · ${copy.revoke}` : ""}
-              </span>
-              {!invite.accepted_at && !invite.revoked_at && org ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => void revokeInvite(org.id, invite.id).then(reload)}
-                >
-                  {copy.revoke}
-                </Button>
+    <div className="grid gap-8">
+      <PageHeader eyebrow={copy.portalKicker} title={copy.teamTitle} description={copy.teamHint} />
+      <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr] lg:items-start">
+        <Card>
+          <CardHeader>
+            <CardTitle as="h2">{copy.inviteStaff}</CardTitle>
+            <CardDescription>{copy.teamHint}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form className="grid gap-4" onSubmit={(event) => void onInvite(event)}>
+              <div className="grid gap-2">
+                <Label htmlFor="staff-email">{copy.emailLabel}</Label>
+                <Input
+                  id="staff-email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="staff-role">{copy.roleLabel}</Label>
+                <NativeSelect id="staff-role" value={role} onChange={(event) => setRole(event.target.value)}>
+                  {roles.map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {value} · {label}
+                    </option>
+                  ))}
+                </NativeSelect>
+              </div>
+              {error ? (
+                <Notice tone="danger" role="alert">
+                  {error}
+                </Notice>
               ) : null}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+              <Button type="submit">
+                <UserPlus aria-hidden />
+                {copy.inviteStaff}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+        <div className="grid gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle as="h2">{copy.membersTitle}</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 md:p-0">
+              <div className="overflow-x-auto">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">{copy.membersTitle}</th>
+                      <th scope="col">{copy.roleLabel}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(staff?.members ?? []).map((member) => (
+                      <tr key={member.user_id}>
+                        <td>
+                          <div className="flex items-center gap-3">
+                            <Avatar name={member.display_name} className="size-9 text-xs" />
+                            <div className="grid">
+                              <span className="font-medium">{member.display_name}</span>
+                              <span className="text-xs text-text-muted">{member.email}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <Badge variant="secondary">{member.role}</Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle as="h2">{copy.invitesTitle}</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-2 text-sm">
+              {(staff?.invitations ?? []).map((invite) => (
+                <div
+                  key={invite.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-control border border-border-subtle px-4 py-3"
+                >
+                  <span className="flex items-center gap-2">
+                    <Mail className="size-4 text-text-muted" aria-hidden />
+                    <span className="font-medium">{invite.email}</span>
+                    <Badge variant="outline">{invite.role}</Badge>
+                    {invite.revoked_at ? <Badge variant="danger">{copy.revoke}</Badge> : null}
+                    {invite.accepted_at ? <Badge variant="success">✓</Badge> : null}
+                  </span>
+                  {!invite.accepted_at && !invite.revoked_at && org ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => void revokeInvite(org.id, invite.id).then(reload)}
+                    >
+                      {copy.revoke}
+                    </Button>
+                  ) : null}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

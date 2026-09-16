@@ -88,7 +88,45 @@ export type BusinessKey =
   | "modeInstant"
   | "modeRequest"
   | "modeInquiry"
-  | "instantRequiresCapacity";
+  | "instantRequiresCapacity"
+  | "portalKicker"
+  | "dashboardTitle"
+  | "dashboardBody"
+  | "listingsTitle"
+  | "bookingsTitle"
+  | "inboxHint"
+  | "financeTitle"
+  | "financeBody"
+  | "teamTitle"
+  | "settingsTitle"
+  | "settingsBody"
+  | "editorTitle"
+  | "availabilityTitle"
+  | "membersTitle"
+  | "invitesTitle"
+  | "roleLabel"
+  | "emailLabel"
+  | "fromLabel"
+  | "toLabel"
+  | "titleLabel"
+  | "descriptionLabel"
+  | "addressLabel"
+  | "venueLabel"
+  | "priceHint"
+  | "durationHint"
+  | "coordinatesLabel"
+  | "slotsTitle"
+  | "noSlotsYet"
+  | "checklistProgress"
+  | "quickActions"
+  | "guestsLabel"
+  | "statusLabel"
+  | "searchLabel"
+  | "listView"
+  | "anyStatus"
+  | "editListing"
+  | "noReviewsYet"
+  | "notificationsTitle";
 
 export const businessCopy: Record<Locale, Record<BusinessKey, string>> = {
   en: {
@@ -179,6 +217,44 @@ export const businessCopy: Record<Locale, Record<BusinessKey, string>> = {
     modeRequest: "Request to book",
     modeInquiry: "Inquiry only",
     instantRequiresCapacity: "Instant confirm is only honoured when capacity is authoritative.",
+    portalKicker: "Partner portal",
+    dashboardTitle: "Dashboard",
+    dashboardBody: "How your listings are doing, and what is left to set up.",
+    listingsTitle: "Listings",
+    bookingsTitle: "Bookings",
+    inboxHint: "Confirm or decline requests with a reason the traveller can see.",
+    financeTitle: "Finance",
+    financeBody: "Revenue and conversion for the period you choose.",
+    teamTitle: "Team",
+    settingsTitle: "Settings",
+    settingsBody: "Contacts, verification and notifications for your organisation.",
+    editorTitle: "Listing editor",
+    availabilityTitle: "Availability",
+    membersTitle: "Members",
+    invitesTitle: "Invitations",
+    roleLabel: "Role",
+    emailLabel: "Email",
+    fromLabel: "From",
+    toLabel: "To",
+    titleLabel: "Listing title",
+    descriptionLabel: "Description",
+    addressLabel: "Address",
+    venueLabel: "Venue name",
+    priceHint: "Amount in cents, per person (USD).",
+    durationHint: "Minutes",
+    coordinatesLabel: "Coordinates",
+    slotsTitle: "Upcoming slots",
+    noSlotsYet: "No slots yet. Generate a week to start.",
+    checklistProgress: "{done} of {total} done",
+    quickActions: "Quick actions",
+    guestsLabel: "guests",
+    statusLabel: "Status",
+    searchLabel: "Search",
+    listView: "List",
+    anyStatus: "Any status",
+    editListing: "Edit",
+    noReviewsYet: "No reviews to answer yet.",
+    notificationsTitle: "Notifications",
   },
   ar: {
     registerTitle: "سجّل مؤسستك",
@@ -268,6 +344,44 @@ export const businessCopy: Record<Locale, Record<BusinessKey, string>> = {
     modeRequest: "طلب حجز",
     modeInquiry: "استفسار فقط",
     instantRequiresCapacity: "التأكيد الفوري يعمل فقط مع سعة موثوقة.",
+    portalKicker: "بوابة الشركاء",
+    dashboardTitle: "لوحة التحكم",
+    dashboardBody: "أداء عروضك وما تبقّى لإعداده.",
+    listingsTitle: "العروض",
+    bookingsTitle: "الحجوزات",
+    inboxHint: "أكّد الطلبات أو ارفضها مع سبب يراه المسافر.",
+    financeTitle: "المالية",
+    financeBody: "الإيرادات والتحويل للفترة التي تختارها.",
+    teamTitle: "الفريق",
+    settingsTitle: "الإعدادات",
+    settingsBody: "جهات الاتصال والتحقق والإشعارات لمؤسستك.",
+    editorTitle: "محرّر العرض",
+    availabilityTitle: "التوفر",
+    membersTitle: "الأعضاء",
+    invitesTitle: "الدعوات",
+    roleLabel: "الدور",
+    emailLabel: "البريد الإلكتروني",
+    fromLabel: "من",
+    toLabel: "إلى",
+    titleLabel: "عنوان العرض",
+    descriptionLabel: "الوصف",
+    addressLabel: "العنوان",
+    venueLabel: "اسم المكان",
+    priceHint: "المبلغ بالسنت للشخص الواحد (دولار).",
+    durationHint: "دقائق",
+    coordinatesLabel: "الإحداثيات",
+    slotsTitle: "الأوقات القادمة",
+    noSlotsYet: "لا أوقات بعد. أنشئ أسبوعاً للبدء.",
+    checklistProgress: "{done} من {total} مكتملة",
+    quickActions: "إجراءات سريعة",
+    guestsLabel: "ضيوف",
+    statusLabel: "الحالة",
+    searchLabel: "بحث",
+    listView: "قائمة",
+    anyStatus: "أي حالة",
+    editListing: "تعديل",
+    noReviewsYet: "لا مراجعات للرد عليها بعد.",
+    notificationsTitle: "الإشعارات",
   },
   fr: {
     registerTitle: "Enregistrer votre organisation",
@@ -358,6 +472,44 @@ export const businessCopy: Record<Locale, Record<BusinessKey, string>> = {
     modeRequest: "Demande de réservation",
     modeInquiry: "Renseignement uniquement",
     instantRequiresCapacity: "La confirmation immédiate exige une capacité officielle.",
+    portalKicker: "Portail partenaire",
+    dashboardTitle: "Tableau de bord",
+    dashboardBody: "Les performances de vos offres et ce qu’il reste à configurer.",
+    listingsTitle: "Offres",
+    bookingsTitle: "Réservations",
+    inboxHint: "Confirmez ou refusez les demandes avec un motif visible par le voyageur.",
+    financeTitle: "Finances",
+    financeBody: "Revenus et conversion sur la période choisie.",
+    teamTitle: "Équipe",
+    settingsTitle: "Paramètres",
+    settingsBody: "Contacts, vérification et notifications de votre organisation.",
+    editorTitle: "Éditeur d’offre",
+    availabilityTitle: "Disponibilités",
+    membersTitle: "Membres",
+    invitesTitle: "Invitations",
+    roleLabel: "Rôle",
+    emailLabel: "E-mail",
+    fromLabel: "Du",
+    toLabel: "Au",
+    titleLabel: "Titre de l’offre",
+    descriptionLabel: "Description",
+    addressLabel: "Adresse",
+    venueLabel: "Nom du lieu",
+    priceHint: "Montant en centimes, par personne (USD).",
+    durationHint: "Minutes",
+    coordinatesLabel: "Coordonnées",
+    slotsTitle: "Créneaux à venir",
+    noSlotsYet: "Aucun créneau. Générez une semaine pour commencer.",
+    checklistProgress: "{done} sur {total} terminées",
+    quickActions: "Actions rapides",
+    guestsLabel: "invités",
+    statusLabel: "Statut",
+    searchLabel: "Rechercher",
+    listView: "Liste",
+    anyStatus: "Tous les statuts",
+    editListing: "Modifier",
+    noReviewsYet: "Aucun avis à traiter pour l’instant.",
+    notificationsTitle: "Notifications",
   },
 };
 
