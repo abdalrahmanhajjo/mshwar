@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { cookies, headers } from "next/headers";
 import localFont from "next/font/local";
+import { CookieConsent, CookieConsentProvider } from "@/components/legal/cookie-consent";
 import { AuthProvider } from "@/components/shell/auth-provider";
 import { LocaleProvider } from "@/components/shell/locale-provider";
 import { SignedInLocaleSync } from "@/components/shell/locale-sync";
+import { CONSENT_COOKIE } from "@/lib/cookie-consent";
 import { LOCALE_COOKIE, LOCALE_HEADER, localeDirection, parseLocale } from "@/lib/locale";
 import "./globals.css";
 
@@ -42,10 +44,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={locale} dir={localeDirection(locale)} suppressHydrationWarning>
       <body className={`${dmSans.variable} ${newsreader.variable} ${notoSansArabic.variable}`}>
         <LocaleProvider initialLocale={locale}>
-          <AuthProvider>
-            <SignedInLocaleSync />
-            {children}
-          </AuthProvider>
+          <CookieConsentProvider initial={cookieStore.get(CONSENT_COOKIE)?.value ?? null}>
+            <AuthProvider>
+              <SignedInLocaleSync />
+              {children}
+            </AuthProvider>
+            <CookieConsent />
+          </CookieConsentProvider>
         </LocaleProvider>
       </body>
     </html>

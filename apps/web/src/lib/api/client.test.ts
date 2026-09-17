@@ -42,4 +42,20 @@ describe("api client", () => {
     ) as typeof fetch;
     await expect(apiRequest<string>("/api/v1/x.csv")).resolves.toBe("a,b");
   });
+
+  it("exposes the API error code, request id and retry hint", async () => {
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ detail: "Too many requests.", code: "rate_limited", request_id: "req-1" }), {
+          status: 429,
+          headers: { "retry-after": "42", "x-request-id": "req-1" },
+        }),
+    ) as typeof fetch;
+    await expect(apiRequest("/api/v1/x")).rejects.toMatchObject({
+      status: 429,
+      code: "rate_limited",
+      requestId: "req-1",
+      retryAfter: 42,
+    });
+  });
 });

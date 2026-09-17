@@ -6,12 +6,27 @@
 export class ApiError extends Error {
   readonly status: number;
   readonly body: unknown;
+  /** Stable machine code from the API ("unauthenticated", "forbidden", "rate_limited", "ai_quota_exceeded", ...). */
+  readonly code: string | null;
+  /** Correlation id to quote to support; matches the API and Sentry. */
+  readonly requestId: string | null;
+  /** Seconds to wait before retrying, when the API sent Retry-After. */
+  readonly retryAfter: number | null;
 
-  constructor(message: string, status: number, body: unknown) {
+  constructor(
+    message: string,
+    status: number,
+    body: unknown,
+    meta: { requestId?: string | null; retryAfter?: number | null } = {},
+  ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.body = body;
+    const record = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+    this.code = typeof record.code === "string" ? record.code : null;
+    this.requestId = (typeof record.request_id === "string" ? record.request_id : null) ?? meta.requestId ?? null;
+    this.retryAfter = meta.retryAfter ?? null;
   }
 }
 
@@ -56,7 +71,11 @@ export async function apiRequest<T>(path: string, init: ApiRequestInit = {}): Pr
   if (!response.ok) {
     const body = await readBody(response);
     const message = errorDetail(body) ?? fallbackMessage ?? (response.statusText || "request-failed");
-    throw new ApiError(message, response.status, body);
+    const retryAfter = Number(response.headers?.get("retry-after"));
+    throw new ApiError(message, response.status, body, {
+      requestId: response.headers?.get("x-request-id") ?? null,
+      retryAfter: Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : null,
+    });
   }
   if (response.status === 204) {
     return undefined as T;

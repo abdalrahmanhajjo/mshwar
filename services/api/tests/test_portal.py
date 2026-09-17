@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import base64
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -15,6 +14,7 @@ from app.core.mailer import RecordingMailer, get_mailer, set_mailer
 from app.core.rate_limit import limiter
 from app.main import app
 from tests.conftest import TestingSessionLocal
+from tests.media_fixtures import b64, tiny_jpeg, tiny_pdf
 
 
 @pytest.fixture
@@ -31,7 +31,13 @@ async def api() -> AsyncGenerator[AsyncClient, None]:
 async def _register(api: AsyncClient, email: str, name: str = "Owner") -> dict[str, Any]:
     response = await api.post(
         "/api/v1/auth/register",
-        json={"email": email, "password": "long-enough-secret", "display_name": name, "locale": "en"},
+        json={
+            "accept_terms": True,
+            "email": email,
+            "password": "long-enough-secret",
+            "display_name": name,
+            "locale": "en",
+        },
     )
     assert response.status_code == 201, response.text
     return response.json()
@@ -87,7 +93,7 @@ async def _complete_listing(api: AsyncClient, org_id: str) -> dict[str, Any]:
         json={
             "filename": "hero.jpg",
             "content_type": "image/jpeg",
-            "content_base64": base64.b64encode(b"\xff\xd8\xff\xe0fake-image").decode("ascii"),
+            "content_base64": b64(tiny_jpeg()),
             "purpose": "listing",
             "experience_id": body["id"],
             "alt_text": "Cedar table",
@@ -121,7 +127,7 @@ async def test_onboarding_publish_block_and_admin_verify(api: AsyncClient) -> No
         json={
             "filename": "cr.pdf",
             "content_type": "application/pdf",
-            "content_base64": base64.b64encode(b"%PDF-1.4 stub").decode("ascii"),
+            "content_base64": b64(tiny_pdf()),
             "purpose": "verification",
         },
     )

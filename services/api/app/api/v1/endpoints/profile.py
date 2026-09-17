@@ -8,6 +8,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import access
 from app.core.auth_session import load_session
 from app.core.http_status import HTTP_422_UNPROCESSABLE
 from app.core.sessions import COOKIE_NAME
@@ -54,7 +55,7 @@ async def _area_by_id(db: AsyncSession, area_id: UUID | None) -> HomeArea | None
     return HomeArea(id=row[0], slug=row[1], name=row[2], country_code=row[3])
 
 
-@router.get("", response_model=ProfileOut)
+@router.get("", response_model=ProfileOut, dependencies=[access.SESSION])
 async def get_profile(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -79,7 +80,7 @@ async def get_profile(
     )
 
 
-@router.put("", response_model=ProfileOut)
+@router.put("", response_model=ProfileOut, dependencies=[access.SESSION])
 async def put_profile(
     payload: ProfileUpdate,
     request: Request,
@@ -111,7 +112,7 @@ async def put_profile(
     )
 
 
-@router.get("/vocabularies", response_model=VocabularyCatalog)
+@router.get("/vocabularies", response_model=VocabularyCatalog, dependencies=[access.PUBLIC])
 async def get_vocabularies(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> VocabularyCatalog:

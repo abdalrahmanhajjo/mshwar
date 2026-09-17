@@ -31,7 +31,13 @@ async def _register(api: AsyncClient, email: str, name: str = "Traveller") -> di
     unique = f"{local}-{uuid4().hex[:8]}@{domain or 'example.com'}"
     response = await api.post(
         "/api/v1/auth/register",
-        json={"email": unique, "password": "long-enough-secret", "display_name": name, "locale": "en"},
+        json={
+            "accept_terms": True,
+            "email": unique,
+            "password": "long-enough-secret",
+            "display_name": name,
+            "locale": "en",
+        },
     )
     assert response.status_code == 201, response.text
     return response.json()

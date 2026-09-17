@@ -2,7 +2,7 @@
 
 An executable database foundation derived from **Mshwar Business Requirements Document v1.0**, supplied in this conversation. It covers Lebanon-wide discovery, itinerary planning, business inventory, reservations, payments, group planning and AI traceability. It does not use the separate Tripoli project.
 
-**Baseline:** PostgreSQL 17+, PostGIS, pgvector, btree_gist and pg_trgm. The package includes the full application schema as ordered, forward-only SQL migrations (`migrations/001`–`022`), transaction functions, integrity triggers, restricted read policies, query examples, regression tests and an operations guide. This is a database deliverable, not a deployed marketplace or a certification of production readiness.
+**Baseline:** PostgreSQL 17+, PostGIS, pgvector, btree_gist and pg_trgm. The package includes the full application schema as ordered, forward-only SQL migrations (`migrations/001`–`026`), transaction functions, integrity triggers, restricted read policies, query examples, regression tests and an operations guide. This is a database deliverable, not a deployed marketplace or a certification of production readiness.
 
 ## Start here
 
@@ -13,7 +13,7 @@ An executable database foundation derived from **Mshwar Business Requirements Do
 5. Run `python scripts/migrate.py`. Each migration is atomic. The runner locks migration execution, records checksums and refuses changed previously applied migrations.
 6. Run `npm ci` and `npm test` for the self-contained embedded PostgreSQL integration suite. It creates an in-memory test database with synthetic records; it does not use `DATABASE_URL`.
 7. Run `python tests/concurrency.py` **only against a separate empty native test database** to validate simultaneous last-seat attempts. This script applies migrations and creates synthetic fixture records.
-8. Follow [Operations](docs/OPERATIONS.md) before deployment. Never use the migration owner as your application login.
+8. Follow [Operations](docs/OPERATIONS.md) before deployment. Never use the migration owner as your application login: create the `mshwar_api` login role described in [database roles](../docs/security/database-roles.md).
 
 ## Files
 
@@ -26,6 +26,10 @@ An executable database foundation derived from **Mshwar Business Requirements Do
 | migrations/005_hardening.sql    | Slot immutability, evaluation freezing and additional checks              |
 | migrations/006–021              | RLS, auth, profile, catalogue, portal, admin, planner, payments, groups   |
 | migrations/022_hardening…sql    | Function privileges, current price rule, bounded booking reads, indexes   |
+| migrations/023_audit_log.sql    | Append-only audit log, generic audit trigger, admin audit search          |
+| migrations/024_authorisation…   | Object-level checks, hashed unsubscribe tokens, role check helper         |
+| migrations/025_abuse_controls…  | AI spending ceiling, upload quotas and media metadata                     |
+| migrations/026_consent…sql      | Legal document versions, consent history, personalisation gating          |
 | docs/DATA_DICTIONARY.md         | Table-by-table SQL field definitions                                      |
 | docs/ERD.md                     | Domain relationship diagrams                                              |
 | docs/REQUIREMENTS.md            | BRD mapping and database/application responsibility boundary              |

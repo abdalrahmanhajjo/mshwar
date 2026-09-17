@@ -94,14 +94,11 @@ export type MessageKey =
   | "businessSurface"
   | "adminSurface"
   | "plannerHealth"
+  | "auditLog"
   | "notFound"
   | "notFoundBody"
   | "contactTitle"
   | "contactBody"
-  | "termsTitle"
-  | "termsBody"
-  | "privacyPageTitle"
-  | "privacyPageBody"
   | "planBody"
   | "planFromCollection"
   | "planStopsOne"
@@ -135,10 +132,6 @@ export type MessageKey =
   | "openPortal"
   | "openSettings"
   | "legalKicker"
-  | "termsBookingTitle"
-  | "termsPreviewTitle"
-  | "termsPoliciesTitle"
-  | "privacyControlsTitle"
   | "consoleGreeting"
   | "errorKicker"
   | "errorTitle"
@@ -240,14 +233,11 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     businessSurface: "Business",
     adminSurface: "Admin",
     plannerHealth: "Planner health",
+    auditLog: "Audit log",
     notFound: "Page not found",
     notFoundBody: "That page is not in the catalogue.",
     contactTitle: "Contact",
     contactBody: "Reach the Mshwar team.",
-    termsTitle: "Terms",
-    termsBody: "Conditions for planning and booking.",
-    privacyPageTitle: "Privacy",
-    privacyPageBody: "How Mshwar uses traveller data.",
     planBody: "Build an itinerary from structured inventory.",
     planFromCollection: "Started from “{title}”.",
     planStopsOne: "{count} published stop. Edit from structured inventory only.",
@@ -281,10 +271,6 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     openPortal: "Open the business portal",
     openSettings: "Open settings",
     legalKicker: "The small print",
-    termsBookingTitle: "How booking works",
-    termsPreviewTitle: "Preview status",
-    termsPoliciesTitle: "Default policies",
-    privacyControlsTitle: "Controls you own",
     consoleGreeting: "Signed in to",
     errorKicker: "Something went wrong",
     errorTitle: "This page could not load.",
@@ -385,14 +371,11 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     businessSurface: "الأعمال",
     adminSurface: "الإدارة",
     plannerHealth: "صحة المخطِّط",
+    auditLog: "سجل التدقيق",
     notFound: "الصفحة غير موجودة",
     notFoundBody: "هذه الصفحة ليست في الكتالوج.",
     contactTitle: "تواصل",
     contactBody: "تواصل مع فريق مشوار.",
-    termsTitle: "الشروط",
-    termsBody: "شروط التخطيط والحجز.",
-    privacyPageTitle: "الخصوصية",
-    privacyPageBody: "كيف يستخدم مشوار بيانات المسافر.",
     planBody: "ابنِ مساراً من المخزون المنظّم فقط.",
     planFromCollection: "بدأت من «{title}».",
     planStopsOne: "محطة منشورة واحدة. عدّل من المخزون المنظّم فقط.",
@@ -426,10 +409,6 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     openPortal: "افتح بوابة الأعمال",
     openSettings: "افتح الإعدادات",
     legalKicker: "التفاصيل الدقيقة",
-    termsBookingTitle: "كيف يعمل الحجز",
-    termsPreviewTitle: "حالة المعاينة",
-    termsPoliciesTitle: "السياسات الافتراضية",
-    privacyControlsTitle: "أدوات تتحكم بها",
     consoleGreeting: "مسجّل الدخول إلى",
     errorKicker: "حدث خطأ",
     errorTitle: "تعذّر تحميل هذه الصفحة.",
@@ -531,14 +510,11 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     businessSurface: "Professionnel",
     adminSurface: "Admin",
     plannerHealth: "Santé du planificateur",
+    auditLog: "Journal d’audit",
     notFound: "Page introuvable",
     notFoundBody: "Cette page n’est pas dans le catalogue.",
     contactTitle: "Contact",
     contactBody: "Contacter l’équipe Mshwar.",
-    termsTitle: "Conditions",
-    termsBody: "Conditions de planification et de réservation.",
-    privacyPageTitle: "Confidentialité",
-    privacyPageBody: "Comment Mshwar utilise les données des voyageurs.",
     planBody: "Construisez un itinéraire à partir de l’inventaire structuré.",
     planFromCollection: "Commencé à partir de « {title} ».",
     planStopsOne: "{count} étape publiée. Modifiez uniquement l’inventaire structuré.",
@@ -576,10 +552,6 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     openPortal: "Ouvrir le portail professionnel",
     openSettings: "Ouvrir les paramètres",
     legalKicker: "Les détails",
-    termsBookingTitle: "Comment fonctionne la réservation",
-    termsPreviewTitle: "Statut de l’aperçu",
-    termsPoliciesTitle: "Politiques par défaut",
-    privacyControlsTitle: "Les contrôles à votre main",
     consoleGreeting: "Connecté à",
     errorKicker: "Un problème est survenu",
     errorTitle: "Cette page n’a pas pu se charger.",

@@ -10,8 +10,8 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.hub_query import page_args, raise_hub_error
+from app.core import access
 from app.core.auth_session import require_session
-from app.core.job_auth import require_job_token
 from app.core.notifications.service import dispatch, emit_event, escalate
 from app.core.sql import fetch_json
 from app.dependencies import get_auth_db
@@ -35,7 +35,7 @@ def _notification_out(row: Any) -> NotificationOut:
     )
 
 
-@router.get("/preferences")
+@router.get("/preferences", dependencies=[access.SESSION])
 async def get_preferences(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -48,7 +48,7 @@ async def get_preferences(
     )
 
 
-@router.put("/preferences")
+@router.put("/preferences", dependencies=[access.SESSION])
 async def put_preferences(
     payload: CommunicationPreferencesIn,
     request: Request,
@@ -66,7 +66,7 @@ async def put_preferences(
     )
 
 
-@router.get("/consent")
+@router.get("/consent", dependencies=[access.SESSION])
 async def consent_history(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -79,7 +79,7 @@ async def consent_history(
     )
 
 
-@router.get("/unsubscribe/{token}")
+@router.get("/unsubscribe/{token}", dependencies=[access.TOKEN])
 async def lookup_unsubscribe(
     token: str,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -87,7 +87,7 @@ async def lookup_unsubscribe(
     return await fetch_json(db, "SELECT app.lookup_unsubscribe_token(:token)", {"token": token})
 
 
-@router.post("/unsubscribe/{token}")
+@router.post("/unsubscribe/{token}", dependencies=[access.TOKEN])
 async def apply_unsubscribe(
     token: str,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -99,21 +99,21 @@ async def apply_unsubscribe(
     )
 
 
-@router.post("/dispatch", dependencies=[Depends(require_job_token)])
+@router.post("/dispatch", dependencies=[access.JOB])
 async def dispatch_outbox(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
     return await dispatch(db)
 
 
-@router.post("/escalate", dependencies=[Depends(require_job_token)])
+@router.post("/escalate", dependencies=[access.JOB])
 async def escalate_requests(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
     return await escalate(db)
 
 
-@router.post("/itinerary-change")
+@router.post("/itinerary-change", dependencies=[access.SESSION])
 async def notify_itinerary_change(
     payload: MaterialChangeIn,
     request: Request,
@@ -132,7 +132,7 @@ async def notify_itinerary_change(
     )
 
 
-@router.post("/events")
+@router.post("/events", dependencies=[access.SESSION])
 async def emit_for_session(
     payload: EmitNotificationIn,
     request: Request,
@@ -153,7 +153,7 @@ async def emit_for_session(
     )
 
 
-@router.get("", response_model=NotificationListOut)
+@router.get("", response_model=NotificationListOut, dependencies=[access.SESSION])
 async def list_notifications(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -179,7 +179,7 @@ async def list_notifications(
     )
 
 
-@router.post("/{notification_id}/read", response_model=NotificationOut)
+@router.post("/{notification_id}/read", response_model=NotificationOut, dependencies=[access.SESSION])
 async def mark_notification_read(
     notification_id: UUID,
     request: Request,

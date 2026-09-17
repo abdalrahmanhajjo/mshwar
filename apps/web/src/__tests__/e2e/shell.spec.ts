@@ -38,6 +38,18 @@ async function assertNoHorizontalScroll(page: Page) {
   expect(metrics.body, "body must not overflow the viewport").toBeLessThanOrEqual(metrics.client + 1);
 }
 
+// Most tests start from a visitor who already chose "Essential only", so the cookie
+// banner doesn't cover the page; the MSHWAR-113 tests below start from a fresh visitor.
+async function chooseEssentialCookies(page: Page) {
+  await page.context().addCookies([{ name: "mshwar-consent", value: "v1.e0.m0", url: E2E_ORIGIN }]);
+}
+
+test.beforeEach(async ({ page }, testInfo) => {
+  if (!testInfo.title.includes("[fresh visitor]")) {
+    await chooseEssentialCookies(page);
+  }
+});
+
 test.describe("MSHWAR-26 responsive app shell", () => {
   test("traveller 390px: no overflow, collapsed nav, RTL without reload", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -577,4 +589,45 @@ test.describe("MSHWAR-105 Arabic RTL MVP matrix", () => {
       });
     }
   }
+});
+
+test.describe("MSHWAR-113 trust pages and cookie choices", () => {
+  test("cookie banner appears once, refusing is one click [fresh visitor]", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    const banner = page.getByRole("region", { name: "Cookies on Mshwar" });
+    await expect(banner).toBeVisible();
+    await assertNoHorizontalScroll(page);
+    await banner.getByRole("button", { name: "Essential only" }).click();
+    await expect(banner).toBeHidden();
+    const cookies = await page.context().cookies();
+    expect(cookies.find((cookie) => cookie.name === "mshwar-consent")?.value).toBe("v1.e0.m0");
+    await page.reload();
+    await expect(page.getByRole("region", { name: "Cookies on Mshwar" })).toBeHidden();
+    await page.getByRole("button", { name: "Cookie settings" }).first().click();
+    await expect(page.getByRole("switch", { name: "Error reporting" })).not.toBeChecked();
+  });
+
+  for (const path of ["/terms", "/privacy", "/cancellation-policy", "/community-guidelines"]) {
+    test(`${path} is readable at 390px and 1440px`, async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto(path);
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await expect(page.getByText("Draft pending legal review", { exact: false })).toBeVisible();
+      await assertNoHorizontalScroll(page);
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(`/ar${path}`);
+      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+      await assertNoHorizontalScroll(page);
+    });
+  }
+
+  test("sign-up asks for the terms and leaves optional consent unticked", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/signup");
+    await expect(page.getByRole("checkbox", { name: /I agree to the/ })).not.toBeChecked();
+    await expect(page.getByRole("checkbox", { name: /personalise plans/ })).not.toBeChecked();
+    await expect(page.getByRole("checkbox", { name: /travel ideas and offers/ })).not.toBeChecked();
+    await assertNoHorizontalScroll(page);
+  });
 });

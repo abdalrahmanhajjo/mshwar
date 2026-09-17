@@ -17,9 +17,10 @@ from starlette.requests import Request
 from app.api.v1.endpoints.portal import csv_safe
 from app.core.client_ip import client_ip
 from app.core.config import settings
-from app.core.sql import raise_from_db
+from app.core.sql import FORBIDDEN, INTERNAL, raise_from_db
 from app.main import app
 from app.payments.stripe_test import sign_stripe_payload
+from tests.media_fixtures import b64, tiny_pdf
 from tests.test_booking_payments import _email, _published_listing, _register, _traveller, api  # noqa: F401
 
 _JOB_TOKEN = "t" * 40
@@ -173,7 +174,7 @@ async def test_uploads_check_permission_before_writing(
     body = {
         "filename": "doc.pdf",
         "content_type": "application/pdf",
-        "content_base64": base64.b64encode(b"%PDF-1.4 fake").decode(),
+        "content_base64": b64(tiny_pdf()),
         "purpose": "verification",
     }
     denied = await outsider.post(f"/api/v1/portal/organizations/{org['id']}/files", json=body)
@@ -213,7 +214,13 @@ async def test_register_is_rate_limited(api: AsyncClient, monkeypatch: pytest.Mo
     await _register(api, _email("first"))
     blocked = await api.post(
         "/api/v1/auth/register",
-        json={"email": _email("second"), "password": "long-enough-secret", "display_name": "B", "locale": "en"},
+        json={
+            "accept_terms": True,
+            "email": _email("second"),
+            "password": "long-enough-secret",
+            "display_name": "B",
+            "locale": "en",
+        },
     )
     assert blocked.status_code == 429
 
@@ -255,7 +262,8 @@ def _db_error(sqlstate: str | None, message: str) -> SimpleNamespace:
 @pytest.mark.parametrize(
     ("sqlstate", "message", "status_code", "detail"),
     [
-        ("42501", "capability denied", 403, "capability denied"),
+        ("42501", "capability denied: finance", 403, FORBIDDEN),
+        ("42501", "trip is locked", 403, "trip is locked"),
         ("P0002", "booking not found", 404, "booking not found"),
         ("22023", "invalid party", 422, "invalid party"),
         ("P0001", "insufficient capacity", 422, "insufficient capacity"),
@@ -264,8 +272,8 @@ def _db_error(sqlstate: str | None, message: str) -> SimpleNamespace:
         ("23503", 'insert violates foreign key constraint "y"', 422, 'insert violates foreign key constraint "y"'),
         ("22P02", "invalid input syntax for type uuid", 422, "Invalid data"),
         ("57014", "canceling statement due to statement timeout", 503, "Please try again"),
-        ("42P01", 'relation "app.secret" does not exist', 500, "Internal error"),
-        (None, "connection refused", 500, "Internal error"),
+        ("42P01", 'relation "app.secret" does not exist', 500, INTERNAL),
+        (None, "connection refused", 500, INTERNAL),
     ],
 )
 def test_database_errors_map_to_safe_responses(

@@ -1,8 +1,10 @@
-"""Private object storage for verification documents and listing images.
+"""Private object storage and media URLs.
 
-When IMAGEKIT_API_KEY / IMAGEKIT_URL are unset the local stub writes files
-under PRIVATE_STORAGE_DIR and issues HMAC-signed download URLs. ImageKit
-keys are never hardcoded.
+* Verification documents always live here, under PRIVATE_STORAGE_DIR, and are
+  served only through HMAC-signed links that expire (SIGNED_URL_TTL_SECONDS).
+* Listing images go to ImageKit when it is configured (app.core.imagekit);
+  otherwise they are kept here too and served through long-lived signed links,
+  which is enough for local development.
 """
 
 from __future__ import annotations
@@ -29,9 +31,41 @@ class InvalidObjectKey(ValueError):
 
 
 def storage_backend() -> str:
+    """Where listing images go. Verification documents always stay local."""
     if settings.imagekit_api_key and settings.imagekit_url:
         return _IMAGEKIT_BACKEND
     return _LOCAL_BACKEND
+
+
+_LOCAL_IMAGE_TTL_SECONDS = 7 * 24 * 60 * 60
+_CONTENT_TYPES = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".pdf": "application/pdf",
+}
+
+
+def content_type_for(object_key: str) -> str:
+    return _CONTENT_TYPES.get(Path(object_key).suffix.lower(), "application/octet-stream")
+
+
+def media_url(provider: str | None, object_key: str | None) -> str | None:
+    """Public URL for an approved listing image, or None when it cannot be served."""
+    if not object_key:
+        return None
+    if object_key.startswith("https://"):
+        return object_key
+    if provider == _IMAGEKIT_BACKEND:
+        if not settings.imagekit_url:
+            return None
+        from app.core.imagekit import delivery_url
+
+        return delivery_url(object_key)
+    if provider == _LOCAL_BACKEND and _OBJECT_KEY_PATTERN.fullmatch(object_key):
+        return sign_object_url(object_key, ttl_seconds=_LOCAL_IMAGE_TTL_SECONDS)["url"]
+    return None
 
 
 def storage_root() -> Path:
@@ -45,17 +79,14 @@ def put_private_bytes(data: bytes, filename: str, content_type: str, *, public: 
     if public:
         raise ValueError("private storage refuses public objects")
     key = f"{datetime.now(UTC).strftime('%Y/%m')}/{uuid4().hex}-{_safe_name(filename)}"
-    backend = storage_backend()
-    # ImageKit is not wired yet: both backends persist locally; the provider label records intent.
     _local_path(key).parent.mkdir(parents=True, exist_ok=True)
     _local_path(key).write_bytes(data)
-    provider = _IMAGEKIT_BACKEND if backend == _IMAGEKIT_BACKEND else _LOCAL_BACKEND
     return {
         "object_key": key,
-        "provider": provider,
+        "provider": _LOCAL_BACKEND,
         "filename": filename,
         "content_type": content_type,
-        "backend": backend,
+        "backend": _LOCAL_BACKEND,
     }
 
 

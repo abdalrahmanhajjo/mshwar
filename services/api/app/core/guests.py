@@ -7,9 +7,8 @@ from typing import Any
 from fastapi import HTTPException, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.auth_session import load_session
+from app.core.auth_session import optional_session
 from app.core.config import settings
-from app.core.sessions import COOKIE_NAME
 from app.core.sql import fetch_json
 
 GUEST_COOKIE = "mshwar_guest"
@@ -36,10 +35,7 @@ def set_guest_cookie(response: Response, token: str) -> None:
 
 
 async def optional_user(request: Request, db: AsyncSession) -> dict[str, Any] | None:
-    session = await load_session(db, request.cookies.get(COOKIE_NAME))
-    if session is None or session["status"] != "active":
-        return None
-    return session
+    return await optional_session(request, db)
 
 
 async def resolve_guest_id(request: Request, db: AsyncSession, display_name: str = "Guest") -> str | None:
@@ -60,9 +56,14 @@ async def actor_ids(
     *,
     require_any: bool = False,
 ) -> tuple[str | None, str | None]:
-    session = await optional_user(request, db)
-    user_id = str(session["user_id"]) if session else None
-    guest_id = None if user_id else await resolve_guest_id(request, db)
+    cached = getattr(request.state, "actor_ids", None)
+    if cached is not None:
+        user_id, guest_id = cached
+    else:
+        session = await optional_user(request, db)
+        user_id = str(session["user_id"]) if session else None
+        guest_id = None if user_id else await resolve_guest_id(request, db)
+        request.state.actor_ids = (user_id, guest_id)
     if require_any and user_id is None and guest_id is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
     return user_id, guest_id

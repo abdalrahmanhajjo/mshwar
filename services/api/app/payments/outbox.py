@@ -33,32 +33,20 @@ async def outbox_metrics(db: AsyncSession) -> dict[str, Any]:
 
 
 async def _deliver_email_notifications(db: AsyncSession) -> None:
-    rows = (
-        await db.execute(
-            text(
-                """
-                SELECT n.id, p.email, n.category, o.payload, o.event_type
-                FROM app.notifications n
-                JOIN app.outbox o ON o.id = n.outbox_id
-                JOIN app.user_private p ON p.user_id = n.user_id
-                WHERE n.channel = 'email' AND n.status = 'pending' AND p.email IS NOT NULL
-                    ORDER BY o.created_at, n.id
-                LIMIT 50
-                """
-            )
-        )
-    ).all()
+    claimed = (await db.execute(text("SELECT app.claim_confirmation_emails(50)"))).scalar()
+    rows = claimed if isinstance(claimed, list) else []
     mailer = get_mailer()
     for row in rows:
-        payload = row[3] if isinstance(row[3], dict) else {}
-        message = confirmation_email(str(row[1] or ""), str(row[4] or ""), payload)
+        payload = row.get("payload") if isinstance(row.get("payload"), dict) else {}
+        message = confirmation_email(str(row.get("email") or ""), str(row.get("event_type") or ""), payload)
         try:
             await mailer.send(message)
-            await db.execute(text("UPDATE app.notifications SET status = 'sent' WHERE id = :id"), {"id": row[0]})
+            sent = True
         except Exception:  # noqa: BLE001 - one failed email must not stop the batch
-            logger.warning("confirmation email failed notification_id=%s", row[0], exc_info=True)
-            await db.execute(
-                text("UPDATE app.notifications SET status = 'failed', attempts = attempts + 1 WHERE id = :id"),
-                {"id": row[0]},
-            )
+            logger.warning("confirmation email failed notification_id=%s", row.get("id"), exc_info=True)
             metrics.increment("notification_email_failed")
+            sent = False
+        await db.execute(
+            text("SELECT app.mark_confirmation_email(:id, :sent)"),
+            {"id": str(row["id"]), "sent": sent},
+        )

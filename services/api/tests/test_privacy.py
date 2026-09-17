@@ -9,8 +9,8 @@ from sqlalchemy import text
 
 from app.core.mailer import RecordingMailer, get_mailer, set_mailer
 from app.core.rate_limit import limiter
-from app.dependencies import async_session
 from app.main import app
+from tests.conftest import TestingSessionLocal
 
 
 @pytest.fixture
@@ -30,7 +30,13 @@ def _email(prefix: str) -> str:
 async def _register(client: AsyncClient, email: str) -> dict[str, object]:
     created = await client.post(
         "/api/v1/auth/register",
-        json={"email": email, "password": "long-enough-secret", "display_name": "Lina", "locale": "en"},
+        json={
+            "accept_terms": True,
+            "email": email,
+            "password": "long-enough-secret",
+            "display_name": "Lina",
+            "locale": "en",
+        },
     )
     assert created.status_code == 201, created.text
     me = await client.get("/api/v1/auth/me")
@@ -47,7 +53,7 @@ async def _verify_email(client: AsyncClient, email: str) -> None:
 
 
 async def _audit_actions(user_id: str) -> list[str]:
-    async with async_session() as session:
+    async with TestingSessionLocal() as session:
         rows = (
             await session.execute(
                 text("SELECT action FROM app.audit_log WHERE actor_id = :uid ORDER BY created_at"),
@@ -155,7 +161,7 @@ async def test_export_reset_and_delete_are_owner_only_and_audited(api: AsyncClie
     assert "reset_personalisation" in actions
     assert "delete_account" in actions
 
-    async with async_session() as session:
+    async with TestingSessionLocal() as session:
         user = (
             await session.execute(
                 text("SELECT display_name, status, auth_subject FROM app.users WHERE id = :uid"),

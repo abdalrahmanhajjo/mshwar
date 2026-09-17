@@ -9,6 +9,8 @@ export type AuthUser = {
   locale: string;
   email_verified?: boolean;
   admin_tier?: "ops" | "elevated" | null;
+  /** Trust documents with a newer version the person has not accepted yet (MSHWAR-113). */
+  policies_to_accept?: string[];
 };
 
 export const PROTECTED_PATHS = [
@@ -67,6 +69,12 @@ export function registerAccount(input: {
   password: string;
   display_name: string;
   locale: string;
+  /** Must be true: the person ticked the terms and privacy box. */
+  accept_terms: boolean;
+  /** The exact versions the person was shown. */
+  policy_versions: Record<string, string>;
+  personalisation_consent: boolean;
+  marketing_consent: boolean;
 }): Promise<AuthUser> {
   return authPost("/api/v1/auth/register", input);
 }
@@ -93,4 +101,12 @@ export async function resendVerification(email?: string): Promise<void> {
 
 export function resetPassword(input: { token: string; password: string }): Promise<AuthUser> {
   return authPost("/api/v1/auth/reset-password", input);
+}
+
+/** Records acceptance of the current versions of the given documents. */
+export async function acceptPolicies(versions: Record<string, string>): Promise<void> {
+  await apiRequest("/api/v1/privacy/policies/accept", {
+    method: "POST",
+    body: JSON.stringify({ versions }),
+  });
 }

@@ -7,9 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Notice } from "@/components/ui/notice";
 import { fetchConsentHistory, fetchPreferences, savePreferences, type ConsentEvent } from "@/lib/notifications";
 import { useNotificationCopy } from "@/lib/notifications-copy";
+import { purposeLabel, useTrustCopy } from "@/lib/trust-copy";
 
 export function PreferencesPanel() {
   const copy = useNotificationCopy();
+  const trust = useTrustCopy();
   const [marketingEmail, setMarketingEmail] = React.useState(false);
   const [marketingInApp, setMarketingInApp] = React.useState(false);
   const [history, setHistory] = React.useState<ConsentEvent[]>([]);
@@ -97,7 +99,7 @@ export function PreferencesPanel() {
                   key={row.id}
                   className="flex items-center justify-between gap-3 rounded-control bg-surface-sunken px-3.5 py-2.5"
                 >
-                  <span>{row.purpose}</span>
+                  <span>{purposeLabel(trust, row.purpose)}</span>
                   <Badge variant={row.granted ? "success" : "outline"}>
                     {row.granted ? copy.granted : copy.revoked}
                   </Badge>

@@ -13,7 +13,7 @@ All secrets and API keys are rotated through the **platform secret store** (Verc
 | `GOOGLE_MAPS_API_KEY`   | Third-party | 180 days           | Platform secret store |
 | `STRIPE_SECRET_KEY`     | Payment     | 180 days           | Platform secret store |
 | `STRIPE_WEBHOOK_SECRET` | Payment     | 90 days            | Platform secret store |
-| `IMAGEKIT_API_KEY`      | Third-party | 180 days           | Platform secret store |
+| `IMAGEKIT_PRIVATE_KEY`  | Third-party | 180 days           | Platform secret store |
 | `OPEN_METEO_API_KEY`    | Third-party | 365 days           | Platform secret store |
 | `SENTRY_DSN`            | Monitoring  | 365 days           | Platform secret store |
 | `POSTHOG_API_KEY`       | Analytics   | 365 days           | Platform secret store |

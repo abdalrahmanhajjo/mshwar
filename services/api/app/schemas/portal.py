@@ -138,7 +138,7 @@ class AnalyticsCaptureIn(BaseModel):
     event_name: str
     experience_id: UUID | None = None
     properties: dict[str, Any] = Field(default_factory=dict)
-    dedupe_key: str = Field(min_length=4, max_length=200)
+    dedupe_key: str = Field(min_length=8, max_length=200)
 
 
 class FileUploadIn(BaseModel):

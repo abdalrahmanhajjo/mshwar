@@ -11,7 +11,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.v1.hub_query import raise_hub_error
 from app.catalogue.query_parser import parse_search_query, relaxation_steps
 from app.catalogue.routing import estimate_travel
+from app.core import access
+from app.core.admin_auth import require_admin
 from app.core.auth_session import require_session
+from app.core.rate_limit import limit
+from app.core.sql import raise_from_db
 from app.dependencies import get_auth_db
 from app.schemas.catalogue import (
     CatalogueCollection,
@@ -33,7 +37,7 @@ def _listing(payload: Any) -> CatalogueListing:
     return CatalogueListing.from_json(payload)
 
 
-@router.get("/destinations", response_model=list[CatalogueDestination])
+@router.get("/destinations", response_model=list[CatalogueDestination], dependencies=[access.PUBLIC, limit("search")])
 async def list_destinations(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> list[CatalogueDestination]:
@@ -42,7 +46,7 @@ async def list_destinations(
     return [CatalogueDestination.model_validate(item) for item in items]
 
 
-@router.get("/experiences", response_model=CataloguePage)
+@router.get("/experiences", response_model=CataloguePage, dependencies=[access.PUBLIC, limit("search")])
 async def list_experiences(
     q: str | None = None,
     category: str | None = None,
@@ -90,7 +94,7 @@ async def list_experiences(
     )
 
 
-@router.get("/experiences/{slug}", response_model=CatalogueListing)
+@router.get("/experiences/{slug}", response_model=CatalogueListing, dependencies=[access.PUBLIC, limit("search")])
 async def get_experience(
     slug: str,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -106,7 +110,9 @@ async def get_experience(
     return _listing(row)
 
 
-@router.get("/experiences/{slug}/related", response_model=list[CatalogueListing])
+@router.get(
+    "/experiences/{slug}/related", response_model=list[CatalogueListing], dependencies=[access.PUBLIC, limit("search")]
+)
 async def related_experiences(
     slug: str,
     radius_m: int = Query(default=80000, ge=1000, le=300000),
@@ -130,7 +136,7 @@ async def related_experiences(
     return listings
 
 
-@router.get("/search", response_model=CatalogueSearchOut)
+@router.get("/search", response_model=CatalogueSearchOut, dependencies=[access.PUBLIC, limit("search")])
 async def search_catalogue(
     q: str = "",
     locale: str = "en",
@@ -173,7 +179,7 @@ async def search_catalogue(
     )
 
 
-@router.get("/collections", response_model=list[CatalogueCollection])
+@router.get("/collections", response_model=list[CatalogueCollection], dependencies=[access.PUBLIC, limit("search")])
 async def list_collections(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> list[CatalogueCollection]:
@@ -182,7 +188,7 @@ async def list_collections(
     return [CatalogueCollection.model_validate(item) for item in items]
 
 
-@router.get("/collections/{slug}", response_model=CatalogueCollection)
+@router.get("/collections/{slug}", response_model=CatalogueCollection, dependencies=[access.PUBLIC, limit("search")])
 async def get_collection(
     slug: str,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -198,21 +204,22 @@ async def get_collection(
     return CatalogueCollection.model_validate(row)
 
 
-@router.post("/collections", response_model=CatalogueCollection)
+@router.post("/collections", response_model=CatalogueCollection, dependencies=[access.ADMIN])
 async def upsert_collection(
     payload: CollectionWrite,
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> CatalogueCollection:
-    await require_session(request, db)
+    admin = await require_admin(request, db)
     try:
         slug = (
             await db.execute(
                 text(
-                    "SELECT app.upsert_catalogue_collection("
-                    ":slug, :title, :description, :kicker, :image, :alt, :accent, :status, :slugs)"
+                    "SELECT app.admin_upsert_catalogue_collection("
+                    ":admin, :slug, :title, :description, :kicker, :image, :alt, :accent, :status, :slugs)"
                 ),
                 {
+                    "admin": str(admin["user_id"]),
                     "slug": payload.slug.strip(),
                     "title": payload.title.strip(),
                     "description": payload.description,
@@ -226,8 +233,7 @@ async def upsert_collection(
             )
         ).scalar()
     except DBAPIError as exc:
-        raise_hub_error(exc, "Collection not found")
-        raise
+        raise_from_db(exc)
     row = (
         await db.execute(
             text("SELECT app.public_catalogue_collection(:slug)"),
@@ -249,7 +255,7 @@ async def upsert_collection(
     return CatalogueCollection.model_validate(row)
 
 
-@router.post("/collections/{slug}/open-as-trip", response_model=TripOut)
+@router.post("/collections/{slug}/open-as-trip", response_model=TripOut, dependencies=[access.SESSION])
 async def open_collection_as_trip(
     slug: str,
     request: Request,
@@ -274,7 +280,7 @@ async def open_collection_as_trip(
     stored = row[3] if isinstance(row[3], dict) else {}
     profile_row = (
         await db.execute(
-            text("SELECT preferences FROM app.get_profile(:user_id)"),
+            text("SELECT app.personalisation_preferences(:user_id) AS preferences"),
             {"user_id": str(session["user_id"])},
         )
     ).first()
@@ -288,32 +294,33 @@ async def open_collection_as_trip(
     )
 
 
-@router.post("/experiences/{slug}/publish", response_model=dict[str, str])
+@router.post("/experiences/{slug}/publish", response_model=dict[str, str], dependencies=[access.SESSION])
 async def publish_experience(
     slug: str,
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> dict[str, str]:
-    await require_session(request, db)
-    return await _transition(db, slug, "published")
+    session = await require_session(request, db)
+    return await _transition(db, str(session["user_id"]), slug, "published")
 
 
-@router.post("/experiences/{slug}/unpublish", response_model=dict[str, str])
+@router.post("/experiences/{slug}/unpublish", response_model=dict[str, str], dependencies=[access.SESSION])
 async def unpublish_experience(
     slug: str,
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> dict[str, str]:
-    await require_session(request, db)
-    return await _transition(db, slug, "paused")
+    session = await require_session(request, db)
+    return await _transition(db, str(session["user_id"]), slug, "paused")
 
 
-async def _transition(db: AsyncSession, slug: str, target: str) -> dict[str, str]:
+async def _transition(db: AsyncSession, actor_id: str, slug: str, target: str) -> dict[str, str]:
+    """Only a platform admin or the listing's own business may change its status."""
     try:
         status_value = (
             await db.execute(
-                text("SELECT app.transition_experience_status_by_slug(:slug, :target)"),
-                {"slug": slug, "target": target},
+                text("SELECT app.set_listing_status(:actor, :slug, :target)"),
+                {"actor": actor_id, "slug": slug, "target": target},
             )
         ).scalar()
     except DBAPIError as exc:

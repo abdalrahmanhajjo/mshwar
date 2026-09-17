@@ -26,7 +26,13 @@ def _email() -> str:
 async def _register(api: AsyncClient, email: str) -> None:
     created = await api.post(
         "/api/v1/auth/register",
-        json={"email": email, "password": "long-enough-secret", "display_name": "Lina", "locale": "en"},
+        json={
+            "accept_terms": True,
+            "email": email,
+            "password": "long-enough-secret",
+            "display_name": "Lina",
+            "locale": "en",
+        },
     )
     assert created.status_code == 201, created.text
 
@@ -129,6 +135,8 @@ async def test_unknown_vocabulary_is_rejected(api: AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_trip_overrides_are_defaults_not_constraints(api: AsyncClient) -> None:
     await _register(api, _email())
+    consent = await api.put("/api/v1/privacy/consents", json={"personalisation": True})
+    assert consent.status_code == 200, consent.text
     await api.put(
         "/api/v1/profile",
         json={
@@ -184,3 +192,22 @@ async def test_profile_requires_a_session() -> None:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as fresh:
         assert (await fresh.get("/api/v1/profile")).status_code == 401
         assert (await fresh.post("/api/v1/trips", json={"name": "Solo"})).status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_saved_preferences_shape_plans_only_with_personalisation_consent(api: AsyncClient) -> None:
+    await _register(api, _email())
+    await api.put(
+        "/api/v1/profile",
+        json={"display_name": "Lina", "locale": "en", "preferences": {"source": "explicit", "interests": ["food"]}},
+    )
+    without = (await api.post("/api/v1/trips", json={"name": "No consent"})).json()
+    assert without["effective_defaults"]["interests"] == []
+    # The preferences are kept, so switching personalisation on applies them again.
+    assert (await api.get("/api/v1/profile")).json()["preferences"]["interests"] == ["food"]
+    await api.put("/api/v1/privacy/consents", json={"personalisation": True})
+    with_consent = (await api.post("/api/v1/trips", json={"name": "Consent"})).json()
+    assert with_consent["effective_defaults"]["interests"] == ["food"]
+    await api.put("/api/v1/privacy/consents", json={"personalisation": False})
+    withdrawn = (await api.post("/api/v1/trips", json={"name": "Withdrawn"})).json()
+    assert withdrawn["effective_defaults"]["interests"] == []

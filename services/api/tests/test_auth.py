@@ -13,7 +13,7 @@ from app.api.v1.endpoints.auth import RegisterRequest, ResetPasswordRequest, Ver
 from app.core.config import settings
 from app.core.mailer import RecordingMailer, get_mailer, set_mailer
 from app.core.passwords import hash_password, verify_password
-from app.core.rate_limit import limiter
+from app.core.rate_limit import RATE_LIMITED_DETAIL, reset_all as reset_rate_limits
 from app.core.sessions import COOKIE_NAME, hash_session_token, set_session_cookie, should_refresh
 from app.main import app
 from tests.conftest import TestingSessionLocal
@@ -21,7 +21,7 @@ from tests.conftest import TestingSessionLocal
 
 @pytest.fixture
 async def api() -> AsyncGenerator[AsyncClient, None]:
-    limiter.reset()
+    reset_rate_limits()
     mailer = RecordingMailer()
     set_mailer(mailer)
     previous_min_ms = settings.password_reset_min_ms
@@ -29,7 +29,7 @@ async def api() -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client
     settings.password_reset_min_ms = previous_min_ms
-    limiter.reset()
+    reset_rate_limits()
     set_mailer(None)
 
 
@@ -53,7 +53,7 @@ async def test_register_signin_me_refresh_signout(api: AsyncClient) -> None:
     secret = "long-enough-secret"
     created = await api.post(
         "/api/v1/auth/register",
-        json={"email": email, "password": secret, "display_name": "Lina", "locale": "en"},
+        json={"accept_terms": True, "email": email, "password": secret, "display_name": "Lina", "locale": "en"},
     )
     assert created.status_code == 201, created.text
     body = created.json()
@@ -89,7 +89,7 @@ async def test_register_signin_me_refresh_signout(api: AsyncClient) -> None:
 
     conflict = await api.post(
         "/api/v1/auth/register",
-        json={"email": email, "password": secret, "display_name": "Other", "locale": "en"},
+        json={"accept_terms": True, "email": email, "password": secret, "display_name": "Other", "locale": "en"},
     )
     assert conflict.status_code == 409
 
@@ -147,6 +147,7 @@ async def test_register_rejects_invalid_locale(api: AsyncClient) -> None:
     response = await api.post(
         "/api/v1/auth/register",
         json={
+            "accept_terms": True,
             "email": "locale@example.com",
             "password": "long-enough-secret",
             "display_name": "Ada",
@@ -167,7 +168,7 @@ async def _register(api: AsyncClient, email: str, secret: str = "long-enough-sec
 async def _register_user(api: AsyncClient, email: str, secret: str = "long-enough-secret") -> dict[str, object]:
     created = await api.post(
         "/api/v1/auth/register",
-        json={"email": email, "password": secret, "display_name": "Lina", "locale": "en"},
+        json={"accept_terms": True, "email": email, "password": secret, "display_name": "Lina", "locale": "en"},
     )
     assert created.status_code == 201, created.text
     return created.json()
@@ -303,16 +304,21 @@ async def test_forgot_password_rate_limit_is_identical_for_any_email(api: AsyncC
         last_known = await api.post("/api/v1/auth/forgot-password", json={"email": known})
     assert last_known is not None
     assert last_known.status_code == 429
-    assert last_known.json()["detail"] == "Too many requests"
+    assert last_known.json()["detail"] == RATE_LIMITED_DETAIL
+    assert last_known.json()["code"] == "rate_limited"
+    assert int(last_known.headers["retry-after"]) > 0
 
-    limiter.reset()
+    reset_rate_limits()
     last_unknown = None
     for _ in range(settings.forgot_email_limit + 1):
         last_unknown = await api.post("/api/v1/auth/forgot-password", json={"email": unknown})
     assert last_unknown is not None
     assert last_unknown.status_code == 429
-    assert last_unknown.json() == last_known.json()
-    assert last_unknown.content == last_known.content
+
+    def _without_request_id(body: dict[str, object]) -> dict[str, object]:
+        return {key: value for key, value in body.items() if key != "request_id"}
+
+    assert _without_request_id(last_unknown.json()) == _without_request_id(last_known.json())
 
 
 @pytest.mark.asyncio
@@ -329,12 +335,24 @@ async def test_invalid_reset_token_is_rejected(api: AsyncClient) -> None:
 async def test_register_rejects_short_password_and_bad_email(api: AsyncClient) -> None:
     short = await api.post(
         "/api/v1/auth/register",
-        json={"email": "ok@example.com", "password": "short", "display_name": "A", "locale": "en"},
+        json={
+            "accept_terms": True,
+            "email": "ok@example.com",
+            "password": "short",
+            "display_name": "A",
+            "locale": "en",
+        },
     )
     assert short.status_code == 422
     bad_email = await api.post(
         "/api/v1/auth/register",
-        json={"email": "not-an-email", "password": "long-enough-secret", "display_name": "A", "locale": "en"},
+        json={
+            "accept_terms": True,
+            "email": "not-an-email",
+            "password": "long-enough-secret",
+            "display_name": "A",
+            "locale": "en",
+        },
     )
     assert bad_email.status_code == 422
 
@@ -388,7 +406,7 @@ async def test_resend_verification_is_rate_limited(api: AsyncClient) -> None:
         last = await api.post("/api/v1/auth/resend-verification", json={"email": email})
     assert last is not None
     assert last.status_code == 429
-    assert last.json()["detail"] == "Too many requests"
+    assert last.json()["detail"] == RATE_LIMITED_DETAIL
 
 
 @pytest.mark.asyncio

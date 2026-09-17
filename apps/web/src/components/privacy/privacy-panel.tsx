@@ -3,7 +3,8 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Clock3, Download, RotateCcw, UserX } from "lucide-react";
+import { Clock3, Download, RotateCcw, Sparkles, UserX } from "lucide-react";
+import { ToggleRow } from "@/components/notifications/preferences-panel";
 import { Notice } from "@/components/ui/notice";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,10 +12,14 @@ import { signOutAccount } from "@/lib/auth";
 import { withLocalePrefix } from "@/lib/locale";
 import { deleteAccount, downloadDataExport, resetPersonalisation } from "@/lib/privacy";
 import { usePrivacyCopy } from "@/lib/privacy-copy";
+import { refreshConsents, updateConsents, useConsents } from "@/lib/consents";
+import { useTrustCopy } from "@/lib/trust-copy";
 import { useLocale } from "@/components/shell/locale-provider";
 
 export function PrivacyPanel() {
   const copy = usePrivacyCopy();
+  const trust = useTrustCopy();
+  const { consents } = useConsents();
   const { locale } = useLocale();
   const router = useRouter();
   const [confirmation, setConfirmation] = React.useState("");
@@ -48,6 +53,32 @@ export function PrivacyPanel() {
         <p className="text-sm leading-relaxed text-text-muted">{copy.privacyBody}</p>
       </header>
       <div className="divide-y divide-border-subtle border-t border-border-subtle">
+        <div className="grid gap-4 p-6 md:px-7">
+          <div className="flex items-start gap-4">
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-subtle">
+              <Sparkles className="size-[1.1rem]" aria-hidden />
+            </span>
+            <div className="grid gap-1">
+              <h3 className="font-semibold">{trust.personalisationTitle}</h3>
+              <p className="text-sm text-text-muted">{trust.personalisationBody}</p>
+            </div>
+          </div>
+          {consents ? (
+            <ToggleRow
+              label={trust.personalisationToggle}
+              checked={consents.personalisation}
+              onChange={(value) =>
+                void run(
+                  async () => {
+                    await updateConsents({ personalisation: value });
+                  },
+                  value ? trust.personalisationOn : trust.personalisationOff,
+                )
+              }
+            />
+          ) : null}
+        </div>
+
         <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between md:px-7">
           <div className="flex items-start gap-4">
             <span className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-subtle">
@@ -77,7 +108,13 @@ export function PrivacyPanel() {
             type="button"
             variant="outline"
             disabled={pending}
-            onClick={() => void run(resetPersonalisation, copy.resetDone)}
+            onClick={() =>
+              void run(async () => {
+                await resetPersonalisation();
+                // Resetting also switches personalisation off; show that straight away.
+                await refreshConsents().catch(() => undefined);
+              }, copy.resetDone)
+            }
           >
             {copy.resetAction}
           </Button>

@@ -58,6 +58,9 @@ export type PlannerKey =
   | "why"
   | "booking"
   | "updateError"
+  | "aiQuotaExceeded"
+  | "aiCapacityReached"
+  | "rateLimited"
   | "tripLabel"
   | "sealed"
   | "plannerKicker"
@@ -143,6 +146,9 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     why: "Why this stop",
     booking: "Booking",
     updateError: "Could not update the plan.",
+    aiQuotaExceeded: "You've reached today's AI planning limit. It resets at midnight Beirut time.",
+    aiCapacityReached: "AI planning is busy right now. Please try again later.",
+    rateLimited: "You're going a little fast. Please wait a moment and try again.",
     tripLabel: "Trip {id}",
     sealed: "sealed",
     plannerKicker: "The Mshwar planner",
@@ -228,6 +234,9 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     why: "لماذا هذه المحطة",
     booking: "الحجز",
     updateError: "تعذّر تحديث الخطة.",
+    aiQuotaExceeded: "لقد بلغت حدّ التخطيط بالذكاء الاصطناعي لهذا اليوم. يُعاد ضبطه عند منتصف الليل بتوقيت بيروت.",
+    aiCapacityReached: "خدمة التخطيط بالذكاء الاصطناعي مشغولة حاليًا. يُرجى المحاولة لاحقًا.",
+    rateLimited: "طلباتك سريعة بعض الشيء. يُرجى الانتظار قليلًا ثم المحاولة مجددًا.",
     tripLabel: "رحلة {id}",
     sealed: "مُغلقة",
     plannerKicker: "مخطِّط مشوار",
@@ -314,6 +323,10 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     why: "Pourquoi cet arrêt",
     booking: "Réservation",
     updateError: "Impossible de mettre à jour le plan.",
+    aiQuotaExceeded:
+      "Vous avez atteint la limite quotidienne de planification par IA. Elle se réinitialise à minuit, heure de Beyrouth.",
+    aiCapacityReached: "La planification par IA est très sollicitée. Veuillez réessayer plus tard.",
+    rateLimited: "Vous allez un peu vite. Patientez un instant puis réessayez.",
     tripLabel: "Voyage {id}",
     sealed: "scellé",
     plannerKicker: "Le planificateur Mshwar",

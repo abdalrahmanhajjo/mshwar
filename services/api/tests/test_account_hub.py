@@ -28,7 +28,13 @@ def _email(prefix: str) -> str:
 async def _register(client: AsyncClient, email: str) -> None:
     created = await client.post(
         "/api/v1/auth/register",
-        json={"email": email, "password": "long-enough-secret", "display_name": "Lina", "locale": "en"},
+        json={
+            "accept_terms": True,
+            "email": email,
+            "password": "long-enough-secret",
+            "display_name": "Lina",
+            "locale": "en",
+        },
     )
     assert created.status_code == 201, created.text
 
@@ -36,7 +42,13 @@ async def _register(client: AsyncClient, email: str) -> None:
 async def _register_verified(client: AsyncClient, email: str) -> None:
     created = await client.post(
         "/api/v1/auth/register",
-        json={"email": email, "password": "long-enough-secret", "display_name": "Lina", "locale": "en"},
+        json={
+            "accept_terms": True,
+            "email": email,
+            "password": "long-enough-secret",
+            "display_name": "Lina",
+            "locale": "en",
+        },
     )
     assert created.status_code == 201, created.text
     mailer = get_mailer()

@@ -1,206 +1,212 @@
-"""Cross-tenant isolation tests.
+"""Row-level security isolates organisations and travellers (MSHWAR-108).
 
-These tests prove that organizations cannot read each other's data
-even with crafted queries. RLS with FORCE ROW LEVEL SECURITY must
-reject such attempts at the database level.
+Each test seeds real rows for tenant B as the migration owner, then reads as
+``mshwar_backend`` - the role the API uses - bound to tenant A and to tenant B.
+Tenant A must see nothing; tenant B must see its own rows, which proves the
+query would have found them (the old version of these tests ran as a
+superuser against ids that did not exist, so "no rows" proved nothing).
 """
 
-import uuid
+from __future__ import annotations
+
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+from dataclasses import dataclass
+from uuid import uuid4
 
 import pytest
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.conftest import TestingSessionLocal
 from tests.rls import set_local_gucs
 
 
-class TestCrossTenantIsolation:
-    """Tests that org-scoped data is isolated by RLS policies."""
+@dataclass
+class Tenant:
+    user_id: str
+    org_id: str
+    venue_id: str
+    experience_id: str
+    trip_id: str
+    favorite_id: str
 
-    @pytest.mark.asyncio
-    async def test_org_a_cannot_read_org_b_bookings(self, db_session):
-        """Org A must not be able to read bookings belonging to Org B."""
-        org_a = uuid.UUID("00000000-0000-0000-0000-000000000001")
-        org_b = uuid.UUID("11111111-1111-1111-1111-111111111111")
-        user_a = uuid.UUID("22222222-2222-2222-2222-222222222222")
 
-        await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
+async def _seed(session: AsyncSession, label: str) -> Tenant:
+    tenant = Tenant(*(str(uuid4()) for _ in range(6)))
+    await session.execute(
+        text("INSERT INTO app.users (id, auth_issuer, auth_subject, display_name) VALUES (:id, 'test', :sub, :name)"),
+        {"id": tenant.user_id, "sub": tenant.user_id, "name": label},
+    )
+    await session.execute(
+        text("INSERT INTO app.user_private (user_id, email) VALUES (:id, :email)"),
+        {"id": tenant.user_id, "email": f"{label}-{tenant.user_id[:8]}@example.com"},
+    )
+    await session.execute(
+        text("INSERT INTO app.organizations (id, name, slug, verification) VALUES (:id, :name, :slug, 'pending')"),
+        {"id": tenant.org_id, "name": label, "slug": f"{label}-{tenant.org_id[:8]}"},
+    )
+    await session.execute(
+        text("INSERT INTO app.organization_members (organization_id, user_id, role) VALUES (:org, :user, 'owner')"),
+        {"org": tenant.org_id, "user": tenant.user_id},
+    )
+    await session.execute(
+        text(
+            "INSERT INTO app.venues (id, organization_id, name, address, location, location_source) "
+            "VALUES (:id, :org, 'Venue', 'Hamra', "
+            "ST_SetSRID(ST_MakePoint(35.5, 33.89), 4326)::geography, 'test')"
+        ),
+        {"id": tenant.venue_id, "org": tenant.org_id},
+    )
+    await session.execute(
+        text(
+            "INSERT INTO app.experiences (id, organization_id, venue_id, slug, title, booking_mode, "
+            "duration_minutes, max_party, setting) "
+            "VALUES (:id, :org, :venue, :slug, 'Tasting', 'request', 60, 4, 'indoor')"
+        ),
+        {
+            "id": tenant.experience_id,
+            "org": tenant.org_id,
+            "venue": tenant.venue_id,
+            "slug": f"x-{tenant.experience_id}",
+        },
+    )
+    await session.execute(
+        text("INSERT INTO app.trips (id, owner_id, title) VALUES (:id, :owner, 'Private')"),
+        {"id": tenant.trip_id, "owner": tenant.user_id},
+    )
+    await session.execute(
+        text("INSERT INTO app.favorites (id, user_id, experience_id) VALUES (:id, :user, :exp)"),
+        {"id": tenant.favorite_id, "user": tenant.user_id, "exp": tenant.experience_id},
+    )
+    await session.execute(
+        text(
+            "INSERT INTO app.verification_documents "
+            "(organization_id, object_key, filename, content_type, byte_size, created_by) "
+            "VALUES (:org, :key, 'licence.pdf', 'application/pdf', 12, :user)"
+        ),
+        {"org": tenant.org_id, "key": f"private/{tenant.org_id}.pdf", "user": tenant.user_id},
+    )
+    return tenant
 
-        result = await db_session.execute(
-            text("SELECT id FROM app.bookings WHERE organization_id = :org_id"),
-            {"org_id": str(org_b)},
+
+@pytest.fixture
+async def tenants() -> AsyncIterator[tuple[Tenant, Tenant]]:
+    async with TestingSessionLocal() as session:
+        pair = (await _seed(session, "tenant-a"), await _seed(session, "tenant-b"))
+        await session.commit()
+    yield pair
+
+
+@asynccontextmanager
+async def _as_backend(tenant: Tenant) -> AsyncIterator[AsyncSession]:
+    async with TestingSessionLocal() as session:
+        await session.execute(text("SET LOCAL ROLE mshwar_backend"))
+        await set_local_gucs(session, user_id=tenant.user_id, organization_id=tenant.org_id)
+        try:
+            yield session
+        finally:
+            await session.rollback()
+
+
+QUERIES = {
+    "organization": ("SELECT count(*) FROM app.organizations WHERE id = :org", "org"),
+    "venue": ("SELECT count(*) FROM app.venues WHERE organization_id = :org", "org"),
+    "experience": ("SELECT count(*) FROM app.experiences WHERE organization_id = :org", "org"),
+    "verification document": ("SELECT count(*) FROM app.verification_documents WHERE organization_id = :org", "org"),
+    "trip": ("SELECT count(*) FROM app.trips WHERE owner_id = :user", "user"),
+    "favorite": ("SELECT count(*) FROM app.favorites WHERE user_id = :user", "user"),
+    "private profile": ("SELECT count(*) FROM app.user_private WHERE user_id = :user", "user"),
+}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("resource", sorted(QUERIES))
+async def test_tenant_rows_are_invisible_to_other_tenants(tenants: tuple[Tenant, Tenant], resource: str) -> None:
+    tenant_a, tenant_b = tenants
+    sql, key = QUERIES[resource]
+    params = {"org": tenant_b.org_id} if key == "org" else {"user": tenant_b.user_id}
+    async with _as_backend(tenant_b) as own:
+        assert (await own.execute(text(sql), params)).scalar_one() == 1, (
+            f"control: {resource} must be visible to its owner"
         )
-        rows = result.fetchall()
-        assert len(rows) == 0, "Org A must not see org B's bookings"
+    async with _as_backend(tenant_a) as other:
+        assert (await other.execute(text(sql), params)).scalar_one() == 0, f"{resource} leaked across tenants"
 
-        await db_session.execute(text("RESET app.user_id"))
-        await db_session.execute(text("RESET app.organization_id"))
 
-    @pytest.mark.asyncio
-    async def test_org_a_cannot_read_org_b_experiences(self, db_session):
-        """Org A must not be able to read experiences belonging to Org B."""
-        org_a = uuid.UUID("00000000-0000-0000-0000-000000000001")
-        org_b = uuid.UUID("11111111-1111-1111-1111-111111111111")
-        user_a = uuid.UUID("22222222-2222-2222-2222-222222222222")
-
-        await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
-
-        result = await db_session.execute(
-            text("SELECT id FROM app.experiences WHERE organization_id = :org_id"),
-            {"org_id": str(org_b)},
+@pytest.mark.asyncio
+async def test_writes_into_another_tenant_are_rejected(tenants: tuple[Tenant, Tenant]) -> None:
+    tenant_a, tenant_b = tenants
+    async with _as_backend(tenant_a) as other:
+        updated = await other.execute(
+            text("UPDATE app.experiences SET title = 'hijacked' WHERE id = :id"), {"id": tenant_b.experience_id}
         )
-        rows = result.fetchall()
-        assert len(rows) == 0, "Org A must not see org B's experiences"
-
-        await db_session.execute(text("RESET app.user_id"))
-        await db_session.execute(text("RESET app.organization_id"))
-
-    @pytest.mark.asyncio
-    async def test_org_a_cannot_read_org_b_venues(self, db_session):
-        """Org A must not be able to read venues belonging to Org B."""
-        org_a = uuid.UUID("00000000-0000-0000-0000-000000000001")
-        org_b = uuid.UUID("11111111-1111-1111-1111-111111111111")
-        user_a = uuid.UUID("22222222-2222-2222-2222-222222222222")
-
-        await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
-
-        result = await db_session.execute(
-            text("SELECT id FROM app.venues WHERE organization_id = :org_id"),
-            {"org_id": str(org_b)},
-        )
-        rows = result.fetchall()
-        assert len(rows) == 0, "Org A must not see org B's venues"
-
-        await db_session.execute(text("RESET app.user_id"))
-        await db_session.execute(text("RESET app.organization_id"))
-
-    @pytest.mark.asyncio
-    async def test_user_cannot_read_another_users_trips(self, db_session):
-        """User A must not be able to read trips owned by User B."""
-        user_a = uuid.UUID("22222222-2222-2222-2222-222222222222")
-        user_b = uuid.UUID("33333333-3333-3333-3333-333333333333")
-        org_a = uuid.UUID("00000000-0000-0000-0000-000000000001")
-
-        await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
-
-        result = await db_session.execute(
-            text("SELECT id FROM app.trips WHERE owner_id = :uid"),
-            {"uid": str(user_b)},
-        )
-        rows = result.fetchall()
-        assert len(rows) == 0, "User A must not see User B's trips"
-
-        await db_session.execute(text("RESET app.user_id"))
-        await db_session.execute(text("RESET app.organization_id"))
-
-    @pytest.mark.asyncio
-    async def test_user_cannot_read_another_users_account_hub(self, db_session):
-        """User A must not see another user's hub favorites, bookings or notifications."""
-        user_a = uuid.UUID("22222222-2222-2222-2222-222222222222")
-        user_b = uuid.UUID("33333333-3333-3333-3333-333333333333")
-        org_a = uuid.UUID("00000000-0000-0000-0000-000000000001")
-
-        await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
-
-        favs = (
-            await db_session.execute(
-                text("SELECT id FROM app.account_favorites WHERE user_id = :uid"),
-                {"uid": str(user_b)},
+        assert updated.rowcount == 0
+    async with _as_backend(tenant_a) as other:
+        with pytest.raises(Exception, match="row-level security"):
+            await other.execute(
+                text(
+                    "INSERT INTO app.venues (organization_id, name, address, location, location_source) "
+                    "VALUES (:org, 'Planted', 'x', ST_SetSRID(ST_MakePoint(35.5, 33.89), 4326)::geography, 'test')"
+                ),
+                {"org": tenant_b.org_id},
             )
-        ).fetchall()
-        books = (
-            await db_session.execute(
-                text("SELECT id FROM app.account_bookings WHERE customer_id = :uid"),
-                {"uid": str(user_b)},
+
+
+@pytest.mark.asyncio
+async def test_unbound_backend_session_sees_no_tenant_data(tenants: tuple[Tenant, Tenant]) -> None:
+    _, tenant_b = tenants
+    async with TestingSessionLocal() as session:
+        await session.execute(text("SET LOCAL ROLE mshwar_backend"))
+        for resource, (sql, key) in QUERIES.items():
+            params = {"org": tenant_b.org_id} if key == "org" else {"user": tenant_b.user_id}
+            assert (await session.execute(text(sql), params)).scalar_one() == 0, resource
+        await session.rollback()
+
+
+@pytest.mark.asyncio
+async def test_backend_role_has_no_access_to_the_audit_log_or_token_tables() -> None:
+    async with TestingSessionLocal() as session:
+        await session.execute(text("SET LOCAL ROLE mshwar_backend"))
+        for table in ("audit_log", "unsubscribe_tokens"):
+            with pytest.raises(Exception, match="permission denied"):
+                async with session.begin_nested():
+                    await session.execute(text(f"SELECT 1 FROM app.{table} LIMIT 1"))  # noqa: S608 - fixed names
+        await session.rollback()
+
+
+@pytest.mark.asyncio
+async def test_rls_enabled_on_all_app_tables() -> None:
+    async with TestingSessionLocal() as session:
+        missing = (
+            (
+                await session.execute(
+                    text(
+                        """
+                    SELECT t.tablename FROM pg_tables t
+                    JOIN pg_class c ON c.relname = t.tablename
+                    JOIN pg_namespace n ON n.oid = c.relnamespace AND n.nspname = t.schemaname
+                    WHERE t.schemaname = 'app' AND NOT c.relrowsecurity
+                    """
+                    )
+                )
             )
-        ).fetchall()
-        notes = (
-            await db_session.execute(
-                text("SELECT id FROM app.account_notifications WHERE user_id = :uid"),
-                {"uid": str(user_b)},
+            .scalars()
+            .all()
+        )
+    assert missing == []
+
+
+@pytest.mark.asyncio
+async def test_backend_and_reader_roles_cannot_bypass_rls() -> None:
+    async with TestingSessionLocal() as session:
+        rows = (
+            await session.execute(
+                text(
+                    "SELECT rolname, rolsuper, rolbypassrls FROM pg_roles "
+                    "WHERE rolname IN ('mshwar_backend', 'mshwar_reader')"
+                )
             )
-        ).fetchall()
-        assert favs == []
-        assert books == []
-        assert notes == []
-
-        await db_session.execute(text("RESET app.user_id"))
-        await db_session.execute(text("RESET app.organization_id"))
-
-    async def test_user_cannot_read_another_users_favorites(self, db_session):
-        """User A must not be able to read favorites of User B."""
-        user_a = uuid.UUID("22222222-2222-2222-2222-222222222222")
-        user_b = uuid.UUID("33333333-3333-3333-3333-333333333333")
-        org_a = uuid.UUID("00000000-0000-0000-0000-000000000001")
-
-        await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
-
-        result = await db_session.execute(
-            text("SELECT id FROM app.favorites WHERE user_id = :uid"),
-            {"uid": str(user_b)},
-        )
-        rows = result.fetchall()
-        assert len(rows) == 0, "User A must not see User B's favorites"
-
-        await db_session.execute(text("RESET app.user_id"))
-        await db_session.execute(text("RESET app.organization_id"))
-
-    @pytest.mark.asyncio
-    async def test_session_context_set_on_request(self, db_session):
-        """Verify that session context is properly set on every request."""
-        user_id = uuid.UUID("22222222-2222-2222-2222-222222222222")
-        org_id = uuid.UUID("00000000-0000-0000-0000-000000000001")
-
-        await set_local_gucs(db_session, user_id=str(user_id), organization_id=str(org_id))
-
-        result = await db_session.execute(text("SELECT app.actor_id()"))
-        actor_id = result.scalar()
-        assert actor_id == user_id, "actor_id must match the set session user"
-
-        await db_session.execute(text("RESET app.user_id"))
-        await db_session.execute(text("RESET app.organization_id"))
-
-    @pytest.mark.asyncio
-    async def test_rls_enabled_on_all_app_tables(self, db_session):
-        """Verify RLS is enabled and FORCED on every app table."""
-        result = await db_session.execute(
-            text("""
-                SELECT count(*) FROM pg_tables t
-                JOIN pg_class c ON c.relname = t.tablename
-                JOIN pg_namespace n ON n.nspname = t.schemaname
-                WHERE t.schemaname = 'app' AND c.relrowsecurity = true AND c.relforcerowsecurity = true
-            """)
-        )
-        count = result.scalar()
-        assert count > 0, "At least one app table must have RLS enabled and forced"
-
-    @pytest.mark.asyncio
-    async def test_backend_role_cannot_bypass_rls(self, db_session):
-        """Verify that the backend role cannot bypass RLS."""
-        result = await db_session.execute(
-            text("""
-                SELECT rolname, rolbypassrls FROM pg_roles
-                WHERE rolname IN ('mshwar_backend', 'mshwar_reader')
-            """)
-        )
-        rows = result.fetchall()
-        for row in rows:
-            assert not row[1], f"{row[0]} must not have BYPASSRLS"
-
-    @pytest.mark.asyncio
-    async def test_cross_tenant_booking_query_fails_closed(self, db_session):
-        """Test that a cross-tenant booking query returns zero rows, not an error or data."""
-        org_a = uuid.UUID("00000000-0000-0000-0000-000000000001")
-        org_b = uuid.UUID("11111111-1111-1111-1111-111111111111")
-        user_a = uuid.UUID("22222222-2222-2222-2222-222222222222")
-
-        await set_local_gucs(db_session, user_id=str(user_a), organization_id=str(org_a))
-
-        result = await db_session.execute(
-            text("SELECT COUNT(*) FROM app.bookings WHERE organization_id = :org_id"),
-            {"org_id": str(org_b)},
-        )
-        count = result.scalar()
-        assert count == 0, "Cross-tenant query must return 0 rows due to RLS"
-
-        await db_session.execute(text("RESET app.user_id"))
-        await db_session.execute(text("RESET app.organization_id"))
+        ).all()
+    assert len(rows) == 2
+    assert all(not superuser and not bypass for _, superuser, bypass in rows)

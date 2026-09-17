@@ -7,6 +7,8 @@ import { Wordmark } from "@/components/shell/brand-mark";
 import { Eyebrow } from "@/components/ui/page-header";
 import { useBrowseCopy } from "@/lib/browse-copy";
 import { useLocale } from "@/components/shell/locale-provider";
+import { CookieSettingsButton } from "@/components/legal/cookie-consent";
+import { useTrustCopy } from "@/lib/trust-copy";
 import { splitAtQuote } from "@/lib/text";
 import type { ShellSurface } from "@/components/shell/nav-config";
 
@@ -21,6 +23,7 @@ const linkClass = cn("rounded-sm text-text transition-colors hover:text-text/60"
 export function ShellFooter({ surface }: { surface: ShellSurface }) {
   const { t } = useLocale();
   const copy = useBrowseCopy();
+  const trust = useTrustCopy();
 
   if (surface !== "traveller") {
     return (
@@ -34,6 +37,13 @@ export function ShellFooter({ surface }: { surface: ShellSurface }) {
             <LocaleLink href="/terms" className={cn("hover:text-text", focusRing)}>
               {t("terms")}
             </LocaleLink>
+            <LocaleLink href="/cancellation-policy" className={cn("hover:text-text", focusRing)}>
+              {trust.cancellationLink}
+            </LocaleLink>
+            <LocaleLink href="/community-guidelines" className={cn("hover:text-text", focusRing)}>
+              {trust.communityLink}
+            </LocaleLink>
+            <CookieSettingsButton />
             <LocaleLink href="/contact" className={cn("hover:text-text", focusRing)}>
               {t("contact")}
             </LocaleLink>
@@ -118,6 +128,13 @@ export function ShellFooter({ surface }: { surface: ShellSurface }) {
               <LocaleLink href="/terms" className={cn("hover:text-text", focusRing)}>
                 {t("terms")}
               </LocaleLink>
+              <LocaleLink href="/cancellation-policy" className={cn("hover:text-text", focusRing)}>
+                {trust.cancellationLink}
+              </LocaleLink>
+              <LocaleLink href="/community-guidelines" className={cn("hover:text-text", focusRing)}>
+                {trust.communityLink}
+              </LocaleLink>
+              <CookieSettingsButton />
               <LocaleLink href="/contact" className={cn("hover:text-text", focusRing)}>
                 {t("contact")}
               </LocaleLink>

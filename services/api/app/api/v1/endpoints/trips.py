@@ -9,6 +9,7 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.hub_query import page_args, raise_hub_error
+from app.core import access
 from app.core.auth_session import require_session
 from app.core.http_status import HTTP_422_UNPROCESSABLE
 from app.dependencies import get_auth_db
@@ -18,7 +19,7 @@ from app.schemas.preferences import PreferenceValues, TripCreate, TripOut, merge
 router = APIRouter()
 
 
-@router.get("", response_model=TripListOut)
+@router.get("", response_model=TripListOut, dependencies=[access.SESSION])
 async def list_trips(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -41,7 +42,7 @@ async def list_trips(
     )
 
 
-@router.post("", response_model=TripOut)
+@router.post("", response_model=TripOut, dependencies=[access.SESSION])
 async def create_trip(
     trip: TripCreate,
     request: Request,
@@ -72,7 +73,7 @@ async def create_trip(
     stored_overrides = row[3] if isinstance(row[3], dict) else {}
     profile_row = (
         await db.execute(
-            text("SELECT preferences FROM app.get_profile(:user_id)"),
+            text("SELECT app.personalisation_preferences(:user_id) AS preferences"),
             {"user_id": str(session["user_id"])},
         )
     ).first()
@@ -86,7 +87,7 @@ async def create_trip(
     )
 
 
-@router.post("/{trip_id}/archive", response_model=TripSummary)
+@router.post("/{trip_id}/archive", response_model=TripSummary, dependencies=[access.SESSION])
 async def archive_trip(
     trip_id: UUID,
     request: Request,

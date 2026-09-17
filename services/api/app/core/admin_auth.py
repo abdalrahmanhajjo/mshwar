@@ -40,6 +40,9 @@ async def require_admin(
     *,
     elevated: bool = False,
 ) -> dict[str, Any]:
+    checked: dict[str, Any] | None = getattr(request.state, "admin_session", None)
+    if checked is not None and (not elevated or checked.get("admin_elevated")):
+        return dict(checked)
     session = await require_session(request, db)
     try:
         result = await db.execute(
@@ -50,7 +53,10 @@ async def require_admin(
     except DBAPIError as exc:
         raise_from_db(exc)
         raise
-    await touch_admin_session(request, db, session)
+    session["admin_elevated"] = elevated
+    if checked is None:
+        await touch_admin_session(request, db, session)
+    request.state.admin_session = dict(session)
     return session
 
 

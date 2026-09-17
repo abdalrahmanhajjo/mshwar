@@ -5,11 +5,13 @@ from uuid import uuid4
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
 
 from app.catalogue.price import PriceModel
 from app.core.mailer import RecordingMailer, set_mailer
 from app.core.rate_limit import limiter
 from app.main import app
+from tests.conftest import TestingSessionLocal
 
 
 @pytest.fixture
@@ -26,12 +28,25 @@ def _email(prefix: str) -> str:
     return f"{prefix}-{uuid4().hex[:12]}@example.com"
 
 
-async def _register(client: AsyncClient) -> None:
+async def _register(client: AsyncClient) -> str:
     created = await client.post(
         "/api/v1/auth/register",
-        json={"email": _email("cat"), "password": "long-enough-secret", "display_name": "Lina", "locale": "en"},
+        json={
+            "accept_terms": True,
+            "email": _email("cat"),
+            "password": "long-enough-secret",
+            "display_name": "Lina",
+            "locale": "en",
+        },
     )
     assert created.status_code == 201, created.text
+    return str(created.json()["id"])
+
+
+async def _grant_admin(user_id: str) -> None:
+    async with TestingSessionLocal() as session:
+        await session.execute(text("SELECT app.grant_platform_admin(:user_id, NULL, 'ops')"), {"user_id": user_id})
+        await session.commit()
 
 
 def test_price_model_requires_type_currency_and_source() -> None:
@@ -135,23 +150,61 @@ async def test_favorite_toggle_is_idempotent_and_merge_survives_signin(api: Asyn
 async def test_collections_open_as_trip_and_admin_editor(api: AsyncClient) -> None:
     guest = await api.post("/api/v1/catalogue/collections/coast-calling/open-as-trip")
     assert guest.status_code == 401
-    await _register(api)
+    user_id = await _register(api)
     opened = await api.post("/api/v1/catalogue/collections/coast-calling/open-as-trip")
     assert opened.status_code == 200, opened.text
     assert opened.json()["name"] == "The coast is calling."
     assert opened.json()["status"] == "draft"
 
-    created = await api.post(
-        "/api/v1/catalogue/collections",
-        json={
-            "slug": f"ops-{uuid4().hex[:8]}",
-            "title": "Operator collection",
-            "description": "Assembled from existing inventory.",
-            "kicker": "Admin",
-            "status": "published",
-            "experience_slugs": ["slow-day-byblos", "byblos-harbour-walls"],
-        },
-    )
+    collection = {
+        "slug": f"ops-{uuid4().hex[:8]}",
+        "title": "Operator collection",
+        "description": "Assembled from existing inventory.",
+        "kicker": "Admin",
+        "status": "published",
+        "experience_slugs": ["slow-day-byblos", "byblos-harbour-walls"],
+    }
+    # A signed-in traveller is not an operator.
+    denied = await api.post("/api/v1/catalogue/collections", json=collection)
+    assert denied.status_code == 403, denied.text
+    assert denied.json()["code"] == "forbidden"
+    await _grant_admin(user_id)
+    created = await api.post("/api/v1/catalogue/collections", json=collection)
     assert created.status_code == 200, created.text
     assert created.json()["slug"].startswith("ops-")
     assert "slow-day-byblos" in created.json()["experience_slugs"]
+
+
+@pytest.mark.asyncio
+async def test_only_admins_or_the_owning_business_change_listing_status(api: AsyncClient) -> None:
+    user_id = await _register(api)
+    # Any signed-in traveller used to be able to unpublish any business's listing.
+    for action in ("unpublish", "publish"):
+        attempt = await api.post(f"/api/v1/catalogue/experiences/slow-day-byblos/{action}")
+        assert attempt.status_code == 404, attempt.text
+    listing = await api.get("/api/v1/catalogue/experiences/slow-day-byblos")
+    assert listing.status_code == 200
+    missing = await api.post("/api/v1/catalogue/experiences/no-such-listing/unpublish")
+    assert missing.status_code == 404
+    assert missing.json()["detail"] == attempt.json()["detail"]
+
+    await _grant_admin(user_id)
+    paused = await api.post("/api/v1/catalogue/experiences/slow-day-byblos/unpublish")
+    assert paused.status_code == 200, paused.text
+    assert paused.json()["status"] == "paused"
+    restored = await api.post("/api/v1/catalogue/experiences/slow-day-byblos/publish")
+    assert restored.json()["status"] == "published"
+    async with TestingSessionLocal() as session:
+        actions = (
+            (
+                await session.execute(
+                    text(
+                        "SELECT action FROM app.audit_log WHERE actor_id = :actor AND action = 'listing.status_changed'"
+                    ),
+                    {"actor": user_id},
+                )
+            )
+            .scalars()
+            .all()
+        )
+    assert len(actions) == 2

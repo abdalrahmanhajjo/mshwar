@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { ArrowUpRight, Bell } from "lucide-react";
 import { cn, focusRing } from "@/lib/utils";
 import { VerificationBanner } from "@/components/auth/verification-banner";
+import { PolicyUpdateBanner } from "@/components/legal/policy-update-banner";
 import { useAuth } from "@/components/shell/auth-provider";
 import { AuthStatus, type AuthState } from "@/components/shell/auth-status";
 import { BrandMark } from "@/components/shell/brand-mark";
@@ -98,6 +99,7 @@ export function AppShell({ surface, children, auth, currentPath }: AppShellProps
                 </div>
               </div>
             </header>
+            <PolicyUpdateBanner />
             <main id="main" className="min-w-0 flex-1">
               {children}
             </main>
@@ -147,6 +149,7 @@ export function AppShell({ surface, children, auth, currentPath }: AppShellProps
               </div>
             </div>
           </header>
+          <PolicyUpdateBanner />
           {surface === "traveller" ? <VerificationBanner /> : null}
           <main id="main" className="min-w-0 flex-1">
             {children}

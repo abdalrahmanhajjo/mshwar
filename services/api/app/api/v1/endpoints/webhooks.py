@@ -6,6 +6,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import access
 from app.core.sql import fetch_json
 from app.dependencies import get_auth_db
 from app.payments.factory import get_payment_provider
@@ -15,7 +16,7 @@ from app.payments.webhook import payload_hash, sanitize_event, verify_or_reject
 router = APIRouter()
 
 
-@router.post("/payments")
+@router.post("/payments", dependencies=[access.SIGNATURE])
 async def payment_webhook(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008

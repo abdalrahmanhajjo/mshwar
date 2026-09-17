@@ -7,12 +7,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Depends, HTTPException, Request, Response, status
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.sessions import COOKIE_NAME, hash_session_token
-from app.dependencies import get_auth_db
+from app.dependencies import bind_actor, get_auth_db
 
 
 async def load_session(db: AsyncSession, token: str | None) -> dict[str, Any] | None:
@@ -30,16 +30,37 @@ async def load_session(db: AsyncSession, token: str | None) -> dict[str, Any] | 
 
 
 async def optional_session(request: Request, db: AsyncSession) -> dict[str, Any] | None:
+    """The caller's active session, or None. Looked up once per request, then cached."""
+    if hasattr(request.state, "auth_session"):
+        cached: dict[str, Any] | None = request.state.auth_session
+        return dict(cached) if cached is not None else None
     session = await load_session(db, request.cookies.get(COOKIE_NAME))
     if session is None or session["status"] != "active":
-        return None
-    return session
+        session = None
+    else:
+        await bind_actor(db, session["user_id"])
+    request.state.auth_session = session
+    return dict(session) if session is not None else None
+
+
+def forget_session(request: Request) -> None:
+    """Drop the cached session after sign-in, sign-out or refresh changes it."""
+    if hasattr(request.state, "auth_session"):
+        del request.state.auth_session
+
+
+def _clear_cookie_header() -> str:
+    response = Response()
+    response.delete_cookie(key=COOKIE_NAME, path="/")
+    return response.headers["set-cookie"]
 
 
 async def require_session(request: Request, db: AsyncSession) -> dict[str, Any]:
     session = await optional_session(request, db)
     if session is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+        # A cookie that no longer maps to an active session is cleared, so the browser stops sending it.
+        headers = {"set-cookie": _clear_cookie_header()} if request.cookies.get(COOKIE_NAME) else None
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated", headers=headers)
     return session
 
 

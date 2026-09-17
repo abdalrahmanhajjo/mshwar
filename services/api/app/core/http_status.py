@@ -5,3 +5,4 @@ name; the supported FastAPI range includes both, so the number is used directly.
 """
 
 HTTP_422_UNPROCESSABLE = 422
+HTTP_413_CONTENT_TOO_LARGE = 413

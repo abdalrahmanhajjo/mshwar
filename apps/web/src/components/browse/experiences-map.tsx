@@ -6,6 +6,9 @@ import { SaveExperienceButton } from "@/components/browse/save-button";
 import { BidiText } from "@/components/ui/bidi-text";
 import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/ui/notice";
+import { useCookieChoices } from "@/components/legal/cookie-consent-state";
+import { ESSENTIAL_ONLY, writeCookieChoices } from "@/lib/cookie-consent";
+import { useTrustCopy } from "@/lib/trust-copy";
 import { cn } from "@/lib/utils";
 import { useBrowseCopy } from "@/lib/browse-copy";
 import { listingCoordinates } from "@/lib/listing-coordinates";
@@ -27,15 +30,35 @@ export function ExperiencesMap({
   onSearchArea: (destination?: string) => void;
 }) {
   const copy = useBrowseCopy();
+  const trust = useTrustCopy();
+  const choices = useCookieChoices();
   const [active, setActive] = useState<string | null>(null);
   const selected = items.find((item) => item.slug === active) ?? null;
   const { beirut, others } = useMemo(() => clusterBeirut(items), [items]);
   const failed = !MAPS_KEY;
+  // Google Maps sets its own cookies, so it loads only once maps are allowed (MSHWAR-113).
+  const blocked = !failed && !choices?.maps;
 
-  if (failed) {
+  if (failed || blocked) {
     return (
       <div className="grid gap-4">
-        <Notice>{copy.mapUnavailable}</Notice>
+        {blocked ? (
+          <Notice>
+            <p className="font-semibold text-text">{trust.mapOffTitle}</p>
+            <p>{trust.mapOffBody}</p>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="mt-2"
+              onClick={() => writeCookieChoices({ ...(choices ?? ESSENTIAL_ONLY), maps: true })}
+            >
+              {trust.mapAllow}
+            </Button>
+          </Notice>
+        ) : (
+          <Notice>{copy.mapUnavailable}</Notice>
+        )}
         <div
           className="surface-grain relative min-h-[420px] overflow-hidden rounded-[1.5rem] border border-border-subtle bg-brand-subtle/50"
           role="img"

@@ -23,6 +23,17 @@ services:
       -c statement_timeout=30000
       -c idle_in_transaction_session_timeout=60000
 
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   migrate:
     build:
       context: ./services/api
@@ -50,11 +61,15 @@ services:
       ENABLE_DEV_ENDPOINTS: ${ENABLE_DEV_ENDPOINTS:-true}
       TRUSTED_PROXY_COUNT: ${TRUSTED_PROXY_COUNT:-1}
       PRIVATE_STORAGE_DIR: /home/mshwar/private
+      REDIS_URL: redis://redis:6379/0
+      RATE_LIMIT_STORE: ${RATE_LIMIT_STORE:-redis}
     volumes:
       - ./services/api/app:/app/app
     depends_on:
       migrate:
         condition: service_completed_successfully
+      redis:
+        condition: service_healthy
 
   web:
     build:

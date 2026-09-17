@@ -300,3 +300,52 @@ export function isElevatedTier(value: string | null | undefined): boolean {
 }
 
 export const LIVE_SAFE_CONFIG_KEYS = ["marketplace.fees", "feature_flags"] as const;
+
+export type AuditActor = { kind: "system" } | { kind: "admin" | "user"; id: string; display_name?: string | null };
+
+export type AuditEntry = {
+  id: string;
+  created_at: string;
+  action: string;
+  target_type: string;
+  target_id: string | null;
+  target: Record<string, unknown>;
+  organization_id: string | null;
+  changes: Record<string, unknown>;
+  reason: string | null;
+  request_id: string | null;
+  actor: AuditActor;
+};
+
+export type AuditPage = {
+  items: AuditEntry[];
+  next_cursor: { before: string; before_id: string } | null;
+};
+
+export type AuditQuery = {
+  action?: string;
+  actor_id?: string;
+  target_type?: string;
+  target_id?: string;
+  request_id?: string;
+  from?: string;
+  to?: string;
+  before?: string;
+  before_id?: string;
+  limit?: number;
+};
+
+export function searchAudit(query: AuditQuery = {}): Promise<AuditPage> {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
+      params.set(key, String(value).trim());
+    }
+  }
+  const suffix = params.toString();
+  return adminFetch(`/api/v1/admin/audit${suffix ? `?${suffix}` : ""}`);
+}
+
+export function auditFilters(): Promise<{ actions: string[]; target_types: string[] }> {
+  return adminFetch("/api/v1/admin/audit/filters");
+}
