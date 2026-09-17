@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import access
 from app.core.admin_auth import require_admin
 from app.core.data_quality import run_checks, scheduler_status
 from app.core.notifications import service as notification_service
@@ -63,7 +64,7 @@ def _uid(session: dict[str, Any]) -> str:
     return str(session["user_id"])
 
 
-@router.get("/me")
+@router.get("/me", dependencies=[access.ADMIN])
 async def admin_me(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -78,7 +79,7 @@ async def admin_me(
     }
 
 
-@router.get("/users", response_model=list[AdminUserOut])
+@router.get("/users", response_model=list[AdminUserOut], dependencies=[access.ADMIN])
 async def list_users(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -106,7 +107,7 @@ async def list_users(
     ]
 
 
-@router.get("/roles")
+@router.get("/roles", dependencies=[access.ADMIN])
 async def list_roles(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -119,7 +120,7 @@ async def list_roles(
     )
 
 
-@router.post("/roles")
+@router.post("/roles", dependencies=[access.ADMIN])
 async def grant_role(
     payload: AdminGrantIn,
     request: Request,
@@ -133,7 +134,7 @@ async def grant_role(
     )
 
 
-@router.post("/roles/{user_id}/revoke")
+@router.post("/roles/{user_id}/revoke", dependencies=[access.ADMIN])
 async def revoke_role(
     user_id: UUID,
     payload: AdminRevokeIn,
@@ -148,7 +149,7 @@ async def revoke_role(
     )
 
 
-@router.get("/sessions")
+@router.get("/sessions", dependencies=[access.ADMIN])
 async def list_sessions(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -161,7 +162,7 @@ async def list_sessions(
     )
 
 
-@router.get("/organizations")
+@router.get("/organizations", dependencies=[access.ADMIN])
 async def list_organizations(
     request: Request,
     verification: str | None = None,
@@ -181,7 +182,7 @@ async def list_organizations(
     )
 
 
-@router.get("/organizations/{org_id}")
+@router.get("/organizations/{org_id}", dependencies=[access.ADMIN])
 async def get_organization(
     org_id: UUID,
     request: Request,
@@ -203,7 +204,7 @@ async def get_organization(
     return payload
 
 
-@router.post("/organizations/{org_id}/verify")
+@router.post("/organizations/{org_id}/verify", dependencies=[access.ADMIN])
 async def verify_organization(
     org_id: UUID,
     payload: AdminVerificationAction,
@@ -213,7 +214,7 @@ async def verify_organization(
     return await _transition(request, db, org_id, "verified", payload.reason)
 
 
-@router.post("/organizations/{org_id}/reject")
+@router.post("/organizations/{org_id}/reject", dependencies=[access.ADMIN])
 async def reject_organization(
     org_id: UUID,
     payload: AdminVerificationAction,
@@ -223,7 +224,7 @@ async def reject_organization(
     return await _transition(request, db, org_id, "rejected", payload.reason)
 
 
-@router.post("/organizations/{org_id}/revoke")
+@router.post("/organizations/{org_id}/revoke", dependencies=[access.ADMIN])
 async def revoke_organization(
     org_id: UUID,
     payload: AdminVerificationAction,
@@ -233,7 +234,7 @@ async def revoke_organization(
     return await _transition(request, db, org_id, "revoked", payload.reason)
 
 
-@router.post("/organizations/{org_id}/suspend")
+@router.post("/organizations/{org_id}/suspend", dependencies=[access.ADMIN])
 async def suspend_organization(
     org_id: UUID,
     payload: AdminVerificationAction,
@@ -243,7 +244,7 @@ async def suspend_organization(
     return await _transition(request, db, org_id, "suspended", payload.reason)
 
 
-@router.post("/organizations/{org_id}/re-verify")
+@router.post("/organizations/{org_id}/re-verify", dependencies=[access.ADMIN])
 async def reverify_organization(
     org_id: UUID,
     payload: AdminVerificationAction,
@@ -273,7 +274,7 @@ async def _transition(
     )
 
 
-@router.get("/moderation")
+@router.get("/moderation", dependencies=[access.ADMIN])
 async def moderation_queue(
     request: Request,
     entity_type: str | None = None,
@@ -287,7 +288,7 @@ async def moderation_queue(
     )
 
 
-@router.post("/moderation/{entity_type}/{entity_id}")
+@router.post("/moderation/{entity_type}/{entity_id}", dependencies=[access.ADMIN])
 async def moderate(
     entity_type: str,
     entity_id: UUID,
@@ -309,7 +310,7 @@ async def moderate(
     )
 
 
-@router.post("/moderation/bulk")
+@router.post("/moderation/bulk", dependencies=[access.ADMIN])
 async def bulk_moderate(
     payload: BulkModerationIn,
     request: Request,
@@ -330,7 +331,7 @@ async def bulk_moderate(
     )
 
 
-@router.get("/moderation/events")
+@router.get("/moderation/events", dependencies=[access.ADMIN])
 async def moderation_events(
     request: Request,
     entity_id: UUID | None = None,
@@ -344,7 +345,7 @@ async def moderation_events(
     )
 
 
-@router.get("/taxonomy")
+@router.get("/taxonomy", dependencies=[access.ADMIN])
 async def taxonomy_list(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -353,7 +354,7 @@ async def taxonomy_list(
     return await fetch_json(db, "SELECT app.list_taxonomy_admin(:admin_id)", {"admin_id": _uid(session)})
 
 
-@router.post("/taxonomy")
+@router.post("/taxonomy", dependencies=[access.ADMIN])
 async def taxonomy_create(
     payload: TaxonomyCreateIn,
     request: Request,
@@ -376,7 +377,7 @@ async def taxonomy_create(
     return result
 
 
-@router.post("/taxonomy/{term_id}/rename")
+@router.post("/taxonomy/{term_id}/rename", dependencies=[access.ADMIN])
 async def taxonomy_rename(
     term_id: UUID,
     payload: TaxonomyRenameIn,
@@ -396,7 +397,7 @@ async def taxonomy_rename(
     )
 
 
-@router.post("/taxonomy/{term_id}/retire")
+@router.post("/taxonomy/{term_id}/retire", dependencies=[access.ADMIN])
 async def taxonomy_retire(
     term_id: UUID,
     payload: ReasonIn,
@@ -411,7 +412,7 @@ async def taxonomy_retire(
     )
 
 
-@router.post("/taxonomy/{term_id}/merge")
+@router.post("/taxonomy/{term_id}/merge", dependencies=[access.ADMIN])
 async def taxonomy_merge(
     term_id: UUID,
     payload: TaxonomyMergeIn,
@@ -431,7 +432,7 @@ async def taxonomy_merge(
     )
 
 
-@router.get("/bookings")
+@router.get("/bookings", dependencies=[access.ADMIN])
 async def list_bookings(
     request: Request,
     limit: int = Query(default=100, ge=1, le=500),
@@ -446,7 +447,55 @@ async def list_bookings(
     )
 
 
-@router.get("/bookings/{booking_id}")
+@router.get("/audit", dependencies=[access.ADMIN])
+async def search_audit(
+    request: Request,
+    action: str | None = Query(default=None, max_length=120),
+    actor_id: UUID | None = None,
+    target_type: str | None = Query(default=None, max_length=80),
+    target_id: str | None = Query(default=None, max_length=120),
+    organization_id: UUID | None = None,
+    request_id: str | None = Query(default=None, max_length=64),
+    since: datetime | None = Query(default=None, alias="from"),  # noqa: B008
+    until: datetime | None = Query(default=None, alias="to"),  # noqa: B008
+    before: datetime | None = None,
+    before_id: UUID | None = None,
+    limit: int = Query(default=50, ge=1, le=200),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Search the append-only audit log (MSHWAR-109), newest first, keyset-paged."""
+    session = await _admin(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.admin_search_audit(:admin_id, :action, :actor, :target_type, :target_id, :org, "
+        ":request_id, :since, :until, :before, :before_id, :limit)",
+        {
+            "admin_id": _uid(session),
+            "action": action,
+            "actor": str(actor_id) if actor_id else None,
+            "target_type": target_type,
+            "target_id": target_id,
+            "org": str(organization_id) if organization_id else None,
+            "request_id": request_id,
+            "since": since,
+            "until": until,
+            "before": before,
+            "before_id": str(before_id) if before_id else None,
+            "limit": limit,
+        },
+    )
+
+
+@router.get("/audit/filters", dependencies=[access.ADMIN])
+async def audit_filters(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    session = await _admin(request, db)
+    return await fetch_json(db, "SELECT app.admin_audit_filters(:admin_id)", {"admin_id": _uid(session)})
+
+
+@router.get("/bookings/{booking_id}", dependencies=[access.ADMIN])
 async def inspect_booking(
     booking_id: UUID,
     request: Request,
@@ -465,7 +514,7 @@ async def inspect_booking(
     return payload
 
 
-@router.post("/bookings/{booking_id}/force-cancel")
+@router.post("/bookings/{booking_id}/force-cancel", dependencies=[access.ADMIN])
 async def force_cancel(
     booking_id: UUID,
     payload: ReasonIn,
@@ -480,7 +529,7 @@ async def force_cancel(
     )
 
 
-@router.post("/bookings/{booking_id}/mark-refunded")
+@router.post("/bookings/{booking_id}/mark-refunded", dependencies=[access.ADMIN])
 async def mark_refunded(
     booking_id: UUID,
     payload: ReasonIn,
@@ -495,7 +544,7 @@ async def mark_refunded(
     )
 
 
-@router.post("/bookings/{booking_id}/resend-confirmation")
+@router.post("/bookings/{booking_id}/resend-confirmation", dependencies=[access.ADMIN])
 async def resend_confirmation(
     booking_id: UUID,
     payload: ReasonIn,
@@ -510,7 +559,7 @@ async def resend_confirmation(
     )
 
 
-@router.get("/config")
+@router.get("/config", dependencies=[access.ADMIN])
 async def list_config(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -519,7 +568,7 @@ async def list_config(
     return await fetch_json(db, "SELECT app.list_configuration(:admin_id)", {"admin_id": _uid(session)})
 
 
-@router.put("/config")
+@router.put("/config", dependencies=[access.ADMIN])
 async def put_config(
     payload: ConfigPutIn,
     request: Request,
@@ -538,7 +587,7 @@ async def put_config(
     )
 
 
-@router.post("/config/{key}/rollback")
+@router.post("/config/{key}/rollback", dependencies=[access.ADMIN])
 async def rollback_config(
     key: str,
     payload: ReasonIn,
@@ -553,7 +602,7 @@ async def rollback_config(
     )
 
 
-@router.get("/flags")
+@router.get("/flags", dependencies=[access.ADMIN])
 async def list_flags(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -562,7 +611,7 @@ async def list_flags(
     return await fetch_json(db, "SELECT app.list_feature_flags(:admin_id)", {"admin_id": _uid(session)})
 
 
-@router.put("/flags")
+@router.put("/flags", dependencies=[access.ADMIN])
 async def put_flag(
     payload: FlagPutIn,
     request: Request,
@@ -584,7 +633,7 @@ async def put_flag(
     )
 
 
-@router.get("/kpis")
+@router.get("/kpis", dependencies=[access.ADMIN])
 async def kpis(
     request: Request,
     date_from: datetime | None = Query(default=None, alias="from"),  # noqa: B008
@@ -599,7 +648,7 @@ async def kpis(
     )
 
 
-@router.get("/cases")
+@router.get("/cases", dependencies=[access.ADMIN])
 async def list_cases(
     request: Request,
     case_status: str | None = Query(default=None, alias="status"),
@@ -613,7 +662,7 @@ async def list_cases(
     )
 
 
-@router.post("/cases")
+@router.post("/cases", dependencies=[access.ADMIN])
 async def create_case(
     payload: SupportCaseCreateIn,
     request: Request,
@@ -634,7 +683,7 @@ async def create_case(
     )
 
 
-@router.post("/cases/{case_id}/assign")
+@router.post("/cases/{case_id}/assign", dependencies=[access.ADMIN])
 async def assign_case(
     case_id: UUID,
     payload: SupportAssignIn,
@@ -654,7 +703,7 @@ async def assign_case(
     )
 
 
-@router.post("/cases/{case_id}/escalate")
+@router.post("/cases/{case_id}/escalate", dependencies=[access.ADMIN])
 async def escalate_case(
     case_id: UUID,
     payload: SupportNoteIn,
@@ -669,7 +718,7 @@ async def escalate_case(
     )
 
 
-@router.post("/cases/{case_id}/resolve")
+@router.post("/cases/{case_id}/resolve", dependencies=[access.ADMIN])
 async def resolve_case(
     case_id: UUID,
     payload: SupportResolveIn,
@@ -684,7 +733,7 @@ async def resolve_case(
     )
 
 
-@router.get("/quality")
+@router.get("/quality", dependencies=[access.ADMIN])
 async def list_quality(
     request: Request,
     issue_status: str | None = Query(default=None, alias="status"),
@@ -701,7 +750,7 @@ async def list_quality(
     }
 
 
-@router.post("/quality/run")
+@router.post("/quality/run", dependencies=[access.ADMIN])
 async def run_quality(
     request: Request,
     notify: bool = True,
@@ -711,7 +760,7 @@ async def run_quality(
     return await run_checks(db, _uid(session), notify=notify)
 
 
-@router.get("/payments/reconciliation")
+@router.get("/payments/reconciliation", dependencies=[access.ADMIN])
 async def list_reconciliation(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -720,7 +769,7 @@ async def list_reconciliation(
     return await fetch_json(db, "SELECT app.list_reconciliation_queue(:admin_id)", {"admin_id": _uid(session)})
 
 
-@router.post("/payments/reconcile")
+@router.post("/payments/reconcile", dependencies=[access.ADMIN])
 async def run_reconciliation(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -733,7 +782,7 @@ async def run_reconciliation(
     )
 
 
-@router.post("/quality/{issue_id}/notify")
+@router.post("/quality/{issue_id}/notify", dependencies=[access.ADMIN])
 async def notify_quality(
     issue_id: UUID,
     request: Request,
@@ -747,7 +796,7 @@ async def notify_quality(
     )
 
 
-@router.get("/weather-thresholds")
+@router.get("/weather-thresholds", dependencies=[access.ADMIN])
 async def admin_weather_thresholds(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -756,7 +805,7 @@ async def admin_weather_thresholds(
     return await fetch_json(db, "SELECT app.list_weather_thresholds()", {})
 
 
-@router.put("/weather-thresholds")
+@router.put("/weather-thresholds", dependencies=[access.ADMIN])
 async def admin_update_weather_threshold(
     payload: ThresholdIn,
     request: Request,
@@ -770,7 +819,7 @@ async def admin_update_weather_threshold(
     )
 
 
-@router.post("/experiences/{experience_id}/weather-sensitivity")
+@router.post("/experiences/{experience_id}/weather-sensitivity", dependencies=[access.ADMIN])
 async def admin_set_weather_sensitivity(
     experience_id: UUID,
     payload: WeatherSensitivityIn,
@@ -790,7 +839,7 @@ async def admin_set_weather_sensitivity(
     )
 
 
-@router.get("/notifications/health")
+@router.get("/notifications/health", dependencies=[access.ADMIN])
 async def notification_health(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -799,7 +848,7 @@ async def notification_health(
     return await notification_service.health(db, _uid(session))
 
 
-@router.get("/notifications")
+@router.get("/notifications", dependencies=[access.ADMIN])
 async def list_admin_notifications(
     request: Request,
     status_filter: str | None = Query(default=None, alias="status"),
@@ -810,7 +859,7 @@ async def list_admin_notifications(
     return await notification_service.list_admin(db, _uid(session), status_filter, channel)
 
 
-@router.post("/notifications/{notification_id}/resend")
+@router.post("/notifications/{notification_id}/resend", dependencies=[access.ADMIN])
 async def resend_notification(
     notification_id: UUID,
     payload: ReasonIn,

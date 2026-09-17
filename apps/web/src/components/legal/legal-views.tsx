@@ -1,32 +1,23 @@
 "use client";
 
 import * as React from "react";
-import {
-  ArrowUpRight,
-  Building2,
-  CalendarCheck,
-  Download,
-  FileText,
-  RotateCcw,
-  ShieldCheck,
-  Ticket,
-  UserX,
-} from "lucide-react";
+import { ArrowUpRight, Building2, FileText, ShieldCheck, Ticket } from "lucide-react";
 import { ShellMain } from "@/components/shell/app-shell";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { useLocale } from "@/components/shell/locale-provider";
+import { CookieSettingsButton } from "@/components/legal/cookie-consent";
 import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
-import { useBrowseCopy } from "@/lib/browse-copy";
-import { DEFAULT_POLICIES } from "@/lib/catalog";
-import { useCheckoutCopy } from "@/lib/checkout-copy";
-import { usePrivacyCopy } from "@/lib/privacy-copy";
+import { formatDate } from "@/i18n/format";
+import { CANCELLATION_POLICY } from "@/lib/legal/cancellation";
+import { COMMUNITY_GUIDELINES } from "@/lib/legal/community";
+import { fillLegalText } from "@/lib/legal/entity";
+import { PRIVACY_POLICY } from "@/lib/legal/privacy";
+import { TERMS_OF_SERVICE } from "@/lib/legal/terms";
+import { LEGAL_VERSIONS, type LegalBlock, type LegalKind, type LegalLibrary } from "@/lib/legal/types";
+import { useTrustCopy } from "@/lib/trust-copy";
 import { cn, focusRing } from "@/lib/utils";
-
-function capitalize(value: string) {
-  return value.charAt(0).toLocaleUpperCase() + value.slice(1);
-}
 
 function LegalSection({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
@@ -131,120 +122,117 @@ export function ContactView() {
   );
 }
 
-export function TermsView() {
+const LIBRARIES: Record<LegalKind, LegalLibrary> = {
+  terms: TERMS_OF_SERVICE,
+  privacy: PRIVACY_POLICY,
+  cancellation: CANCELLATION_POLICY,
+  community: COMMUNITY_GUIDELINES,
+};
+
+export const LEGAL_PATHS: Record<LegalKind, string> = {
+  terms: "/terms",
+  privacy: "/privacy",
+  cancellation: "/cancellation-policy",
+  community: "/community-guidelines",
+};
+
+/** Set NEXT_PUBLIC_LEGAL_REVIEWED=true once a lawyer has approved the published versions. */
+const REVIEWED = process.env.NEXT_PUBLIC_LEGAL_REVIEWED === "true";
+
+function Block({ block, fill }: { block: LegalBlock; fill: (text: string) => string }) {
+  if (typeof block === "string") {
+    return <p className="leading-relaxed text-text-muted">{fill(block)}</p>;
+  }
+  return (
+    <ul className="grid list-disc gap-2 ps-5 leading-relaxed text-text-muted marker:text-text-muted">
+      {block.list.map((item) => (
+        <li key={item}>{fill(item)}</li>
+      ))}
+    </ul>
+  );
+}
+
+/** One published trust document (MSHWAR-113), in the visitor's language. */
+export function LegalDocumentView({ kind, children }: { kind: LegalKind; children?: React.ReactNode }) {
   const { t, locale } = useLocale();
-  const checkout = useCheckoutCopy();
-  const browse = useBrowseCopy();
-  const sections = [
-    { id: "booking", title: t("termsBookingTitle") },
-    { id: "preview", title: t("termsPreviewTitle") },
-    { id: "policies", title: t("termsPoliciesTitle") },
-  ];
-  const modes = [
-    { icon: CalendarCheck, title: checkout.modeInstant, body: checkout.confirmedNote },
-    { icon: FileText, title: checkout.modeRequest, body: checkout.requestNote },
-    { icon: Ticket, title: checkout.modeInquiry, body: checkout.inquiry },
-  ];
+  const copy = useTrustCopy();
+  const doc = LIBRARIES[kind][locale];
+  const version = LEGAL_VERSIONS[kind];
+  const fill = React.useCallback((text: string) => fillLegalText(text, locale), [locale]);
+  const sections = doc.sections.map((section) => ({ id: section.id, title: section.heading }));
+  const related = (Object.keys(LIBRARIES) as LegalKind[]).filter((other) => other !== kind);
+
   return (
     <ShellMain>
-      <PageHeader eyebrow={t("legalKicker")} title={t("termsTitle")} description={t("termsBody")} />
-      <LegalLayout label={t("legalKicker")} sections={sections}>
-        <LegalSection id="booking" title={sections[0].title}>
+      <PageHeader eyebrow={t("legalKicker")} title={doc.title} description={doc.summary} />
+      <div className="-mt-4 mb-10 grid max-w-3xl gap-4">
+        <p className="text-sm text-text-muted">
+          {copy.legalVersion} <span className="tabular-nums">{version}</span> · {copy.legalEffective}{" "}
+          <time dateTime={version}>
+            {formatDate(locale, `${version}T00:00:00Z`, { dateStyle: "long", timeZone: "UTC" })}
+          </time>
+        </p>
+        {REVIEWED ? null : <Notice tone="warning">{copy.legalDraft}</Notice>}
+      </div>
+      <LegalLayout label={copy.legalContents} sections={sections}>
+        {doc.sections.map((section) => (
+          <LegalSection key={section.id} id={section.id} title={section.heading}>
+            {section.body.map((block, index) => (
+              <Block key={index} block={block} fill={fill} />
+            ))}
+          </LegalSection>
+        ))}
+        {children}
+        <nav aria-label={copy.legalRelated} className="grid gap-4 border-t border-border-subtle pt-10">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-text-muted">{copy.legalRelated}</h2>
           <ul className="grid gap-3 sm:grid-cols-3">
-            {modes.map((mode) => (
-              <li
-                key={mode.title}
-                className="grid content-start gap-3 rounded-card border border-border-subtle bg-surface-raised p-5"
-              >
-                <mode.icon className="size-5" strokeWidth={1.6} aria-hidden />
-                <h3 className="font-semibold">{mode.title}</h3>
-                <p className="text-sm leading-relaxed text-text-muted">{mode.body}</p>
+            {related.map((other) => (
+              <li key={other}>
+                <LocaleLink
+                  href={LEGAL_PATHS[other]}
+                  className={cn(
+                    "flex h-full items-center gap-3 rounded-card border border-border-subtle bg-surface-raised p-4 text-sm font-semibold transition-colors hover:border-brand",
+                    focusRing,
+                  )}
+                >
+                  <FileText className="size-4 shrink-0" strokeWidth={1.6} aria-hidden />
+                  {LIBRARIES[other][locale].title}
+                </LocaleLink>
               </li>
             ))}
           </ul>
-          <p className="text-text-muted">{checkout.suggestionNote}</p>
-        </LegalSection>
-        <LegalSection id="preview" title={sections[1].title}>
-          <Notice>{browse.sampleDisclaimer}</Notice>
-          <p className="leading-relaxed text-text-muted">{browse.sampleOffer}</p>
-        </LegalSection>
-        <LegalSection id="policies" title={sections[2].title}>
-          <dl className="grid gap-4" lang={locale === "en" ? undefined : "en"}>
-            {DEFAULT_POLICIES.map((policy) => (
-              <div key={policy.title} className="grid gap-1 border-b border-border-subtle pb-4 last:border-b-0">
-                <dt className="font-semibold">{policy.title}</dt>
-                <dd className="leading-relaxed text-text-muted">{policy.body}</dd>
-              </div>
-            ))}
-          </dl>
-        </LegalSection>
+        </nav>
       </LegalLayout>
     </ShellMain>
   );
 }
 
+export function TermsView() {
+  return <LegalDocumentView kind="terms" />;
+}
+
 export function PrivacyPolicyView() {
-  const { t } = useLocale();
-  const privacy = usePrivacyCopy();
-  const sections = [
-    { id: "retention", title: privacy.retentionTitle },
-    { id: "controls", title: t("privacyControlsTitle") },
-  ];
-  const controls = [
-    { icon: Download, title: privacy.exportTitle, body: privacy.exportBody },
-    { icon: RotateCcw, title: privacy.resetTitle, body: privacy.resetBody },
-    { icon: UserX, title: privacy.deleteTitle, body: privacy.deleteBody },
-  ];
-  const retention = [
-    privacy.retentionProfile,
-    privacy.retentionTrips,
-    privacy.retentionFavorites,
-    privacy.retentionReviews,
-    privacy.retentionBookings,
-    privacy.retentionPayments,
-  ];
+  const copy = useTrustCopy();
   return (
-    <ShellMain>
-      <PageHeader eyebrow={t("legalKicker")} title={t("privacyPageTitle")} description={t("privacyPageBody")} />
-      <LegalLayout label={t("legalKicker")} sections={sections}>
-        <LegalSection id="retention" title={sections[0].title}>
-          <p className="leading-relaxed text-text-muted">{privacy.privacyBody}</p>
-          <ul className="grid gap-3">
-            {retention.map((line) => {
-              const [label, ...rest] = line.split(":");
-              return (
-                <li
-                  key={line}
-                  className="grid gap-1 rounded-control bg-surface-sunken px-5 py-4 sm:grid-cols-[10rem_1fr] sm:gap-4"
-                >
-                  <span className="font-semibold">{rest.length ? label : ""}</span>
-                  <span className="text-text-muted">{rest.length ? capitalize(rest.join(":").trim()) : line}</span>
-                </li>
-              );
-            })}
-          </ul>
-        </LegalSection>
-        <LegalSection id="controls" title={sections[1].title}>
-          <ul className="grid gap-3 sm:grid-cols-3">
-            {controls.map((control) => (
-              <li
-                key={control.title}
-                className="grid content-start gap-3 rounded-card border border-border-subtle bg-surface-raised p-5"
-              >
-                <control.icon className="size-5" strokeWidth={1.6} aria-hidden />
-                <h3 className="font-semibold">{control.title}</h3>
-                <p className="text-sm leading-relaxed text-text-muted">{control.body}</p>
-              </li>
-            ))}
-          </ul>
-          <Button asChild className="w-fit">
-            <LocaleLink href="/settings#privacy">
-              {t("openSettings")}
-              <ArrowUpRight className="rtl:-scale-x-100" aria-hidden />
-            </LocaleLink>
-          </Button>
-        </LegalSection>
-      </LegalLayout>
-    </ShellMain>
+    <LegalDocumentView kind="privacy">
+      <section className="flex flex-wrap items-center gap-4 rounded-card border border-border-subtle bg-surface-raised p-6">
+        <ShieldCheck className="size-5" strokeWidth={1.6} aria-hidden />
+        <Button asChild className="w-fit">
+          <LocaleLink href="/settings#privacy">
+            {copy.legalManageData}
+            <ArrowUpRight className="rtl:-scale-x-100" aria-hidden />
+          </LocaleLink>
+        </Button>
+        <CookieSettingsButton className="text-sm font-semibold underline underline-offset-4" />
+      </section>
+    </LegalDocumentView>
   );
+}
+
+export function CancellationPolicyView() {
+  return <LegalDocumentView kind="cancellation" />;
+}
+
+export function CommunityGuidelinesView() {
+  return <LegalDocumentView kind="community" />;
 }

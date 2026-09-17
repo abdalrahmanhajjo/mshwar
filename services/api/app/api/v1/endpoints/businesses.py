@@ -5,6 +5,8 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import access
+from app.core.rate_limit import limit
 from app.core.sql import fetch_json
 from app.dependencies import get_auth_db
 
@@ -24,7 +26,7 @@ def public_organization_view(payload: dict[str, Any] | None) -> dict[str, Any] |
     return cleaned
 
 
-@router.get("")
+@router.get("", dependencies=[access.PUBLIC, limit("search")])
 async def list_businesses(
     q: str | None = Query(default=None),
     category: str | None = Query(default=None),
@@ -46,7 +48,7 @@ async def list_businesses(
     return items
 
 
-@router.get("/experiences/{slug}")
+@router.get("/experiences/{slug}", dependencies=[access.PUBLIC, limit("search")])
 async def get_public_experience(
     slug: str,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -58,7 +60,7 @@ async def get_public_experience(
     return public
 
 
-@router.get("/{slug}")
+@router.get("/{slug}", dependencies=[access.PUBLIC, limit("search")])
 async def get_business(
     slug: str,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008

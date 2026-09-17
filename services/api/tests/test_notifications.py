@@ -35,7 +35,13 @@ def _email(prefix: str) -> str:
 async def _register(client: AsyncClient, email: str, locale: str = "en", name: str = "Lina") -> dict[str, Any]:
     created = await client.post(
         "/api/v1/auth/register",
-        json={"email": email, "password": "long-enough-secret", "display_name": name, "locale": locale},
+        json={
+            "accept_terms": True,
+            "email": email,
+            "password": "long-enough-secret",
+            "display_name": name,
+            "locale": locale,
+        },
     )
     assert created.status_code == 201, created.text
     return created.json()
@@ -180,6 +186,11 @@ async def test_marketing_opt_out_never_blocks_transactional(api: AsyncClient) ->
     prefs = await api.get("/api/v1/notifications/preferences")
     assert prefs.status_code == 200
     assert prefs.json()["transactional_email"] is True
+    granted = await api.put(
+        "/api/v1/notifications/preferences",
+        json={"marketing_email": True, "marketing_in_app": True},
+    )
+    assert granted.status_code == 200
     updated = await api.put(
         "/api/v1/notifications/preferences",
         json={"marketing_email": False, "marketing_in_app": False},
@@ -205,8 +216,11 @@ async def test_marketing_opt_out_never_blocks_transactional(api: AsyncClient) ->
 
     history = await api.get("/api/v1/notifications/consent")
     assert history.status_code == 200
-    purposes = {row["purpose"] for row in history.json()}
-    assert "marketing_email" in purposes
+    marketing_events = [
+        (row["granted"], row["source"]) for row in history.json() if row["purpose"] == "marketing_email"
+    ]
+    assert marketing_events == [(False, "preferences"), (True, "preferences")]
+    assert all(row["policy_version"] == "2026-09-16" for row in history.json())
 
     feed = await api.get("/api/v1/notifications")
     types = {item["event_type"] for item in feed.json()["items"]}
@@ -229,20 +243,54 @@ async def test_marketing_opt_out_never_blocks_transactional(api: AsyncClient) ->
 
 @pytest.mark.asyncio
 async def test_unsubscribe_link_opts_out_marketing_only(api: AsyncClient) -> None:
-    await _register(api, _email("unsub"))
+    user = await _register(api, _email("unsub"))
     await api.put(
         "/api/v1/notifications/preferences",
         json={"marketing_email": True, "marketing_in_app": True},
     )
-    token = (await api.get("/api/v1/notifications/preferences")).json()["unsubscribe_token"]
+    prefs = (await api.get("/api/v1/notifications/preferences")).json()
+    assert "unsubscribe_token" not in prefs
+    async with TestingSessionLocal() as session:
+        token = (
+            await session.execute(text("SELECT app.issue_unsubscribe_token(:uid)"), {"uid": user["id"]})
+        ).scalar_one()
+        stored = (
+            (
+                await session.execute(
+                    text("SELECT token_hash FROM app.unsubscribe_tokens WHERE user_id = :uid"), {"uid": user["id"]}
+                )
+            )
+            .scalars()
+            .all()
+        )
+        await session.commit()
+    assert token not in stored  # only the hash is kept
     lookup = await api.get(f"/api/v1/notifications/unsubscribe/{token}")
     assert lookup.status_code == 200
+    assert "user_id" not in lookup.json()
+    assert lookup.json()["email_domain"] == "example.com"
     applied = await api.post(f"/api/v1/notifications/unsubscribe/{token}")
     assert applied.status_code == 200
     assert applied.json()["marketing_email"] is False
     assert applied.json()["transactional_email"] is True
     missing = await api.post("/api/v1/notifications/unsubscribe/not-a-real-token")
-    assert missing.status_code in {404, 422}
+    assert missing.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_expired_unsubscribe_link_is_rejected(api: AsyncClient) -> None:
+    user = await _register(api, _email("unsub-old"))
+    async with TestingSessionLocal() as session:
+        token = (
+            await session.execute(text("SELECT app.issue_unsubscribe_token(:uid)"), {"uid": user["id"]})
+        ).scalar_one()
+        await session.execute(
+            text("UPDATE app.unsubscribe_tokens SET expires_at = now() - interval '1 day' WHERE user_id = :uid"),
+            {"uid": user["id"]},
+        )
+        await session.commit()
+    expired = await api.post(f"/api/v1/notifications/unsubscribe/{token}")
+    assert expired.status_code == 404
 
 
 @pytest.mark.asyncio

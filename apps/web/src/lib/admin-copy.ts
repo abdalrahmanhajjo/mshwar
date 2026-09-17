@@ -118,7 +118,30 @@ export type AdminKey =
   | "savedMessage"
   | "saveFailed"
   | "unknownIp"
-  | "runs";
+  | "runs"
+  | "auditTitle"
+  | "auditBody"
+  | "auditActionFilter"
+  | "auditActorFilter"
+  | "auditTargetTypeFilter"
+  | "auditTargetFilter"
+  | "auditRequestFilter"
+  | "auditFrom"
+  | "auditTo"
+  | "auditSearch"
+  | "auditReset"
+  | "auditLoadMore"
+  | "auditEmpty"
+  | "auditWhen"
+  | "auditActor"
+  | "auditAction"
+  | "auditTarget"
+  | "auditReason"
+  | "auditChanges"
+  | "auditSystem"
+  | "auditAnyOption"
+  | "auditFailed"
+  | "auditFieldsChanged";
 
 export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
   en: {
@@ -239,6 +262,30 @@ export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
     saveFailed: "Could not save. Sign in and use existing experience slugs.",
     unknownIp: "unknown",
     runs: "Scheduler",
+    auditTitle: "Audit log",
+    auditBody:
+      "Every consequential action: who did it, what changed, when and why. Entries cannot be edited or deleted.",
+    auditActionFilter: "Action starts with",
+    auditActorFilter: "Actor ID",
+    auditTargetTypeFilter: "Record type",
+    auditTargetFilter: "Record ID",
+    auditRequestFilter: "Request ID",
+    auditFrom: "From",
+    auditTo: "To",
+    auditSearch: "Search",
+    auditReset: "Clear filters",
+    auditLoadMore: "Load older entries",
+    auditEmpty: "No audit entries match these filters.",
+    auditWhen: "When",
+    auditActor: "Actor",
+    auditAction: "Action",
+    auditTarget: "Record",
+    auditReason: "Reason",
+    auditChanges: "Changes",
+    auditSystem: "System",
+    auditAnyOption: "Any",
+    auditFailed: "Could not load the audit log.",
+    auditFieldsChanged: "Fields changed",
   },
   ar: {
     queueTitle: "طابور التحقق",
@@ -358,6 +405,29 @@ export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
     saveFailed: "تعذّر الحفظ. سجّل الدخول واستخدم معرّفات تجارب موجودة.",
     unknownIp: "غير معروف",
     runs: "المجدول",
+    auditTitle: "سجل التدقيق",
+    auditBody: "كل إجراء مؤثر: من قام به، وما الذي تغيّر، ومتى، ولماذا. لا يمكن تعديل الإدخالات أو حذفها.",
+    auditActionFilter: "يبدأ الإجراء بـ",
+    auditActorFilter: "معرّف المنفّذ",
+    auditTargetTypeFilter: "نوع السجل",
+    auditTargetFilter: "معرّف السجل",
+    auditRequestFilter: "معرّف الطلب",
+    auditFrom: "من",
+    auditTo: "إلى",
+    auditSearch: "بحث",
+    auditReset: "مسح عوامل التصفية",
+    auditLoadMore: "تحميل إدخالات أقدم",
+    auditEmpty: "لا توجد إدخالات تدقيق مطابقة لهذه المعايير.",
+    auditWhen: "الوقت",
+    auditActor: "المنفّذ",
+    auditAction: "الإجراء",
+    auditTarget: "السجل",
+    auditReason: "السبب",
+    auditChanges: "التغييرات",
+    auditSystem: "النظام",
+    auditAnyOption: "الكل",
+    auditFailed: "تعذّر تحميل سجل التدقيق.",
+    auditFieldsChanged: "الحقول المعدّلة",
   },
   fr: {
     queueTitle: "File de vérification",
@@ -478,6 +548,30 @@ export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
     saveFailed: "Échec de l’enregistrement. Connectez-vous et utilisez des identifiants existants.",
     unknownIp: "inconnue",
     runs: "Planificateur",
+    auditTitle: "Journal d’audit",
+    auditBody:
+      "Chaque action importante : qui l’a faite, ce qui a changé, quand et pourquoi. Les entrées ne peuvent être ni modifiées ni supprimées.",
+    auditActionFilter: "L’action commence par",
+    auditActorFilter: "ID de l’auteur",
+    auditTargetTypeFilter: "Type d’enregistrement",
+    auditTargetFilter: "ID de l’enregistrement",
+    auditRequestFilter: "ID de requête",
+    auditFrom: "Du",
+    auditTo: "Au",
+    auditSearch: "Rechercher",
+    auditReset: "Effacer les filtres",
+    auditLoadMore: "Charger des entrées plus anciennes",
+    auditEmpty: "Aucune entrée ne correspond à ces filtres.",
+    auditWhen: "Date",
+    auditActor: "Auteur",
+    auditAction: "Action",
+    auditTarget: "Enregistrement",
+    auditReason: "Motif",
+    auditChanges: "Modifications",
+    auditSystem: "Système",
+    auditAnyOption: "Tous",
+    auditFailed: "Impossible de charger le journal d’audit.",
+    auditFieldsChanged: "Champs modifiés",
   },
 };
 

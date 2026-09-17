@@ -10,10 +10,11 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import access
 from app.core.auth_session import require_session, require_verified_user
 from app.core.config import settings
 from app.core.http_status import HTTP_422_UNPROCESSABLE
-from app.core.job_auth import require_dev_endpoints, require_job_token
+from app.core.rate_limit import limit
 from app.core.sql import fetch_json
 from app.dependencies import get_auth_db
 from app.payments.checkout_service import pay_for_booking, preview_cancellation, simulate_payment_outcome
@@ -43,7 +44,7 @@ def _idempotency(header_key: str | None, body_key: str | None) -> str:
     return key
 
 
-@router.get("/slots/{slug}")
+@router.get("/slots/{slug}", dependencies=[access.PUBLIC, limit("search")])
 async def list_slots(
     slug: str,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -51,7 +52,7 @@ async def list_slots(
     return await fetch_json(db, "SELECT app.list_public_slots(:slug)", {"slug": slug})
 
 
-@router.post("/quote")
+@router.post("/quote", dependencies=[access.PUBLIC, limit("search")])
 async def quote_checkout(
     payload: CheckoutQuoteIn,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -63,7 +64,7 @@ async def quote_checkout(
     )
 
 
-@router.post("/draft")
+@router.post("/draft", dependencies=[access.VERIFIED, limit("booking"), limit("booking-ip")])
 async def create_draft(
     payload: CheckoutCommitIn,
     request: Request,
@@ -89,7 +90,7 @@ async def create_draft(
     )
 
 
-@router.post("/commit")
+@router.post("/commit", dependencies=[access.VERIFIED, limit("booking"), limit("booking-ip")])
 async def commit_checkout(
     payload: CheckoutCommitIn,
     request: Request,
@@ -117,7 +118,7 @@ async def commit_checkout(
     )
 
 
-@router.post("/inquiry")
+@router.post("/inquiry", dependencies=[access.VERIFIED, limit("booking"), limit("booking-ip")])
 async def create_inquiry(
     payload: CheckoutInquiryIn,
     request: Request,
@@ -141,7 +142,7 @@ async def create_inquiry(
     )
 
 
-@router.post("/ops/expire-holds", dependencies=[Depends(require_job_token)])
+@router.post("/ops/expire-holds", dependencies=[access.JOB])
 async def expire_holds(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
     limit: int = Query(default=100, ge=1, le=1000),
@@ -151,21 +152,21 @@ async def expire_holds(
     return {"expired": int(expired or 0)}
 
 
-@router.post("/ops/publish-outbox", dependencies=[Depends(require_job_token)])
+@router.post("/ops/publish-outbox", dependencies=[access.JOB])
 async def publish_outbox_endpoint(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
     return await publish_outbox(db)
 
 
-@router.get("/ops/metrics", dependencies=[Depends(require_job_token)])
+@router.get("/ops/metrics", dependencies=[access.JOB])
 async def checkout_metrics(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
     return await outbox_metrics(db)
 
 
-@router.get("/mine")
+@router.get("/mine", dependencies=[access.SESSION])
 async def list_mine(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -174,7 +175,7 @@ async def list_mine(
     return await fetch_json(db, "SELECT app.list_my_checkout_bookings(:user_id)", {"user_id": str(session["user_id"])})
 
 
-@router.get("/{booking_id}")
+@router.get("/{booking_id}", dependencies=[access.SESSION])
 async def get_booking(
     booking_id: UUID,
     request: Request,
@@ -188,7 +189,7 @@ async def get_booking(
     )
 
 
-@router.get("/{booking_id}/timeline")
+@router.get("/{booking_id}/timeline", dependencies=[access.SESSION])
 async def get_timeline(
     booking_id: UUID,
     request: Request,
@@ -202,7 +203,7 @@ async def get_timeline(
     )
 
 
-@router.get("/{booking_id}/confirmation")
+@router.get("/{booking_id}/confirmation", dependencies=[access.SESSION])
 async def get_confirmation(
     booking_id: UUID,
     request: Request,
@@ -221,7 +222,7 @@ async def get_confirmation(
     return {**record, "rendered": rendered}
 
 
-@router.post("/{booking_id}/cancel-preview")
+@router.post("/{booking_id}/cancel-preview", dependencies=[access.SESSION])
 async def cancel_preview(
     booking_id: UUID,
     request: Request,
@@ -231,7 +232,7 @@ async def cancel_preview(
     return await preview_cancellation(db, user_id=str(session["user_id"]), booking_id=booking_id)
 
 
-@router.post("/{booking_id}/cancel")
+@router.post("/{booking_id}/cancel", dependencies=[access.SESSION, limit("booking")])
 async def cancel_booking(
     booking_id: UUID,
     payload: CheckoutCancelIn,
@@ -246,7 +247,7 @@ async def cancel_booking(
     )
 
 
-@router.post("/{booking_id}/pay")
+@router.post("/{booking_id}/pay", dependencies=[access.VERIFIED, limit("booking"), limit("booking-ip")])
 async def pay_booking(
     booking_id: UUID,
     payload: CheckoutPayIn,
@@ -286,7 +287,7 @@ async def pay_booking(
     }
 
 
-@router.post("/{booking_id}/simulate", dependencies=[Depends(require_dev_endpoints)])
+@router.post("/{booking_id}/simulate", dependencies=[access.DEV])
 async def simulate_payment(
     booking_id: UUID,
     payload: CheckoutSimulateIn,

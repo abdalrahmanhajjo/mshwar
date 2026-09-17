@@ -12,6 +12,7 @@ services/api               FastAPI service (auth, catalogue, planner, checkout, 
 mshwar-database            Canonical PostgreSQL schema: forward-only SQL migrations + tests
 mshwar-brand-foundation    Design tokens (JSON) and generated Tailwind / CSS / Figma files
 docs/                      Feature docs, audits, BRD and prototype screenshots
+docs/security/             Security, privacy and trust (start with docs/security/README.md)
 backlog/                   Product backlog exports
 ```
 
@@ -39,7 +40,7 @@ pnpm install
 docker compose up --build
 ```
 
-This starts PostgreSQL, applies the SQL migrations, then runs the API on http://localhost:8000
+This starts PostgreSQL and Redis, applies the SQL migrations, then runs the API on http://localhost:8000
 (docs at `/docs`) and the web app on http://localhost:3000. The API runs with
 `ENVIRONMENT=development` and dev endpoints enabled; optional overrides go in
 `services/api/.env` and `apps/web/.env.local` (both git-ignored).

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import base64
 import json
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime, timedelta
@@ -23,6 +22,7 @@ from app.payments.state_machine import ALL_BOOKING_STATUSES, allowed, blocked_pa
 from app.payments.stripe_test import StripeTestAdapter, sign_stripe_payload
 from app.payments.types import PaymentIntent
 from tests.conftest import TestingSessionLocal
+from tests.media_fixtures import b64, tiny_jpeg
 
 
 @pytest.fixture
@@ -42,7 +42,13 @@ def _email(prefix: str) -> str:
 async def _register(api: AsyncClient, email: str, name: str = "Owner") -> dict[str, Any]:
     response = await api.post(
         "/api/v1/auth/register",
-        json={"email": email, "password": "long-enough-secret", "display_name": name, "locale": "en"},
+        json={
+            "accept_terms": True,
+            "email": email,
+            "password": "long-enough-secret",
+            "display_name": name,
+            "locale": "en",
+        },
     )
     assert response.status_code == 201, response.text
     return response.json()
@@ -98,7 +104,7 @@ async def _published_listing(api: AsyncClient, *, mode: str = "request", capacit
         json={
             "filename": "hero.jpg",
             "content_type": "image/jpeg",
-            "content_base64": base64.b64encode(b"\xff\xd8\xff\xe0fake-image").decode("ascii"),
+            "content_base64": b64(tiny_jpeg()),
             "purpose": "listing",
             "experience_id": listing["id"],
             "alt_text": "Cedar table",

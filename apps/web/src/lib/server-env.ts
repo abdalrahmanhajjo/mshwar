@@ -14,3 +14,13 @@ export function sampleFallbackEnabled(): boolean {
   if (flag === "false") return false;
   return process.env.NODE_ENV !== "production";
 }
+
+/** Sentry DSN for server-side error reports; unset means reporting is off. */
+export function sentryServerDsn(): string | undefined {
+  return process.env.SENTRY_DSN || undefined;
+}
+
+/** "edge" or "nodejs": which Next.js runtime is executing this module. */
+export function serverRuntime(): "edge" | "nodejs" {
+  return process.env.NEXT_RUNTIME === "edge" ? "edge" : "nodejs";
+}

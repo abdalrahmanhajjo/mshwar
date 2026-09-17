@@ -16,6 +16,8 @@ def _settings(**overrides: object) -> Settings:
         "stripe_webhook_secret": "webhook-secret",
         "private_storage_dir": "/var/lib/mshwar/private",
         "enable_dev_endpoints": False,
+        "rate_limit_store": "redis",
+        "public_web_origin": "https://mshwar.example",
     }
     payload["secret_key"] = _PROD_SECRET
     payload.update(overrides)
@@ -68,7 +70,12 @@ def test_reads_database_url_env(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_environment_flags() -> None:
     staging = Settings(
-        environment="staging", secret_key=_PROD_SECRET, internal_job_token="j" * 40, enable_dev_endpoints=False
+        environment="staging",
+        secret_key=_PROD_SECRET,
+        internal_job_token="j" * 40,
+        enable_dev_endpoints=False,
+        rate_limit_store="redis",
+        public_web_origin="https://staging.mshwar.example",
     )
     assert staging.is_staging is True
     assert staging.is_production is False
@@ -104,11 +111,16 @@ def test_uppercase_environment_variables_are_read(monkeypatch: pytest.MonkeyPatc
     monkeypatch.setenv("INTERNAL_JOB_TOKEN", "j" * 40)
     monkeypatch.setenv("ENABLE_DEV_ENDPOINTS", "false")
     monkeypatch.setenv("STRIPE_WEBHOOK_SECRET", "whsec_real")
+    monkeypatch.setenv("RATE_LIMIT_STORE", "redis")
+    monkeypatch.setenv("REDIS_URL", "redis://cache:6379/1")
+    monkeypatch.setenv("PUBLIC_WEB_ORIGIN", "https://staging.mshwar.example")
     loaded = Settings()
     assert loaded.environment == "staging"
     assert loaded.secret_key == _PROD_SECRET
     assert loaded.stripe_webhook_secret == "whsec_real"
     assert loaded.is_deployed is True
+    assert loaded.rate_limit_store == "redis"
+    assert loaded.redis_url == "redis://cache:6379/1"
 
 
 def test_unknown_environment_is_rejected() -> None:
@@ -126,6 +138,10 @@ def test_unknown_environment_is_rejected() -> None:
         ({"payment_provider": "lebanon_acquirer"}, "payment provider"),
         ({"payments_fault": "fail"}, "Fault injection"),
         ({"private_storage_dir": "/tmp/mshwar-private"}, "PRIVATE_STORAGE_DIR"),
+        ({"rate_limit_store": "memory"}, "RATE_LIMIT_STORE"),
+        ({"sql_echo": True}, "SQL_ECHO"),
+        ({"public_web_origin": "http://localhost:3000"}, "PUBLIC_WEB_ORIGIN"),
+        ({"public_web_origin": "http://mshwar.example"}, "PUBLIC_WEB_ORIGIN"),
     ],
 )
 def test_production_fails_closed(overrides: dict[str, object], message: str) -> None:

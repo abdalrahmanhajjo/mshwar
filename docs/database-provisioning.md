@@ -84,6 +84,12 @@ DATABASE_URL=postgresql+asyncpg://... pnpm --filter api migrate
 The `db` image (`services/api/db/Dockerfile`) installs the PostGIS and pgvector packages; the `migrate`
 service in `docker-compose.yml` applies the migrations before the API starts.
 
+### Database roles
+
+Migrations run as the database owner. The API must connect as a separate login role, `mshwar_api`, that only inherits
+`mshwar_backend`; staging and production refuse to start otherwise. See
+[security/database-roles.md](security/database-roles.md).
+
 ### Rollback
 
 Migrations are forward-only. A bad change is fixed with a new migration; data problems are handled by

@@ -340,6 +340,68 @@ try {
     `INSERT INTO app.evaluation_cases(dataset_id,locale,prompt,expected_constraints,fixture_version) VALUES('${ds}','ar-LB','test','{}','1')`,
     /dataset sealed/,
   );
+  // ---- MSHWAR-13: security, privacy and trust (migrations 023-026) ----
+  await good("audit entries record actor, action and request id", async () => {
+    await sql("SELECT set_config('app.request_id','pglite-req-0001',false)");
+    await sql(
+      `SELECT app.write_audit('${alice}','test.checked','user','{"id":"${alice}"}','{"field":"value"}','integration test')`,
+    );
+    const row = await one("SELECT actor_id, request_id FROM app.audit_log WHERE action='test.checked'");
+    assert.equal(row.actor_id, alice);
+    assert.equal(row.request_id, "pglite-req-0001");
+  });
+  await bad(
+    "audit entries cannot be edited",
+    "UPDATE app.audit_log SET action='x' WHERE action='test.checked'",
+    /immutable/,
+  );
+  await bad("audit entries cannot be deleted", "DELETE FROM app.audit_log WHERE action='test.checked'", /immutable/);
+  await bad("audit log cannot be truncated", "TRUNCATE app.audit_log", /immutable|cannot be truncated/);
+  await good("AI spend stops at the per-person daily ceiling", async () => {
+    const first = (await one(`SELECT app.consume_ai_budget('${alice}',6000,10000,1000000) AS r`)).r;
+    const second = (await one(`SELECT app.consume_ai_budget('${alice}',6000,10000,1000000) AS r`)).r;
+    assert.equal(first.allowed, true);
+    assert.equal(second.allowed, false);
+    assert.equal(second.scope, "user");
+  });
+  await good("platform AI ceiling applies to everyone", async () => {
+    const blocked = (await one(`SELECT app.consume_ai_budget('${bob}',1,0,1) AS r`)).r;
+    assert.equal(blocked.allowed, false);
+    assert.equal(blocked.scope, "platform");
+  });
+  await good("consent changes are logged with their source", async () => {
+    await sql(`INSERT INTO app.user_private(user_id,email) VALUES('${bob}','bob@example.com') ON CONFLICT DO NOTHING`);
+    const state = (await one(`SELECT app.set_consents('${bob}',true,NULL,NULL,'settings') AS r`)).r;
+    assert.equal(state.personalisation, true);
+    assert.equal(state.marketing_email, false);
+    const event = await one(
+      `SELECT granted, source FROM app.consent_events WHERE user_id='${bob}' AND purpose='personalisation' ORDER BY created_at DESC LIMIT 1`,
+    );
+    assert.deepEqual(event, { granted: true, source: "settings" });
+  });
+  await good("saved preferences apply only with personalisation consent", async () => {
+    await sql(`UPDATE app.user_private SET preferences='{"interests":["food"]}' WHERE user_id='${bob}'`);
+    const on = (await one(`SELECT app.personalisation_preferences('${bob}') AS p`)).p;
+    await sql(`SELECT app.set_consents('${bob}',false,NULL,NULL,'settings')`);
+    const off = (await one(`SELECT app.personalisation_preferences('${bob}') AS p`)).p;
+    assert.deepEqual(on.interests, ["food"]);
+    assert.deepEqual(off.interests ?? [], []);
+  });
+  await bad(
+    "policy acceptance must name the current version",
+    `SELECT app.accept_policies('${bob}','{"terms":"2000-01-01"}'::jsonb,'settings')`,
+    /out of date/,
+  );
+  await good("accepting current policies clears the pending list", async () => {
+    const policies = (await one("SELECT app.current_policies() AS p")).p;
+    const before = (await one(`SELECT app.policies_to_accept('${bob}') AS p`)).p;
+    await sql(`SELECT app.accept_policies('${bob}',$1::jsonb,'signup')`, [
+      JSON.stringify({ terms: policies.terms.version, privacy: policies.privacy.version }),
+    ]);
+    const after = (await one(`SELECT app.policies_to_accept('${bob}') AS p`)).p;
+    assert.deepEqual(before, ["privacy", "terms"]);
+    assert.deepEqual(after, []);
+  });
   const version = (await one("SELECT version() AS version")).version;
   fs.writeFileSync(
     root + "/docs/TEST_RESULTS.json",

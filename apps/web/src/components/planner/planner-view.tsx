@@ -43,7 +43,8 @@ import {
   type PlannerSession,
 } from "@/lib/planner";
 import { useHubCopy } from "@/lib/hub-copy";
-import { usePlannerCopy } from "@/lib/planner-copy";
+import { ApiError } from "@/lib/api/client";
+import { type PlannerCopy, usePlannerCopy } from "@/lib/planner-copy";
 import { interpolate } from "@/i18n/catalogues";
 import { formatDate } from "@/i18n/format";
 import { DESTINATIONS, getExperience } from "@/lib/catalog";
@@ -58,6 +59,19 @@ function priceKindLabel(kind: string, copy: ReturnType<typeof usePlannerCopy>) {
     return copy.fromPrice;
   }
   return copy.estimated;
+}
+
+/** Limit errors get the traveller's language; anything else keeps the API's message. */
+export function plannerErrorMessage(
+  caught: unknown,
+  copy: Pick<PlannerCopy, "aiQuotaExceeded" | "aiCapacityReached" | "rateLimited" | "updateError">,
+): string {
+  if (caught instanceof ApiError) {
+    if (caught.code === "ai_quota_exceeded") return copy.aiQuotaExceeded;
+    if (caught.code === "ai_capacity_reached") return copy.aiCapacityReached;
+    if (caught.code === "rate_limited") return copy.rateLimited;
+  }
+  return caught instanceof Error ? caught.message : copy.updateError;
 }
 
 export function PlannerView({ initialTripId }: { initialTripId?: string }) {
@@ -94,7 +108,7 @@ export function PlannerView({ initialTripId }: { initialTripId?: string }) {
         setVersions(history);
       }
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : copy.updateError);
+      setError(plannerErrorMessage(caught, copy));
     } finally {
       setPending(false);
     }

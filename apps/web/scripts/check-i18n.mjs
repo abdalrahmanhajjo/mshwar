@@ -18,6 +18,7 @@ const CATALOGUES = [
   "src/lib/planner-copy.ts",
   "src/lib/checkout-copy.ts",
   "src/lib/notifications-copy.ts",
+  "src/lib/trust-copy.ts",
 ];
 
 const MVP_PAGES = [
@@ -26,6 +27,8 @@ const MVP_PAGES = [
   "src/app/(traveller)/contact/page.tsx",
   "src/app/(traveller)/terms/page.tsx",
   "src/app/(traveller)/privacy/page.tsx",
+  "src/app/(traveller)/cancellation-policy/page.tsx",
+  "src/app/(traveller)/community-guidelines/page.tsx",
 ];
 
 function extractLocaleBlock(source, locale) {

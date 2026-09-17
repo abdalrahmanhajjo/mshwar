@@ -9,8 +9,10 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.hub_query import page_args, raise_hub_error
+from app.core import access
 from app.core.auth_session import require_session, require_verified_user
 from app.core.http_status import HTTP_422_UNPROCESSABLE
+from app.core.rate_limit import limit
 from app.dependencies import get_auth_db
 from app.schemas.hub import BookingCancel, BookingCreate, BookingListOut, BookingOut
 
@@ -31,7 +33,7 @@ def _booking_out(row: Any) -> BookingOut:
     )
 
 
-@router.get("", response_model=BookingListOut)
+@router.get("", response_model=BookingListOut, dependencies=[access.SESSION])
 async def list_bookings(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -57,7 +59,7 @@ async def list_bookings(
     )
 
 
-@router.post("", response_model=BookingOut)
+@router.post("", response_model=BookingOut, dependencies=[access.VERIFIED, limit("booking"), limit("booking-ip")])
 async def create_booking(
     booking: BookingCreate,
     request: Request,
@@ -91,7 +93,7 @@ async def create_booking(
     return _booking_out(row)
 
 
-@router.post("/{booking_id}/cancel", response_model=BookingOut)
+@router.post("/{booking_id}/cancel", response_model=BookingOut, dependencies=[access.SESSION, limit("booking")])
 async def cancel_booking(
     booking_id: UUID,
     payload: BookingCancel,
@@ -121,7 +123,7 @@ async def cancel_booking(
     return _booking_out(row)
 
 
-@router.delete("/{booking_id}")
+@router.delete("/{booking_id}", dependencies=[access.SESSION])
 async def reject_delete_booking(booking_id: UUID) -> None:
     raise HTTPException(
         status_code=status.HTTP_405_METHOD_NOT_ALLOWED,

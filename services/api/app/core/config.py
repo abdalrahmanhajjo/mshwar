@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -35,7 +35,12 @@ class Settings(BaseSettings):
         default="postgresql+asyncpg://postgres:postgres@localhost:5432/mshwar",
         validation_alias=AliasChoices("DATABASE_URL", "database_url"),
     )
-    redis_url: str = "redis://localhost:6379/0"
+    redis_url: str = Field(default="redis://localhost:6379/0", validation_alias=AliasChoices("REDIS_URL", "redis_url"))
+    # memory: per-process counters (development, tests). redis: shared across workers (required when deployed).
+    rate_limit_store: Literal["memory", "redis"] = Field(
+        default="memory",
+        validation_alias=AliasChoices("RATE_LIMIT_STORE", "rate_limit_store"),
+    )
 
     # Auth
     secret_key: str = DEFAULT_SECRET_KEY
@@ -141,10 +146,19 @@ class Settings(BaseSettings):
         default=24,
         validation_alias=AliasChoices("IDEMPOTENCY_TTL_HOURS", "idempotency_ttl_hours"),
     )
-    imagekit_api_key: str = ""
-    imagekit_url: str = ""
+    imagekit_api_key: str = Field(
+        default="", validation_alias=AliasChoices("IMAGEKIT_PRIVATE_KEY", "IMAGEKIT_API_KEY", "imagekit_api_key")
+    )
+    imagekit_url: str = Field(
+        default="", validation_alias=AliasChoices("IMAGEKIT_URL_ENDPOINT", "IMAGEKIT_URL", "imagekit_url")
+    )
     private_storage_dir: str = "/tmp/mshwar-private"  # noqa: S108 - dev default; production must override
     max_upload_bytes: int = 10 * 1024 * 1024
+    # Per organisation: uploads per hour and total stored bytes.
+    upload_org_hourly_limit: int = 60
+    upload_org_quota_bytes: int = 500 * 1024 * 1024
+    max_image_pixels: int = 40_000_000
+    max_images_per_experience: int = 20
     signed_url_ttl_seconds: int = 15 * 60
     staff_invite_ttl_seconds: int = 7 * 24 * 60 * 60
     search_reindex_provider: str = Field(
@@ -181,8 +195,19 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("NOTIFICATION_WORKER_BATCH_SIZE", "notification_worker_batch_size"),
     )
 
+    # AI generation cost ceilings (MSHWAR-110). Each planner generation call is
+    # charged ai_request_cost_usd against the caller's day (Asia/Beirut) and the
+    # platform's day; 0 disables a ceiling.
+    ai_request_cost_usd: float = 0.01
+    ai_user_daily_budget_usd: float = 0.25
+    ai_global_daily_budget_usd: float = 50.0
+
     # Monitoring
-    sentry_dsn: str = ""
+    sentry_dsn: str = Field(default="", validation_alias=AliasChoices("SENTRY_DSN", "sentry_dsn"))
+    sentry_traces_sample_rate: float = 0.0
+    release: str = Field(default="", validation_alias=AliasChoices("RELEASE", "GIT_SHA", "release"))
+    # uvicorn access log lines carry URL paths; tokens in them are masked by the scrubber.
+    access_log: bool = True
 
     @property
     def is_production(self) -> bool:
@@ -230,6 +255,13 @@ class Settings(BaseSettings):
             raise ValueError(
                 f"{self.environment} INTERNAL_JOB_TOKEN must be set (at least {MIN_SECRET_LENGTH} characters)"
             )
+        if self.rate_limit_store != "redis":
+            raise ValueError(f"{self.environment} needs RATE_LIMIT_STORE=redis so limits hold across workers")
+        if not self.public_web_origin.startswith("https://") or "localhost" in self.public_web_origin:
+            # The cross-site request guard trusts this origin for cookie-carrying writes.
+            raise ValueError(f"{self.environment} PUBLIC_WEB_ORIGIN must be the site's https:// origin")
+        if self.sql_echo:
+            raise ValueError(f"SQL_ECHO logs query parameters (personal data) and must be off in {self.environment}")
 
     def _validate_production(self) -> None:
         if self.database_url.startswith(DEFAULT_DATABASE_CREDENTIALS):

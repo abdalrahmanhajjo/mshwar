@@ -9,8 +9,10 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.endpoints.profile import _area_by_id
+from app.core import access
 from app.core.auth_session import require_session
 from app.core.http_status import HTTP_422_UNPROCESSABLE
+from app.core.rate_limit import limit
 from app.dependencies import get_auth_db
 from app.planner.places import autocomplete, reverse_geocode
 from app.schemas.planner import PlaceOut, StartLocationSave
@@ -19,7 +21,7 @@ from app.schemas.preferences import AreaCatalog, HomeArea, PreferenceValues, Pro
 router = APIRouter()
 
 
-@router.get("/areas", response_model=AreaCatalog)
+@router.get("/areas", response_model=AreaCatalog, dependencies=[access.PUBLIC])
 async def list_areas(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> AreaCatalog:
@@ -32,7 +34,7 @@ async def list_areas(
     )
 
 
-@router.get("/autocomplete", response_model=list[PlaceOut])
+@router.get("/autocomplete", response_model=list[PlaceOut], dependencies=[access.SESSION, limit("maps")])
 async def place_autocomplete(
     request: Request,
     q: str = Query(default="", max_length=120),
@@ -45,7 +47,7 @@ async def place_autocomplete(
     ]
 
 
-@router.get("/reverse", response_model=PlaceOut)
+@router.get("/reverse", response_model=PlaceOut, dependencies=[access.SESSION, limit("maps")])
 async def reverse_place(
     request: Request,
     lat: float,
@@ -57,7 +59,7 @@ async def reverse_place(
     return PlaceOut(label=hit.label, lat=hit.lat, lng=hit.lng, source=hit.source, place_id=hit.place_id)
 
 
-@router.post("/start", response_model=ProfileOut)
+@router.post("/start", response_model=ProfileOut, dependencies=[access.SESSION])
 async def save_start_location(
     payload: StartLocationSave,
     request: Request,

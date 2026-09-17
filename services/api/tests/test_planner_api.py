@@ -38,6 +38,7 @@ async def _register(api: AsyncClient, prefix: str = "plan") -> dict[str, object]
     response = await api.post(
         "/api/v1/auth/register",
         json={
+            "accept_terms": True,
             "email": f"{prefix}-{uuid4().hex[:12]}@example.com",
             "password": "long-enough-secret",
             "display_name": "Lina",
@@ -703,7 +704,13 @@ async def test_link_booking_to_sealed_version(api: AsyncClient) -> None:
     email = f"link-{uuid4().hex[:10]}@example.com"
     registered = await api.post(
         "/api/v1/auth/register",
-        json={"email": email, "password": "long-enough-secret", "display_name": "Lina", "locale": "en"},
+        json={
+            "accept_terms": True,
+            "email": email,
+            "password": "long-enough-secret",
+            "display_name": "Lina",
+            "locale": "en",
+        },
     )
     assert registered.status_code == 201, registered.text
     mailer = get_mailer()

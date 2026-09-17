@@ -13,7 +13,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/shell/auth-provider";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { useLocale } from "@/components/shell/locale-provider";
+import { updateConsents, useConsents } from "@/lib/consents";
 import { LOCALES, LOCALE_LABELS, withLocalePrefix, type Locale } from "@/lib/locale";
+import { useTrustCopy } from "@/lib/trust-copy";
 import {
   EMPTY_PREFERENCES,
   fetchAreas,
@@ -75,6 +77,9 @@ function ChipGroup({
 
 export function ProfileForm() {
   const { t, setLocale } = useLocale();
+  const trust = useTrustCopy();
+  const { consents } = useConsents();
+  const [consentPending, setConsentPending] = React.useState(false);
   const { refresh } = useAuth();
   const router = useRouter();
   const pathname = usePathname() ?? "/settings";
@@ -236,6 +241,26 @@ export function ProfileForm() {
         </CardHeader>
         <CardContent className="grid gap-7">
           <Notice>{t("explicitOnly")}</Notice>
+          {consents && !consents.personalisation ? (
+            <Notice tone="warning">
+              <p>{trust.personalisationOffNotice}</p>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="mt-2"
+                disabled={consentPending}
+                onClick={() => {
+                  setConsentPending(true);
+                  void updateConsents({ personalisation: true })
+                    .catch(() => undefined)
+                    .finally(() => setConsentPending(false));
+                }}
+              >
+                {trust.personalisationTurnOn}
+              </Button>
+            </Notice>
+          ) : null}
           {vocab ? (
             <>
               <ChipGroup

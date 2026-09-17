@@ -142,14 +142,7 @@ async def simulate_payment_outcome(db: AsyncSession, *, user_id: str, booking_id
     """Dev-only: settle the customer's latest payment for their own booking."""
     payment_id = await fetch_json(
         db,
-        """
-        SELECT p.id
-        FROM app.payments p
-        JOIN app.bookings b ON b.id = p.booking_id
-        WHERE p.booking_id = :booking_id AND b.customer_id = :user_id
-        ORDER BY p.created_at DESC
-        LIMIT 1
-        """,
+        "SELECT app.latest_customer_payment(:user_id, :booking_id)",
         {"booking_id": str(booking_id), "user_id": user_id},
     )
     if payment_id is None:

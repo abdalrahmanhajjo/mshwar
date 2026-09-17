@@ -6,6 +6,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from app.catalogue.price import PriceModel
+from app.core import imagekit
 
 
 class CatalogueListing(BaseModel):
@@ -46,7 +47,18 @@ class CatalogueListing(BaseModel):
         data["price"] = PriceModel.from_row(data.get("price") if isinstance(data.get("price"), dict) else {})
         facts = data.get("facts") or []
         data["facts"] = [item for item in facts if isinstance(item, dict)]
+        data["image"] = public_image(data.get("image"))
+        data["gallery"] = [url for url in (public_image(key) for key in data.get("gallery") or []) if url]
         return cls.model_validate(data)
+
+
+def public_image(key: object) -> str | None:
+    """Catalogue rows carry storage keys; clients get ImageKit URLs when ImageKit is configured."""
+    if not isinstance(key, str) or not key:
+        return None
+    if key.startswith(("https://", "/")) or not imagekit.enabled():
+        return key
+    return imagekit.delivery_url(key)
 
 
 class CataloguePage(BaseModel):

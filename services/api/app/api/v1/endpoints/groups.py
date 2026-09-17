@@ -7,6 +7,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import access
 from app.core.guests import (
     GUEST_COOKIE,
     actor_ids,
@@ -15,6 +16,7 @@ from app.core.guests import (
     optional_user,
     set_guest_cookie,
 )
+from app.core.rate_limit import limit
 from app.core.sql import fetch_json
 from app.dependencies import get_auth_db
 from app.schemas.groups import JoinShareIn, SharedPreferencesIn, ShareLinkCreate, SuggestionCreate, VoteIn
@@ -26,7 +28,7 @@ def _actor_params(user_id: str | None, guest_id: str | None) -> dict[str, Any]:
     return {"user_id": user_id, "guest_id": guest_id}
 
 
-@router.post("/trips/{trip_id}/share-links")
+@router.post("/trips/{trip_id}/share-links", dependencies=[access.SESSION])
 async def create_share_link(
     trip_id: UUID,
     payload: ShareLinkCreate,
@@ -56,7 +58,7 @@ async def create_share_link(
     return created
 
 
-@router.get("/trips/{trip_id}/share-links")
+@router.get("/trips/{trip_id}/share-links", dependencies=[access.ACTOR])
 async def list_share_links(
     trip_id: UUID,
     request: Request,
@@ -70,7 +72,7 @@ async def list_share_links(
     )
 
 
-@router.post("/share-links/{link_id}/revoke")
+@router.post("/share-links/{link_id}/revoke", dependencies=[access.ACTOR])
 async def revoke_share_link(
     link_id: UUID,
     request: Request,
@@ -84,7 +86,7 @@ async def revoke_share_link(
     )
 
 
-@router.get("/join/{token}")
+@router.get("/join/{token}", dependencies=[access.TOKEN])
 async def peek_share_link(
     token: str,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -96,7 +98,7 @@ async def peek_share_link(
     )
 
 
-@router.post("/join/{token}")
+@router.post("/join/{token}", dependencies=[access.TOKEN])
 async def join_share_link(
     token: str,
     payload: JoinShareIn,
@@ -121,7 +123,7 @@ async def join_share_link(
     )
 
 
-@router.get("/trips/{trip_id}")
+@router.get("/trips/{trip_id}", dependencies=[access.ACTOR])
 async def get_group_trip(
     trip_id: UUID,
     request: Request,
@@ -135,7 +137,7 @@ async def get_group_trip(
     )
 
 
-@router.get("/trips/{trip_id}/participants")
+@router.get("/trips/{trip_id}/participants", dependencies=[access.ACTOR])
 async def list_participants(
     trip_id: UUID,
     request: Request,
@@ -149,7 +151,7 @@ async def list_participants(
     )
 
 
-@router.put("/trips/{trip_id}/shared-preferences")
+@router.put("/trips/{trip_id}/shared-preferences", dependencies=[access.ACTOR])
 async def set_shared_preferences(
     trip_id: UUID,
     payload: SharedPreferencesIn,
@@ -164,7 +166,7 @@ async def set_shared_preferences(
     )
 
 
-@router.post("/trips/{trip_id}/suggestions")
+@router.post("/trips/{trip_id}/suggestions", dependencies=[access.ACTOR, limit("community-write")])
 async def add_suggestion(
     trip_id: UUID,
     payload: SuggestionCreate,
@@ -184,7 +186,7 @@ async def add_suggestion(
     )
 
 
-@router.get("/trips/{trip_id}/suggestions")
+@router.get("/trips/{trip_id}/suggestions", dependencies=[access.ACTOR])
 async def list_suggestions(
     trip_id: UUID,
     request: Request,
@@ -198,7 +200,7 @@ async def list_suggestions(
     )
 
 
-@router.put("/trips/{trip_id}/votes")
+@router.put("/trips/{trip_id}/votes", dependencies=[access.ACTOR, limit("community-write")])
 async def cast_vote(
     trip_id: UUID,
     payload: VoteIn,
@@ -219,7 +221,7 @@ async def cast_vote(
     )
 
 
-@router.get("/trips/{trip_id}/tally")
+@router.get("/trips/{trip_id}/tally", dependencies=[access.ACTOR])
 async def vote_tally(
     trip_id: UUID,
     request: Request,
@@ -233,7 +235,7 @@ async def vote_tally(
     )
 
 
-@router.post("/trips/{trip_id}/lock")
+@router.post("/trips/{trip_id}/lock", dependencies=[access.ACTOR])
 async def lock_trip(
     trip_id: UUID,
     request: Request,
@@ -247,7 +249,7 @@ async def lock_trip(
     )
 
 
-@router.get("/trips/{trip_id}/summary")
+@router.get("/trips/{trip_id}/summary", dependencies=[access.ACTOR])
 async def group_summary(
     trip_id: UUID,
     request: Request,

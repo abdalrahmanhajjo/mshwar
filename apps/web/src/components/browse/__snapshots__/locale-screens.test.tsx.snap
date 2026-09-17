@@ -14196,6 +14196,24 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
               </a>
               <a
                 class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                href="/ar/cancellation-policy"
+              >
+                سياسة الإلغاء
+              </a>
+              <a
+                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                href="/ar/community-guidelines"
+              >
+                إرشادات المجتمع
+              </a>
+              <button
+                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                type="button"
+              >
+                إعدادات ملفات تعريف الارتباط
+              </button>
+              <a
+                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 href="/ar/contact"
               >
                 تواصل
@@ -14655,6 +14673,24 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
               </a>
               <a
                 class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                href="/cancellation-policy"
+              >
+                Cancellation policy
+              </a>
+              <a
+                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                href="/community-guidelines"
+              >
+                Community guidelines
+              </a>
+              <button
+                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                type="button"
+              >
+                Cookie settings
+              </button>
+              <a
+                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 href="/contact"
               >
                 Contact
@@ -15112,6 +15148,24 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
               >
                 Conditions
               </a>
+              <a
+                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                href="/fr/cancellation-policy"
+              >
+                Politique d’annulation
+              </a>
+              <a
+                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                href="/fr/community-guidelines"
+              >
+                Règles de la communauté
+              </a>
+              <button
+                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                type="button"
+              >
+                Paramètres des cookies
+              </button>
               <a
                 class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 href="/fr/contact"

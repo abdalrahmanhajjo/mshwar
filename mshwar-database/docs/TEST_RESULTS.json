@@ -1,7 +1,7 @@
 {
   "engine": "PostgreSQL 18.3 (PGlite 0.5.8) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.74 (1092ec30a3fb1d46b1782ff1b4db5094d3d06ae5), 32-bit",
-  "migrations": 22,
-  "passed": 52,
+  "migrations": 26,
+  "passed": 62,
   "tests": [
     {
       "name": "all app tables have forced RLS",
@@ -209,6 +209,46 @@
     },
     {
       "name": "sealed evaluation dataset cannot gain cases",
+      "status": "PASS"
+    },
+    {
+      "name": "audit entries record actor, action and request id",
+      "status": "PASS"
+    },
+    {
+      "name": "audit entries cannot be edited",
+      "status": "PASS"
+    },
+    {
+      "name": "audit entries cannot be deleted",
+      "status": "PASS"
+    },
+    {
+      "name": "audit log cannot be truncated",
+      "status": "PASS"
+    },
+    {
+      "name": "AI spend stops at the per-person daily ceiling",
+      "status": "PASS"
+    },
+    {
+      "name": "platform AI ceiling applies to everyone",
+      "status": "PASS"
+    },
+    {
+      "name": "consent changes are logged with their source",
+      "status": "PASS"
+    },
+    {
+      "name": "saved preferences apply only with personalisation consent",
+      "status": "PASS"
+    },
+    {
+      "name": "policy acceptance must name the current version",
+      "status": "PASS"
+    },
+    {
+      "name": "accepting current policies clears the pending list",
       "status": "PASS"
     }
   ],

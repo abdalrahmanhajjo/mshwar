@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import re
 import time
 from datetime import UTC, datetime, timedelta
@@ -12,14 +13,14 @@ from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import access
 from app.core.admin_auth import close_admin_sessions, lookup_admin_tier
 from app.core.auth_session import load_session
-from app.core.client_ip import client_ip
 from app.core.config import settings
 from app.core.http_status import HTTP_422_UNPROCESSABLE
 from app.core.mailer import MailMessage, get_mailer
 from app.core.passwords import hash_password_async, verify_password_async
-from app.core.rate_limit import limiter
+from app.core.rate_limit import enforce_rate_limit, limit
 from app.core.sessions import (
     COOKIE_NAME,
     clear_session_cookie,
@@ -29,6 +30,7 @@ from app.core.sessions import (
     set_session_cookie,
     should_refresh,
 )
+from app.core.sql import fetch_json
 from app.dependencies import get_auth_db
 
 router = APIRouter()
@@ -36,7 +38,6 @@ router = APIRouter()
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 _LOCALES = frozenset({"ar", "en", "fr"})
 _INVALID_RESET = "Invalid or expired reset link"
-_RATE_LIMITED = "Too many requests"
 
 
 class RegisterRequest(BaseModel):
@@ -44,6 +45,13 @@ class RegisterRequest(BaseModel):
     password: str = Field(min_length=10, max_length=128, repr=False)
     display_name: str = Field(min_length=1, max_length=80)
     locale: str = "en"
+    # MSHWAR-113: the terms and privacy policy must be accepted; the versions are
+    # the ones the sign-up page showed (the current ones when omitted).
+    accept_terms: bool = False
+    policy_versions: dict[str, str] | None = None
+    # Separate, optional and off unless ticked.
+    personalisation_consent: bool = False
+    marketing_consent: bool = False
 
 
 class SignInRequest(BaseModel):
@@ -58,6 +66,8 @@ class UserOut(BaseModel):
     locale: str
     email_verified: bool = False
     admin_tier: str | None = None
+    # Policies whose current version this account has not accepted yet.
+    policies_to_accept: list[str] = Field(default_factory=list)
 
 
 class VerifyEmailRequest(BaseModel):
@@ -125,14 +135,19 @@ async def _issue_cookie_session(
     set_session_cookie(response, token)
 
 
-@router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED, dependencies=[access.PUBLIC])
 async def register(
     payload: RegisterRequest,
     request: Request,
     response: Response,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> UserOut:
-    _enforce_limit(f"register:ip:{client_ip(request)}", settings.register_ip_limit, settings.rate_limit_window_seconds)
+    await enforce_rate_limit(request, "auth-register")
+    if not payload.accept_terms:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE,
+            detail="Accept the terms of service and privacy policy to create an account",
+        )
     email = _validate_email(payload.email)
     locale = _validate_locale(payload.locale)
     password_hash = await hash_password_async(payload.password)
@@ -155,6 +170,7 @@ async def register(
                 detail="An account with this email already exists",
             ) from exc
         raise
+    await _record_signup_consents(db, user_id, payload)
     await _issue_cookie_session(db, response, user_id, request.headers.get("user-agent"))
     await _send_verification_email(db, email)
     return await _user_out(
@@ -167,7 +183,7 @@ async def register(
     )
 
 
-@router.post("/signin", response_model=UserOut)
+@router.post("/signin", response_model=UserOut, dependencies=[access.PUBLIC])
 async def signin(
     payload: SignInRequest,
     request: Request,
@@ -175,9 +191,8 @@ async def signin(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> UserOut:
     email = _normalize_email(payload.email)
-    window = settings.signin_window_seconds
-    _enforce_limit(f"signin:ip:{client_ip(request)}", settings.signin_ip_limit, window)
-    _enforce_limit(f"signin:email:{email}", settings.signin_email_limit, window)
+    await enforce_rate_limit(request, "auth-signin-ip")
+    await enforce_rate_limit(request, "auth-signin-email", subject=email)
     result = await db.execute(
         text(
             "SELECT user_id, password_hash, display_name, status, locale, email_verified_at "
@@ -200,7 +215,7 @@ async def signin(
     )
 
 
-@router.post("/signout", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/signout", status_code=status.HTTP_204_NO_CONTENT, dependencies=[access.PUBLIC])
 async def signout(
     request: Request,
     response: Response,
@@ -219,7 +234,7 @@ async def signout(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.post("/refresh", response_model=UserOut)
+@router.post("/refresh", response_model=UserOut, dependencies=[access.SESSION])
 async def refresh(
     request: Request,
     response: Response,
@@ -228,7 +243,7 @@ async def refresh(
     return await _me_or_refresh(request, response, db, force_refresh=True)
 
 
-@router.get("/me", response_model=UserOut)
+@router.get("/me", response_model=UserOut, dependencies=[access.SESSION])
 async def me(
     request: Request,
     response: Response,
@@ -264,6 +279,32 @@ async def _me_or_refresh(
     )
 
 
+async def _record_signup_consents(db: AsyncSession, user_id: object, payload: RegisterRequest) -> None:
+    versions = payload.policy_versions
+    if not versions:
+        current = await fetch_json(db, "SELECT app.current_policies()", {})
+        versions = {
+            kind: str(item["version"])
+            for kind, item in (current or {}).items()
+            if isinstance(item, dict) and item.get("requires_acceptance")
+        }
+    await fetch_json(
+        db,
+        "SELECT app.accept_policies(:user_id, CAST(:versions AS jsonb), 'signup')",
+        {"user_id": str(user_id), "versions": json.dumps(versions)},
+    )
+    if payload.personalisation_consent or payload.marketing_consent:
+        await fetch_json(
+            db,
+            "SELECT app.set_consents(:user_id, :personalisation, :marketing, :marketing, 'signup')",
+            {
+                "user_id": str(user_id),
+                "personalisation": payload.personalisation_consent or None,
+                "marketing": payload.marketing_consent or None,
+            },
+        )
+
+
 async def _user_out(
     db: AsyncSession,
     *,
@@ -280,12 +321,10 @@ async def _user_out(
         locale=locale,
         email_verified=email_verified,
         admin_tier=await lookup_admin_tier(db, user_id),
+        policies_to_accept=list(
+            await fetch_json(db, "SELECT app.policies_to_accept(:user_id)", {"user_id": str(user_id)}) or []
+        ),
     )
-
-
-def _enforce_limit(key: str, limit: int, window_seconds: int) -> None:
-    if not limiter.allow(key, limit, window_seconds):
-        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=_RATE_LIMITED)
 
 
 async def _pad_forgot_duration(started: float) -> None:
@@ -304,7 +343,7 @@ def _reset_link(token: str) -> str:
     return f"{origin}/reset-password?token={token}"
 
 
-@router.post("/forgot-password", response_model=ForgotPasswordResponse)
+@router.post("/forgot-password", response_model=ForgotPasswordResponse, dependencies=[access.PUBLIC])
 async def forgot_password(
     payload: ForgotPasswordRequest,
     request: Request,
@@ -312,9 +351,8 @@ async def forgot_password(
 ) -> ForgotPasswordResponse:
     started = time.monotonic()
     email = _normalize_email(payload.email)
-    window = settings.rate_limit_window_seconds
-    _enforce_limit(f"forgot:ip:{client_ip(request)}", settings.forgot_ip_limit, window)
-    _enforce_limit(f"forgot:email:{email}", settings.forgot_email_limit, window)
+    await enforce_rate_limit(request, "auth-reset-ip")
+    await enforce_rate_limit(request, "auth-reset-email", subject=email)
 
     token = new_session_token()
     token_hash = hash_session_token(token)
@@ -347,14 +385,14 @@ async def forgot_password(
     return ForgotPasswordResponse()
 
 
-@router.post("/reset-password", response_model=UserOut)
+@router.post("/reset-password", response_model=UserOut, dependencies=[access.PUBLIC, limit("token-link")])
 async def reset_password(
     payload: ResetPasswordRequest,
     request: Request,
     response: Response,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> UserOut:
-    _enforce_limit(f"reset:ip:{client_ip(request)}", settings.forgot_ip_limit, settings.rate_limit_window_seconds)
+    await enforce_rate_limit(request, "auth-reset-ip")
     password_hash = await hash_password_async(payload.password)
     result = await db.execute(
         text("SELECT app.consume_password_reset(:token_hash, :password_hash)"),
@@ -363,29 +401,23 @@ async def reset_password(
     user_id = result.scalar_one_or_none()
     if user_id is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=_INVALID_RESET)
-    fetched = (
-        await db.execute(
-            text(
-                """
-                SELECT u.id, p.email, u.display_name, u.locale, u.email_verified_at
-                FROM app.users u
-                JOIN app.user_private p ON p.user_id = u.id
-                WHERE u.id = :user_id
-                """
-            ),
-            {"user_id": str(user_id)},
-        )
-    ).one()
-    user = await _user_out(
-        db,
-        user_id=fetched[0],
-        email=fetched[1],
-        display_name=fetched[2],
-        locale=fetched[3],
-        email_verified=bool(fetched[4]),
-    )
+    user = await _account_out(db, user_id)
     await _issue_cookie_session(db, response, user.id, request.headers.get("user-agent"))
     return user
+
+
+async def _account_out(db: AsyncSession, user_id: object) -> UserOut:
+    identity = await fetch_json(db, "SELECT app.account_identity(:user_id)", {"user_id": str(user_id)})
+    if not isinstance(identity, dict):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    return await _user_out(
+        db,
+        user_id=identity["id"],
+        email=identity["email"],
+        display_name=identity["display_name"],
+        locale=identity["locale"],
+        email_verified=bool(identity.get("email_verified_at")),
+    )
 
 
 def _verify_expiry() -> datetime:
@@ -426,7 +458,7 @@ async def _send_verification_email(db: AsyncSession, email: str) -> None:
     )
 
 
-@router.post("/verify-email", response_model=UserOut)
+@router.post("/verify-email", response_model=UserOut, dependencies=[access.PUBLIC, limit("token-link")])
 async def verify_email(
     payload: VerifyEmailRequest,
     request: Request,
@@ -440,45 +472,24 @@ async def verify_email(
     user_id = result.scalar_one_or_none()
     if user_id is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=_INVALID_VERIFY)
-    fetched = (
-        await db.execute(
-            text(
-                """
-                SELECT u.id, p.email, u.display_name, u.locale, u.email_verified_at
-                FROM app.users u
-                JOIN app.user_private p ON p.user_id = u.id
-                WHERE u.id = :user_id
-                """
-            ),
-            {"user_id": str(user_id)},
-        )
-    ).one()
-    user = await _user_out(
-        db,
-        user_id=fetched[0],
-        email=fetched[1],
-        display_name=fetched[2],
-        locale=fetched[3],
-        email_verified=bool(fetched[4]),
-    )
+    user = await _account_out(db, user_id)
     existing = await load_session(db, request.cookies.get(COOKIE_NAME))
     if existing is None or str(existing["user_id"]) != str(user.id):
         await _issue_cookie_session(db, response, user.id, request.headers.get("user-agent"))
     return user
 
 
-@router.post("/resend-verification", response_model=ResendVerificationResponse)
+@router.post("/resend-verification", response_model=ResendVerificationResponse, dependencies=[access.PUBLIC])
 async def resend_verification(
     payload: ResendVerificationRequest,
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> ResendVerificationResponse:
-    window = settings.rate_limit_window_seconds
-    _enforce_limit(f"verify:ip:{client_ip(request)}", settings.verify_ip_limit, window)
+    await enforce_rate_limit(request, "auth-verify-ip")
     session = await load_session(db, request.cookies.get(COOKIE_NAME))
     email = _normalize_email(payload.email) if payload.email else (session["email"] if session else "")
     if not email:
         raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="Invalid email")
-    _enforce_limit(f"verify:email:{email}", settings.verify_email_limit, window)
+    await enforce_rate_limit(request, "auth-verify-email", subject=email)
     await _send_verification_email(db, email)
     return ResendVerificationResponse()

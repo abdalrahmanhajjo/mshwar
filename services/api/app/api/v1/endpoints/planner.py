@@ -11,12 +11,15 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.concurrency import run_in_threadpool
 
+from app.core import access
 from app.core.admin_auth import require_admin
 from app.core.auth_session import require_session
 from app.core.config import settings
 from app.core.http_status import HTTP_422_UNPROCESSABLE
+from app.core.rate_limit import limit
 from app.core.sql import fetch_json, raise_from_db
 from app.dependencies import get_auth_db
+from app.planner.budget import AI_BUDGET, budget_status
 from app.planner.optimizer import OptimizeStop, optimize_route
 from app.planner.persist import get_session, get_version, list_versions
 from app.planner.pipeline import (
@@ -158,7 +161,7 @@ def _optimize_response(result: Any) -> OptimizeResponse:
     )
 
 
-@router.post("/route", response_model=RouteLegOut)
+@router.post("/route", response_model=RouteLegOut, dependencies=[access.SESSION, limit("maps")])
 async def route_leg(
     payload: RouteRequest,
     request: Request,
@@ -193,7 +196,7 @@ async def route_leg(
     return _leg_out(leg)
 
 
-@router.post("/optimize", response_model=OptimizeResponse)
+@router.post("/optimize", response_model=OptimizeResponse, dependencies=[access.SESSION, limit("maps")])
 async def optimize_plan(
     payload: OptimizeRequest,
     request: Request,
@@ -218,7 +221,7 @@ async def optimize_plan(
     return _optimize_response(result)
 
 
-@router.post("/weather", response_model=ForecastOut)
+@router.post("/weather", response_model=ForecastOut, dependencies=[access.SESSION, limit("maps")])
 async def weather_forecast(
     payload: ForecastQuery,
     request: Request,
@@ -249,7 +252,7 @@ async def weather_forecast(
     )
 
 
-@router.post("/warnings", response_model=WarningEvalResponse)
+@router.post("/warnings", response_model=WarningEvalResponse, dependencies=[access.SESSION, limit("maps")])
 async def weather_warnings(
     payload: WarningEvalRequest,
     request: Request,
@@ -296,7 +299,7 @@ async def weather_warnings(
     )
 
 
-@router.post("/replan", response_model=ReplanResponse)
+@router.post("/replan", response_model=ReplanResponse, dependencies=[access.SESSION, limit("maps")])
 async def replan_plan(
     payload: ReplanRequest,
     request: Request,
@@ -354,7 +357,7 @@ async def replan_plan(
     )
 
 
-@router.get("/thresholds")
+@router.get("/thresholds", dependencies=[access.SESSION])
 async def list_thresholds(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -371,7 +374,17 @@ def _http(exc: Exception) -> HTTPException:
     return HTTPException(status_code=code, detail=message)
 
 
-@router.post("/sessions")
+@router.get("/quota", dependencies=[access.SESSION])
+async def ai_quota(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    """How many AI generations the caller has left today."""
+    session = await require_session(request, db)
+    return await budget_status(db, str(session["user_id"]))
+
+
+@router.post("/sessions", dependencies=[access.SESSION, limit("ai-generate"), AI_BUDGET])
 async def create_or_plan(
     payload: IntentRequest,
     request: Request,
@@ -396,7 +409,7 @@ async def create_or_plan(
         raise _http(exc) from exc
 
 
-@router.post("/sessions/{session_id}/clarify")
+@router.post("/sessions/{session_id}/clarify", dependencies=[access.SESSION, limit("ai-generate"), AI_BUDGET])
 async def clarify(
     session_id: UUID,
     payload: IntentRequest,
@@ -424,7 +437,7 @@ async def clarify(
         raise _http(exc) from exc
 
 
-@router.get("/sessions/{session_id}")
+@router.get("/sessions/{session_id}", dependencies=[access.SESSION])
 async def read_session(
     session_id: UUID,
     request: Request,
@@ -438,7 +451,7 @@ async def read_session(
     return {"session": stored, "plan": plan}
 
 
-@router.post("/sessions/{session_id}/lock")
+@router.post("/sessions/{session_id}/lock", dependencies=[access.SESSION])
 async def lock_stop(
     session_id: UUID,
     payload: LockRequest,
@@ -452,7 +465,7 @@ async def lock_stop(
         raise _http(exc) from exc
 
 
-@router.post("/sessions/{session_id}/regenerate")
+@router.post("/sessions/{session_id}/regenerate", dependencies=[access.SESSION, limit("ai-generate"), AI_BUDGET])
 async def regen(
     session_id: UUID,
     request: Request,
@@ -465,7 +478,7 @@ async def regen(
         raise _http(exc) from exc
 
 
-@router.get("/sessions/{session_id}/stops/{stop_id}/alternatives")
+@router.get("/sessions/{session_id}/stops/{stop_id}/alternatives", dependencies=[access.SESSION])
 async def list_alternatives(
     session_id: UUID,
     stop_id: UUID,
@@ -476,7 +489,7 @@ async def list_alternatives(
     return await alternatives(db, session["user_id"], session_id, stop_id)
 
 
-@router.post("/sessions/{session_id}/replace/preview")
+@router.post("/sessions/{session_id}/replace/preview", dependencies=[access.SESSION])
 async def replace_preview(
     session_id: UUID,
     payload: ReplacePreviewRequest,
@@ -490,7 +503,7 @@ async def replace_preview(
         raise _http(exc) from exc
 
 
-@router.post("/sessions/{session_id}/replace/accept")
+@router.post("/sessions/{session_id}/replace/accept", dependencies=[access.SESSION])
 async def replace_accept(
     session_id: UUID,
     payload: ReplaceAcceptRequest,
@@ -504,7 +517,7 @@ async def replace_accept(
         raise _http(exc) from exc
 
 
-@router.post("/sessions/{session_id}/replace/cancel")
+@router.post("/sessions/{session_id}/replace/cancel", dependencies=[access.SESSION])
 async def replace_cancel(
     session_id: UUID,
     request: Request,
@@ -514,7 +527,7 @@ async def replace_cancel(
     return await cancel_replace(db, session["user_id"], session_id)
 
 
-@router.post("/sessions/{session_id}/refine")
+@router.post("/sessions/{session_id}/refine", dependencies=[access.SESSION, limit("ai-generate"), AI_BUDGET])
 async def refine(
     session_id: UUID,
     payload: RefineRequest,
@@ -530,7 +543,7 @@ async def refine(
     return await refine_preview(db, session["user_id"], session_id, payload.text)
 
 
-@router.get("/trips/{trip_id}/versions")
+@router.get("/trips/{trip_id}/versions", dependencies=[access.SESSION])
 async def trip_versions(
     trip_id: UUID,
     request: Request,
@@ -540,7 +553,7 @@ async def trip_versions(
     return await list_versions(db, session["user_id"], trip_id, False)
 
 
-@router.get("/versions/{version_id}")
+@router.get("/versions/{version_id}", dependencies=[access.SESSION])
 async def read_version(
     version_id: UUID,
     request: Request,
@@ -550,7 +563,7 @@ async def read_version(
     return await get_version(db, session["user_id"], version_id, False)
 
 
-@router.post("/versions/{version_id}/link-booking")
+@router.post("/versions/{version_id}/link-booking", dependencies=[access.SESSION])
 async def link_booking(
     version_id: UUID,
     payload: LinkBookingRequest,
@@ -577,7 +590,7 @@ async def link_booking(
     return row
 
 
-@router.get("/admin/trips/{trip_id}/versions")
+@router.get("/admin/trips/{trip_id}/versions", dependencies=[access.ADMIN])
 async def admin_trip_versions(
     trip_id: UUID,
     request: Request,
@@ -591,7 +604,7 @@ async def admin_trip_versions(
         raise
 
 
-@router.get("/admin/versions/{version_id}")
+@router.get("/admin/versions/{version_id}", dependencies=[access.ADMIN])
 async def admin_read_version(
     version_id: UUID,
     request: Request,
@@ -606,7 +619,7 @@ async def admin_read_version(
         raise _http(exc) from exc
 
 
-@router.get("/admin/health")
+@router.get("/admin/health", dependencies=[access.ADMIN])
 async def admin_health(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -625,7 +638,7 @@ async def admin_health(
     return row if isinstance(row, dict) else {}
 
 
-@router.get("/admin/injections")
+@router.get("/admin/injections", dependencies=[access.ADMIN])
 async def admin_injections(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -644,7 +657,7 @@ async def admin_injections(
     return row if isinstance(row, list) else []
 
 
-@router.put("/admin/ranker")
+@router.put("/admin/ranker", dependencies=[access.ADMIN])
 async def admin_ranker(
     payload: RankerWeightsIn,
     request: Request,

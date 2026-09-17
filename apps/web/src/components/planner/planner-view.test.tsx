@@ -1,6 +1,8 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { PlannerView } from "./planner-view";
+import { PlannerView, plannerErrorMessage } from "./planner-view";
+import { ApiError } from "@/lib/api/client";
+import { plannerCopy } from "@/lib/planner-copy";
 import { LocaleProvider } from "@/components/shell/locale-provider";
 
 function jsonResponse(body: unknown, ok = true) {
@@ -181,5 +183,18 @@ describe("planner view", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Build plan" }));
     expect(await screen.findByText(/Natural-language planning is unavailable/)).toBeInTheDocument();
+  });
+});
+
+describe("planner limit messages", () => {
+  it("translates quota and rate-limit errors", () => {
+    const quota = new ApiError("x", 429, { code: "ai_quota_exceeded" });
+    const busy = new ApiError("x", 429, { code: "ai_capacity_reached" });
+    const fast = new ApiError("x", 429, { code: "rate_limited" });
+    expect(plannerErrorMessage(quota, plannerCopy.ar)).toBe(plannerCopy.ar.aiQuotaExceeded);
+    expect(plannerErrorMessage(busy, plannerCopy.fr)).toBe(plannerCopy.fr.aiCapacityReached);
+    expect(plannerErrorMessage(fast, plannerCopy.en)).toBe(plannerCopy.en.rateLimited);
+    expect(plannerErrorMessage(new ApiError("Stop not found", 404, {}), plannerCopy.en)).toBe("Stop not found");
+    expect(plannerErrorMessage("boom", plannerCopy.en)).toBe(plannerCopy.en.updateError);
   });
 });

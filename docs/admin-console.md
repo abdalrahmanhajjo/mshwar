@@ -4,13 +4,13 @@ Operations surface for verification, moderation, taxonomy, bookings, configurati
 
 ## Environment
 
-| Variable                            | Default | Notes                                                                                             |
-| ----------------------------------- | ------- | ------------------------------------------------------------------------------------------------- |
-| `SEARCH_REINDEX_PROVIDER`           | `stub`  | Taxonomy changes enqueue `taxonomy_reindex` outbox events. No networked search cluster is called. |
-| `DATA_QUALITY_SCHEDULER_ENABLED`    | `false` | Leave unset/false in CI. Operators cron `POST /api/v1/admin/quality/run`.                         |
-| `DATA_QUALITY_STALE_DAYS`           | `14`    | Documented threshold; SQL currently uses a 14-day stale-availability window.                      |
-| `IMAGEKIT_API_KEY` / `IMAGEKIT_URL` | empty   | Empty keeps private local storage for verification documents.                                     |
-| `STRIPE_SECRET_KEY`                 | empty   | Never returned on booking inspection. Payments expose provider + `external_id` only.              |
+| Variable                                         | Default | Notes                                                                                             |
+| ------------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------- |
+| `SEARCH_REINDEX_PROVIDER`                        | `stub`  | Taxonomy changes enqueue `taxonomy_reindex` outbox events. No networked search cluster is called. |
+| `DATA_QUALITY_SCHEDULER_ENABLED`                 | `false` | Leave unset/false in CI. Operators cron `POST /api/v1/admin/quality/run`.                         |
+| `DATA_QUALITY_STALE_DAYS`                        | `14`    | Documented threshold; SQL currently uses a 14-day stale-availability window.                      |
+| `IMAGEKIT_PRIVATE_KEY` / `IMAGEKIT_URL_ENDPOINT` | empty   | Empty keeps private local storage for verification documents.                                     |
+| `STRIPE_SECRET_KEY`                              | empty   | Never returned on booking inspection. Payments expose provider + `external_id` only.              |
 
 Deploy skip-when-unset for staging/production is unchanged.
 

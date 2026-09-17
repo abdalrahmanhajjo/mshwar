@@ -12,9 +12,49 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/components/shell/auth-provider";
 import { useLocale } from "@/components/shell/locale-provider";
 import { registerAccount, safeNextPath, signInAccount } from "@/lib/auth";
+import { LEGAL_VERSIONS } from "@/lib/legal/types";
+import { useTrustCopy } from "@/lib/trust-copy";
+import { cn, focusRing } from "@/lib/utils";
+
+function ConsentCheckbox({
+  id,
+  checked,
+  onChange,
+  children,
+  describedBy,
+  required,
+  invalid,
+}: {
+  id: string;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  children: React.ReactNode;
+  describedBy?: string;
+  required?: boolean;
+  invalid?: boolean;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <input
+        id={id}
+        type="checkbox"
+        className="mt-0.5 size-5 shrink-0"
+        checked={checked}
+        aria-required={required || undefined}
+        aria-invalid={invalid || undefined}
+        aria-describedby={describedBy}
+        onChange={(event) => onChange(event.target.checked)}
+      />
+      <label htmlFor={id} className="text-sm leading-relaxed">
+        {children}
+      </label>
+    </div>
+  );
+}
 
 export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
   const { t, locale } = useLocale();
+  const trust = useTrustCopy();
   const { refresh } = useAuth();
   const router = useRouter();
   const params = useSearchParams();
@@ -22,12 +62,22 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [displayName, setDisplayName] = React.useState("");
+  // Nothing is pre-ticked: terms are required, the other two are optional choices (MSHWAR-113).
+  const [acceptTerms, setAcceptTerms] = React.useState(false);
+  const [personalisation, setPersonalisation] = React.useState(false);
+  const [marketing, setMarketing] = React.useState(false);
+  const [termsMissing, setTermsMissing] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [pending, setPending] = React.useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+    if (mode === "signup" && !acceptTerms) {
+      setTermsMissing(true);
+      setError(trust.acceptRequired);
+      return;
+    }
     setPending(true);
     try {
       if (mode === "signup") {
@@ -36,6 +86,10 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
           password,
           display_name: displayName,
           locale,
+          accept_terms: acceptTerms,
+          policy_versions: { terms: LEGAL_VERSIONS.terms, privacy: LEGAL_VERSIONS.privacy },
+          personalisation_consent: personalisation,
+          marketing_consent: marketing,
         });
       } else {
         await signInAccount({ email, password });
@@ -123,6 +177,59 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
               {t("forgotPassword")}
             </LocaleLink>
           </p>
+        ) : null}
+        {mode === "signup" ? (
+          <div className="grid gap-3 border-t border-border-subtle pt-4">
+            <ConsentCheckbox
+              id="accept-terms"
+              required
+              invalid={termsMissing && !acceptTerms}
+              checked={acceptTerms}
+              onChange={(value) => {
+                setAcceptTerms(value);
+                if (value) {
+                  setTermsMissing(false);
+                }
+              }}
+            >
+              {trust.acceptLead}{" "}
+              <LocaleLink
+                href="/terms"
+                target="_blank"
+                className={cn("font-semibold text-text underline underline-offset-4", focusRing)}
+              >
+                {trust.termsLink}
+              </LocaleLink>{" "}
+              {trust.acceptJoin}{" "}
+              <LocaleLink
+                href="/privacy"
+                target="_blank"
+                className={cn("font-semibold text-text underline underline-offset-4", focusRing)}
+              >
+                {trust.privacyLink}
+              </LocaleLink>
+              {trust.acceptEnd}
+            </ConsentCheckbox>
+            <ConsentCheckbox
+              id="consent-personalisation"
+              describedBy="consent-optional"
+              checked={personalisation}
+              onChange={setPersonalisation}
+            >
+              {trust.signupPersonalisation}
+            </ConsentCheckbox>
+            <ConsentCheckbox
+              id="consent-marketing"
+              describedBy="consent-optional"
+              checked={marketing}
+              onChange={setMarketing}
+            >
+              {trust.signupMarketing}
+            </ConsentCheckbox>
+            <p id="consent-optional" className="ps-8 text-xs text-text-muted">
+              {trust.signupOptional}
+            </p>
+          </div>
         ) : null}
         {error ? (
           <Notice tone="danger" id="auth-error" role="alert">

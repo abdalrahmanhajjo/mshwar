@@ -15,7 +15,11 @@ from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.http_status import HTTP_422_UNPROCESSABLE
+from app.core.http_status import HTTP_413_CONTENT_TOO_LARGE, HTTP_422_UNPROCESSABLE
+from app.core.observability import report_exception
+
+FORBIDDEN = "You don't have permission to do that."
+INTERNAL = "Something went wrong. Please try again."
 
 logger = logging.getLogger("mshwar.sql")
 
@@ -25,7 +29,21 @@ _DOMAIN_STATUS = {
     "P0002": status.HTTP_404_NOT_FOUND,  # record not found (or not visible)
     "22023": HTTP_422_UNPROCESSABLE,  # invalid parameter
     "P0001": HTTP_422_UNPROCESSABLE,  # plain RAISE EXCEPTION: business rule
+    "53400": HTTP_413_CONTENT_TOO_LARGE,  # quota or count limit reached
 }
+# 42501 messages that are authorisation decisions (as opposed to business rules
+# such as "trip is locked"). Their text names internal capabilities, so the
+# client gets one fixed message instead. tests/test_access_policies.py checks
+# that every 42501 message in the migrations is classified.
+AUTHZ_DENIAL_PREFIXES = (
+    "capability denied",
+    "not a member",
+    "admin role required",
+    "elevated admin permission required",
+    "group permission denied",
+    "not authenticated",
+    "permission denied",
+)
 _CONFLICT_STATES = frozenset({"23505", "23P01"})
 _UNAVAILABLE_STATES = frozenset({"57014", "40001", "40P01", "55P03"})  # timeout, serialization, deadlock, lock
 _RAW_CONSTRAINT_PREFIXES = ("duplicate key value", "conflicting key value", "new row for relation", "null value in")
@@ -52,6 +70,8 @@ def raise_from_db(exc: object) -> NoReturn:
     sqlstate, message = db_error_parts(exc)
     cause = exc if isinstance(exc, BaseException) else None
     raw_constraint = message.lower().startswith(_RAW_CONSTRAINT_PREFIXES)
+    if sqlstate == "42501" and message.lower().startswith(AUTHZ_DENIAL_PREFIXES):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=FORBIDDEN) from cause
     if sqlstate in _DOMAIN_STATUS:
         raise HTTPException(status_code=_DOMAIN_STATUS[sqlstate], detail=message) from cause
     if sqlstate in _CONFLICT_STATES:
@@ -64,7 +84,9 @@ def raise_from_db(exc: object) -> NoReturn:
         logger.warning("database busy sqlstate=%s", sqlstate)
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Please try again") from cause
     logger.error("unexpected database error sqlstate=%s", sqlstate, exc_info=cause)
-    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal error") from cause
+    if cause is not None:
+        report_exception(cause)
+    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=INTERNAL) from cause
 
 
 async def fetch_json(db: AsyncSession, sql: str, params: dict[str, Any]) -> Any:

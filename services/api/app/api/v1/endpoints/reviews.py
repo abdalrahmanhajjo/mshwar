@@ -7,7 +7,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import access
 from app.core.guests import actor_ids
+from app.core.rate_limit import limit
 from app.core.sql import fetch_json
 from app.dependencies import get_auth_db
 from app.schemas.groups import ReviewReportIn, ReviewSubmitIn
@@ -15,7 +17,7 @@ from app.schemas.groups import ReviewReportIn, ReviewSubmitIn
 router = APIRouter()
 
 
-@router.get("/eligibility")
+@router.get("/eligibility", dependencies=[access.ACTOR])
 async def review_eligibility(
     request: Request,
     experience_id: UUID | None = None,
@@ -34,7 +36,7 @@ async def review_eligibility(
     )
 
 
-@router.post("")
+@router.post("", dependencies=[access.ACTOR, limit("community-write")])
 async def submit_review(
     payload: ReviewSubmitIn,
     request: Request,
@@ -54,7 +56,7 @@ async def submit_review(
     )
 
 
-@router.get("")
+@router.get("", dependencies=[access.PUBLIC, limit("search")])
 async def list_public_reviews(
     experience_id: UUID | None = None,
     listing_slug: str | None = Query(default=None, max_length=120),
@@ -67,7 +69,7 @@ async def list_public_reviews(
     )
 
 
-@router.get("/aggregates")
+@router.get("/aggregates", dependencies=[access.PUBLIC, limit("search")])
 async def review_aggregates(
     experience_id: UUID | None = None,
     listing_slug: str | None = Query(default=None, max_length=120),
@@ -80,7 +82,7 @@ async def review_aggregates(
     )
 
 
-@router.post("/{review_id}/report")
+@router.post("/{review_id}/report", dependencies=[access.ACTOR, limit("community-write")])
 async def report_review(
     review_id: UUID,
     payload: ReviewReportIn,

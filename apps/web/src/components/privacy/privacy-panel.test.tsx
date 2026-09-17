@@ -25,14 +25,27 @@ describe("privacy panel", () => {
       revokeObjectURL: () => undefined,
     });
 
-    const fetchMock = vi.fn(async (url: string) => {
+    let consent = false;
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
       if (String(url).includes("/auth/me")) {
         return jsonResponse({ id: "1", email: "a@b.com", display_name: "Ada", locale: "en" });
       }
       if (String(url).includes("/privacy/export")) {
         return jsonResponse({ profile: { email: "a@b.com" }, trips: [], favorites: [], reviews: [], bookings: [] });
       }
+      if (String(url).includes("/privacy/consents")) {
+        const body = init?.body ? (JSON.parse(String(init.body)) as { personalisation?: boolean }) : {};
+        consent = body.personalisation ?? consent;
+        return jsonResponse({
+          personalisation: consent,
+          marketing_email: false,
+          marketing_in_app: false,
+          policies: {},
+          history: [],
+        });
+      }
       if (String(url).includes("/privacy/reset-personalisation")) {
+        consent = false;
         return jsonResponse({ ok: true, identity_kept: true, bookings_kept: true, preferences: {} });
       }
       return jsonResponse({});
@@ -58,6 +71,12 @@ describe("privacy panel", () => {
     await waitFor(() =>
       expect(fetchMock.mock.calls.some((call) => String(call[0]).includes("/reset-personalisation"))).toBe(true),
     );
+
+    const personalise = await screen.findByRole("switch", { name: "Personalise my plans" });
+    expect(personalise).not.toBeChecked();
+    fireEvent.click(personalise);
+    expect(await screen.findByText("Personalisation is on.")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("switch", { name: "Personalise my plans" })).toBeChecked());
 
     const deleteButton = screen.getByRole("button", { name: "Anonymise my account" });
     expect(deleteButton).toBeDisabled();

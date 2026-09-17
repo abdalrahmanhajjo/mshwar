@@ -46,4 +46,21 @@ describe("locale proxy", () => {
     expect(rewriteTarget(response)).toContain("/settings");
     expect(response.cookies.get("mshwar-locale")?.value).toBe("fr");
   });
+
+  it("stamps a fresh request id on pages and API calls, ignoring the browser's", () => {
+    const page = proxy(request("/destinations"));
+    const pageId = page.headers.get("x-request-id") ?? "";
+    expect(pageId).toMatch(/^[0-9a-f]{32}$/);
+    expect(page.headers.get("x-middleware-request-x-request-id")).toBe(pageId);
+
+    const forged = new NextRequest(new URL("/api/v1/trips", "http://127.0.0.1:3001"), {
+      headers: { "x-request-id": "chosen-by-attacker" },
+    });
+    const api = proxy(forged);
+    const apiId = api.headers.get("x-request-id") ?? "";
+    expect(apiId).toMatch(/^[0-9a-f]{32}$/);
+    expect(api.headers.get("x-middleware-request-x-request-id")).toBe(apiId);
+    expect(api.headers.get("location")).toBeNull();
+    expect(api.cookies.get("mshwar-locale")).toBeUndefined();
+  });
 });

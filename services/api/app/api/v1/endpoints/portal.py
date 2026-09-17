@@ -5,28 +5,33 @@ import io
 import json
 from datetime import UTC, datetime, timedelta
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.responses import PlainTextResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import access, imagekit
 from app.core.auth_session import require_session
 from app.core.config import settings
 from app.core.geo import lebanon_bounds, point_in_lebanon
 from app.core.http_status import HTTP_422_UNPROCESSABLE
+from app.core.imagekit import UploadedImage
 from app.core.mailer import MailMessage, get_mailer
+from app.core.media_inspect import Inspected
+from app.core.rate_limit import enforce_rate_limit
 from app.core.sessions import hash_session_token, new_session_token
 from app.core.sql import fetch_json
 from app.core.storage import (
+    content_type_for,
     delete_private_bytes,
+    media_url,
     put_private_bytes,
     read_private_bytes,
     sign_object_url,
-    storage_backend,
     verify_signed_token,
 )
-from app.core.uploads import validate_upload
+from app.core.uploads import inspect_or_reject, validate_upload
 from app.dependencies import get_auth_db
 from app.schemas.groups import ReviewResponseIn
 from app.schemas.notifications import EscalationIn, RolePrefIn
@@ -59,17 +64,17 @@ def _user_id(session: dict[str, Any]) -> str:
     return str(session["user_id"])
 
 
-@router.get("/geo/lebanon")
+@router.get("/geo/lebanon", dependencies=[access.PUBLIC])
 async def get_lebanon_bounds() -> dict[str, Any]:
     return {"bounds": lebanon_bounds(), "picker": "map"}
 
 
-@router.get("/taxonomy")
+@router.get("/taxonomy", dependencies=[access.PUBLIC])
 async def get_taxonomy(db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
     return await fetch_json(db, "SELECT app.list_taxonomy_catalog()", {})
 
 
-@router.post("/organizations", status_code=status.HTTP_201_CREATED)
+@router.post("/organizations", status_code=status.HTTP_201_CREATED, dependencies=[access.SESSION])
 async def create_organization(
     payload: OrganizationCreate,
     request: Request,
@@ -84,7 +89,7 @@ async def create_organization(
     )
 
 
-@router.get("/organizations")
+@router.get("/organizations", dependencies=[access.SESSION])
 async def list_organizations(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -93,7 +98,7 @@ async def list_organizations(
     return await fetch_json(db, "SELECT app.list_my_organizations(:user_id)", {"user_id": _user_id(session)})
 
 
-@router.get("/organizations/{org_id}")
+@router.get("/organizations/{org_id}", dependencies=[access.SESSION])
 async def get_organization(
     org_id: UUID,
     request: Request,
@@ -107,7 +112,7 @@ async def get_organization(
     )
 
 
-@router.put("/organizations/{org_id}/contacts")
+@router.put("/organizations/{org_id}/contacts", dependencies=[access.SESSION])
 async def update_contacts(
     org_id: UUID,
     payload: OrganizationContactsUpdate,
@@ -133,7 +138,7 @@ async def update_contacts(
     )
 
 
-@router.get("/organizations/{org_id}/notification-preferences")
+@router.get("/organizations/{org_id}/notification-preferences", dependencies=[access.SESSION])
 async def list_notification_preferences(
     org_id: UUID,
     request: Request,
@@ -147,7 +152,7 @@ async def list_notification_preferences(
     )
 
 
-@router.put("/organizations/{org_id}/notification-preferences")
+@router.put("/organizations/{org_id}/notification-preferences", dependencies=[access.SESSION])
 async def put_notification_preference(
     org_id: UUID,
     payload: RolePrefIn,
@@ -169,7 +174,7 @@ async def put_notification_preference(
     )
 
 
-@router.put("/organizations/{org_id}/escalation")
+@router.put("/organizations/{org_id}/escalation", dependencies=[access.SESSION])
 async def put_escalation(
     org_id: UUID,
     payload: EscalationIn,
@@ -190,7 +195,7 @@ async def put_escalation(
     )
 
 
-@router.get("/organizations/{org_id}/onboarding")
+@router.get("/organizations/{org_id}/onboarding", dependencies=[access.SESSION])
 async def get_onboarding(
     org_id: UUID,
     request: Request,
@@ -205,7 +210,7 @@ async def get_onboarding(
     return await fetch_json(db, "SELECT app.onboarding_checklist(:org_id)", {"org_id": str(org_id)})
 
 
-@router.post("/organizations/{org_id}/verification")
+@router.post("/organizations/{org_id}/verification", dependencies=[access.SESSION])
 async def submit_verification(
     org_id: UUID,
     payload: VerificationSubmit,
@@ -220,7 +225,7 @@ async def submit_verification(
     )
 
 
-@router.get("/organizations/{org_id}/verification/documents")
+@router.get("/organizations/{org_id}/verification/documents", dependencies=[access.SESSION])
 async def list_verification_documents(
     org_id: UUID,
     request: Request,
@@ -234,72 +239,157 @@ async def list_verification_documents(
     )
 
 
-@router.post("/organizations/{org_id}/files")
+@router.post("/organizations/{org_id}/files", dependencies=[access.SESSION])
 async def upload_org_file(
     org_id: UUID,
     payload: FileUploadIn,
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
+    """Listing images and verification documents (MSHWAR-112).
+
+    Order matters: permission and per-organisation limits first, then content
+    checks, and only then does anything get stored.
+    """
     session = await _session(request, db)
     user_id = _user_id(session)
     if payload.purpose == "listing" and payload.experience_id is None:
         raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="experience_id required")
-    capability = "listings" if payload.purpose == "listing" else "settings"
-    # Check permission before anything touches the disk.
+    raw = validate_upload(payload.content_base64, payload.content_type, payload.purpose)
     await fetch_json(
         db,
-        "SELECT app.require_capability(:user_id, :org_id, :capability)",
-        {"user_id": user_id, "org_id": str(org_id), "capability": capability},
+        "SELECT app.check_upload_allowance(:user_id, :org_id, :purpose, :experience_id, :bytes, :quota, :max_images)",
+        {
+            "user_id": user_id,
+            "org_id": str(org_id),
+            "purpose": payload.purpose,
+            "experience_id": str(payload.experience_id) if payload.experience_id else None,
+            "bytes": len(raw),
+            "quota": settings.upload_org_quota_bytes,
+            "max_images": settings.max_images_per_experience,
+        },
     )
-    raw = validate_upload(payload.content_base64, payload.content_type, payload.purpose)
+    await enforce_rate_limit(request, "upload-org", subject=str(org_id))
+    inspected = inspect_or_reject(raw, payload.content_type)
+    if payload.purpose == "listing":
+        return await _store_listing_image(db, user_id, org_id, payload, raw, inspected)
+    return await _store_verification_document(db, user_id, org_id, payload, raw)
+
+
+async def _store_listing_image(
+    db: AsyncSession, user_id: str, org_id: UUID, payload: FileUploadIn, raw: bytes, inspected: Inspected
+) -> dict[str, Any]:
+    uploaded: UploadedImage | None = None
+    stored: dict[str, str] | None = None
+    if imagekit.enabled():
+        try:
+            uploaded = await imagekit.get_client().upload(
+                raw,
+                filename=f"{uuid4().hex}{_IMAGE_SUFFIX[payload.content_type]}",
+                folder=f"/listings/{org_id}/{payload.experience_id}",
+                content_type=payload.content_type,
+            )
+        except imagekit.ImageKitError as exc:
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
+        # Stored without the leading slash: keys are relative to the ImageKit URL endpoint.
+        provider, object_key, file_id = "imagekit", uploaded.file_path.lstrip("/"), uploaded.file_id
+    else:
+        stored = put_private_bytes(raw, payload.filename, payload.content_type, public=False)
+        provider, object_key, file_id = "local", stored["object_key"], None
+    try:
+        media = await fetch_json(
+            db,
+            "SELECT app.attach_listing_image(:user_id, :org_id, :experience_id, :provider, :object_key, :file_id, "
+            ":alt, :content_type, :bytes, :width, :height, :quota, :max_images)",
+            {
+                "user_id": user_id,
+                "org_id": str(org_id),
+                "experience_id": str(payload.experience_id),
+                "provider": provider,
+                "object_key": object_key,
+                "file_id": file_id,
+                "alt": payload.alt_text or payload.filename,
+                "content_type": inspected.content_type,
+                "bytes": len(raw),
+                "width": inspected.width,
+                "height": inspected.height,
+                "quota": settings.upload_org_quota_bytes,
+                "max_images": settings.max_images_per_experience,
+            },
+        )
+    except Exception:
+        if uploaded is not None:
+            await imagekit.get_client().delete(uploaded.file_id)
+        if stored is not None:
+            delete_private_bytes(stored["object_key"])
+        raise
+    return {
+        "object_key": object_key,
+        "provider": provider,
+        "backend": provider,
+        "filename": payload.filename,
+        "content_type": inspected.content_type,
+        "width": inspected.width,
+        "height": inspected.height,
+        "media": media,
+        "preview_url": media_url(provider, object_key),
+        "public": False,
+    }
+
+
+async def _store_verification_document(
+    db: AsyncSession, user_id: str, org_id: UUID, payload: FileUploadIn, raw: bytes
+) -> dict[str, Any]:
     stored = put_private_bytes(raw, payload.filename, payload.content_type, public=False)
     try:
-        if payload.purpose == "listing":
-            attached_key = "media"
-            attached = await fetch_json(
-                db,
-                "SELECT app.attach_experience_media(:user_id, :org_id, :experience_id, :object_key, :alt, 0)",
-                {
-                    "user_id": user_id,
-                    "org_id": str(org_id),
-                    "experience_id": str(payload.experience_id),
-                    "object_key": stored["object_key"],
-                    "alt": payload.alt_text or payload.filename,
-                },
-            )
-        else:
-            attached_key = "document"
-            attached = await fetch_json(
-                db,
-                "SELECT app.attach_verification_document(:user_id, :org_id, :object_key, :filename, :content_type, :byte_size)",
-                {
-                    "user_id": user_id,
-                    "org_id": str(org_id),
-                    "object_key": stored["object_key"],
-                    "filename": payload.filename,
-                    "content_type": payload.content_type,
-                    "byte_size": len(raw),
-                },
-            )
+        document = await fetch_json(
+            db,
+            "SELECT app.attach_verification_document(:user_id, :org_id, :object_key, :filename, :content_type, :byte_size)",
+            {
+                "user_id": user_id,
+                "org_id": str(org_id),
+                "object_key": stored["object_key"],
+                "filename": payload.filename,
+                "content_type": payload.content_type,
+                "byte_size": len(raw),
+            },
+        )
     except Exception:
         delete_private_bytes(stored["object_key"])
         raise
     signed = sign_object_url(stored["object_key"])
-    return {**stored, attached_key: attached, "signed": signed, "public": False, "backend": storage_backend()}
+    return {**stored, "document": document, "signed": signed, "public": False}
 
 
-@router.get("/files/{token}")
+_IMAGE_SUFFIX = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp"}
+
+
+@router.get("/files/{token}", dependencies=[access.TOKEN])
 async def download_signed_file(token: str) -> Response:
+    """Serve a private file to the holder of a short-lived signed link, never as active content."""
     try:
         object_key = verify_signed_token(token)
         data = read_private_bytes(object_key)
     except (ValueError, FileNotFoundError) as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not available") from exc
-    return Response(content=data, media_type="application/octet-stream")
+    media_type = content_type_for(object_key)
+    disposition = "inline" if media_type.startswith("image/") else "attachment"
+    filename = object_key.rsplit("/", 1)[-1].split("-", 1)[-1]
+    return Response(
+        content=data,
+        media_type=media_type,
+        headers={
+            "Content-Disposition": f'{disposition}; filename="{filename}"',
+            "X-Content-Type-Options": "nosniff",
+            "Content-Security-Policy": "default-src 'none'; sandbox",
+            "Cache-Control": "private, no-store",
+            "Referrer-Policy": "no-referrer",
+            "Cross-Origin-Resource-Policy": "same-origin",
+        },
+    )
 
 
-@router.get("/organizations/{org_id}/staff")
+@router.get("/organizations/{org_id}/staff", dependencies=[access.SESSION])
 async def list_staff(
     org_id: UUID,
     request: Request,
@@ -313,7 +403,9 @@ async def list_staff(
     )
 
 
-@router.post("/organizations/{org_id}/staff/invitations", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/organizations/{org_id}/staff/invitations", status_code=status.HTTP_201_CREATED, dependencies=[access.SESSION]
+)
 async def invite_staff(
     org_id: UUID,
     payload: StaffInviteCreate,
@@ -347,7 +439,7 @@ async def invite_staff(
     return row
 
 
-@router.post("/organizations/{org_id}/staff/invitations/{invite_id}/revoke")
+@router.post("/organizations/{org_id}/staff/invitations/{invite_id}/revoke", dependencies=[access.SESSION])
 async def revoke_invite(
     org_id: UUID,
     invite_id: UUID,
@@ -360,10 +452,12 @@ async def revoke_invite(
         "SELECT app.revoke_staff_invite(:user_id, :org_id, :invite_id)",
         {"user_id": _user_id(session), "org_id": str(org_id), "invite_id": str(invite_id)},
     )
-    return {"ok": bool(ok)}
+    if not ok:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="invitation not found")
+    return {"ok": True}
 
 
-@router.post("/invitations/accept")
+@router.post("/invitations/accept", dependencies=[access.SESSION])
 async def accept_invite(
     payload: StaffInviteAccept,
     request: Request,
@@ -381,7 +475,7 @@ async def accept_invite(
     )
 
 
-@router.post("/organizations/{org_id}/venues")
+@router.post("/organizations/{org_id}/venues", dependencies=[access.SESSION])
 async def upsert_venue(
     org_id: UUID,
     payload: VenueUpsert,
@@ -407,7 +501,7 @@ async def upsert_venue(
     )
 
 
-@router.get("/organizations/{org_id}/experiences")
+@router.get("/organizations/{org_id}/experiences", dependencies=[access.SESSION])
 async def list_experiences(
     org_id: UUID,
     request: Request,
@@ -421,7 +515,7 @@ async def list_experiences(
     )
 
 
-@router.post("/organizations/{org_id}/experiences")
+@router.post("/organizations/{org_id}/experiences", dependencies=[access.SESSION])
 async def upsert_experience(
     org_id: UUID,
     payload: ExperienceUpsert,
@@ -448,7 +542,7 @@ async def upsert_experience(
     return body
 
 
-@router.get("/organizations/{org_id}/experiences/{experience_id}")
+@router.get("/organizations/{org_id}/experiences/{experience_id}", dependencies=[access.SESSION])
 async def get_experience(
     org_id: UUID,
     experience_id: UUID,
@@ -463,7 +557,7 @@ async def get_experience(
     )
 
 
-@router.post("/organizations/{org_id}/experiences/{experience_id}/publish")
+@router.post("/organizations/{org_id}/experiences/{experience_id}/publish", dependencies=[access.SESSION])
 async def publish_experience(
     org_id: UUID,
     experience_id: UUID,
@@ -478,7 +572,7 @@ async def publish_experience(
     )
 
 
-@router.post("/organizations/{org_id}/experiences/{experience_id}/status")
+@router.post("/organizations/{org_id}/experiences/{experience_id}/status", dependencies=[access.SESSION])
 async def set_experience_status(
     org_id: UUID,
     experience_id: UUID,
@@ -499,7 +593,7 @@ async def set_experience_status(
     )
 
 
-@router.put("/organizations/{org_id}/opening-hours")
+@router.put("/organizations/{org_id}/opening-hours", dependencies=[access.SESSION])
 async def replace_hours(
     org_id: UUID,
     payload: OpeningHoursReplace,
@@ -520,7 +614,7 @@ async def replace_hours(
     )
 
 
-@router.post("/organizations/{org_id}/opening-exceptions")
+@router.post("/organizations/{org_id}/opening-exceptions", dependencies=[access.SESSION])
 async def upsert_exception(
     org_id: UUID,
     payload: OpeningExceptionIn,
@@ -544,7 +638,7 @@ async def upsert_exception(
     )
 
 
-@router.post("/organizations/{org_id}/blackouts")
+@router.post("/organizations/{org_id}/blackouts", dependencies=[access.SESSION])
 async def create_blackout(
     org_id: UUID,
     payload: BlackoutIn,
@@ -567,7 +661,7 @@ async def create_blackout(
     )
 
 
-@router.delete("/organizations/{org_id}/blackouts/{blackout_id}")
+@router.delete("/organizations/{org_id}/blackouts/{blackout_id}", dependencies=[access.SESSION])
 async def remove_blackout(
     org_id: UUID,
     blackout_id: UUID,
@@ -580,10 +674,12 @@ async def remove_blackout(
         "SELECT app.delete_blackout(:user_id, :org_id, :blackout_id)",
         {"user_id": _user_id(session), "org_id": str(org_id), "blackout_id": str(blackout_id)},
     )
-    return {"ok": bool(ok)}
+    if not ok:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="blackout not found")
+    return {"ok": True}
 
 
-@router.post("/organizations/{org_id}/slots/generate")
+@router.post("/organizations/{org_id}/slots/generate", dependencies=[access.SESSION])
 async def generate_slots(
     org_id: UUID,
     payload: SlotGenerateIn,
@@ -606,7 +702,7 @@ async def generate_slots(
     )
 
 
-@router.get("/organizations/{org_id}/experiences/{experience_id}/availability")
+@router.get("/organizations/{org_id}/experiences/{experience_id}/availability", dependencies=[access.SESSION])
 async def list_availability(
     org_id: UUID,
     experience_id: UUID,
@@ -621,7 +717,7 @@ async def list_availability(
     )
 
 
-@router.get("/organizations/{org_id}/bookings")
+@router.get("/organizations/{org_id}/bookings", dependencies=[access.SESSION])
 async def list_bookings(
     org_id: UUID,
     request: Request,
@@ -646,7 +742,7 @@ async def list_bookings(
     )
 
 
-@router.get("/organizations/{org_id}/bookings.csv")
+@router.get("/organizations/{org_id}/bookings.csv", dependencies=[access.SESSION])
 async def export_bookings_csv(
     org_id: UUID,
     request: Request,
@@ -664,7 +760,7 @@ async def export_bookings_csv(
     )
 
 
-@router.post("/organizations/{org_id}/bookings/{booking_id}/respond")
+@router.post("/organizations/{org_id}/bookings/{booking_id}/respond", dependencies=[access.SESSION])
 async def respond_booking(
     org_id: UUID,
     booking_id: UUID,
@@ -687,7 +783,7 @@ async def respond_booking(
     )
 
 
-@router.post("/organizations/{org_id}/bookings/{booking_id}/cancel")
+@router.post("/organizations/{org_id}/bookings/{booking_id}/cancel", dependencies=[access.SESSION])
 async def cancel_portal_booking(
     org_id: UUID,
     booking_id: UUID,
@@ -708,7 +804,7 @@ async def cancel_portal_booking(
     )
 
 
-@router.get("/organizations/{org_id}/metrics")
+@router.get("/organizations/{org_id}/metrics", dependencies=[access.SESSION])
 async def get_metrics(
     org_id: UUID,
     request: Request,
@@ -726,7 +822,7 @@ async def get_metrics(
     )
 
 
-@router.post("/organizations/{org_id}/metrics/events")
+@router.post("/organizations/{org_id}/metrics/events", dependencies=[access.SESSION])
 async def capture_metric(
     org_id: UUID,
     payload: AnalyticsCaptureIn,
@@ -736,7 +832,7 @@ async def capture_metric(
     session = await _session(request, db)
     event_id = await fetch_json(
         db,
-        "SELECT app.record_analytics_event(:name, :org_id, :experience_id, :user_id, CAST(:properties AS jsonb), :dedupe)",
+        "SELECT app.capture_org_event(:user_id, :org_id, :experience_id, :name, CAST(:properties AS jsonb), :dedupe)",
         {
             "name": payload.event_name,
             "org_id": str(org_id),
@@ -749,7 +845,7 @@ async def capture_metric(
     return {"id": event_id, "recorded": True}
 
 
-@router.get("/organizations/{org_id}/metrics.csv")
+@router.get("/organizations/{org_id}/metrics.csv", dependencies=[access.SESSION])
 async def export_metrics_csv(
     org_id: UUID,
     request: Request,
@@ -761,7 +857,7 @@ async def export_metrics_csv(
     return PlainTextResponse(metrics_to_csv(metrics or {}), media_type="text/csv")
 
 
-@router.get("/organizations/{org_id}/reviews")
+@router.get("/organizations/{org_id}/reviews", dependencies=[access.SESSION])
 async def list_portal_reviews(
     org_id: UUID,
     request: Request,
@@ -775,7 +871,7 @@ async def list_portal_reviews(
     )
 
 
-@router.post("/organizations/{org_id}/reviews/{review_id}/responses")
+@router.post("/organizations/{org_id}/reviews/{review_id}/responses", dependencies=[access.SESSION])
 async def respond_to_review(
     org_id: UUID,
     review_id: UUID,
@@ -810,7 +906,7 @@ async def _forbid_review_mutation(org_id: UUID, review_id: UUID, request: Reques
     )
 
 
-@router.post("/organizations/{org_id}/reviews/{review_id}/hide")
+@router.post("/organizations/{org_id}/reviews/{review_id}/hide", dependencies=[access.SESSION])
 async def hide_review_forbidden(
     org_id: UUID,
     review_id: UUID,
@@ -820,7 +916,7 @@ async def hide_review_forbidden(
     return await _forbid_review_mutation(org_id, review_id, request, db)
 
 
-@router.delete("/organizations/{org_id}/reviews/{review_id}")
+@router.delete("/organizations/{org_id}/reviews/{review_id}", dependencies=[access.SESSION])
 async def delete_review_forbidden(
     org_id: UUID,
     review_id: UUID,
