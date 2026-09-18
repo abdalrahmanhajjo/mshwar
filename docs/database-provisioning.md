@@ -8,27 +8,33 @@ Mshwar requires PostgreSQL 17 with three extensions enabled: **PostGIS** (geospa
 
 ## Supabase (Managed)
 
-### What it provides
+### Correction, 18 September 2026
 
-- PostgreSQL 16+ (PostGIS and pgvector included via dashboard UI)
-- Built-in authentication, row-level security (RLS)
-- Edge functions, storage, real-time subscriptions
-- Automatic migrations via dashboard or CLI
-- Free tier available for development
+An earlier version of this document said `btree_gist` is "not available on Supabase (not in their
+extension allowlist)" and rejected Supabase on that basis. **That was wrong.** Supabase's
+[extensions catalogue](https://supabase.com/docs/guides/database/extensions) lists all three
+extensions Mshwar needs as pre-installed: `postgis`, `vector` (pgvector) and `btree_gist`.
 
-### Limitations for Mshwar
+Supabase is therefore a viable option. It is not the one chosen, but for different reasons, recorded
+below so nobody re-litigates this from a false premise.
 
-- **PostGIS**: Available but requires manual enabling per database via Supabase SQL Editor
-- **pgvector**: Available in Supabase v2, but version may lag behind latest releases
-- **btree_gist**: Not available on Supabase (not in their extension allowlist)
-- **Statement timeouts**: Configurable via dashboard but less granular than self-hosted
-- **Connection pooling**: Uses Supabase's built-in pooler (PgBouncer) — cannot configure `pool_pre_ping`, `pool_recycle` at the driver level
-- **Extension constraints**: Cannot create custom extensions or use `CREATE EXTENSION` for arbitrary extensions
-- **Production cost**: Scales with usage; can become expensive at high query volumes
+### The real constraints
 
-### Verdict for Mshwar
+| Constraint                     | Detail                                                                                                                                                                                                                                                                                        |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Connection pooler vs `asyncpg` | `services/api/app/dependencies.py` uses `asyncpg`, which issues prepared statements. Supabase's transaction-mode pooler (Supavisor) does not support them; this needs `statement_cache_size=0`, or the direct connection, whose connection limit is well below the configured `pool_size: 20` |
+| Custom role model              | The security model rests on `mshwar_backend`, `mshwar_reader` and a restricted `mshwar_api` login role with `NOSUPERUSER NOBYPASSRLS` (SR-02). Supabase permits custom roles, but this has not been verified against the 242 grant and policy references in the migrations                    |
+| `SECURITY DEFINER` functions   | ~280 of them across the migrations, all depending on elevating above the restricted API role. Expected to work; not yet proven on Supabase                                                                                                                                                    |
 
-**Not recommended** for production. The missing `btree_gist` extension blocks the slot booking exclusion constraints required by the BRD. The managed pooler also prevents fine-grained control over connection settings.
+### Why not now
+
+Migrating before launch would mean changing the connection layer and re-validating the database
+security model immediately before the penetration test (SR-20) that must certify it. The benefit —
+less database operations work — is not urgent at zero users.
+
+**Decision:** stay self-hosted through launch. Re-evaluate Supabase afterwards as a contained
+migration project, starting with a spike: run the 21 migrations against a throwaway project and run
+the backend suite connected as `mshwar_api`.
 
 ---
 
@@ -54,9 +60,12 @@ Mshwar requires PostgreSQL 17 with three extensions enabled: **PostGIS** (geospa
 
 ```
 Local Dev:       docker compose up --build  (Postgres 17 + PostGIS + pgvector + btree_gist)
-Staging:         Managed PostgreSQL 17 VPS (e.g., DigitalOcean, Hetzner, AWS RDS)
-Production:      Self-hosted or managed PostgreSQL 17 with all three extensions enabled
+Staging:         Single VPS running the same compose stack (see docs/staging-runbook.md)
+Production:      Self-hosted PostgreSQL 17 with all three extensions; revisit managed once launched
 ```
+
+Staging deliberately mirrors local development so that nothing about the role model, the
+`SECURITY DEFINER` functions or the connection layer differs between the two.
 
 ---
 
