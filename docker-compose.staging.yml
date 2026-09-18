@@ -35,6 +35,13 @@ services:
 
   api:
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    # The root .env is what Compose interpolates ${VAR} from; it is NOT passed into
+    # the container automatically. Load it so SECRET_KEY, INTERNAL_JOB_TOKEN,
+    # PUBLIC_WEB_ORIGIN and the rest reach the app. The explicit environment block
+    # below still wins over anything with the same name in the file.
+    env_file:
+      - path: .env
+        required: true
     ports: !override []
     volumes: !override []
     restart: unless-stopped
