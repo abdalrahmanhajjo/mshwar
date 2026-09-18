@@ -54,5 +54,26 @@ services:
   web:
     restart: unless-stopped
 
+  # Terminates TLS and is the only service published to the host. Certificates are
+  # obtained from Let's Encrypt automatically, so SITE_ADDRESS must be a hostname
+  # that resolves to this box and must match PUBLIC_WEB_ORIGIN in .env.
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?set in .env}
+    volumes:
+      - ./ops/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+      - web
+
 volumes:
   redis_data:
+  caddy_data:
+  caddy_config:
