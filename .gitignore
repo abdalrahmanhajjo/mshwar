@@ -112,3 +112,6 @@ services/api/*.egg-info/
 # Local tool output (AI assistants, file transfers)
 .claude-transfer/
 Claude outputs/
+
+# Sentry build plugin auth token (never commit)
+.env.sentry-build-plugin

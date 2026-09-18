@@ -54,7 +54,7 @@ test.describe("MSHWAR-26 responsive app shell", () => {
   test("traveller 390px: no overflow, collapsed nav, RTL without reload", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
-    await expect(page.locator("[data-shell='traveller']")).toBeVisible();
+    await expect(page.locator("[data-shell='traveller']").first()).toBeVisible();
     await assertNoHorizontalScroll(page);
 
     await expect(page.getByRole("button", { name: "Open menu" })).toBeVisible();
@@ -67,7 +67,7 @@ test.describe("MSHWAR-26 responsive app shell", () => {
 
     await page.getByRole("button", { name: "العربية" }).first().click();
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-    await expect(page.locator("[data-shell='traveller']")).toHaveAttribute("dir", "rtl");
+    await expect(page.locator("[data-shell='traveller']").first()).toHaveAttribute("dir", "rtl");
     await expect(page.getByRole("button", { name: "فتح القائمة" })).toBeVisible();
     await expect(page).toHaveURL(/\/ar\/?/);
     await assertNoHorizontalScroll(page);
@@ -88,7 +88,7 @@ test.describe("MSHWAR-26 responsive app shell", () => {
     await signInForShell(page);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/business");
-    await expect(page.locator("[data-shell='business']")).toBeVisible();
+    await expect(page.locator("[data-shell='business']").first()).toBeVisible();
     await expect(page.locator("aside")).toBeVisible();
     await expect(page.getByRole("link", { name: "Listings" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Discover" })).toHaveCount(0);
@@ -105,7 +105,7 @@ test.describe("MSHWAR-26 responsive app shell", () => {
 
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/admin");
-    await expect(page.locator("[data-shell='admin']")).toBeVisible();
+    await expect(page.locator("[data-shell='admin']").first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Moderation" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Listings" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Discover" })).toHaveCount(0);
