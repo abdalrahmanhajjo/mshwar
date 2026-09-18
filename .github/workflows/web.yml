@@ -80,7 +80,7 @@ jobs:
     name: Deploy Vercel Preview
     needs: [build]
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && vars.DEPLOY_ENABLED == 'true'
     environment: preview
     steps:
       - uses: actions/checkout@v4
@@ -89,12 +89,11 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          if [ -n "$VERCEL_TOKEN" ]; then
-            echo "configured=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::VERCEL_TOKEN is not set; skipping preview deploy"
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::error::Deploys are enabled but VERCEL_TOKEN is unset"
+            exit 1
           fi
+          echo "configured=true" >> "$GITHUB_OUTPUT"
       - uses: ./.github/actions/setup-node-pnpm
         if: steps.vercel.outputs.configured == 'true'
         with:
@@ -122,7 +121,9 @@ jobs:
     name: Deploy Vercel Staging
     needs: [build]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: >-
+      github.ref == 'refs/heads/main' && github.event_name == 'push'
+      && vars.DEPLOY_ENABLED == 'true'
     environment: staging
     steps:
       - uses: actions/checkout@v4
@@ -131,12 +132,11 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          if [ -n "$VERCEL_TOKEN" ]; then
-            echo "configured=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::VERCEL_TOKEN is not set; skipping Vercel staging deploy"
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::error::Deploys are enabled but VERCEL_TOKEN is unset"
+            exit 1
           fi
+          echo "configured=true" >> "$GITHUB_OUTPUT"
       - uses: ./.github/actions/setup-node-pnpm
         if: steps.vercel.outputs.configured == 'true'
         with:
@@ -164,7 +164,9 @@ jobs:
     name: Deploy Vercel Production (Manual Gate)
     needs: [deploy-staging]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: >-
+      github.ref == 'refs/heads/main' && github.event_name == 'push'
+      && vars.DEPLOY_ENABLED == 'true'
     environment: production
     steps:
       - uses: actions/checkout@v4
@@ -174,17 +176,14 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           PRODUCTION_WEB_URL: ${{ secrets.PRODUCTION_WEB_URL }}
         run: |
-          if [ -n "$VERCEL_TOKEN" ]; then
-            echo "configured=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::VERCEL_TOKEN is not set; skipping Vercel production deploy"
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::error::Deploys are enabled but VERCEL_TOKEN is unset"
+            exit 1
           fi
-          if [ -n "$PRODUCTION_WEB_URL" ]; then
-            echo "health=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "health=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::PRODUCTION_WEB_URL is not set; skipping production health check"
+          echo "configured=true" >> "$GITHUB_OUTPUT"
+          if [ -z "$PRODUCTION_WEB_URL" ]; then
+            echo "::error::Deploys are enabled but PRODUCTION_WEB_URL is unset; a production deploy must be verified"
+            exit 1
           fi
       - uses: ./.github/actions/setup-node-pnpm
         if: steps.vercel.outputs.configured == 'true'
@@ -209,7 +208,6 @@ jobs:
           github-comment: true
           github-comment-delete: true
       - name: Verify production deployment
-        if: steps.vercel.outputs.health == 'true'
         env:
           PRODUCTION_WEB_URL: ${{ secrets.PRODUCTION_WEB_URL }}
         run: |
@@ -219,7 +217,9 @@ jobs:
   rollback:
     name: Rollback Web Deployment
     runs-on: ubuntu-latest
-    if: failure() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: >-
+      failure() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      && vars.DEPLOY_ENABLED == 'true'
     needs: [deploy-preview, deploy-staging, deploy-production-gate]
     environment: production
     steps:
@@ -230,17 +230,14 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           PRODUCTION_WEB_URL: ${{ secrets.PRODUCTION_WEB_URL }}
         run: |
-          if [ -n "$VERCEL_TOKEN" ]; then
-            echo "configured=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::VERCEL_TOKEN is not set; skipping Vercel rollback"
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::error::Deploys are enabled but VERCEL_TOKEN is unset"
+            exit 1
           fi
-          if [ -n "$PRODUCTION_WEB_URL" ]; then
-            echo "health=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "health=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::PRODUCTION_WEB_URL is not set; skipping rollback health check"
+          echo "configured=true" >> "$GITHUB_OUTPUT"
+          if [ -z "$PRODUCTION_WEB_URL" ]; then
+            echo "::error::Deploys are enabled but PRODUCTION_WEB_URL is unset; a production deploy must be verified"
+            exit 1
           fi
       - name: Rollback Vercel to previous version
         if: steps.vercel.outputs.configured == 'true'
@@ -252,7 +249,6 @@ jobs:
           vercel-args: "--rollback"
           scope: ${{ secrets.VERCEL_ORG_ID }}
       - name: Verify rollback
-        if: steps.vercel.outputs.health == 'true'
         env:
           PRODUCTION_WEB_URL: ${{ secrets.PRODUCTION_WEB_URL }}
         run: |

@@ -1,0 +1,51 @@
+# Staging overrides for the local development stack.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d
+#
+# What this changes, and why:
+#   * the API connects as the restricted mshwar_api role, not as postgres (SR-02)
+#   * no --reload, no source bind mount, no dev endpoints
+#   * Redis persists, because rate limits and the AI spend ceiling depend on it (SR-07)
+#   * nothing but the reverse proxy is exposed to the host
+#
+# Values come from /opt/mshwar/.env on the staging box. That file is never committed.
+services:
+  db:
+    ports: !override []
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?set in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./ops/db-backups:/backups
+
+  redis:
+    ports: !override []
+    command: ["redis-server", "--save", "60", "1000", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+
+  migrate:
+    volumes:
+      - ./mshwar-database:/mshwar-database:ro
+    environment:
+      # Migrations run as the owner; the API does not.
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+
+  api:
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports: !override []
+    volumes: !override []
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${MSHWAR_API_USER:?set in .env}:${MSHWAR_API_PASSWORD:?set in .env}@db:5432/${POSTGRES_DB}
+      ENVIRONMENT: staging
+      ENABLE_DEV_ENDPOINTS: "false"
+      RATE_LIMIT_STORE: redis
+
+  web:
+    restart: unless-stopped
+
+volumes:
+  redis_data:

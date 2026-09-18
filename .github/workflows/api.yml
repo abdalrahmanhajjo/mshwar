@@ -212,105 +212,194 @@ jobs:
     name: Deploy API to Staging
     needs: [backend-integration]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # Deploys stay off until DEPLOY_ENABLED is set to "true" in repository variables.
+    # While off the job is skipped, which is honest; it never reports a deploy that did not happen.
+    if: >-
+      github.ref == 'refs/heads/main' && github.event_name == 'push'
+      && vars.DEPLOY_ENABLED == 'true'
     environment: staging
     steps:
       - uses: actions/checkout@v4
-      - name: Check staging API configuration
-        id: staging
+      - name: Require staging secrets
         env:
           STAGING_API_URL: ${{ secrets.STAGING_API_URL }}
+          STAGING_SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+          STAGING_SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+          STAGING_SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
         run: |
-          if [ -n "$STAGING_API_URL" ]; then
-            echo "configured=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::STAGING_API_URL is not set; skipping API staging deploy and health check"
+          missing=""
+          for name in STAGING_API_URL STAGING_SSH_HOST STAGING_SSH_USER STAGING_SSH_KEY; do
+            [ -n "${!name}" ] || missing="$missing $name"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Deploys are enabled but these secrets are unset:$missing"
+            exit 1
           fi
-      - name: Deploy API to Staging
-        if: steps.staging.outputs.configured == 'true'
+      - name: Open an SSH session to staging
+        env:
+          STAGING_SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+          STAGING_SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
         run: |
-          echo "Deploying API to staging..."
-          echo "Staging deployment complete"
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$STAGING_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$STAGING_SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+      - name: Deploy API to Staging
+        env:
+          STAGING_SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+          STAGING_SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+        run: |
+          # The staging box holds a clone of this repo and the compose stack.
+          # Migrations run before the API restarts; the runner is idempotent and
+          # checksum-verified, so a repeated deploy is safe.
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "${STAGING_SSH_USER}@${STAGING_SSH_HOST}" \
+            'set -euo pipefail
+             cd /opt/mshwar
+             git fetch --all
+             git reset --hard origin/main
+             docker compose pull
+             docker compose build api
+             docker compose run --rm migrate
+             docker compose up -d --no-deps api
+             docker image prune -f'
       - name: Verify staging health
-        if: steps.staging.outputs.configured == 'true'
         env:
           STAGING_API_URL: ${{ secrets.STAGING_API_URL }}
         run: |
-          curl -f "${STAGING_API_URL}/health"
-          echo "Staging API verified"
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -fsS --max-time 10 "${STAGING_API_URL}/health" >/dev/null; then
+              echo "Staging API healthy after ${attempt} attempt(s)"
+              exit 0
+            fi
+            echo "Attempt ${attempt} failed; retrying in 6s"
+            sleep 6
+          done
+          echo "::error::Staging API did not become healthy"
+          exit 1
+      - name: Remove the deploy key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
 
   deploy-production-gate:
     name: Deploy API to Production (Manual Gate)
     needs: [deploy-staging]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # The "production" environment should carry a required reviewer in repository
+    # settings; that is what makes this a gate rather than an automatic deploy.
+    if: >-
+      github.ref == 'refs/heads/main' && github.event_name == 'push'
+      && vars.DEPLOY_ENABLED == 'true'
     environment: production
     steps:
       - uses: actions/checkout@v4
-      - name: Check production API configuration
-        id: production
+      - name: Require production secrets
         env:
           PRODUCTION_API_URL: ${{ secrets.PRODUCTION_API_URL }}
+          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+          PRODUCTION_SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+          PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
         run: |
-          if [ -n "$PRODUCTION_API_URL" ]; then
-            echo "configured=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::PRODUCTION_API_URL is not set; skipping API production deploy and health check"
+          missing=""
+          for name in PRODUCTION_API_URL PRODUCTION_SSH_HOST PRODUCTION_SSH_USER PRODUCTION_SSH_KEY; do
+            [ -n "${!name}" ] || missing="$missing $name"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Deploys are enabled but these secrets are unset:$missing"
+            exit 1
           fi
-      - name: Deploy API to Production
-        if: steps.production.outputs.configured == 'true'
+      - name: Open an SSH session to production
+        env:
+          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+          PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
         run: |
-          echo "Deploying API to production..."
-          echo "Production deployment complete"
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$PRODUCTION_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$PRODUCTION_SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+      - name: Record the release for rollback
+        env:
+          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+          PRODUCTION_SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+        run: |
+          # Store the currently deployed commit so the rollback job has a target.
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "${PRODUCTION_SSH_USER}@${PRODUCTION_SSH_HOST}" \
+            'cd /opt/mshwar && git rev-parse HEAD > .previous-release'
+      - name: Deploy API to Production
+        env:
+          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+          PRODUCTION_SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+        run: |
+          # SQL migrations are forward-only and are never rolled back automatically;
+          # see docs/database-provisioning.md. Fix forward or restore from backup.
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "${PRODUCTION_SSH_USER}@${PRODUCTION_SSH_HOST}" \
+            'set -euo pipefail
+             cd /opt/mshwar
+             git fetch --all
+             git reset --hard origin/main
+             docker compose pull
+             docker compose build api
+             docker compose run --rm migrate
+             docker compose up -d --no-deps api
+             docker image prune -f'
       - name: Verify production health
-        if: steps.production.outputs.configured == 'true'
         env:
           PRODUCTION_API_URL: ${{ secrets.PRODUCTION_API_URL }}
         run: |
-          curl -f "${PRODUCTION_API_URL}/health"
-          echo "Production API verified"
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -fsS --max-time 10 "${PRODUCTION_API_URL}/health" >/dev/null; then
+              echo "Production API healthy after ${attempt} attempt(s)"
+              exit 0
+            fi
+            echo "Attempt ${attempt} failed; retrying in 6s"
+            sleep 6
+          done
+          echo "::error::Production API did not become healthy"
+          exit 1
+      - name: Remove the deploy key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
 
   rollback:
     name: Rollback API Deployment
     runs-on: ubuntu-latest
-    if: failure() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: >-
+      failure() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+      && vars.DEPLOY_ENABLED == 'true'
     needs: [deploy-staging, deploy-production-gate]
     environment: production
     steps:
       - uses: actions/checkout@v4
-      - name: Check production rollback configuration
-        id: rollback
+      - name: Roll the API back to the previous release
         env:
-          PRODUCTION_DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
-          PRODUCTION_API_URL: ${{ secrets.PRODUCTION_API_URL }}
+          PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+          PRODUCTION_SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+          PRODUCTION_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
         run: |
-          if [ -n "$PRODUCTION_DATABASE_URL" ] && [ -n "$PRODUCTION_API_URL" ]; then
-            echo "configured=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Production rollback secrets are not set; skipping rollback and health check"
-          fi
-      - name: Database rollback policy
-        if: steps.rollback.outputs.configured == 'true'
-        run: |
-          # SQL migrations (mshwar-database/migrations) are forward-only and never
-          # rolled back automatically. Fix forward with a new migration, or restore
-          # from a backup / point-in-time recovery after a manual decision.
-          echo "::notice::Database is not rolled back automatically; see docs/database-provisioning.md"
-      - name: Rollback deployment
-        if: steps.rollback.outputs.configured == 'true'
-        run: |
-          echo "Rolling back API deployment..."
-          echo "Deployment rolled back"
+          # The database is NOT rolled back: SQL migrations are forward-only.
+          # A migration that cannot be fixed forward needs a restore decided by a person.
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$PRODUCTION_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$PRODUCTION_SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "${PRODUCTION_SSH_USER}@${PRODUCTION_SSH_HOST}" \
+            'set -euo pipefail
+             cd /opt/mshwar
+             test -s .previous-release || { echo "no recorded previous release"; exit 1; }
+             git reset --hard "$(cat .previous-release)"
+             docker compose build api
+             docker compose up -d --no-deps api'
+          rm -f ~/.ssh/deploy_key
       - name: Verify rollback
-        if: steps.rollback.outputs.configured == 'true'
         env:
           PRODUCTION_API_URL: ${{ secrets.PRODUCTION_API_URL }}
         run: |
-          curl -f "${PRODUCTION_API_URL}/health"
+          curl -fsS --max-time 15 "${PRODUCTION_API_URL}/health" >/dev/null
           echo "Rollback verified"
-      - name: Rollback check complete
+      - name: Database rollback policy
         if: always()
-        run: echo "::notice::API rollback finished; destructive steps ran only when secrets were configured"
+        run: |
+          echo "::notice::The database was not rolled back. Migrations are forward-only; see docs/database-provisioning.md"
