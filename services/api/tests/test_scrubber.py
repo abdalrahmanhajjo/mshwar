@@ -120,6 +120,23 @@ def test_log_records_are_scrubbed_and_carry_the_request_id(captured: io.StringIO
     assert EMAIL not in captured.getvalue()
 
 
+def test_uvicorn_access_emit_does_not_raise_after_config() -> None:
+    # Regression: the scrubbing filter cleared record.args, and uvicorn's own
+    # AccessFormatter unpacked args to rebuild the line, raising on every request.
+    # After configure_logging routes uvicorn.access through our handler, a full
+    # emit must succeed.
+    configure_logging("INFO", "json")
+    access = logging.getLogger("uvicorn.access")
+    access.info(
+        '%s - "%s %s HTTP/%s" %d',
+        "10.0.0.1:1",
+        "GET",
+        "/health",
+        "1.1",
+        200,
+    )  # must not raise
+
+
 def test_uvicorn_access_log_lines_are_scrubbed() -> None:
     configure_logging("INFO", "json")
     access = logging.getLogger("uvicorn.access")
