@@ -46,18 +46,25 @@ def init_sentry() -> bool:
         return False
     import sentry_sdk
 
-    sentry_sdk.init(
-        dsn=settings.sentry_dsn,
-        environment=settings.environment,
-        release=settings.release or None,
-        send_default_pii=False,
-        max_request_body_size="never",
-        include_local_variables=False,
-        traces_sample_rate=settings.sentry_traces_sample_rate,
-        before_send=scrub_event,  # type: ignore[arg-type]
-        before_send_transaction=scrub_event,  # type: ignore[arg-type]
-        before_breadcrumb=scrub_breadcrumb,
-    )
+    try:
+        sentry_sdk.init(
+            dsn=settings.sentry_dsn,
+            environment=settings.environment,
+            release=settings.release or None,
+            send_default_pii=False,
+            max_request_body_size="never",
+            include_local_variables=False,
+            traces_sample_rate=settings.sentry_traces_sample_rate,
+            before_send=scrub_event,  # type: ignore[arg-type]
+            before_send_transaction=scrub_event,  # type: ignore[arg-type]
+            before_breadcrumb=scrub_breadcrumb,
+        )
+    except Exception:
+        # A malformed SENTRY_DSN must never crash the service. Error reporting is a
+        # convenience, not a dependency: log and run without it rather than
+        # crash-looping the whole API on one bad environment variable.
+        logger.exception("sentry initialisation failed; continuing without error reporting")
+        return False
     logger.info("sentry enabled", extra={"sentry": settings.sentry_dsn_public})
     return True
 
