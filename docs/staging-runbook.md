@@ -78,6 +78,8 @@ Also required in a deployed environment, per the security review:
 Generate secrets with `openssl rand -base64 32`. Record where each lives; `docs/KEY_ROTATION.md`
 covers rotating them.
 
+Compose reads this file for `${VAR}` interpolation **and** passes it into the API container, because `docker-compose.staging.yml` declares it under `env_file`. A variable that is only listed under a service's `environment:` block is not enough on its own — the staging config validator will reject the boot and name the missing setting.
+
 ## 5. Bring up the database and create the restricted role
 
 The API must **not** connect as the database owner. `mshwar_api` is a login role that only inherits
