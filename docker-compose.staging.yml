@@ -53,6 +53,8 @@ services:
 
   web:
     restart: unless-stopped
+    # Only Caddy is public; reach the web app through it, not on port 3000.
+    ports: !override []
 
   # Terminates TLS and is the only service published to the host. Certificates are
   # obtained from Let's Encrypt automatically, so SITE_ADDRESS must be a hostname
