@@ -45,7 +45,10 @@ async def _deliver(message: MailMessage) -> None:
     try:
         await get_mailer().send(message)
     except Exception:  # noqa: BLE001 - delivery is best-effort, never load-bearing
-        logger.exception("verification/notification email delivery failed purpose=%s", message.purpose)
+        # WARNING, not ERROR: a handled delivery failure must not flood Sentry's
+        # error stream (e.g. an unverified sending domain fails every send). The
+        # traceback is kept via exc_info for the logs.
+        logger.warning("verification/notification email delivery failed purpose=%s", message.purpose, exc_info=True)
 
 
 router = APIRouter()
