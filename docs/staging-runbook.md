@@ -129,8 +129,17 @@ to the number of proxies actually in front of it, or rate limits will key on the
 
 In the repository settings:
 
-1. Add a variable `DEPLOY_ENABLED` = `true`. Until this is set, every deploy job is skipped rather
-   than reporting a success it did not perform.
+1. Add a variable `DEPLOY_ENABLED` = `true`. Until this is set, the API deploy jobs are skipped
+   rather than reporting a success they did not perform.
+
+   Each deploy target has its own switch, so turning one on does not enable the others:
+
+   | Variable                    | Enables                                | Also needs                                                                            |
+   | --------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------- |
+   | `DEPLOY_ENABLED`            | API deploy to staging                  | The four `STAGING_*` secrets below                                                    |
+   | `DEPLOY_WEB_ENABLED`        | Vercel preview, staging and production | `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, `PRODUCTION_WEB_URL`            |
+   | `DEPLOY_PRODUCTION_ENABLED` | API deploy to production, and rollback | The `PRODUCTION_*` secrets, and a production compose override that does not yet exist |
+
 2. Add secrets to the `staging` environment: `STAGING_API_URL` (e.g.
    `https://staging-api.<your-domain>`), `STAGING_SSH_HOST`, `STAGING_SSH_USER`, `STAGING_SSH_KEY`.
 3. Leave `production` unconfigured for now. With `DEPLOY_ENABLED` on, an unset production secret
