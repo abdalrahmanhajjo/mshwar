@@ -101,6 +101,44 @@ async def test_smtp_mailer_sends_over_starttls(monkeypatch: pytest.MonkeyPatch) 
     assert sent["to"] == "traveller@example.com"
 
 
+@pytest.mark.asyncio
+async def test_smtp_mailer_strips_whitespace_from_app_password(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Gmail app passwords are pasted grouped, often with a non-breaking space,
+    # which smtplib cannot ASCII-encode. Login must receive the stripped value.
+    from app.core import mailer as mailer_module
+
+    captured: dict[str, str] = {}
+
+    class FakeSMTP:
+        def __init__(self, host: str, port: int, timeout: int = 0) -> None:
+            pass
+
+        def __enter__(self) -> FakeSMTP:
+            return self
+
+        def __exit__(self, *exc: object) -> None:
+            return None
+
+        def starttls(self, context: object) -> None:
+            pass
+
+        def login(self, user: str, password: str) -> None:
+            captured["user"], captured["password"] = user, password
+
+        def send_message(self, email: object) -> None:
+            pass
+
+    monkeypatch.setattr(mailer_module.settings, "smtp_host", "smtp.gmail.com")
+    monkeypatch.setattr(mailer_module.settings, "smtp_port", 587)
+    monkeypatch.setattr(mailer_module.settings, "smtp_username", "user@gmail.com")
+    monkeypatch.setattr(mailer_module.settings, "smtp_password", "abcd\xa0efgh ijkl mnop")
+    monkeypatch.setattr(mailer_module.settings, "smtp_from", "user@gmail.com")
+    monkeypatch.setattr(mailer_module.smtplib, "SMTP", FakeSMTP)
+
+    await SmtpMailer().send(MailMessage(to="x@example.com", subject="s", text_body="b", purpose="email_verification"))
+    assert captured["password"] == "abcdefghijklmnop"
+
+
 def test_get_mailer_selects_smtp_backend(monkeypatch: pytest.MonkeyPatch) -> None:
     from app.core import mailer as mailer_module
 
