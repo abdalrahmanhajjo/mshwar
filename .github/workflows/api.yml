@@ -90,7 +90,10 @@ jobs:
           retention-days: 7
       - name: Verify no secrets in test output
         run: |
-          if grep -rnE '(sk_live_|sk_test_|pk_live_|pk_test_|password=|secret_key=)' services/api/tests/ --include='*.py' 2>/dev/null; then
+          # Match secret-shaped VALUES, not keyword names: `secret_key=_PROD_SECRET`
+          # and the deliberate short fixtures in test_scrubber.py are not secrets,
+          # but a real Stripe key or a quoted high-entropy password still is.
+          if grep -rnE "((sk|rk|pk)_(live|test)_[A-Za-z0-9]{24,}|(password|secret_key)[[:space:]]*=[[:space:]]*['\"][A-Za-z0-9]{16,}['\"])" services/api/tests/ --include='*.py' 2>/dev/null; then
             echo "ERROR: Potential secrets found in tests"
             exit 1
           fi

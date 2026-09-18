@@ -26,6 +26,13 @@ ENV NODE_ENV=production \
     PORT=3000 \
     HOSTNAME=0.0.0.0
 WORKDIR /app
+# The bundled npm and corepack carry every HIGH/CRITICAL advisory Trivy flags
+# here (pacote, sigstore, tar, ip-address, brace-expansion, picomatch) — none
+# are ours; they are not in pnpm-lock.yaml. The server is started with
+# `node server.js`, so no package manager belongs in the runtime image.
+RUN rm -rf /usr/local/lib/node_modules/npm \
+           /usr/local/lib/node_modules/corepack \
+           /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
 RUN addgroup -S -g 1001 nodejs && adduser -S -u 1001 -G nodejs nextjs
 COPY --from=builder --chown=nextjs:nodejs /repo/apps/web/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /repo/apps/web/.next/static ./apps/web/.next/static

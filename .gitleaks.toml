@@ -19,6 +19,7 @@ paths = [
   '''(^|/)scripts/''',
   '''(^|/)services/api/scripts/''',
   '''(?i)\.test\.py$''',
+  '''(^|/)test_[^/]*\.py$''',
   '''(?i)\.spec\.ts$''',
   '''(?i)\.test\.ts$''',
   '''(^|/)conftest\.py$''',
