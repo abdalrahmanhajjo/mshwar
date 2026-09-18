@@ -23,7 +23,7 @@ jobs:
     name: Web Dependency Audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -42,7 +42,7 @@ jobs:
     container:
       image: semgrep/semgrep:1.177.0
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Scan API and web source
         env:
           SEMGREP_SEND_METRICS: "off"
@@ -76,7 +76,7 @@ jobs:
             context: .
             dockerfile: apps/web/Dockerfile
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build image
         run: docker build -t mshwar-${{ matrix.image }}:scan -f ${{ matrix.dockerfile }} ${{ matrix.context }}
       # trivy-action 0.35.0 is an immutable release; earlier tags were hijacked in March 2026
