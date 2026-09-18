@@ -7,7 +7,11 @@ Never log reset tokens or plaintext passwords.
 
 from __future__ import annotations
 
+import asyncio
 import logging
+import smtplib
+import ssl
+from email.message import EmailMessage
 from typing import Protocol
 
 from pydantic import BaseModel, Field
@@ -52,6 +56,45 @@ class NotificationMailer:
         )
 
 
+class SmtpMailer:
+    """Sends real email over SMTP using the smtp_* settings.
+
+    STARTTLS on the usual submission port (587); implicit TLS on 465. The
+    blocking smtplib work runs in a worker thread so ``send`` stays async.
+    Delivery failures raise, so the caller can log and continue rather than
+    losing the intent silently.
+    """
+
+    async def send(self, message: MailMessage) -> None:
+        await asyncio.to_thread(self._send_blocking, message)
+
+    def _send_blocking(self, message: MailMessage) -> None:
+        email = EmailMessage()
+        email["From"] = settings.smtp_from
+        email["To"] = message.to
+        email["Subject"] = message.subject
+        email.set_content(message.text_body)
+        if message.html_body:
+            email.add_alternative(message.html_body, subtype="html")
+
+        context = ssl.create_default_context()
+        if settings.smtp_port == 465:
+            with smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port, context=context, timeout=15) as client:
+                self._authenticate(client)
+                client.send_message(email)
+        else:
+            with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=15) as client:
+                client.starttls(context=context)
+                self._authenticate(client)
+                client.send_message(email)
+        logger.info("smtp mailer sent purpose=%s to_domain=%s", message.purpose, _email_domain(message.to))
+
+    @staticmethod
+    def _authenticate(client: smtplib.SMTP) -> None:
+        if settings.smtp_username:
+            client.login(settings.smtp_username, settings.smtp_password)
+
+
 class RecordingMailer:
     """In-memory sink for tests. Tokens stay off logs via Field(repr=False)."""
 
@@ -79,10 +122,17 @@ def _email_domain(address: str) -> str:
 _mailer: Mailer | None = None
 
 
+_BACKENDS: dict[str, type[Mailer]] = {
+    "smtp": SmtpMailer,
+    "notification": NotificationMailer,
+    "console": ConsoleMailer,
+}
+
+
 def get_mailer() -> Mailer:
     global _mailer
     if _mailer is None:
-        _mailer = NotificationMailer() if settings.mailer_backend == "notification" else ConsoleMailer()
+        _mailer = _BACKENDS.get(settings.mailer_backend, ConsoleMailer)()
     return _mailer
 
 

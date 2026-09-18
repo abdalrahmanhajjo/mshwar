@@ -2,7 +2,15 @@ from __future__ import annotations
 
 import pytest
 
-from app.core.mailer import ConsoleMailer, MailMessage, NotificationMailer, RecordingMailer
+from app.core.mailer import (
+    ConsoleMailer,
+    MailMessage,
+    NotificationMailer,
+    RecordingMailer,
+    SmtpMailer,
+    get_mailer,
+    set_mailer,
+)
 
 
 def test_mail_message_hides_token_from_repr() -> None:
@@ -44,3 +52,61 @@ async def test_recording_mailer_returns_only_issued_reset_tokens() -> None:
 def test_console_and_notification_mailers_exist() -> None:
     assert hasattr(ConsoleMailer, "send")
     assert hasattr(NotificationMailer, "send")
+
+
+@pytest.mark.asyncio
+async def test_smtp_mailer_sends_over_starttls(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.core import mailer as mailer_module
+
+    sent: dict[str, object] = {}
+
+    class FakeSMTP:
+        def __init__(self, host: str, port: int, timeout: int = 0) -> None:
+            sent["host"], sent["port"] = host, port
+
+        def __enter__(self) -> FakeSMTP:
+            return self
+
+        def __exit__(self, *exc: object) -> None:
+            return None
+
+        def starttls(self, context: object) -> None:
+            sent["starttls"] = True
+
+        def login(self, user: str, password: str) -> None:
+            sent["login"] = (user, password)
+
+        def send_message(self, email: object) -> None:
+            sent["from"] = email["From"]
+            sent["to"] = email["To"]
+            sent["subject"] = email["Subject"]
+
+    monkeypatch.setattr(mailer_module.settings, "smtp_host", "smtp.example.com")
+    monkeypatch.setattr(mailer_module.settings, "smtp_port", 587)
+    monkeypatch.setattr(mailer_module.settings, "smtp_username", "apikey")
+    monkeypatch.setattr(mailer_module.settings, "smtp_password", "secret")
+    monkeypatch.setattr(mailer_module.settings, "smtp_from", "noreply@mshwar.lb")
+    monkeypatch.setattr(mailer_module.smtplib, "SMTP", FakeSMTP)
+
+    await SmtpMailer().send(
+        MailMessage(
+            to="traveller@example.com", subject="Verify your email", text_body="link", purpose="email_verification"
+        )
+    )
+
+    assert sent["host"] == "smtp.example.com"
+    assert sent["starttls"] is True
+    assert sent["login"] == ("apikey", "secret")
+    assert sent["from"] == "noreply@mshwar.lb"
+    assert sent["to"] == "traveller@example.com"
+
+
+def test_get_mailer_selects_smtp_backend(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.core import mailer as mailer_module
+
+    set_mailer(None)
+    monkeypatch.setattr(mailer_module.settings, "mailer_backend", "smtp")
+    try:
+        assert isinstance(get_mailer(), SmtpMailer)
+    finally:
+        set_mailer(None)
