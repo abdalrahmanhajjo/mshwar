@@ -51,7 +51,7 @@ class Settings(BaseSettings):
     forgot_ip_limit: int = 20
     forgot_email_limit: int = 5
     rate_limit_window_seconds: int = 3600
-    mailer_backend: str = "console"  # console | notification
+    mailer_backend: str = "console"  # console | smtp | notification
     public_web_origin: str = "http://localhost:3000"
     email_verification_ttl_seconds: int = 24 * 60 * 60
     verify_ip_limit: int = 20
