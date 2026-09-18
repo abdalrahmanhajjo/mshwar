@@ -172,6 +172,14 @@ def test_sentry_events_are_scrubbed() -> None:
     assert cleaned["tags"]["request_id"] == "req-sentry-1"
 
 
+def test_init_sentry_survives_a_malformed_dsn(monkeypatch: "pytest.MonkeyPatch") -> None:
+    # A bad SENTRY_DSN must not crash the service: init returns False, no raise.
+    from app.core import observability
+
+    monkeypatch.setattr(observability.settings, "sentry_dsn", "https://not-a-real-dsn")
+    assert observability.init_sentry() is False
+
+
 def test_sentry_breadcrumbs_drop_query_strings() -> None:
     crumb = scrub_breadcrumb({"category": "httplib", "data": {"url": "https://x/y", "http.query": "token=abc"}})
     assert crumb is not None
