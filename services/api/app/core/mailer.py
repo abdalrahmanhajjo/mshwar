@@ -92,7 +92,12 @@ class SmtpMailer:
     @staticmethod
     def _authenticate(client: smtplib.SMTP) -> None:
         if settings.smtp_username:
-            client.login(settings.smtp_username, settings.smtp_password)
+            # App passwords are shown grouped ("xxxx xxxx xxxx xxxx") and are often
+            # pasted with spaces -- including non-breaking ones -- which smtplib
+            # cannot ASCII-encode. Strip all whitespace before login.
+            username = "".join(settings.smtp_username.split())
+            password = "".join(settings.smtp_password.split())
+            client.login(username, password)
 
 
 class RecordingMailer:
