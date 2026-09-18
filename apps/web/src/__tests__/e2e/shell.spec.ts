@@ -613,7 +613,8 @@ test.describe("MSHWAR-113 trust pages and cookie choices", () => {
       await page.setViewportSize({ width: 390, height: 844 });
       await page.goto(path);
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-      await expect(page.getByText("Draft pending legal review", { exact: false })).toBeVisible();
+      // Notice renders nested elements that both carry the text, so this resolves to two.
+      await expect(page.getByText("Draft pending legal review", { exact: false }).first()).toBeVisible();
       await assertNoHorizontalScroll(page);
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`/ar${path}`);
