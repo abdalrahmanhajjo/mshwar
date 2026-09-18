@@ -75,15 +75,29 @@ class TextFormatter(logging.Formatter):
         return super().format(record)
 
 
-def configure_logging(level: str, log_format: str) -> None:
+def _make_handler(log_format: str) -> logging.StreamHandler:
     handler = logging.StreamHandler()
     handler.addFilter(ScrubbingFilter())
     handler.setFormatter(JsonFormatter() if log_format == "json" else TextFormatter())
+    return handler
+
+
+def configure_logging(level: str, log_format: str) -> None:
     root = logging.getLogger("mshwar")
-    root.handlers[:] = [handler]
+    root.handlers[:] = [_make_handler(log_format)]
     root.setLevel(level.upper())
     root.propagate = False
     for name in FILTERED_LOGGERS:
         target = logging.getLogger(name)
         if not any(isinstance(existing, ScrubbingFilter) for existing in target.filters):
             target.addFilter(ScrubbingFilter())
+        if name == "mshwar":
+            continue
+        # Route uvicorn / sqlalchemy / fastapi through our own handler and stop
+        # propagation. This removes uvicorn's AccessFormatter from the chain, which
+        # rebuilds the access line by unpacking record.args -- the args the
+        # ScrubbingFilter clears after formatting, which otherwise raises
+        # "not enough values to unpack" while logging every single request.
+        target.handlers[:] = [_make_handler(log_format)]
+        target.propagate = False
+        target.setLevel(level.upper())
