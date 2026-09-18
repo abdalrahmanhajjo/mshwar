@@ -16,13 +16,18 @@ WORKDIR /app
 
 FROM base AS runtime
 # Wheels exist for every runtime dependency, so no compiler is needed.
-# The base image ships wheel 0.45.1 and a setuptools that vendors
-# jaraco.context 5.3.0, both with known HIGH advisories. Upgrade them for the
-# install, then drop wheel, which nothing needs once the app is built.
+# The base image's build tooling carries advisories that are not ours: wheel
+# 0.45.1, msgpack 1.1.2 vendored inside pip, and a setuptools 70.3.0 wheel
+# bundled in ensurepip. None are needed once requirements are installed and
+# the app is started with uvicorn, so install with them and then remove them.
 COPY requirements.txt ./
 RUN pip install --upgrade pip setuptools wheel \
     && pip install -r requirements.txt \
-    && pip uninstall -y wheel
+    && pip uninstall -y wheel \
+    && rm -rf /usr/local/lib/python3.11/site-packages/pip \
+              /usr/local/lib/python3.11/site-packages/pip-*.dist-info \
+              /usr/local/lib/python3.11/ensurepip \
+              /usr/local/bin/pip /usr/local/bin/pip3 /usr/local/bin/pip3.11
 RUN useradd --create-home --uid 10001 mshwar
 COPY app ./app
 COPY scripts ./scripts
