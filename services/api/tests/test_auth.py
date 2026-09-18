@@ -48,6 +48,37 @@ def test_should_refresh_when_under_half_life() -> None:
 
 
 @pytest.mark.asyncio
+async def test_register_succeeds_even_when_email_delivery_fails() -> None:
+    # A mail-provider failure must not fail signup: the account is created and the
+    # person can request another verification link. Regression for the SMTP
+    # rollout, where a rejected send 500'd the whole request.
+    reset_rate_limits()
+
+    class FailingMailer:
+        async def send(self, message: object) -> None:
+            raise RuntimeError("smtp provider rejected the message")
+
+    set_mailer(FailingMailer())
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            created = await client.post(
+                "/api/v1/auth/register",
+                json={
+                    "accept_terms": True,
+                    "email": "resilient@example.com",
+                    "password": "long-enough-secret",
+                    "display_name": "Rami",
+                    "locale": "en",
+                },
+            )
+        assert created.status_code == 201, created.text
+        assert created.json()["email"] == "resilient@example.com"
+    finally:
+        set_mailer(None)
+        reset_rate_limits()
+
+
+@pytest.mark.asyncio
 async def test_register_signin_me_refresh_signout(api: AsyncClient) -> None:
     email = "traveller@example.com"
     secret = "long-enough-secret"

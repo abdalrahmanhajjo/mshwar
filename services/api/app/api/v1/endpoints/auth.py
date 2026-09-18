@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import re
 import time
 from datetime import UTC, datetime, timedelta
@@ -32,6 +33,20 @@ from app.core.sessions import (
 )
 from app.core.sql import fetch_json
 from app.dependencies import get_auth_db
+
+logger = logging.getLogger("mshwar.auth")
+
+
+async def _deliver(message: MailMessage) -> None:
+    """Send mail without ever failing the request. Account creation, password
+    reset and verification must succeed even when the mail provider rejects or
+    is unreachable; the person can request another link. The mailer logs only a
+    domain, never the token."""
+    try:
+        await get_mailer().send(message)
+    except Exception:  # noqa: BLE001 - delivery is best-effort, never load-bearing
+        logger.exception("verification/notification email delivery failed purpose=%s", message.purpose)
+
 
 router = APIRouter()
 
@@ -362,7 +377,7 @@ async def forgot_password(
     )
     user_id = result.scalar_one_or_none()
     if user_id is not None:
-        await get_mailer().send(
+        await _deliver(
             MailMessage(
                 to=email,
                 subject="Reset your Mshwar password",
@@ -373,7 +388,7 @@ async def forgot_password(
         )
     else:
         hash_session_token(new_session_token())
-        await get_mailer().send(
+        await _deliver(
             MailMessage(
                 to=email,
                 subject="Reset your Mshwar password",
@@ -438,7 +453,7 @@ async def _send_verification_email(db: AsyncSession, email: str) -> None:
     )
     if result.scalar_one_or_none() is None:
         hash_session_token(new_session_token())
-        await get_mailer().send(
+        await _deliver(
             MailMessage(
                 to=email,
                 subject="Verify your Mshwar email",
@@ -447,7 +462,7 @@ async def _send_verification_email(db: AsyncSession, email: str) -> None:
             )
         )
         return
-    await get_mailer().send(
+    await _deliver(
         MailMessage(
             to=email,
             subject="Verify your Mshwar email",
