@@ -258,10 +258,10 @@ jobs:
              cd /opt/mshwar
              git fetch --all
              git reset --hard origin/main
-             docker compose pull
-             docker compose build api
-             docker compose run --rm migrate
-             docker compose up -d --no-deps api
+             C="docker compose -f docker-compose.yml -f docker-compose.staging.yml"
+             $C build api
+             $C run --rm migrate
+             $C up -d --no-deps api
              docker image prune -f'
       - name: Verify staging health
         env:
@@ -285,11 +285,15 @@ jobs:
     name: Deploy API to Production (Manual Gate)
     needs: [deploy-staging]
     runs-on: ubuntu-latest
-    # The "production" environment should carry a required reviewer in repository
-    # settings; that is what makes this a gate rather than an automatic deploy.
+    # Gated separately from staging: enabling staging deploys must not switch on
+    # production. Production also still needs its own compose override (this job
+    # currently reuses the staging one, which pins ENVIRONMENT=staging), so do not
+    # set DEPLOY_PRODUCTION_ENABLED until that exists.
+    # The "production" environment should also carry a required reviewer in
+    # repository settings; that is what makes this a gate rather than automatic.
     if: >-
       github.ref == 'refs/heads/main' && github.event_name == 'push'
-      && vars.DEPLOY_ENABLED == 'true'
+      && vars.DEPLOY_PRODUCTION_ENABLED == 'true'
     environment: production
     steps:
       - uses: actions/checkout@v4
@@ -339,10 +343,10 @@ jobs:
              cd /opt/mshwar
              git fetch --all
              git reset --hard origin/main
-             docker compose pull
-             docker compose build api
-             docker compose run --rm migrate
-             docker compose up -d --no-deps api
+             C="docker compose -f docker-compose.yml -f docker-compose.staging.yml"
+             $C build api
+             $C run --rm migrate
+             $C up -d --no-deps api
              docker image prune -f'
       - name: Verify production health
         env:
@@ -367,8 +371,8 @@ jobs:
     runs-on: ubuntu-latest
     if: >-
       failure() && github.ref == 'refs/heads/main' && github.event_name == 'push'
-      && vars.DEPLOY_ENABLED == 'true'
-    needs: [deploy-staging, deploy-production-gate]
+      && vars.DEPLOY_PRODUCTION_ENABLED == 'true'
+    needs: [deploy-production-gate]
     environment: production
     steps:
       - uses: actions/checkout@v4

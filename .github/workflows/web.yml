@@ -80,7 +80,7 @@ jobs:
     name: Deploy Vercel Preview
     needs: [build]
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && vars.DEPLOY_ENABLED == 'true'
+    if: github.event_name == 'pull_request' && vars.DEPLOY_WEB_ENABLED == 'true'
     environment: preview
     steps:
       - uses: actions/checkout@v4
@@ -123,7 +123,7 @@ jobs:
     runs-on: ubuntu-latest
     if: >-
       github.ref == 'refs/heads/main' && github.event_name == 'push'
-      && vars.DEPLOY_ENABLED == 'true'
+      && vars.DEPLOY_WEB_ENABLED == 'true'
     environment: staging
     steps:
       - uses: actions/checkout@v4
@@ -166,7 +166,7 @@ jobs:
     runs-on: ubuntu-latest
     if: >-
       github.ref == 'refs/heads/main' && github.event_name == 'push'
-      && vars.DEPLOY_ENABLED == 'true'
+      && vars.DEPLOY_WEB_ENABLED == 'true'
     environment: production
     steps:
       - uses: actions/checkout@v4
@@ -219,7 +219,7 @@ jobs:
     runs-on: ubuntu-latest
     if: >-
       failure() && github.ref == 'refs/heads/main' && github.event_name == 'push'
-      && vars.DEPLOY_ENABLED == 'true'
+      && vars.DEPLOY_WEB_ENABLED == 'true'
     needs: [deploy-preview, deploy-staging, deploy-production-gate]
     environment: production
     steps:
