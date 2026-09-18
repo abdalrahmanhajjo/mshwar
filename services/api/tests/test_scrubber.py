@@ -189,7 +189,7 @@ def test_sentry_events_are_scrubbed() -> None:
     assert cleaned["tags"]["request_id"] == "req-sentry-1"
 
 
-def test_init_sentry_survives_a_malformed_dsn(monkeypatch: "pytest.MonkeyPatch") -> None:
+def test_init_sentry_survives_a_malformed_dsn(monkeypatch: pytest.MonkeyPatch) -> None:
     # A bad SENTRY_DSN must not crash the service: init returns False, no raise.
     from app.core import observability
 
