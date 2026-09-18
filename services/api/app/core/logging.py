@@ -75,7 +75,7 @@ class TextFormatter(logging.Formatter):
         return super().format(record)
 
 
-def _make_handler(log_format: str) -> logging.StreamHandler:
+def _make_handler(log_format: str) -> logging.Handler:
     handler = logging.StreamHandler()
     handler.addFilter(ScrubbingFilter())
     handler.setFormatter(JsonFormatter() if log_format == "json" else TextFormatter())
