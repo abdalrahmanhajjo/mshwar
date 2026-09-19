@@ -20,7 +20,7 @@ jobs:
     name: Backend Lint & Type Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
@@ -57,7 +57,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
@@ -102,7 +102,7 @@ jobs:
     name: Python Dependency Audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
@@ -129,7 +129,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
@@ -166,7 +166,7 @@ jobs:
     needs: [backend-test]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 2
       - uses: actions/download-artifact@v4
@@ -219,7 +219,7 @@ jobs:
       && vars.DEPLOY_ENABLED == 'true'
     environment: staging
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Require staging secrets
         env:
           STAGING_API_URL: ${{ secrets.STAGING_API_URL }}
@@ -296,7 +296,7 @@ jobs:
       && vars.DEPLOY_PRODUCTION_ENABLED == 'true'
     environment: production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Require production secrets
         env:
           PRODUCTION_API_URL: ${{ secrets.PRODUCTION_API_URL }}
@@ -375,7 +375,7 @@ jobs:
     needs: [deploy-production-gate]
     environment: production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Roll the API back to the previous release
         env:
           PRODUCTION_SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
