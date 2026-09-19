@@ -407,6 +407,10 @@ export function fetchTripVersions(tripId: string) {
   >(`/api/v1/planner/trips/${tripId}/versions`);
 }
 
+export function fetchVersion(versionId: string) {
+  return readJson<PlanDocument>(`/api/v1/planner/versions/${versionId}`);
+}
+
 export function fetchPlannerHealth() {
   return readJson<{
     injection_events_24h: number;

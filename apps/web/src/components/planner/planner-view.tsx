@@ -34,6 +34,7 @@ import {
   createPlannerSession,
   fetchAlternatives,
   fetchTripVersions,
+  fetchVersion,
   formatMinor,
   lockPlannerStop,
   previewReplacement,
@@ -96,6 +97,7 @@ export function PlannerView({ initialTripId }: { initialTripId?: string }) {
   const [interpretation, setInterpretation] = React.useState<string | null>(null);
   const [versions, setVersions] = React.useState<{ version: number; origin: string; sealed_at: string | null }[]>([]);
   const [replaceStopId, setReplaceStopId] = React.useState<string | null>(null);
+  const [tripChecked, setTripChecked] = React.useState(false);
 
   async function run(task: () => Promise<PlannerSession>) {
     setPending(true);
@@ -113,6 +115,51 @@ export function PlannerView({ initialTripId }: { initialTripId?: string }) {
       setPending(false);
     }
   }
+
+  React.useEffect(() => {
+    if (!initialTripId) {
+      return;
+    }
+    let cancelled = false;
+    void fetchTripVersions(initialTripId)
+      .then(async (history) => {
+        if (cancelled) {
+          return;
+        }
+        setVersions(history);
+        if (!history.length) {
+          return;
+        }
+        const latest = history.reduce((best, item) => (item.version > best.version ? item : best));
+        const doc = await fetchVersion(latest.version_id);
+        if (cancelled) {
+          return;
+        }
+        setSession({
+          session_id: "",
+          status: "loaded",
+          degraded: false,
+          degraded_message: null,
+          constraints: doc.constraints ?? {},
+          assumed_defaults: [],
+          clarifications: [],
+          plan: doc,
+        });
+      })
+      .catch((caught) => {
+        if (!cancelled) {
+          setError(plannerErrorMessage(caught, copy));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setTripChecked(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [initialTripId, copy]);
 
   const plan = session?.plan ?? null;
   const suggestions = [copy.suggestion1, copy.suggestion2, copy.suggestion3];
@@ -240,6 +287,9 @@ export function PlannerView({ initialTripId }: { initialTripId?: string }) {
         {session?.forced_lock_changes?.length ? (
           <Notice role="status">{session.forced_lock_changes.join(" ")}</Notice>
         ) : null}
+
+        {plan && initialTripId && !session?.session_id ? <Notice role="status">{copy.savedPlanNote}</Notice> : null}
+        {!plan && initialTripId && tripChecked ? <Notice role="status">{copy.noSavedPlan}</Notice> : null}
 
         {plan ? (
           <Timeline plan={plan} copy={copy} sessionId={session?.session_id} onLock={run} onReplace={setReplaceStopId} />
