@@ -588,6 +588,12 @@ SAMPLE_EXPERIENCE_SLUGS = [
     "coastal-table-batroun",
 ]
 
+# Listings removed from the dataset that must be retired from the live catalogue
+# (archived, never hard-deleted) on the next run, even without --archive-samples.
+RETIRED_SLUGS = [
+    "ouyoun-orghosh",  # misplaced/weak entry — removed from the dataset
+]
+
 # Genuinely free, public, un-gated places (no admission booth). Everything not
 # listed here shows "On request" rather than an invented fee. Kept conservative:
 # when in doubt a place is left as on-request, never wrongly labelled free.
@@ -771,13 +777,20 @@ def run_import(
         # 5) Real curated collections (idempotent on slug), covers reuse a place photo.
         _upsert_collections(conn, stats)
 
-        # 6) Optionally archive migration-013 sample listings (never delete).
+        # 6) Retire listings removed from the dataset (always, never hard-deleted).
+        res = conn.execute(
+            "UPDATE app.experiences SET status = 'archived' WHERE slug = ANY(%s) AND status <> 'archived'",
+            (RETIRED_SLUGS,),
+        )
+        stats.samples_archived += res.rowcount or 0
+
+        # 7) Optionally archive migration-013 sample listings (never delete).
         if archive_samples:
             res = conn.execute(
                 "UPDATE app.experiences SET status = 'archived' WHERE slug = ANY(%s) AND status <> 'archived'",
                 (SAMPLE_EXPERIENCE_SLUGS,),
             )
-            stats.samples_archived = res.rowcount or 0
+            stats.samples_archived += res.rowcount or 0
 
         conn.commit()
         return stats
