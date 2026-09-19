@@ -52,7 +52,7 @@ import { DESTINATIONS, getExperience } from "@/lib/catalog";
 import { splitSentence } from "@/lib/text";
 import { cn, focusRing } from "@/lib/utils";
 
-function priceKindLabel(kind: string, copy: ReturnType<typeof usePlannerCopy>) {
+export function priceKindLabel(kind: string, copy: ReturnType<typeof usePlannerCopy>) {
   if (kind === "quote") {
     return copy.quote;
   }
@@ -428,7 +428,7 @@ function EmptyPlan({ copy, pending }: { copy: ReturnType<typeof usePlannerCopy>;
   );
 }
 
-function Timeline({
+export function Timeline({
   plan,
   copy,
   sessionId,
@@ -577,7 +577,7 @@ function Timeline({
   );
 }
 
-function CostPanel({ plan, copy }: { plan: PlanDocument; copy: ReturnType<typeof usePlannerCopy> }) {
+export function CostPanel({ plan, copy }: { plan: PlanDocument; copy: ReturnType<typeof usePlannerCopy> }) {
   return (
     <section
       aria-labelledby="cost-heading"
@@ -625,7 +625,7 @@ function CostPanel({ plan, copy }: { plan: PlanDocument; copy: ReturnType<typeof
   );
 }
 
-function ReplacePanel({
+export function ReplacePanel({
   sessionId,
   stopId,
   copy,
