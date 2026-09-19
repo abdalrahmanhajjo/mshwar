@@ -728,23 +728,6 @@ PLACES: list[Place] = [
         "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Arqa",
     },
-    {
-        "slug": "ouyoun-orghosh",
-        "name_en": "Ouyoun Orghosh",
-        "name_ar": "عيون أرغش",
-        "name_fr": "Ouyoun Orghosh",
-        "governorate": "akkar",
-        "category": "nature",
-        "listing_kind": "attraction",
-        "tags": ["lake", "mountain", "hiking"],
-        "lat": 34.2760,
-        "lng": 36.1710,
-        "summary_en": "High mountain springs and a small lake on the Akkar–Baalbek uplands, a cool summer retreat.",
-        "summary_ar": "ينابيع جبلية عالية وبحيرة صغيرة على مرتفعات عكار-بعلبك، ملاذ صيفي بارد.",
-        "summary_fr": "Des sources de haute montagne et un petit lac sur les hauteurs d'Akkar, un refuge estival frais.",
-        "image_commons": None,
-        "source_url": "https://en.wikipedia.org/wiki/Akkar_District",
-    },
     # ===================== BEQAA =====================
     {
         "slug": "anjar-umayyad-city",
