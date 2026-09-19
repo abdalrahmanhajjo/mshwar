@@ -744,3 +744,49 @@ async def test_link_booking_to_sealed_version(api: AsyncClient) -> None:
         json={"preview_id": "nope"},
     )
     assert bad_accept.status_code in {404, 422}
+
+
+@pytest.mark.asyncio
+async def test_manual_plan_persists_chosen_places_in_order(api: AsyncClient) -> None:
+    await _register(api, "manual")
+    seed = await api.post(
+        "/api/v1/planner/sessions",
+        json={"text": "a slow day in Byblos for two", "locale": "en"},
+    )
+    assert seed.status_code == 200, seed.text
+    seed_stops = seed.json()["plan"]["stops"]
+    assert seed_stops
+    slugs = [stop["snapshot"]["slug"] for stop in seed_stops if stop["snapshot"].get("slug")]
+    destinations = sorted(
+        {stop["snapshot"]["destination_slug"] for stop in seed_stops if stop["snapshot"].get("destination_slug")}
+    )
+    assert slugs
+
+    manual = await api.post(
+        "/api/v1/planner/manual",
+        json={
+            "experience_slugs": slugs,
+            "destination_slugs": destinations,
+            "party_size": 2,
+            "window_start": "2026-09-20T09:00:00",
+            "budget_minor": 40000,
+            "locale": "en",
+        },
+    )
+    assert manual.status_code == 200, manual.text
+    body = manual.json()
+    assert body["status"] == "manual"
+    plan = body["plan"]
+    assert plan["trip_id"]
+    assert plan["origin"] == "manual"
+    got = [stop["snapshot"]["slug"] for stop in plan["stops"]]
+    assert got == slugs
+    assert plan["total_minor"] == sum(stop["estimated_minor"] for stop in plan["stops"])
+
+    # Reopens like any trip: the saved version carries the same stops.
+    versions = await api.get(f"/api/v1/planner/trips/{plan['trip_id']}/versions")
+    assert versions.status_code == 200, versions.text
+    version_id = versions.json()[0]["version_id"]
+    reopened = await api.get(f"/api/v1/planner/versions/{version_id}")
+    assert reopened.status_code == 200, reopened.text
+    assert [stop["snapshot"]["slug"] for stop in reopened.json()["stops"]] == slugs

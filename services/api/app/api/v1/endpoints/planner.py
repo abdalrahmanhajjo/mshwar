@@ -20,6 +20,7 @@ from app.core.rate_limit import limit
 from app.core.sql import fetch_json, raise_from_db
 from app.dependencies import get_auth_db
 from app.planner.budget import AI_BUDGET, budget_status
+from app.planner.manual import build_manual
 from app.planner.optimizer import OptimizeStop, optimize_route
 from app.planner.persist import get_session, get_version, list_versions
 from app.planner.pipeline import (
@@ -47,6 +48,7 @@ from app.planner.schemas import (
     IntentRequest,
     LinkBookingRequest,
     LockRequest,
+    ManualPlanRequest,
     RankerWeightsIn,
     RefineRequest,
     ReplaceAcceptRequest,
@@ -401,6 +403,36 @@ async def create_or_plan(
             payload.trip_id,
             answers=payload.answers,
             approve_budget=payload.approve_budget,
+        )
+    except DBAPIError as exc:
+        raise_from_db(exc)
+        raise
+    except (ValueError, TypeError) as exc:
+        raise _http(exc) from exc
+
+
+@router.post("/manual", dependencies=[access.SESSION, limit("ai-generate")])
+async def create_manual_plan(
+    payload: ManualPlanRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    session = await require_session(request, db)
+    try:
+        return await build_manual(
+            db,
+            session["user_id"],
+            experience_slugs=payload.experience_slugs,
+            destination_slugs=payload.destination_slugs,
+            party_size=payload.party_size,
+            window_start=payload.window_start,
+            budget_minor=payload.budget_minor,
+            strict_budget=payload.strict_budget,
+            currency=payload.currency,
+            start_lat=payload.start_lat,
+            start_lng=payload.start_lng,
+            title=payload.title,
+            trip_id=payload.trip_id,
         )
     except DBAPIError as exc:
         raise_from_db(exc)
