@@ -39,9 +39,18 @@ export function IdeasView({ ideas }: { ideas: Idea[] }) {
                 </h2>
                 <p className="max-w-md text-lg leading-relaxed text-text-muted">{idea.description}</p>
                 <p className="text-sm text-text-muted">
-                  {copy.fromPrice}{" "}
-                  <span className="text-xl font-semibold tracking-tight text-text">${idea.priceFrom}</span> /{" "}
-                  {copy.perPerson} · {copy.preview}
+                  {idea.priceFrom > 0 ? (
+                    <>
+                      {copy.fromPrice}{" "}
+                      <span className="text-xl font-semibold tracking-tight text-text">${idea.priceFrom}</span> /{" "}
+                      {copy.perPerson} · {copy.preview}
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-xl font-semibold tracking-tight text-text">{copy.free}</span> ·{" "}
+                      {copy.preview}
+                    </>
+                  )}
                 </p>
                 <Progress className="max-w-sm" value={(idea.stops / 3) * 100} label={`${idea.stops} / 3`} />
                 <div>

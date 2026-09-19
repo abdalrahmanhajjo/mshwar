@@ -64,8 +64,10 @@ export function ExperienceCard({ experience, compact = false }: { experience: Ex
               <Clock className="size-3.5" strokeWidth={1.75} aria-hidden />
               {experience.hours} {copy.hoursLabel}
             </span>
-            {experience.priceLabel === "quote" || !experience.priceFrom ? (
+            {experience.priceLabel === "quote" ? (
               <span className="text-xs font-semibold text-text">{copy.onRequest}</span>
+            ) : !experience.priceFrom ? (
+              <span className="text-xs font-semibold text-text">{copy.free}</span>
             ) : (
               <span className="text-xs">
                 {copy.fromPrice}{" "}

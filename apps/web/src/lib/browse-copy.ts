@@ -67,6 +67,7 @@ export type BrowseKey =
   | "exploreDay"
   | "fromPrice"
   | "onRequest"
+  | "free"
   | "hoursLabel"
   | "clearFilters"
   | "sortRecommended"
@@ -244,6 +245,7 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     exploreDay: "Explore this day",
     fromPrice: "From",
     onRequest: "On request",
+    free: "Free",
     hoursLabel: "hours",
     clearFilters: "Clear all",
     sortRecommended: "Recommended",
@@ -420,6 +422,7 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     exploreDay: "استكشف هذا اليوم",
     fromPrice: "من",
     onRequest: "عند الطلب",
+    free: "مجاني",
     hoursLabel: "ساعات",
     clearFilters: "مسح الكل",
     sortRecommended: "موصى به",
@@ -596,6 +599,7 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     exploreDay: "Explorer cette journée",
     fromPrice: "À partir de",
     onRequest: "Sur demande",
+    free: "Gratuit",
     hoursLabel: "heures",
     clearFilters: "Tout effacer",
     sortRecommended: "Recommandé",
