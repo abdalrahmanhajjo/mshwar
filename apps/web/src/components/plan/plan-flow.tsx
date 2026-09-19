@@ -43,13 +43,16 @@ import {
   regeneratePlannerSession,
   type PlannerSession,
 } from "@/lib/planner";
-import { loadExperiencePage } from "@/lib/catalogue-api";
+import { apiRequest } from "@/lib/api/client";
+import { listingFromApi } from "@/lib/catalogue-api";
 import type { Destination, Experience } from "@/lib/catalog";
 import { usePlannerCopy } from "@/lib/planner-copy";
 import { useCheckoutCopy } from "@/lib/checkout-copy";
 import { interpolate } from "@/i18n/catalogues";
 import { splitSentence } from "@/lib/text";
 import { cn, focusRing } from "@/lib/utils";
+
+type ApiListingItem = Parameters<typeof listingFromApi>[0];
 
 type Mode = "ai" | "manual";
 type Step = "destination" | "places" | "details" | "review";
@@ -219,8 +222,9 @@ export function PlanFlow({
     }
     setLoadingPlaces(true);
     try {
-      const pageResult = await loadExperiencePage({ destination: selectedDestination.slug, pageSize: 48 });
-      setPlaceOptions(pageResult.items);
+      const search = new URLSearchParams({ destination: selectedDestination.slug, page: "1", pageSize: "48" });
+      const data = await apiRequest<{ items: ApiListingItem[] }>(`/api/v1/catalogue/experiences?${search}`);
+      setPlaceOptions(data.items.map(listingFromApi));
     } catch {
       setPlaceOptions([]);
     } finally {
