@@ -64,6 +64,28 @@ export type GroupSummary = {
 
 const request = apiRequest;
 
+export type GroupItinerary = {
+  trip_id: string;
+  trip_title: string;
+  trip_status?: string;
+  version_id: string | null;
+  version?: number;
+  origin?: string;
+  sealed_at?: string | null;
+  window_start?: string;
+  return_by?: string;
+  party_size?: number;
+  budget_minor?: number;
+  currency?: string;
+  stops: import("@/lib/planner").PlanStop[];
+  legs: import("@/lib/planner").PlanLeg[];
+  total_minor: number;
+};
+
+export function fetchGroupItinerary(tripId: string) {
+  return request<GroupItinerary>(`/api/v1/groups/trips/${tripId}/itinerary`);
+}
+
 export function fetchGroupTrip(tripId: string) {
   return request<GroupTrip>(`/api/v1/groups/trips/${tripId}`);
 }

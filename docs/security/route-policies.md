@@ -5,7 +5,7 @@ The policy model is described in [authorization.md](authorization.md).
 
 | Policy | Routes |
 |---|---|
-| `actor` | 14 |
+| `actor` | 15 |
 | `admin` | 57 |
 | `dev` | 1 |
 | `job` | 6 |
@@ -14,7 +14,7 @@ The policy model is described in [authorization.md](authorization.md).
 | `signature` | 1 |
 | `token` | 5 |
 | `verified` | 5 |
-| **Total** | **217** |
+| **Total** | **218** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -121,6 +121,7 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/groups/join/{token}` | `token` |
 | POST | `/api/v1/groups/share-links/{link_id}/revoke` | `actor` |
 | GET | `/api/v1/groups/trips/{trip_id}` | `actor` |
+| GET | `/api/v1/groups/trips/{trip_id}/itinerary` | `actor` |
 | POST | `/api/v1/groups/trips/{trip_id}/lock` | `actor` |
 | GET | `/api/v1/groups/trips/{trip_id}/participants` | `actor` |
 | GET | `/api/v1/groups/trips/{trip_id}/share-links` | `actor` |

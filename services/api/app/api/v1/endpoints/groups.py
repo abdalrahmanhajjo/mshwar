@@ -137,6 +137,20 @@ async def get_group_trip(
     )
 
 
+@router.get("/trips/{trip_id}/itinerary", dependencies=[access.ACTOR])
+async def get_group_itinerary(
+    trip_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    user_id, guest_id = await actor_ids(request, db, require_any=True)
+    return await fetch_json(
+        db,
+        "SELECT app.get_group_itinerary(:trip, :user_id, :guest_id)",
+        {"trip": str(trip_id), **_actor_params(user_id, guest_id)},
+    )
+
+
 @router.get("/trips/{trip_id}/participants", dependencies=[access.ACTOR])
 async def list_participants(
     trip_id: UUID,

@@ -1,20 +1,39 @@
 "use client";
 
 import * as React from "react";
+import {
+  CalendarDays,
+  Link2,
+  Lock,
+  MapPin,
+  Printer,
+  Route,
+  Share2,
+  ThumbsDown,
+  ThumbsUp,
+  UserPlus,
+  Users,
+  Wallet,
+} from "lucide-react";
+import { Avatar } from "@/components/shell/auth-status";
+import { LocaleLink } from "@/components/shell/locale-link";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
-import { Link2, Lock, ThumbsDown, ThumbsUp, Users } from "lucide-react";
-import { Avatar } from "@/components/shell/auth-status";
-import { Badge } from "@/components/ui/badge";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
+import { CostPanel, Timeline } from "@/components/planner/planner-view";
 import { useGroupCopy } from "@/lib/group-copy";
+import { usePlannerCopy } from "@/lib/planner-copy";
+import { formatMinor, type PlanDocument } from "@/lib/planner";
 import {
   GROUP_POLL_MS,
   castVote,
   createShareLink,
+  fetchGroupItinerary,
   fetchGroupTrip,
   fetchParticipants,
   fetchShareLinks,
@@ -22,16 +41,57 @@ import {
   fetchTally,
   lockTrip,
   revokeShareLink,
+  type GroupItinerary,
   type GroupSummary,
   type GroupTrip,
   type ShareLink,
   type VoteTally,
 } from "@/lib/groups";
 
+function StatTile({ icon, label, value }: { icon: React.ReactNode; label: string; value: React.ReactNode }) {
+  return (
+    <div className="grid gap-1 rounded-card border border-border-subtle bg-surface-raised p-4">
+      <span className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-text-muted">
+        {icon}
+        {label}
+      </span>
+      <span className="title-card text-[1.5rem] tabular-nums">{value}</span>
+    </div>
+  );
+}
+
+function toPlanDocument(itinerary: GroupItinerary | null): PlanDocument | null {
+  if (!itinerary || !itinerary.version_id || !itinerary.stops?.length) {
+    return null;
+  }
+  return {
+    trip_id: itinerary.trip_id,
+    trip_title: itinerary.trip_title,
+    version_id: itinerary.version_id,
+    version: itinerary.version ?? 1,
+    origin: itinerary.origin ?? "",
+    sealed_at: itinerary.sealed_at ?? null,
+    window_start: itinerary.window_start ?? "",
+    return_by: itinerary.return_by ?? "",
+    party_size: itinerary.party_size ?? 2,
+    budget_minor: itinerary.budget_minor ?? 0,
+    currency: itinerary.currency ?? "USD",
+    strict_budget: false,
+    constraints: {},
+    validation: {},
+    stops: itinerary.stops,
+    legs: itinerary.legs ?? [],
+    cost_items: [],
+    total_minor: itinerary.total_minor ?? 0,
+  };
+}
+
 export function GroupTripView({ tripId }: { tripId: string }) {
   const copy = useGroupCopy();
+  const plannerCopy = usePlannerCopy();
   const [trip, setTrip] = React.useState<GroupTrip | null>(null);
   const [participants, setParticipants] = React.useState<{ display_name: string; role: string }[]>([]);
+  const [itinerary, setItinerary] = React.useState<GroupItinerary | null>(null);
   const [links, setLinks] = React.useState<ShareLink[]>([]);
   const [tally, setTally] = React.useState<VoteTally | null>(null);
   const [summary, setSummary] = React.useState<GroupSummary | null>(null);
@@ -58,8 +118,14 @@ export function GroupTripView({ tripId }: { tripId: string }) {
 
   React.useEffect(() => {
     let cancelled = false;
-    void Promise.all([fetchGroupTrip(tripId), fetchParticipants(tripId), fetchTally(tripId), fetchSummary(tripId)])
-      .then(async ([nextTrip, people, nextTally, nextSummary]) => {
+    void Promise.all([
+      fetchGroupTrip(tripId),
+      fetchParticipants(tripId),
+      fetchTally(tripId),
+      fetchSummary(tripId),
+      fetchGroupItinerary(tripId).catch(() => null),
+    ])
+      .then(async ([nextTrip, people, nextTally, nextSummary, nextItinerary]) => {
         if (cancelled) {
           return;
         }
@@ -67,6 +133,7 @@ export function GroupTripView({ tripId }: { tripId: string }) {
         setParticipants(people.items ?? []);
         setTally(nextTally);
         setSummary(nextSummary);
+        setItinerary(nextItinerary);
         if (nextTrip.can_share) {
           const nextLinks = await fetchShareLinks(tripId);
           if (!cancelled) {
@@ -81,18 +148,10 @@ export function GroupTripView({ tripId }: { tripId: string }) {
       });
     const timer = window.setInterval(() => {
       void fetchTally(tripId)
-        .then((next) => {
-          if (!cancelled) {
-            setTally(next);
-          }
-        })
+        .then((next) => !cancelled && setTally(next))
         .catch(() => undefined);
       void fetchSummary(tripId)
-        .then((next) => {
-          if (!cancelled) {
-            setSummary(next);
-          }
-        })
+        .then((next) => !cancelled && setSummary(next))
         .catch(() => undefined);
     }, GROUP_POLL_MS);
     return () => {
@@ -102,104 +161,192 @@ export function GroupTripView({ tripId }: { tripId: string }) {
   }, [tripId]);
 
   const totalVotes = (item: { yes: number; no: number }) => Math.max(1, item.yes + item.no);
+  const planDoc = toPlanDocument(itinerary);
+  const isOwner = trip?.role === "owner";
+  const locked = trip?.status === "locked";
+  const perPerson =
+    planDoc && planDoc.party_size > 0
+      ? Math.round(planDoc.total_minor / planDoc.party_size)
+      : (planDoc?.total_minor ?? 0);
+  const statusLabel = locked ? copy.statusLocked : trip?.status === "archived" ? copy.statusArchived : copy.statusDraft;
 
   return (
     <div className="grid gap-8">
       <PageHeader
-        eyebrow={copy.title}
+        eyebrow={copy.guideKicker}
         icon={<Users aria-hidden />}
-        title={trip?.title ?? copy.title}
-        description={
-          trip?.status === "locked" ? (
-            <span className="inline-flex flex-wrap items-center gap-2">
-              <Badge variant="warning">
-                <Lock className="size-3" aria-hidden />
-                {copy.lockedBy} {trip.locked_by_name}
-              </Badge>
-              {trip.locked_at ? <span className="text-sm">{new Date(trip.locked_at).toLocaleString()}</span> : null}
-            </span>
-          ) : undefined
-        }
+        title={trip?.title ?? copy.guideTitle}
+        description={copy.guideBody}
         actions={
-          trip?.can_lock ? (
-            <Button type="button" variant="outline" onClick={() => void lockTrip(tripId).then(() => reload())}>
-              <Lock aria-hidden />
-              {copy.lock}
-            </Button>
-          ) : null
+          <div className="flex flex-wrap gap-2 print:hidden">
+            {planDoc ? (
+              <Button type="button" variant="outline" onClick={() => window.print()}>
+                <Printer aria-hidden />
+                {copy.printSheet}
+              </Button>
+            ) : null}
+            {isOwner ? (
+              <Button asChild variant="outline">
+                <LocaleLink href={`/plan?trip=${tripId}`}>
+                  <Route aria-hidden />
+                  {copy.openPlanner}
+                </LocaleLink>
+              </Button>
+            ) : null}
+            {trip?.can_lock ? (
+              <Button type="button" onClick={() => void lockTrip(tripId).then(() => reload())}>
+                <Lock aria-hidden />
+                {copy.finalize}
+              </Button>
+            ) : null}
+          </div>
         }
       />
+
       {error ? (
         <Notice tone="danger" role="alert">
           {error}
         </Notice>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] lg:items-start">
+      {locked ? (
+        <Notice tone="success" role="status">
+          <span className="inline-flex flex-wrap items-center gap-2">
+            <Lock className="size-4" aria-hidden />
+            {copy.finalized}
+            {trip?.locked_by_name ? ` · ${copy.lockedBy} ${trip.locked_by_name}` : ""}
+            {trip?.locked_at ? ` · ${new Date(trip.locked_at).toLocaleString()}` : ""}
+          </span>
+        </Notice>
+      ) : null}
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatTile
+          icon={<Users className="size-3.5" aria-hidden />}
+          label={copy.headcount}
+          value={participants.length}
+        />
+        <StatTile
+          icon={<MapPin className="size-3.5" aria-hidden />}
+          label={copy.stopsLabel}
+          value={planDoc ? planDoc.stops.length : "—"}
+        />
+        <StatTile
+          icon={<Wallet className="size-3.5" aria-hidden />}
+          label={copy.dayTotal}
+          value={planDoc ? formatMinor(perPerson, planDoc.currency) : "—"}
+        />
+        <StatTile
+          icon={<CalendarDays className="size-3.5" aria-hidden />}
+          label={copy.roleLabel}
+          value={<Badge variant={locked ? "warning" : "secondary"}>{statusLabel}</Badge>}
+        />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr] lg:items-start">
         <div className="grid gap-6">
           <Card>
             <CardHeader>
-              <CardTitle as="h2">{copy.voting}</CardTitle>
+              <CardTitle as="h2">{copy.itinerary}</CardTitle>
+              <CardDescription>{copy.itineraryHint}</CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-3">
-              {(tally?.items ?? []).map((item) => {
-                const yesShare = Math.round((item.yes / totalVotes(item)) * 100);
-                return (
-                  <div
-                    key={`${item.kind}-${item.label}`}
-                    className="grid gap-3 rounded-control border border-border-subtle p-4 sm:grid-cols-[1fr_auto] sm:items-center"
-                  >
-                    <div className="grid gap-2">
-                      <p className="font-semibold">{item.label}</p>
-                      <div className="h-1.5 overflow-hidden rounded-pill bg-danger-subtle" aria-hidden data-rtl-chart>
-                        <div className="h-full rounded-pill bg-success" style={{ width: `${yesShare}%` }} />
-                      </div>
-                      <p className="text-sm text-text-muted">
-                        {copy.yes} {item.yes} · {copy.no} {item.no}
-                      </p>
-                    </div>
-                    {trip?.can_vote ? (
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          size="sm"
-                          onClick={() =>
-                            void castVote(tripId, {
-                              experience_id: item.experience_id ?? undefined,
-                              term_id: item.term_id ?? undefined,
-                              value: 1,
-                            }).then(setTally)
-                          }
-                        >
-                          <ThumbsUp aria-hidden />
-                          {copy.yes}
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            void castVote(tripId, {
-                              experience_id: item.experience_id ?? undefined,
-                              term_id: item.term_id ?? undefined,
-                              value: -1,
-                            }).then(setTally)
-                          }
-                        >
-                          <ThumbsDown aria-hidden />
-                          {copy.no}
-                        </Button>
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
+            <CardContent>
+              {planDoc ? (
+                <div className="grid gap-6">
+                  <Timeline
+                    plan={planDoc}
+                    copy={plannerCopy}
+                    onLock={async () => undefined}
+                    onReplace={() => undefined}
+                  />
+                  <CostPanel plan={planDoc} copy={plannerCopy} />
+                </div>
+              ) : (
+                <EmptyState
+                  icon={<Route aria-hidden />}
+                  title={copy.noItinerary}
+                  description={copy.noItineraryHint}
+                  action={
+                    isOwner ? (
+                      <Button asChild>
+                        <LocaleLink href={`/plan?trip=${tripId}`}>{copy.openPlanner}</LocaleLink>
+                      </Button>
+                    ) : undefined
+                  }
+                />
+              )}
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="print:hidden">
+            <CardHeader>
+              <CardTitle as="h2">{copy.voting}</CardTitle>
+              <CardDescription>{copy.votingHint}</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3">
+              {(tally?.items ?? []).length ? (
+                (tally?.items ?? []).map((item) => {
+                  const yesShare = Math.round((item.yes / totalVotes(item)) * 100);
+                  return (
+                    <div
+                      key={`${item.kind}-${item.label}`}
+                      className="grid gap-3 rounded-control border border-border-subtle p-4 sm:grid-cols-[1fr_auto] sm:items-center"
+                    >
+                      <div className="grid gap-2">
+                        <p className="font-semibold">{item.label}</p>
+                        <div className="h-1.5 overflow-hidden rounded-pill bg-danger-subtle" aria-hidden data-rtl-chart>
+                          <div className="h-full rounded-pill bg-success" style={{ width: `${yesShare}%` }} />
+                        </div>
+                        <p className="text-sm text-text-muted">
+                          {copy.yes} {item.yes} · {copy.no} {item.no}
+                        </p>
+                      </div>
+                      {trip?.can_vote ? (
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() =>
+                              void castVote(tripId, {
+                                experience_id: item.experience_id ?? undefined,
+                                term_id: item.term_id ?? undefined,
+                                value: 1,
+                              }).then(setTally)
+                            }
+                          >
+                            <ThumbsUp aria-hidden />
+                            {copy.yes}
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              void castVote(tripId, {
+                                experience_id: item.experience_id ?? undefined,
+                                term_id: item.term_id ?? undefined,
+                                value: -1,
+                              }).then(setTally)
+                            }
+                          >
+                            <ThumbsDown aria-hidden />
+                            {copy.no}
+                          </Button>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-sm text-text-muted">{copy.proposeHint}</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="print:hidden">
             <CardHeader>
               <CardTitle as="h2">{copy.summary}</CardTitle>
+              <CardDescription>{copy.summaryHint}</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 text-sm sm:grid-cols-3">
               <section className="grid content-start gap-2 rounded-control bg-success-subtle/60 p-4">
@@ -221,33 +368,42 @@ export function GroupTripView({ tripId }: { tripId: string }) {
         <div className="grid gap-6">
           <Card>
             <CardHeader>
-              <CardTitle as="h2">{copy.participants}</CardTitle>
+              <CardTitle as="h2">{copy.travelers}</CardTitle>
+              <CardDescription>{copy.travelersHint}</CardDescription>
             </CardHeader>
             <CardContent>
-              <ul className="grid gap-3">
-                {participants.map((person) => (
-                  <li key={`${person.display_name}-${person.role}`} className="flex items-center gap-3 text-sm">
-                    <Avatar name={person.display_name} className="size-9 text-xs" />
-                    <span className="font-medium">{person.display_name}</span>
-                    <Badge variant="outline" className="ms-auto">
-                      {person.role}
-                    </Badge>
-                  </li>
-                ))}
-              </ul>
+              {participants.length ? (
+                <ul className="grid gap-3">
+                  {participants.map((person) => (
+                    <li key={`${person.display_name}-${person.role}`} className="flex items-center gap-3 text-sm">
+                      <Avatar name={person.display_name} className="size-9 text-xs" />
+                      <span className="font-medium">{person.display_name}</span>
+                      <Badge variant={person.role === "owner" ? "secondary" : "outline"} className="ms-auto">
+                        {person.role === "owner" ? copy.guide : person.role}
+                      </Badge>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-text-muted">{copy.travelersHint}</p>
+              )}
             </CardContent>
           </Card>
 
           {trip?.can_share ? (
-            <Card>
+            <Card className="print:hidden">
               <CardHeader>
-                <CardTitle as="h2">{copy.share}</CardTitle>
+                <CardTitle as="h2">{copy.invite}</CardTitle>
                 <CardDescription>{copy.joinHint}</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-4">
                 <label className="grid gap-2 text-sm font-medium">
-                  Role
-                  <NativeSelect aria-label="share role" value={role} onChange={(event) => setRole(event.target.value)}>
+                  {copy.roleLabel}
+                  <NativeSelect
+                    aria-label={copy.roleLabel}
+                    value={role}
+                    onChange={(event) => setRole(event.target.value)}
+                  >
                     <option value="view">view</option>
                     <option value="vote">vote</option>
                     <option value="edit">edit</option>
@@ -272,11 +428,12 @@ export function GroupTripView({ tripId }: { tripId: string }) {
                       .catch((err: Error) => setError(err.message))
                   }
                 >
-                  <Link2 aria-hidden />
+                  <UserPlus aria-hidden />
                   {copy.createLink}
                 </Button>
                 {createdPath ? (
-                  <p className="break-all rounded-control bg-surface-sunken px-3.5 py-2.5 font-mono text-xs">
+                  <p className="flex items-center gap-2 break-all rounded-control bg-surface-sunken px-3.5 py-2.5 font-mono text-xs">
+                    <Share2 className="size-3.5 shrink-0" aria-hidden />
                     {createdPath}
                   </p>
                 ) : null}
@@ -286,7 +443,8 @@ export function GroupTripView({ tripId }: { tripId: string }) {
                       key={link.id}
                       className="flex flex-wrap items-center justify-between gap-2 rounded-control border border-border-subtle px-3.5 py-2.5 text-sm"
                     >
-                      <span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Link2 className="size-3.5 text-text-muted" aria-hidden />
                         {link.role} {link.allow_guest ? "· guest" : ""} {link.revoked_at ? `· ${copy.revoked}` : ""}
                       </span>
                       {link.revoked_at ? null : (
