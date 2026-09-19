@@ -66,6 +66,7 @@ export type BrowseKey =
   | "ideasBody"
   | "exploreDay"
   | "fromPrice"
+  | "onRequest"
   | "hoursLabel"
   | "clearFilters"
   | "sortRecommended"
@@ -242,6 +243,7 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     ideasBody: "Sample collections you can adapt to your date, group and budget.",
     exploreDay: "Explore this day",
     fromPrice: "From",
+    onRequest: "On request",
     hoursLabel: "hours",
     clearFilters: "Clear all",
     sortRecommended: "Recommended",
@@ -417,6 +419,7 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     ideasBody: "مجموعات عيّنة يمكن تعديلها حسب التاريخ والمجموعة والميزانية.",
     exploreDay: "استكشف هذا اليوم",
     fromPrice: "من",
+    onRequest: "عند الطلب",
     hoursLabel: "ساعات",
     clearFilters: "مسح الكل",
     sortRecommended: "موصى به",
@@ -592,6 +595,7 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     ideasBody: "Collections d’exemple à adapter à votre date, groupe et budget.",
     exploreDay: "Explorer cette journée",
     fromPrice: "À partir de",
+    onRequest: "Sur demande",
     hoursLabel: "heures",
     clearFilters: "Tout effacer",
     sortRecommended: "Recommandé",

@@ -64,14 +64,18 @@ export function ExperienceCard({ experience, compact = false }: { experience: Ex
               <Clock className="size-3.5" strokeWidth={1.75} aria-hidden />
               {experience.hours} {copy.hoursLabel}
             </span>
-            <span className="text-xs">
-              {copy.fromPrice}{" "}
-              <span className="text-lg font-semibold tracking-tight text-text">
-                {formatCurrency(locale, experience.priceFrom, "USD", { maximumFractionDigits: 0 })}
-              </span>{" "}
-              / {copy.perPerson}
-              <span aria-hidden>*</span>
-            </span>
+            {experience.priceLabel === "quote" || !experience.priceFrom ? (
+              <span className="text-xs font-semibold text-text">{copy.onRequest}</span>
+            ) : (
+              <span className="text-xs">
+                {copy.fromPrice}{" "}
+                <span className="text-lg font-semibold tracking-tight text-text">
+                  {formatCurrency(locale, experience.priceFrom, "USD", { maximumFractionDigits: 0 })}
+                </span>{" "}
+                / {copy.perPerson}
+                <span aria-hidden>*</span>
+              </span>
+            )}
           </div>
         </div>
       </LocaleLink>
