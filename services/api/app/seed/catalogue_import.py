@@ -371,8 +371,10 @@ def _strip_html(value: str) -> str:
 
 
 def _imagekit_upload(img: ResolvedImage, folder: str) -> str | None:
-    """Upload through the existing ImageKit integration. Returns the object key
-    (file_path) or None if ImageKit is not configured / the upload fails."""
+    """Upload through the existing ImageKit integration. Returns the full ImageKit
+    delivery URL (stored as object_key) or None if ImageKit is not configured / the
+    upload fails. A full URL is stored so the web resolves it without depending on
+    NEXT_PUBLIC_IMAGEKIT_URL, and gets responsive srcset for the ik.imagekit.io host."""
     import asyncio
 
     from app.core import imagekit
@@ -389,7 +391,7 @@ def _imagekit_upload(img: ResolvedImage, folder: str) -> str | None:
                 content_type=img.content_type,
             )
         )
-        return result.file_path
+        return result.url or imagekit.delivery_url(result.file_path)
     except Exception:
         return None
 
@@ -409,6 +411,8 @@ class ImportStats:
     images_skipped_no_imagekit: int = 0
     places_skipped: list[str] = field(default_factory=list)
     samples_archived: int = 0
+    destination_covers: int = 0
+    collections_upserted: int = 0
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -422,6 +426,8 @@ class ImportStats:
             "images_skipped_no_imagekit": self.images_skipped_no_imagekit,
             "places_skipped": self.places_skipped,
             "samples_archived": self.samples_archived,
+            "destination_covers": self.destination_covers,
+            "collections_upserted": self.collections_upserted,
         }
 
 
@@ -439,6 +445,92 @@ SAMPLE_EXPERIENCE_SLUGS = [
     "beirut-souks-wander",
     "harbour-lunch-byblos",
     "coastal-table-batroun",
+]
+
+# Destination cover images reuse a representative place photo already uploaded (and
+# attributed) for an experience in that destination — so covers are real photos of
+# real places with no separate, un-attributed upload. Keys are destination slugs
+# (the 6 featured towns from migration 013 + the 8 governorates); values are the
+# experience slug whose primary image becomes the cover.
+DESTINATION_COVERS: dict[str, str] = {
+    # Featured towns (public_catalogue_destinations)
+    "byblos": "byblos-archaeological-site",
+    "batroun": "batroun-old-town",
+    "bsharri": "cedars-of-god",
+    "qadisha-valley": "qadisha-valley",
+    "baalbek": "baalbek-temples",
+    "beirut": "raouche-pigeon-rocks",
+    # Governorates
+    "mount-lebanon": "jeita-grotto",
+    "north-lebanon": "cedars-of-god",
+    "beqaa": "anjar-umayyad-city",
+    "baalbek-hermel": "baalbek-temples",
+    "south-lebanon": "sidon-sea-castle",
+    "nabatieh": "beaufort-castle",
+    # akkar's places have no free image yet → no cover (left as-is), by omission.
+}
+
+# Real curated collections. Each cover reuses a representative place's photo; each
+# links real imported experiences by slug. Idempotent on collection slug.
+COLLECTIONS: list[dict[str, Any]] = [
+    {
+        "slug": "unesco-lebanon",
+        "title": "Lebanon's World Heritage",
+        "kicker": "UNESCO sites",
+        "description": "The six inscriptions that trace Lebanon from Phoenician ports to Roman temples.",
+        "cover": "baalbek-temples",
+        "slugs": [
+            "baalbek-temples",
+            "byblos-archaeological-site",
+            "anjar-umayyad-city",
+            "tyre-al-bass",
+            "cedars-of-god",
+            "qadisha-valley",
+        ],
+    },
+    {
+        "slug": "coast-and-sea",
+        "title": "Along the coast",
+        "kicker": "Sea & shore",
+        "description": "Sea castles, old harbours and a protected beach down the Mediterranean shore.",
+        "cover": "raouche-pigeon-rocks",
+        "slugs": [
+            "raouche-pigeon-rocks",
+            "batroun-old-town",
+            "byblos-castle",
+            "sidon-sea-castle",
+            "tyre-coast-reserve",
+        ],
+    },
+    {
+        "slug": "mountains-and-cedars",
+        "title": "Mountains & cedars",
+        "kicker": "High country",
+        "description": "Cedar forests, a river gorge of cliff monasteries, waterfalls and a grotto.",
+        "cover": "cedars-of-god",
+        "slugs": [
+            "cedars-of-god",
+            "qadisha-valley",
+            "tannourine-cedar-reserve",
+            "jabal-moussa-reserve",
+            "baatara-gorge-waterfall",
+            "jeita-grotto",
+        ],
+    },
+    {
+        "slug": "old-towns-and-souks",
+        "title": "Old towns & souks",
+        "kicker": "Heritage cities",
+        "description": "Stone lanes, citadels and markets from Tripoli to Sidon and the Chouf.",
+        "cover": "deir-el-qamar",
+        "slugs": [
+            "byblos-archaeological-site",
+            "deir-el-qamar",
+            "citadel-of-tripoli",
+            "khan-el-franj-sidon",
+            "beiteddine-palace",
+        ],
+    },
 ]
 
 
@@ -506,7 +598,13 @@ def run_import(
                 conn.rollback()
                 raise SystemExit(f"Import failed on '{p.get('slug')}': {exc}") from exc
 
-        # 4) Optionally archive migration-013 sample listings (never delete).
+        # 4) Destination covers reuse a representative place's real photo.
+        _set_destination_covers(conn, stats)
+
+        # 5) Real curated collections (idempotent on slug), covers reuse a place photo.
+        _upsert_collections(conn, stats)
+
+        # 6) Optionally archive migration-013 sample listings (never delete).
         if archive_samples:
             res = conn.execute(
                 "UPDATE app.experiences SET status = 'archived' WHERE slug = ANY(%s) AND status <> 'archived'",
@@ -742,6 +840,78 @@ def _add_image(conn, exp_id: uuid.UUID, p: Place, stats: ImportStats) -> tuple[s
     )
     stats.media_added += 1
     return (resolved.attribution, resolved.license)
+
+
+def _representative_media(conn, exp_slug: str) -> tuple[str, str] | None:
+    """Return (object_key, alt_text) of a published experience's primary approved
+    image, or None if it has none yet. object_key is a full ImageKit URL."""
+    row = conn.execute(
+        "SELECT m.object_key, m.alt_text FROM app.media m "
+        "JOIN app.experiences e ON e.id = m.experience_id "
+        "WHERE e.slug = %s AND m.moderation = 'approved' "
+        "ORDER BY m.sort_order LIMIT 1",
+        (exp_slug,),
+    ).fetchone()
+    if not row or not row[0]:
+        return None
+    return (row[0], row[1] or "")
+
+
+def _set_destination_covers(conn, stats: ImportStats) -> None:
+    """Point each destination's image at a representative place photo already stored
+    for one of its experiences. Only touches destinations that resolve to a photo,
+    so it never blanks an existing image."""
+    for dest_slug, exp_slug in DESTINATION_COVERS.items():
+        media = _representative_media(conn, exp_slug)
+        if media is None:
+            continue
+        object_key, alt = media
+        res = conn.execute(
+            "UPDATE app.destinations SET image_url = %s, image_alt = %s WHERE slug = %s",
+            (object_key, alt, dest_slug),
+        )
+        stats.destination_covers += res.rowcount or 0
+
+
+def _upsert_collections(conn, stats: ImportStats) -> None:
+    """Create/refresh real curated collections and their ordered items. Idempotent
+    on collection slug; a collection is published only if at least one of its
+    experiences exists."""
+    for c in COLLECTIONS:
+        exp_ids: list[uuid.UUID] = []
+        for slug in c["slugs"]:
+            row = conn.execute(
+                "SELECT id FROM app.experiences WHERE slug = %s AND status = 'published'", (slug,)
+            ).fetchone()
+            if row:
+                exp_ids.append(row[0])
+        if not exp_ids:
+            continue
+
+        cover = _representative_media(conn, c["cover"])
+        image_url = cover[0] if cover else None
+        image_alt = cover[1] if cover else None
+
+        col_row = conn.execute(
+            "INSERT INTO app.catalogue_collections (slug, title, description, kicker, image_url, image_alt, "
+            "status) VALUES (%s, %s, %s, %s, %s, %s, 'published') "
+            "ON CONFLICT (slug) DO UPDATE SET title = EXCLUDED.title, description = EXCLUDED.description, "
+            "kicker = EXCLUDED.kicker, image_url = COALESCE(EXCLUDED.image_url, app.catalogue_collections.image_url), "
+            "image_alt = COALESCE(EXCLUDED.image_alt, app.catalogue_collections.image_alt), "
+            "status = 'published', updated_at = now() RETURNING id",
+            (c["slug"], c["title"], c["description"], c["kicker"], image_url, image_alt),
+        ).fetchone()
+        collection_id = col_row[0]
+
+        # Re-sync ordered items (idempotent): clear then insert current order.
+        conn.execute("DELETE FROM app.catalogue_collection_items WHERE collection_id = %s", (collection_id,))
+        for position, exp_id in enumerate(exp_ids, start=1):
+            conn.execute(
+                "INSERT INTO app.catalogue_collection_items (collection_id, experience_id, position) "
+                "VALUES (%s, %s, %s) ON CONFLICT DO NOTHING",
+                (collection_id, exp_id, position),
+            )
+        stats.collections_upserted += 1
 
 
 # ---------------------------------------------------------------------------

@@ -9,6 +9,8 @@ gate only accepts reusable licences.
 from __future__ import annotations
 
 from app.seed.catalogue_import import (
+    COLLECTIONS,
+    DESTINATION_COVERS,
     VALID_CATEGORIES,
     VALID_LISTING_KINDS,
     _license_allowed,
@@ -100,3 +102,21 @@ def test_report_mentions_each_governorate() -> None:
     report = build_report(coverage(PLACES), [], None)
     for g in GOVERNORATES:
         assert g["name_en"] in report, g["name_en"]
+
+
+def test_destination_covers_reference_real_places() -> None:
+    place_slugs = {p["slug"] for p in PLACES}
+    for dest_slug, exp_slug in DESTINATION_COVERS.items():
+        assert exp_slug in place_slugs, f"cover for {dest_slug} -> unknown place {exp_slug}"
+
+
+def test_collections_reference_real_places() -> None:
+    place_slugs = {p["slug"] for p in PLACES}
+    seen: set[str] = set()
+    for c in COLLECTIONS:
+        assert c["slug"] not in seen, f"duplicate collection slug {c['slug']}"
+        seen.add(c["slug"])
+        assert c["cover"] in place_slugs, f"{c['slug']} cover -> unknown place {c['cover']}"
+        assert c["slugs"], f"{c['slug']} has no experiences"
+        for s in c["slugs"]:
+            assert s in place_slugs, f"{c['slug']} -> unknown place {s}"
