@@ -23,7 +23,8 @@ export function BookingWidget({ experience }: { experience: Experience }) {
   const total = experience.priceFrom * guests;
   const available = listingAvailable(experience);
   const isQuote = experience.priceLabel === "quote";
-  const priceLabel = isQuote ? copy.quoteRequired : priceKindLabel(experience.priceLabel);
+  const isFree = !isQuote && !experience.priceFrom;
+  const priceLabel = isQuote ? copy.quoteRequired : isFree ? copy.free : priceKindLabel(experience.priceLabel);
   const money = (value: number) => formatCurrency(locale, value, "USD", { maximumFractionDigits: 0 });
 
   return (
@@ -35,6 +36,8 @@ export function BookingWidget({ experience }: { experience: Experience }) {
         <p className="text-sm text-text-muted">{priceLabel}</p>
         {isQuote ? (
           <p className="text-[2rem] font-semibold leading-none tracking-[-0.03em]">{copy.quoteRequired}</p>
+        ) : isFree ? (
+          <p className="text-[2rem] font-semibold leading-none tracking-[-0.03em]">{copy.free}</p>
         ) : (
           <p className="flex items-baseline gap-1.5">
             <span className="text-[2.4rem] font-semibold leading-none tracking-[-0.04em]">
@@ -69,7 +72,7 @@ export function BookingWidget({ experience }: { experience: Experience }) {
           </NativeSelect>
         </div>
       </div>
-      {isQuote ? null : (
+      {isQuote || isFree ? null : (
         <dl className="grid gap-3 border-t border-border-subtle pt-4 text-sm">
           <div className="flex items-center justify-between gap-3 text-text-muted">
             <dt>

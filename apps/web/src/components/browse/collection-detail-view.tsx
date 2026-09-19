@@ -67,7 +67,13 @@ export function CollectionDetailView({ collection, stops }: { collection: Idea; 
             <div>
               <dt className="text-text-muted">{copy.fromPrice}</dt>
               <dd className="text-xl font-semibold tracking-tight">
-                ${total} <span className="text-sm font-normal text-text-muted">/ {copy.perPerson}</span>
+                {total > 0 ? (
+                  <>
+                    ${total} <span className="text-sm font-normal text-text-muted">/ {copy.perPerson}</span>
+                  </>
+                ) : (
+                  copy.free
+                )}
               </dd>
             </div>
           </dl>

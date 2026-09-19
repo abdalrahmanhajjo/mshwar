@@ -588,6 +588,31 @@ SAMPLE_EXPERIENCE_SLUGS = [
     "coastal-table-batroun",
 ]
 
+# Genuinely free, public, un-gated places (no admission booth). Everything not
+# listed here shows "On request" rather than an invented fee. Kept conservative:
+# when in doubt a place is left as on-request, never wrongly labelled free.
+FREE_ADMISSION_SLUGS: set[str] = {
+    "raouche-pigeon-rocks",
+    "corniche-beirut",
+    "martyrs-square-beirut",
+    "beirut-souks",
+    "mohammad-al-amin-mosque",
+    "our-lady-of-lebanon-harissa",
+    "nahr-el-kalb",
+    "deir-el-qamar",
+    "batroun-old-town",
+    "zahle-berdawni",
+    "marjeyoun",
+    "nabatieh-old-souk",
+    "our-lady-of-mantara-maghdouche",
+    "akkar-el-atika",
+    "khan-el-franj-sidon",
+    "pyramid-of-hermel",
+    "orontes-source-hermel",
+    "qammoua-forest",
+}
+
+
 # Destination cover images reuse a representative place photo already uploaded (and
 # attributed) for an experience in that destination — so covers are real photos of
 # real places with no separate, un-attributed upload. Keys are destination slugs
@@ -820,6 +845,24 @@ def _upsert_venue(conn, p: Place, org_id: uuid.UUID, dest_id: uuid.UUID) -> uuid
     return row[0]
 
 
+def _set_price(conn, exp_id: uuid.UUID, slug: str) -> None:
+    """No invented amounts: genuinely public open places are free (fixed 0),
+    everything else is 'on request' (quote-required). Idempotent."""
+    conn.execute("DELETE FROM app.price_rules WHERE experience_id = %s AND source LIKE 'curated:%%'", (exp_id,))
+    if slug in FREE_ADMISSION_SLUGS:
+        conn.execute(
+            "INSERT INTO app.price_rules (id, experience_id, currency, price_type, unit, amount_minor, "
+            "valid_during, source) VALUES (%s, %s, 'USD', 'fixed', 'person', 0, '(,)', 'curated:free')",
+            (uuid.uuid4(), exp_id),
+        )
+    else:
+        conn.execute(
+            "INSERT INTO app.price_rules (id, experience_id, currency, price_type, unit, amount_minor, "
+            "valid_during, source) VALUES (%s, %s, 'USD', 'quote-required', 'person', NULL, '(,)', 'curated:none')",
+            (uuid.uuid4(), exp_id),
+        )
+
+
 def _import_place(
     conn,
     p: Place,
@@ -902,14 +945,7 @@ def _import_place(
         exp_id = row[0]
         stats.experiences_inserted += 1
 
-    # Price: an explicit "on request" rule (no invented amount). Idempotent: clear
-    # any prior curated rule for this experience first.
-    conn.execute("DELETE FROM app.price_rules WHERE experience_id = %s AND source = 'curated:none'", (exp_id,))
-    conn.execute(
-        "INSERT INTO app.price_rules (id, experience_id, currency, price_type, unit, amount_minor, "
-        "valid_during, source) VALUES (%s, %s, 'USD', 'quote-required', 'person', NULL, '(,)', 'curated:none')",
-        (uuid.uuid4(), exp_id),
-    )
+    _set_price(conn, exp_id, p["slug"])
 
     # Taxonomy links: re-sync (category + tags). Remove stale, add current.
     wanted: list[uuid.UUID] = [term_ids[("category", p["category"])]]
