@@ -322,6 +322,25 @@ export function createPlannerSession(input: {
   });
 }
 
+export function createManualPlan(input: {
+  experience_slugs: string[];
+  destination_slugs?: string[];
+  party_size?: number;
+  window_start?: string;
+  budget_minor?: number;
+  strict_budget?: boolean;
+  currency?: string;
+  title?: string;
+  trip_id?: string;
+  locale?: string;
+}) {
+  return readJson<PlannerSession>("/api/v1/planner/manual", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+}
+
 export function clarifyPlannerSession(
   sessionId: string,
   input: { text: string; locale: string; answers?: Record<string, unknown> },

@@ -18,9 +18,11 @@ def _dump(value: Any) -> str:
     return json.dumps(value, default=str)
 
 
-async def retrieve_candidates(db: AsyncSession, constraints: ExtractedConstraints) -> list[CandidateRecord]:
+async def retrieve_candidates(
+    db: AsyncSession, constraints: ExtractedConstraints, *, limit: int = 24
+) -> list[CandidateRecord]:
     payload = constraints.model_dump(mode="json")
-    payload["candidate_limit"] = 24
+    payload["candidate_limit"] = limit
     row = (
         await db.execute(
             text("SELECT app.planner_retrieve_candidates(CAST(:constraints AS jsonb))"),

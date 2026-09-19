@@ -103,6 +103,27 @@ export type PlannerKey =
   | "flowNoDestinations"
   | "flowRegenerating"
   | "flowSelected"
+  | "modeAi"
+  | "modeManual"
+  | "modeAiHint"
+  | "modeManualHint"
+  | "flowStepPlaces"
+  | "flowPickTitle"
+  | "flowPickHint"
+  | "flowPickAdd"
+  | "flowPickAdded"
+  | "flowPickEmpty"
+  | "flowSelectedCount"
+  | "flowReorderHint"
+  | "flowMoveUp"
+  | "flowMoveDown"
+  | "flowRemove"
+  | "flowSave"
+  | "flowSaving"
+  | "flowYourDay"
+  | "flowAddMore"
+  | "flowManualNeedPicks"
+  | "flowManualReviewHint"
   | "stopsLabel"
   | "estimateLabel"
   | "ofBudget"
@@ -221,6 +242,27 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flowNoDestinations: "No destinations are available yet.",
     flowRegenerating: "Regenerating…",
     flowSelected: "Selected",
+    modeAi: "Plan with AI",
+    modeManual: "Build it myself",
+    modeAiHint: "Tell us the vibe and we build the day.",
+    modeManualHint: "Pick the places yourself and arrange the day.",
+    flowStepPlaces: "Places",
+    flowPickTitle: "Pick your places",
+    flowPickHint: "Add real published places, then arrange them into your day.",
+    flowPickAdd: "Add",
+    flowPickAdded: "Added",
+    flowPickEmpty: "No places are published for this destination yet.",
+    flowSelectedCount: "{n} selected",
+    flowReorderHint: "Use the arrows to set the order of your day.",
+    flowMoveUp: "Move up",
+    flowMoveDown: "Move down",
+    flowRemove: "Remove",
+    flowSave: "Save itinerary",
+    flowSaving: "Saving…",
+    flowYourDay: "Your day",
+    flowAddMore: "Add more places",
+    flowManualNeedPicks: "Add at least one place to continue.",
+    flowManualReviewHint: "Saved to My Trips. Times are estimated from each place’s typical visit length.",
     stopsLabel: "stops",
     estimateLabel: "Your experience estimate",
     ofBudget: "of {budget} budget",
@@ -339,6 +381,27 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flowNoDestinations: "لا توجد وجهات متاحة بعد.",
     flowRegenerating: "إعادة الإنشاء…",
     flowSelected: "مختارة",
+    modeAi: "التخطيط بالذكاء الاصطناعي",
+    modeManual: "أبنيها بنفسي",
+    modeAiHint: "أخبرنا بالأجواء وسنبني اليوم.",
+    modeManualHint: "اختر الأماكن بنفسك ورتّب يومك.",
+    flowStepPlaces: "الأماكن",
+    flowPickTitle: "اختر أماكنك",
+    flowPickHint: "أضف أماكن حقيقية منشورة ثم رتّبها في يومك.",
+    flowPickAdd: "إضافة",
+    flowPickAdded: "مُضاف",
+    flowPickEmpty: "لا توجد أماكن منشورة لهذه الوجهة بعد.",
+    flowSelectedCount: "{n} مختارة",
+    flowReorderHint: "استخدم الأسهم لترتيب يومك.",
+    flowMoveUp: "تحريك لأعلى",
+    flowMoveDown: "تحريك لأسفل",
+    flowRemove: "إزالة",
+    flowSave: "حفظ البرنامج",
+    flowSaving: "جارٍ الحفظ…",
+    flowYourDay: "يومك",
+    flowAddMore: "إضافة أماكن أخرى",
+    flowManualNeedPicks: "أضف مكاناً واحداً على الأقل للمتابعة.",
+    flowManualReviewHint: "محفوظ في رحلاتي. الأوقات تقديرية بناءً على مدة الزيارة المعتادة لكل مكان.",
     stopsLabel: "محطات",
     estimateLabel: "تقدير تجربتك",
     ofBudget: "من ميزانية {budget}",
@@ -461,6 +524,27 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flowNoDestinations: "Aucune destination n'est encore disponible.",
     flowRegenerating: "Régénération…",
     flowSelected: "Sélectionnée",
+    modeAi: "Planifier avec l'IA",
+    modeManual: "Le faire moi-même",
+    modeAiHint: "Dites l'ambiance, on construit la journée.",
+    modeManualHint: "Choisissez les lieux et organisez la journée.",
+    flowStepPlaces: "Lieux",
+    flowPickTitle: "Choisissez vos lieux",
+    flowPickHint: "Ajoutez de vrais lieux publiés, puis organisez votre journée.",
+    flowPickAdd: "Ajouter",
+    flowPickAdded: "Ajouté",
+    flowPickEmpty: "Aucun lieu publié pour cette destination pour l'instant.",
+    flowSelectedCount: "{n} sélectionné(s)",
+    flowReorderHint: "Utilisez les flèches pour ordonner votre journée.",
+    flowMoveUp: "Monter",
+    flowMoveDown: "Descendre",
+    flowRemove: "Retirer",
+    flowSave: "Enregistrer l'itinéraire",
+    flowSaving: "Enregistrement…",
+    flowYourDay: "Votre journée",
+    flowAddMore: "Ajouter d'autres lieux",
+    flowManualNeedPicks: "Ajoutez au moins un lieu pour continuer.",
+    flowManualReviewHint: "Enregistré dans Mes voyages. Les horaires sont estimés selon la durée de visite habituelle.",
     stopsLabel: "étapes",
     estimateLabel: "Estimation de votre journée",
     ofBudget: "sur un budget de {budget}",
