@@ -749,24 +749,16 @@ async def test_link_booking_to_sealed_version(api: AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_manual_plan_persists_chosen_places_in_order(api: AsyncClient) -> None:
     await _register(api, "manual")
-    seed = await api.post(
-        "/api/v1/planner/sessions",
-        json={"text": "a slow day in Byblos for two", "locale": "en"},
-    )
-    assert seed.status_code == 200, seed.text
-    seed_stops = seed.json()["plan"]["stops"]
-    assert seed_stops
-    slugs = [stop["snapshot"]["slug"] for stop in seed_stops if stop["snapshot"].get("slug")]
-    destinations = sorted(
-        {stop["snapshot"]["destination_slug"] for stop in seed_stops if stop["snapshot"].get("destination_slug")}
-    )
-    assert slugs
+    listing = await api.get("/api/v1/catalogue/experiences", params={"destination": "byblos", "pageSize": 5})
+    assert listing.status_code == 200, listing.text
+    slugs = [item["slug"] for item in listing.json()["items"]][:3]
+    assert slugs, "seed catalogue should expose Byblos experiences"
 
     manual = await api.post(
         "/api/v1/planner/manual",
         json={
             "experience_slugs": slugs,
-            "destination_slugs": destinations,
+            "destination_slugs": ["byblos"],
             "party_size": 2,
             "window_start": "2026-09-20T09:00:00",
             "budget_minor": 40000,
@@ -779,8 +771,8 @@ async def test_manual_plan_persists_chosen_places_in_order(api: AsyncClient) -> 
     plan = body["plan"]
     assert plan["trip_id"]
     assert plan["origin"] == "manual"
-    got = [stop["snapshot"]["slug"] for stop in plan["stops"]]
-    assert got == slugs
+    # A manual build never drops the traveller's picks and keeps their order.
+    assert [stop["snapshot"]["slug"] for stop in plan["stops"]] == slugs
     assert plan["total_minor"] == sum(stop["estimated_minor"] for stop in plan["stops"])
 
     # Reopens like any trip: the saved version carries the same stops.
@@ -790,3 +782,8 @@ async def test_manual_plan_persists_chosen_places_in_order(api: AsyncClient) -> 
     reopened = await api.get(f"/api/v1/planner/versions/{version_id}")
     assert reopened.status_code == 200, reopened.text
     assert [stop["snapshot"]["slug"] for stop in reopened.json()["stops"]] == slugs
+
+    # The trip owner is a group member, so the group-scoped itinerary read returns it too.
+    group_itinerary = await api.get(f"/api/v1/groups/trips/{plan['trip_id']}/itinerary")
+    assert group_itinerary.status_code == 200, group_itinerary.text
+    assert [stop["snapshot"]["slug"] for stop in group_itinerary.json()["stops"]] == slugs
