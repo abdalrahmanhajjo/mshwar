@@ -75,6 +75,34 @@ export type PlannerKey =
   | "editableNote"
   | "savedPlanNote"
   | "noSavedPlan"
+  | "flowStepOf"
+  | "flowStepDestination"
+  | "flowStepDetails"
+  | "flowStepReview"
+  | "flowChooseTitle"
+  | "flowChooseHint"
+  | "flowDetailsTitle"
+  | "flowDetailsHint"
+  | "flowDateLabel"
+  | "flowPartyLabel"
+  | "flowBudgetLabel"
+  | "flowStrictLabel"
+  | "flowVibeLabel"
+  | "flowVibePlaceholder"
+  | "flowBack"
+  | "flowContinue"
+  | "flowGenerate"
+  | "flowGenerating"
+  | "flowStartOver"
+  | "flowReviewTitle"
+  | "flowReviewHint"
+  | "flowAdvancedTitle"
+  | "flowAdvancedHint"
+  | "flowOpenGroup"
+  | "flowChangeDestination"
+  | "flowNoDestinations"
+  | "flowRegenerating"
+  | "flowSelected"
   | "stopsLabel"
   | "estimateLabel"
   | "ofBudget"
@@ -165,6 +193,34 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     editableNote: "Stop order is editable. Travel times, opening hours and availability still need live verification.",
     savedPlanNote: "This is your saved itinerary. Start a new plan or refine it to make changes.",
     noSavedPlan: "This trip has no saved plan yet. Describe your day below to generate one.",
+    flowStepOf: "Step {n} of {total}",
+    flowStepDestination: "Destination",
+    flowStepDetails: "Details",
+    flowStepReview: "Itinerary",
+    flowChooseTitle: "Where do you want to go?",
+    flowChooseHint: "Pick a destination and we'll build a real day plan from published places there.",
+    flowDetailsTitle: "Trip details",
+    flowDetailsHint: "A few basics so the plan fits your day. You can change everything later.",
+    flowDateLabel: "Date",
+    flowPartyLabel: "Group size",
+    flowBudgetLabel: "Budget (USD)",
+    flowStrictLabel: "Keep the plan within this budget",
+    flowVibeLabel: "Anything specific? (optional)",
+    flowVibePlaceholder: "e.g. relaxed pace, good food, sea views, family-friendly",
+    flowBack: "Back",
+    flowContinue: "Continue",
+    flowGenerate: "Generate itinerary",
+    flowGenerating: "Building your day…",
+    flowStartOver: "Start over",
+    flowReviewTitle: "Your itinerary",
+    flowReviewHint: "Saved to My Trips automatically. Refine it, swap stops or fine-tune the route below.",
+    flowAdvancedTitle: "Advanced tools",
+    flowAdvancedHint: "Optimise the route, check the weather and plan with a group.",
+    flowOpenGroup: "Plan with a group",
+    flowChangeDestination: "Change",
+    flowNoDestinations: "No destinations are available yet.",
+    flowRegenerating: "Regenerating…",
+    flowSelected: "Selected",
     stopsLabel: "stops",
     estimateLabel: "Your experience estimate",
     ofBudget: "of {budget} budget",
@@ -255,6 +311,34 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     editableNote: "يمكن تعديل ترتيب المحطات. أوقات التنقل وساعات العمل والتوفر تحتاج إلى تحقق مباشر.",
     savedPlanNote: "هذه خطتك المحفوظة. ابدأ خطة جديدة أو حسّنها لإجراء تغييرات.",
     noSavedPlan: "لا توجد خطة محفوظة لهذه الرحلة بعد. صف يومك بالأسفل لإنشاء واحدة.",
+    flowStepOf: "خطوة {n} من {total}",
+    flowStepDestination: "الوجهة",
+    flowStepDetails: "التفاصيل",
+    flowStepReview: "البرنامج",
+    flowChooseTitle: "إلى أين تريد أن تذهب؟",
+    flowChooseHint: "اختر وجهة وسننشئ لك خطة يوم حقيقية من الأماكن المنشورة هناك.",
+    flowDetailsTitle: "تفاصيل الرحلة",
+    flowDetailsHint: "بعض الأساسيات لتناسب الخطة يومك. يمكنك تغيير كل شيء لاحقاً.",
+    flowDateLabel: "التاريخ",
+    flowPartyLabel: "عدد الأشخاص",
+    flowBudgetLabel: "الميزانية (دولار)",
+    flowStrictLabel: "أبقِ الخطة ضمن هذه الميزانية",
+    flowVibeLabel: "أي شيء محدد؟ (اختياري)",
+    flowVibePlaceholder: "مثال: إيقاع هادئ، طعام جيد، إطلالة على البحر، مناسب للعائلة",
+    flowBack: "رجوع",
+    flowContinue: "متابعة",
+    flowGenerate: "أنشئ البرنامج",
+    flowGenerating: "نجهّز يومك…",
+    flowStartOver: "ابدأ من جديد",
+    flowReviewTitle: "برنامجك",
+    flowReviewHint: "يُحفظ في رحلاتي تلقائياً. حسّنه أو بدّل المحطات أو اضبط المسار بالأسفل.",
+    flowAdvancedTitle: "أدوات متقدمة",
+    flowAdvancedHint: "حسّن المسار، تحقق من الطقس، وخطّط مع مجموعة.",
+    flowOpenGroup: "التخطيط مع مجموعة",
+    flowChangeDestination: "تغيير",
+    flowNoDestinations: "لا توجد وجهات متاحة بعد.",
+    flowRegenerating: "إعادة الإنشاء…",
+    flowSelected: "مختارة",
     stopsLabel: "محطات",
     estimateLabel: "تقدير تجربتك",
     ofBudget: "من ميزانية {budget}",
@@ -348,6 +432,35 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
       "L’ordre des étapes est modifiable. Trajets, horaires et disponibilités restent à vérifier en direct.",
     savedPlanNote: "Voici votre itinéraire enregistré. Lancez un nouveau plan ou affinez-le pour le modifier.",
     noSavedPlan: "Ce voyage n’a pas encore de plan enregistré. Décrivez votre journée ci-dessous pour en générer un.",
+    flowStepOf: "Étape {n} sur {total}",
+    flowStepDestination: "Destination",
+    flowStepDetails: "Détails",
+    flowStepReview: "Itinéraire",
+    flowChooseTitle: "Où voulez-vous aller ?",
+    flowChooseHint: "Choisissez une destination et nous créerons un vrai plan de journée à partir des lieux publiés.",
+    flowDetailsTitle: "Détails du voyage",
+    flowDetailsHint: "Quelques bases pour adapter le plan à votre journée. Tout est modifiable ensuite.",
+    flowDateLabel: "Date",
+    flowPartyLabel: "Nombre de personnes",
+    flowBudgetLabel: "Budget (USD)",
+    flowStrictLabel: "Rester dans ce budget",
+    flowVibeLabel: "Quelque chose de précis ? (facultatif)",
+    flowVibePlaceholder: "ex. rythme tranquille, bonne cuisine, vue sur mer, en famille",
+    flowBack: "Retour",
+    flowContinue: "Continuer",
+    flowGenerate: "Générer l'itinéraire",
+    flowGenerating: "Création de votre journée…",
+    flowStartOver: "Recommencer",
+    flowReviewTitle: "Votre itinéraire",
+    flowReviewHint:
+      "Enregistré dans Mes voyages automatiquement. Affinez-le, changez des étapes ou ajustez l'itinéraire ci-dessous.",
+    flowAdvancedTitle: "Outils avancés",
+    flowAdvancedHint: "Optimisez l'itinéraire, vérifiez la météo et planifiez en groupe.",
+    flowOpenGroup: "Planifier en groupe",
+    flowChangeDestination: "Changer",
+    flowNoDestinations: "Aucune destination n'est encore disponible.",
+    flowRegenerating: "Régénération…",
+    flowSelected: "Sélectionnée",
     stopsLabel: "étapes",
     estimateLabel: "Estimation de votre journée",
     ofBudget: "sur un budget de {budget}",

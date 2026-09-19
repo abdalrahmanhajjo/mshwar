@@ -1,8 +1,6 @@
-import { PlanView } from "@/components/browse/plan-view";
-import { PlanWorkspace } from "@/components/plan/plan-workspace";
-import { PlannerView } from "@/components/planner/planner-view";
+import { PlanFlow } from "@/components/plan/plan-flow";
 import { ShellMain } from "@/components/shell/app-shell";
-import { loadCollection } from "@/lib/catalogue-api";
+import { loadCollection, loadDestinations } from "@/lib/catalogue-api";
 
 export default async function PlanPage({
   searchParams,
@@ -13,18 +11,19 @@ export default async function PlanPage({
   const collectionSlug = typeof params.collection === "string" ? params.collection : "";
   const tripId = typeof params.trip === "string" ? params.trip : "";
   const addSlug = typeof params.add === "string" ? params.add : "";
-  const collection = collectionSlug ? await loadCollection(collectionSlug) : undefined;
+  const [destinations, collection] = await Promise.all([
+    loadDestinations(),
+    collectionSlug ? loadCollection(collectionSlug) : Promise.resolve(undefined),
+  ]);
 
   return (
     <ShellMain>
-      <PlanView
+      <PlanFlow
+        destinations={destinations}
+        initialTripId={tripId || undefined}
         collectionTitle={collection?.title}
-        stopCount={collection?.experienceSlugs.length ?? 0}
-        tripId={tripId || undefined}
         addSlug={addSlug || undefined}
       />
-      <PlannerView initialTripId={tripId || undefined} />
-      <PlanWorkspace />
     </ShellMain>
   );
 }
