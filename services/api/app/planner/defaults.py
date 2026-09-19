@@ -62,12 +62,31 @@ def _default_return_by(window_start: datetime | str) -> datetime:
     return return_by
 
 
+def _ensure_beirut(value: Any) -> datetime | None:
+    """Coerce a provided datetime (or ISO string) to timezone-aware Beirut time.
+
+    Structured answers may carry a naive ``window_start``/``return_by``; downstream
+    planner math mixes them with aware datetimes, so normalise here.
+    """
+    if value in (None, ""):
+        return None
+    parsed = datetime.fromisoformat(value) if isinstance(value, str) else value
+    if not isinstance(parsed, datetime):
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=BEIRUT)
+    return parsed
+
+
 def apply_defaults(
     extracted: ExtractedConstraints,
     answers: dict[str, Any] | None = None,
 ) -> tuple[ExtractedConstraints, list[AssumedDefault]]:
     payload = extracted.model_dump()
     _apply_answers(payload, answers)
+    for _field in ("window_start", "return_by"):
+        if payload.get(_field) is not None:
+            payload[_field] = _ensure_beirut(payload[_field])
     assumed: list[AssumedDefault] = []
     window_start, _window_end = next_open_window()
     if payload.get("party_size") is None:
