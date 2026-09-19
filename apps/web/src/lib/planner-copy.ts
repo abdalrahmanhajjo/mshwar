@@ -73,6 +73,8 @@ export type PlannerKey =
   | "emptyBody"
   | "takingShape"
   | "editableNote"
+  | "savedPlanNote"
+  | "noSavedPlan"
   | "stopsLabel"
   | "estimateLabel"
   | "ofBudget"
@@ -161,6 +163,8 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     emptyBody: "Describe your day to explore a sample plan built from published places.",
     takingShape: "Your day is taking shape",
     editableNote: "Stop order is editable. Travel times, opening hours and availability still need live verification.",
+    savedPlanNote: "This is your saved itinerary. Start a new plan or refine it to make changes.",
+    noSavedPlan: "This trip has no saved plan yet. Describe your day below to generate one.",
     stopsLabel: "stops",
     estimateLabel: "Your experience estimate",
     ofBudget: "of {budget} budget",
@@ -249,6 +253,8 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     emptyBody: "صف يومك لتستكشف خطة عيّنة مبنية من أماكن منشورة.",
     takingShape: "يومك يتشكّل",
     editableNote: "يمكن تعديل ترتيب المحطات. أوقات التنقل وساعات العمل والتوفر تحتاج إلى تحقق مباشر.",
+    savedPlanNote: "هذه خطتك المحفوظة. ابدأ خطة جديدة أو حسّنها لإجراء تغييرات.",
+    noSavedPlan: "لا توجد خطة محفوظة لهذه الرحلة بعد. صف يومك بالأسفل لإنشاء واحدة.",
     stopsLabel: "محطات",
     estimateLabel: "تقدير تجربتك",
     ofBudget: "من ميزانية {budget}",
@@ -340,6 +346,8 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     takingShape: "Votre journée prend forme",
     editableNote:
       "L’ordre des étapes est modifiable. Trajets, horaires et disponibilités restent à vérifier en direct.",
+    savedPlanNote: "Voici votre itinéraire enregistré. Lancez un nouveau plan ou affinez-le pour le modifier.",
+    noSavedPlan: "Ce voyage n’a pas encore de plan enregistré. Décrivez votre journée ci-dessous pour en générer un.",
     stopsLabel: "étapes",
     estimateLabel: "Estimation de votre journée",
     ofBudget: "sur un budget de {budget}",
