@@ -97,6 +97,8 @@ DUP_COORD_EPSILON = 0.0004
 
 # Wikimedia Commons licences we accept are decided in _license_allowed().
 COMMONS_API = "https://commons.wikimedia.org/w/api.php"
+WIKIPEDIA_API = "https://en.wikipedia.org/w/api.php"
+_UA = "MshwarCatalogueImporter/1.0 (+https://mshwar-lb.com; contact abedhajjo57@gmail.com)"
 
 
 # ---------------------------------------------------------------------------
@@ -341,7 +343,7 @@ def resolve_commons_image(commons_file: str, *, timeout: float = 20.0) -> Resolv
         "format": "json",
         "formatversion": "2",
     }
-    headers = {"User-Agent": "MshwarCatalogueImporter/1.0 (+https://mshwar-lb.com; contact abedhajjo57@gmail.com)"}
+    headers = {"User-Agent": _UA}
     try:
         with httpx.Client(timeout=timeout, headers=headers, follow_redirects=True) as client:
             resp = client.get(COMMONS_API, params=params)
@@ -360,6 +362,64 @@ def resolve_commons_image(commons_file: str, *, timeout: float = 20.0) -> Resolv
             return meta
     except Exception:
         return None
+
+
+def _wiki_title_from_url(source_url: str) -> str | None:
+    """Extract the article title from an en.wikipedia.org/wiki/<Title> URL."""
+    from urllib.parse import unquote
+
+    marker = "/wiki/"
+    if "wikipedia.org" not in source_url or marker not in source_url:
+        return None
+    title = source_url.split(marker, 1)[1].split("#", 1)[0].split("?", 1)[0]
+    return unquote(title).replace("_", " ") or None
+
+
+def wikipedia_lead_image(title: str, *, timeout: float = 20.0) -> str | None:
+    """Return the Commons file name of a Wikipedia article's lead image (the actual
+    photo shown on the page), or None. This replaces guessing Commons filenames."""
+    import httpx  # lazy: not needed for --dry-run
+
+    params = {
+        "action": "query",
+        "prop": "pageimages",
+        "piprop": "name",
+        "titles": title,
+        "format": "json",
+        "formatversion": "2",
+        "redirects": "1",
+    }
+    try:
+        with httpx.Client(timeout=timeout, headers={"User-Agent": _UA}, follow_redirects=True) as client:
+            resp = client.get(WIKIPEDIA_API, params=params)
+            if resp.status_code != 200:
+                return None
+            pages = resp.json().get("query", {}).get("pages", [])
+            if not pages:
+                return None
+            name = pages[0].get("pageimage")
+            return str(name) if name else None
+    except Exception:
+        return None
+
+
+def resolve_place_image(p: Place) -> ResolvedImage | None:
+    """Resolve a place's real photo: prefer its Wikipedia article lead image, then
+    any explicit image_commons override. Verifies the licence before returning."""
+    title = _wiki_title_from_url(p.get("source_url", ""))
+    candidates: list[str] = []
+    if title:
+        lead = wikipedia_lead_image(title)
+        if lead:
+            candidates.append(lead)
+    override = p.get("image_commons")
+    if override:
+        candidates.append(override)
+    for commons_file in candidates:
+        resolved = resolve_commons_image(commons_file)
+        if resolved is not None:
+            return resolved
+    return None
 
 
 def _strip_html(value: str) -> str:
@@ -791,7 +851,9 @@ def _import_place(
         )
 
     # Media: only if none present yet (keeps it idempotent, avoids re-upload).
-    if do_images and p.get("image_commons"):
+    # The photo is resolved from the place's Wikipedia article, so no image_commons
+    # is required up front.
+    if do_images:
         has_media = conn.execute("SELECT 1 FROM app.media WHERE experience_id = %s LIMIT 1", (exp_id,)).fetchone()
         if not has_media:
             credit = _add_image(conn, exp_id, p, stats)
@@ -807,9 +869,9 @@ def _import_place(
 
 
 def _add_image(conn, exp_id: uuid.UUID, p: Place, stats: ImportStats) -> tuple[str, str] | None:
-    """Resolve, licence-check and store one Commons image. Returns
-    (attribution, license) when an image was stored, else None."""
-    resolved = resolve_commons_image(p["image_commons"])  # type: ignore[arg-type]
+    """Resolve (from the place's Wikipedia article), licence-check and store one
+    real image. Returns (attribution, license) when stored, else None."""
+    resolved = resolve_place_image(p)
     if resolved is None:
         stats.images_skipped_no_license += 1
         return None

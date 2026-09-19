@@ -212,7 +212,7 @@ PLACES: list[Place] = [
         "summary_en": "Two offshore rock arches off Beirut's western cliffs, the city's best-known natural landmark and sunset spot.",
         "summary_ar": "صخرتان بحريتان قبالة الواجهة الغربية لبيروت، أشهر معالمها الطبيعية ومكان لمشاهدة الغروب.",
         "summary_fr": "Deux rochers en arche au large des falaises ouest de Beyrouth, le repère naturel le plus connu de la ville.",
-        "image_commons": "Pigeon Rocks Beirut.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Raouch%C3%A9",
     },
     {
@@ -229,7 +229,7 @@ PLACES: list[Place] = [
         "summary_en": "Lebanon's principal archaeology museum, tracing the country from prehistory through the Phoenician, Roman and later periods.",
         "summary_ar": "المتحف الأثري الرئيسي في لبنان، يعرض تاريخ البلاد من عصور ما قبل التاريخ مروراً بالفينيقيين والرومان وما بعدهم.",
         "summary_fr": "Le principal musée archéologique du Liban, retraçant le pays de la préhistoire aux périodes phénicienne et romaine.",
-        "image_commons": "National Museum of Beirut.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/National_Museum_of_Beirut",
     },
     {
@@ -246,7 +246,7 @@ PLACES: list[Place] = [
         "summary_en": "The large blue-domed Ottoman-revival mosque on Martyrs' Square, completed in 2008 and a defining feature of the downtown skyline.",
         "summary_ar": "جامع كبير بقبته الزرقاء على ساحة الشهداء، اكتمل عام 2008 وبات معلماً بارزاً في وسط بيروت.",
         "summary_fr": "La grande mosquée à coupole bleue de la place des Martyrs, achevée en 2008, emblème du centre-ville.",
-        "image_commons": "Mohammad Al-Amin Mosque, Beirut.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Mohammad_Al-Amin_Mosque",
     },
     {
@@ -263,7 +263,7 @@ PLACES: list[Place] = [
         "summary_en": "A modern and contemporary art museum in a 1912 Beiruti villa in the Achrafieh district.",
         "summary_ar": "متحف للفن الحديث والمعاصر في فيلا بيروتية تعود إلى 1912 في منطقة الأشرفية.",
         "summary_fr": "Musée d'art moderne et contemporain dans une villa beyrouthine de 1912, à Achrafieh.",
-        "image_commons": "Nicolas Sursock Museum.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Sursock_Museum",
     },
     {
@@ -280,7 +280,7 @@ PLACES: list[Place] = [
         "summary_en": "The seafront promenade running along Beirut's western shore, lined with palm trees and popular for walking and fishing.",
         "summary_ar": "ممشى بحري يمتد على طول الواجهة الغربية لبيروت، تحفّه أشجار النخيل ويقصده الناس للمشي وصيد السمك.",
         "summary_fr": "La promenade du bord de mer longeant la côte ouest de Beyrouth, bordée de palmiers.",
-        "image_commons": "Beirut Corniche.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Corniche_Beirut",
     },
     {
@@ -297,7 +297,7 @@ PLACES: list[Place] = [
         "summary_en": "Beirut's central public square and long-time civic gathering place, with its bullet-marked memorial statue.",
         "summary_ar": "الساحة العامة المركزية في بيروت ومكان التجمّع المدني منذ زمن، وفيها تمثال النصب الذي تحمل آثار الرصاص.",
         "summary_fr": "La place publique centrale de Beyrouth et lieu de rassemblement historique, avec sa statue commémorative.",
-        "image_commons": "Martyrs' Square, Beirut.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Martyrs'_Square,_Beirut",
     },
     {
@@ -332,7 +332,7 @@ PLACES: list[Place] = [
         "summary_en": "A two-level system of limestone caves — an upper dry gallery and a lower river gallery visited by boat — north-east of Beirut.",
         "summary_ar": "مغاور كلسية من مستويين، رواق علوي جاف ورواق سفلي نهري يُزار بالقارب، شمال شرق بيروت.",
         "summary_fr": "Un réseau de grottes calcaires sur deux niveaux, une galerie sèche supérieure et une galerie fluviale visitée en barque.",
-        "image_commons": "Jeita Grotto.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Jeita_Grotto",
     },
     {
@@ -349,7 +349,7 @@ PLACES: list[Place] = [
         "summary_en": "A Marian shrine above Jounieh bay, its white statue reached by a mountain road or a cable car, with wide views over the coast.",
         "summary_ar": "مزار مريمي يطل على خليج جونيه، يُوصل إلى تمثاله الأبيض بطريق جبلي أو بالتلفريك، مع إطلالة واسعة على الساحل.",
         "summary_fr": "Un sanctuaire marial au-dessus de la baie de Jounieh, sa statue blanche accessible par la route ou le téléphérique.",
-        "image_commons": "Our Lady of Lebanon Harissa.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Our_Lady_of_Lebanon",
     },
     {
@@ -366,7 +366,7 @@ PLACES: list[Place] = [
         "summary_en": "One of the world's oldest continuously inhabited towns and a UNESCO World Heritage site, with a Crusader castle, an old souk and a small harbour.",
         "summary_ar": "من أقدم المدن المأهولة باستمرار في العالم وموقع تراث عالمي لليونسكو، فيها قلعة صليبية وسوق قديم ومرفأ صغير.",
         "summary_fr": "L'une des plus anciennes villes habitées sans interruption et site du patrimoine mondial, avec château croisé, vieux souk et petit port.",
-        "image_commons": "Byblos, Lebanon.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Byblos",
     },
     {
@@ -383,7 +383,7 @@ PLACES: list[Place] = [
         "summary_en": "A 12th-century Crusader castle built from limestone and Roman-era spolia at the heart of the Byblos archaeological site.",
         "summary_ar": "قلعة صليبية من القرن الثاني عشر بُنيت من الحجر الكلسي وأنقاض رومانية في قلب موقع جبيل الأثري.",
         "summary_fr": "Un château croisé du XIIe siècle bâti en calcaire et remplois romains, au cœur du site archéologique de Byblos.",
-        "image_commons": "Byblos Castle.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Byblos_Castle",
     },
     {
@@ -400,7 +400,7 @@ PLACES: list[Place] = [
         "summary_en": "An early-19th-century emiri palace in the Chouf, famous for its courtyards, carved stone and Byzantine mosaic collection.",
         "summary_ar": "قصر أميري من أوائل القرن التاسع عشر في الشوف، يشتهر بباحاته وحجارته المنحوتة ومجموعة فسيفسائه البيزنطية.",
         "summary_fr": "Un palais émiral du début du XIXe siècle dans le Chouf, célèbre pour ses cours, sa pierre sculptée et ses mosaïques byzantines.",
-        "image_commons": "Beiteddine Palace.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Beiteddine_Palace",
     },
     {
@@ -417,7 +417,7 @@ PLACES: list[Place] = [
         "summary_en": "A well-preserved Chouf village of red-roofed stone houses that served as the seat of Mount Lebanon's emirs in the 17th–18th centuries.",
         "summary_ar": "بلدة محفوظة في الشوف من بيوت حجرية بأسقف قرميدية، كانت مقرّ أمراء جبل لبنان في القرنين السابع عشر والثامن عشر.",
         "summary_fr": "Un village du Chouf bien conservé, aux maisons de pierre à toits rouges, siège des émirs du Mont-Liban aux XVIIe–XVIIIe siècles.",
-        "image_commons": "Deir el Qamar 01.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Deir_el_Qamar",
     },
     {
@@ -434,7 +434,7 @@ PLACES: list[Place] = [
         "summary_en": "Lebanon's largest ski resort, above Kfardebian, with slopes rising to around 2,465 m and summer hiking terrain.",
         "summary_ar": "أكبر منتجع تزلّج في لبنان، فوق كفردبيان، بمنحدرات ترتفع إلى نحو 2465 متراً ومسارات للمشي صيفاً.",
         "summary_fr": "La plus grande station de ski du Liban, au-dessus de Kfardebian, culminant à environ 2 465 m.",
-        "image_commons": "Faraya Mzaar.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Mzaar_Kfardebian",
     },
     {
@@ -451,7 +451,7 @@ PLACES: list[Place] = [
         "summary_en": "The largest Roman-era site in the Lebanese mountains, with temples and a tower on a high plateau near Faqra.",
         "summary_ar": "أكبر موقع من العصر الروماني في جبال لبنان، فيه معابد وبرج على هضبة مرتفعة قرب فقرا.",
         "summary_fr": "Le plus grand site romain des montagnes libanaises, avec temples et une tour sur un haut plateau près de Faqra.",
-        "image_commons": "Faqra Ruins.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Faqra",
     },
     {
@@ -468,7 +468,7 @@ PLACES: list[Place] = [
         "summary_en": "The spring and waterfall at the source of the Adonis (Nahr Ibrahim) river, emerging from a large cave in a limestone cliff.",
         "summary_ar": "النبع والشلال عند منبع نهر إبراهيم (أدونيس)، يتدفّق من مغارة كبيرة في جرف كلسي.",
         "summary_fr": "La source et la cascade du fleuve Adonis (Nahr Ibrahim), jaillissant d'une grande grotte dans une falaise calcaire.",
-        "image_commons": "Afqa waterfall.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Afqa",
     },
     {
@@ -485,7 +485,7 @@ PLACES: list[Place] = [
         "summary_en": "A UNESCO-designated biosphere reserve between the Nahr Ibrahim and Nahr el-Dahab valleys, with marked hiking trails and old terraces.",
         "summary_ar": "محمية محيط حيوي مصنّفة لدى اليونسكو بين واديي نهر إبراهيم ونهر الذهب، فيها مسارات مشي معلّمة ومصاطب قديمة.",
         "summary_fr": "Une réserve de biosphère de l'UNESCO entre les vallées du Nahr Ibrahim et du Nahr el-Dahab, avec sentiers balisés.",
-        "image_commons": "Jabal Moussa.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Jabal_Moussa_Biosphere_Reserve",
     },
     {
@@ -502,7 +502,7 @@ PLACES: list[Place] = [
         "summary_en": "A river mouth north of Beirut famous for its rock-cut commemorative stelae left by armies from ancient Egypt to the 20th century (a Memory of the World inscription).",
         "summary_ar": "مصبّ نهر شمال بيروت يشتهر بنُصُبه المنحوتة في الصخر التي تركتها جيوش من مصر القديمة حتى القرن العشرين (مسجّل في ذاكرة العالم).",
         "summary_fr": "Une embouchure au nord de Beyrouth célèbre pour ses stèles gravées laissées par les armées, de l'Égypte antique au XXe siècle.",
-        "image_commons": "Nahr el-Kalb stelae.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Nahr_al-Kalb",
     },
     # ===================== NORTH LEBANON =====================
@@ -520,7 +520,7 @@ PLACES: list[Place] = [
         "summary_en": "The great hilltop citadel over Tripoli, founded by the Crusaders and much rebuilt under Mamluk and Ottoman rule.",
         "summary_ar": "القلعة الكبيرة المطلّة على طرابلس، أسّسها الصليبيون وأُعيد بناؤها كثيراً في العهدين المملوكي والعثماني.",
         "summary_fr": "La grande citadelle dominant Tripoli, fondée par les croisés et largement reconstruite sous les Mamelouks et les Ottomans.",
-        "image_commons": "Citadel of Tripoli.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Citadel_of_Tripoli",
     },
     {
@@ -537,7 +537,7 @@ PLACES: list[Place] = [
         "summary_en": "An unfinished modernist exhibition complex in Tripoli designed by Oscar Niemeyer, inscribed on the UNESCO World Heritage list.",
         "summary_ar": "مجمّع معارض حداثي غير مكتمل في طرابلس صمّمه أوسكار نيماير، مُدرج على لائحة التراث العالمي لليونسكو.",
         "summary_fr": "Un ensemble d'exposition moderniste inachevé à Tripoli conçu par Oscar Niemeyer, inscrit au patrimoine mondial.",
-        "image_commons": "Rachid Karami International Fair.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Rachid_Karami_International_Fair",
     },
     {
@@ -554,7 +554,7 @@ PLACES: list[Place] = [
         "summary_en": "A small coastal town with an old quarter, churches, and a Phoenician sea wall that shelters its shore.",
         "summary_ar": "بلدة ساحلية صغيرة ذات حيّ قديم وكنائس وجدار بحري فينيقي يحمي شاطئها.",
         "summary_fr": "Une petite ville côtière au vieux quartier, aux églises et au mur phénicien qui protège son rivage.",
-        "image_commons": "Batroun Phoenician Wall.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Batroun",
     },
     {
@@ -571,7 +571,7 @@ PLACES: list[Place] = [
         "summary_en": "A 17th-century fort built on a narrow limestone rock above the Nahr el-Jaouz, near Batroun.",
         "summary_ar": "قلعة من القرن السابع عشر شُيّدت على صخرة كلسية ضيّقة فوق نهر الجوز، قرب البترون.",
         "summary_fr": "Un fort du XVIIe siècle bâti sur un rocher calcaire étroit au-dessus du Nahr el-Jaouz, près de Batroun.",
-        "image_commons": "Mseilha Fort.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Mseilha_Fort",
     },
     {
@@ -588,7 +588,7 @@ PLACES: list[Place] = [
         "summary_en": "One of the last old-growth groves of Lebanon cedar, above Bsharri, part of a UNESCO World Heritage site.",
         "summary_ar": "من آخر غابات أرز لبنان المعمّرة، فوق بشري، وجزء من موقع تراث عالمي لليونسكو.",
         "summary_fr": "L'un des derniers bosquets de cèdres du Liban anciens, au-dessus de Bcharré, inscrit au patrimoine mondial.",
-        "image_commons": "Cedars of God.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Cedars_of_God",
     },
     {
@@ -605,7 +605,7 @@ PLACES: list[Place] = [
         "summary_en": "A deep river gorge lined with cliff monasteries and hermitages, one of the earliest Christian monastic settlements and a UNESCO site.",
         "summary_ar": "وادٍ نهري عميق تتناثر على جرفه أديرة ومحابس، من أقدم مواقع الرهبنة المسيحية وموقع تراث عالمي.",
         "summary_fr": "Une gorge profonde jalonnée de monastères et d'ermitages, l'un des plus anciens foyers monastiques chrétiens.",
-        "image_commons": "Kadisha Valley.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Kadisha_Valley",
     },
     {
@@ -622,7 +622,7 @@ PLACES: list[Place] = [
         "summary_en": "The museum in Bsharri holding the paintings, drawings and manuscripts of writer and artist Kahlil Gibran, in a former hermitage.",
         "summary_ar": "متحف في بشري يضمّ لوحات ورسوم ومخطوطات الأديب والفنان جبران خليل جبران، في محبسة سابقة.",
         "summary_fr": "Le musée de Bcharré abritant peintures, dessins et manuscrits de l'écrivain et artiste Khalil Gibran.",
-        "image_commons": "Gibran Museum Bsharri.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Gibran_Museum",
     },
     {
@@ -639,7 +639,7 @@ PLACES: list[Place] = [
         "summary_en": "A hilltop Greek Orthodox monastery founded on the site of a 12th-century Cistercian abbey, south of Tripoli.",
         "summary_ar": "دير للروم الأرثوذكس على تلّة، أُسّس على موقع دير سيسترسي من القرن الثاني عشر، جنوب طرابلس.",
         "summary_fr": "Un monastère grec-orthodoxe sur une colline, fondé sur le site d'une abbaye cistercienne du XIIe siècle.",
-        "image_commons": "Balamand Monastery.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Balamand",
     },
     {
@@ -656,7 +656,7 @@ PLACES: list[Place] = [
         "summary_en": "A seasonal waterfall near Tannourine that drops through three natural stone bridges into the Baatara sinkhole.",
         "summary_ar": "شلال موسمي قرب تنورين يتساقط عبر ثلاثة جسور صخرية طبيعية إلى هوة بلعة.",
         "summary_fr": "Une cascade saisonnière près de Tannourine qui plonge à travers trois ponts de pierre naturels dans le gouffre de Baatara.",
-        "image_commons": "Baatara gorge waterfall.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Baatara_gorge_waterfall",
     },
     {
@@ -673,7 +673,7 @@ PLACES: list[Place] = [
         "summary_en": "One of Lebanon's densest cedar forests, a protected reserve above Tannourine with marked trails.",
         "summary_ar": "من أكثف غابات الأرز في لبنان، محمية طبيعية فوق تنورين فيها مسارات معلّمة.",
         "summary_fr": "L'une des forêts de cèdres les plus denses du Liban, une réserve protégée au-dessus de Tannourine.",
-        "image_commons": "Tannourine Cedars Reserve.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Tannourine",
     },
     # ===================== AKKAR =====================
@@ -692,7 +692,7 @@ PLACES: list[Place] = [
         "summary_ar": "قرية جبلية تاريخية، مقرّ إمارة عكار سابقاً، فيها أطلال قلعتها القديمة وإطلالة واسعة على السهل.",
         "summary_fr": "Un village de montagne historique, ancien siège de l'émirat d'Akkar, avec les ruines de sa citadelle.",
         "image_commons": None,
-        "source_url": "https://en.wikipedia.org/wiki/Akkar_el-Atika",
+        "source_url": "https://en.wikipedia.org/wiki/Akkar_District",
     },
     {
         "slug": "qammoua-forest",
@@ -709,7 +709,7 @@ PLACES: list[Place] = [
         "summary_ar": "هضبة مرتفعة من غابات الأرز والشوح والعرعر فوق فنيدق في جبال عكار، منطقة مشي مقصودة صيفاً.",
         "summary_fr": "Un haut plateau de forêts de cèdres, sapins et genévriers au-dessus de Fnaidek, dans les montagnes d'Akkar.",
         "image_commons": None,
-        "source_url": "https://en.wikipedia.org/wiki/Qammoua",
+        "source_url": "https://en.wikipedia.org/wiki/Akkar_District",
     },
     {
         "slug": "tell-arqa",
@@ -760,7 +760,7 @@ PLACES: list[Place] = [
         "summary_en": "A rare, well-preserved Umayyad city of the early 8th century, laid out on a Roman grid, a UNESCO World Heritage site in the Beqaa.",
         "summary_ar": "مدينة أموية نادرة محفوظة من أوائل القرن الثامن، مخطّطة على شبكة رومانية، وموقع تراث عالمي في البقاع.",
         "summary_fr": "Une rare cité omeyyade bien conservée du début du VIIIe siècle, sur un plan romain, site du patrimoine mondial.",
-        "image_commons": "Anjar, Lebanon.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Anjar,_Lebanon",
     },
     {
@@ -811,7 +811,7 @@ PLACES: list[Place] = [
         "summary_en": "The main Beqaa city, set where the Berdawni river leaves the mountains, long known for its riverside restaurants and arak.",
         "summary_ar": "كبرى مدن البقاع، حيث يخرج نهر البردوني من الجبل، تشتهر منذ زمن بمطاعمها على ضفة النهر وعرقها.",
         "summary_fr": "La principale ville de la Beqaa, là où le Berdawni sort des montagnes, réputée pour ses restaurants au bord de l'eau.",
-        "image_commons": "Zahle Berdawni.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Zahl%C3%A9",
     },
     {
@@ -845,7 +845,7 @@ PLACES: list[Place] = [
         "summary_en": "The large reservoir on the Litani river in the south Beqaa, formed by a 1960s dam below the Barouk mountains.",
         "summary_ar": "الخزّان الكبير على نهر الليطاني في جنوب البقاع، تشكّل بسدّ من الستينيات تحت جبال الباروك.",
         "summary_fr": "Le grand réservoir sur le Litani, au sud de la Beqaa, formé par un barrage des années 1960.",
-        "image_commons": "Qaraoun Lake.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Lake_Qaraoun",
     },
     # ===================== BAALBEK-HERMEL =====================
@@ -863,7 +863,7 @@ PLACES: list[Place] = [
         "summary_en": "The monumental Roman sanctuary of Heliopolis, whose temples of Jupiter and Bacchus are among the largest and best-preserved in the Roman world — a UNESCO World Heritage site.",
         "summary_ar": "حرم هليوبوليس الروماني الضخم، ومعبداه لجوبيتر وباخوس من أكبر المعابد الرومانية وأفضلها حفظاً، وموقع تراث عالمي.",
         "summary_fr": "Le sanctuaire romain monumental d'Héliopolis, dont les temples de Jupiter et Bacchus comptent parmi les mieux conservés du monde romain.",
-        "image_commons": "Temple of Bacchus, Baalbek.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Baalbek",
     },
     {
@@ -880,7 +880,7 @@ PLACES: list[Place] = [
         "summary_en": "A Roman-era funerary monument with a pyramidal top, standing alone on the uplands near Hermel.",
         "summary_ar": "نصب جنائزي من العصر الروماني بقمّة هرمية، يقف منفرداً على مرتفعات قرب الهرمل.",
         "summary_fr": "Un monument funéraire d'époque romaine à sommet pyramidal, isolé sur les hauteurs près de Hermel.",
-        "image_commons": "Hermel Pyramid.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Hermel",
     },
     {
@@ -932,7 +932,7 @@ PLACES: list[Place] = [
         "summary_en": "A 13th-century Crusader fortress built on a small island linked to Sidon's old harbour by a stone causeway.",
         "summary_ar": "قلعة صليبية من القرن الثالث عشر بُنيت على جزيرة صغيرة تصلها بمرفأ صيدا القديم جسر حجري.",
         "summary_fr": "Une forteresse croisée du XIIIe siècle bâtie sur un îlot relié au vieux port de Sidon par une chaussée.",
-        "image_commons": "Sidon Sea Castle.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Sidon_Sea_Castle",
     },
     {
@@ -949,8 +949,8 @@ PLACES: list[Place] = [
         "summary_en": "A 17th-century caravanserai in old Sidon, built around a large arcaded courtyard for merchants and their goods.",
         "summary_ar": "خان من القرن السابع عشر في صيدا القديمة، بُني حول باحة كبيرة ذات أروقة للتجار وبضائعهم.",
         "summary_fr": "Un caravansérail du XVIIe siècle dans la vieille Sidon, autour d'une grande cour à arcades.",
-        "image_commons": "Khan el-Franj Sidon.jpg",
-        "source_url": "https://en.wikipedia.org/wiki/Khan_el-Franj",
+        "image_commons": None,
+        "source_url": "https://en.wikipedia.org/wiki/Sidon",
     },
     {
         "slug": "temple-of-eshmun",
@@ -966,7 +966,7 @@ PLACES: list[Place] = [
         "summary_en": "A Phoenician sanctuary near Sidon dedicated to the healing god Eshmun, with terraces, a throne of Astarte and mosaic floors.",
         "summary_ar": "حرم فينيقي قرب صيدا مكرّس لإله الشفاء إشمون، فيه مصاطب وعرش عشتروت وأرضيات فسيفسائية.",
         "summary_fr": "Un sanctuaire phénicien près de Sidon dédié au dieu guérisseur Echmoun, avec terrasses et sols en mosaïque.",
-        "image_commons": "Temple of Eshmun.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Temple_of_Eshmun",
     },
     {
@@ -983,7 +983,7 @@ PLACES: list[Place] = [
         "summary_en": "The great Roman necropolis and one of the largest surviving hippodromes, part of the UNESCO World Heritage site of Tyre.",
         "summary_ar": "المدفن الروماني الكبير وأحد أكبر الحلبات الرومانية الباقية، ضمن موقع صور المدرج على التراث العالمي.",
         "summary_fr": "La grande nécropole romaine et l'un des plus vastes hippodromes conservés, au sein du site de Tyr.",
-        "image_commons": "Al Bass Tyre.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Tyre,_Lebanon",
     },
     {
@@ -1000,7 +1000,7 @@ PLACES: list[Place] = [
         "summary_en": "A protected stretch of sandy beach, dunes and freshwater springs south of Tyre, a nesting site for sea turtles.",
         "summary_ar": "شريط محمي من الشاطئ الرملي والكثبان والينابيع العذبة جنوب صور، موقع تعشيش للسلاحف البحرية.",
         "summary_fr": "Une plage de sable protégée, avec dunes et sources, au sud de Tyr, site de ponte des tortues marines.",
-        "image_commons": "Tyre beach Lebanon.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Tyre_Coast_Nature_Reserve",
     },
     {
@@ -1035,7 +1035,7 @@ PLACES: list[Place] = [
         "summary_en": "A Crusader hilltop castle (Qalaat al-Shqif) commanding the Litani gorge near Arnoun, with sweeping views over south Lebanon.",
         "summary_ar": "قلعة صليبية على تلّة (قلعة الشقيف) تشرف على مجرى الليطاني قرب أرنون، بإطلالة واسعة على جنوب لبنان.",
         "summary_fr": "Un château croisé (Qalaat al-Chaqif) dominant les gorges du Litani près d'Arnoun, avec de vastes panoramas.",
-        "image_commons": "Beaufort Castle Lebanon.jpg",
+        "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Beaufort_Castle,_Lebanon",
     },
     {
