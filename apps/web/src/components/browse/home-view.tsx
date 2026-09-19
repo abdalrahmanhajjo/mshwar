@@ -12,15 +12,25 @@ import { PlanSplitCta } from "@/components/browse/plan-cta";
 import { SectionHeader } from "@/components/ui/page-header";
 import { useBrowseCopy } from "@/lib/browse-copy";
 import { CATEGORIES, DESTINATIONS, EXPERIENCES, HOME_HERO_IMAGE } from "@/lib/catalog";
+import type { Destination, Experience } from "@/lib/catalog";
 import { splitTail } from "@/lib/text";
 import { cn, focusRing } from "@/lib/utils";
 
-export function HomeView() {
+export function HomeView({
+  experiences = EXPERIENCES,
+  destinations = DESTINATIONS,
+  heroImage = HOME_HERO_IMAGE,
+}: {
+  experiences?: Experience[];
+  destinations?: Destination[];
+  heroImage?: string;
+} = {}) {
   const copy = useBrowseCopy();
-  const featured = EXPERIENCES.slice(0, 3);
-  const strip = [DESTINATIONS[1], DESTINATIONS[3], DESTINATIONS[4]];
+  const featured = experiences.slice(0, 3);
+  const stripSource = [destinations[1], destinations[3], destinations[4]].filter(Boolean) as Destination[];
+  const strip = stripSource.length >= 3 ? stripSource : destinations.slice(0, 3);
   const stripKickers = strip.map((destination) => {
-    const match = EXPERIENCES.find((item) => item.destinationSlug === destination.slug);
+    const match = experiences.find((item) => item.destinationSlug === destination.slug);
     return CATEGORIES.find((item) => item.slug === match?.category)?.label ?? destination.region;
   });
   const [heroLead, heroTail] = splitTail(copy.heroTitle);
@@ -29,7 +39,7 @@ export function HomeView() {
     <div className="pb-4">
       <section className="px-2 pt-2 sm:px-3 sm:pt-3">
         <div className="relative isolate min-h-[36rem] overflow-hidden rounded-[1.5rem] bg-brand md:min-h-[38rem]">
-          <CatalogImage src={HOME_HERO_IMAGE} alt="" className="absolute inset-0 h-full w-full scale-[1.02]" priority />
+          <CatalogImage src={heroImage} alt="" className="absolute inset-0 h-full w-full scale-[1.02]" priority />
           <div className="photo-scrim-side absolute inset-0" />
           <div className="photo-tint absolute inset-0" />
           <div className="shell-frame relative flex min-h-[36rem] flex-col justify-center gap-7 pb-32 pt-16 text-white md:min-h-[38rem] md:pb-28">
