@@ -12,7 +12,7 @@ existing schema and the existing public catalogue API — **no parallel data mod
   summary, a Wikimedia Commons image candidate, and a `source_url` for provenance.
 - **Importer:** `services/api/app/seed/catalogue_import.py` — idempotent, RLS-aware,
   transactional; upserts into `app.destinations / venues / experiences /
-  experience_taxonomy / experience_translations / taxonomy / price_rules / media`.
+experience_taxonomy / experience_translations / taxonomy / price_rules / media`.
 - **Migration:** `mshwar-database/migrations/027_media_provenance.sql` — adds nullable
   image provenance/attribution columns to `app.media` (additive, reversible).
 
@@ -25,7 +25,7 @@ existing schema and the existing public catalogue API — **no parallel data mod
 - **No invented data.** No ratings (`sample_rating` stays NULL). No prices — each
   listing gets a `quote-required` price rule that the UI shows as **"On request"**,
   never a fake `$0`. No phone numbers, no operating hours. `duration_minutes` is a
-  schema-required *suggested visit time* per category, never presented as opening
+  schema-required _suggested visit time_ per category, never presented as opening
   hours. The only facts written are verifiable ones (e.g. UNESCO inscription) plus a
   photo credit.
 - **Real, licensed images only.** Each image is resolved from Wikimedia Commons, the

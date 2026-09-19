@@ -128,9 +128,7 @@ def _place_field_errors(p: Place, gov_slugs: set[str]) -> list[str]:
     if p.get("listing_kind") not in VALID_LISTING_KINDS:
         errors.append(f"{where}: listing_kind '{p.get('listing_kind')}' invalid")
     errors.extend(
-        f"{where}: tag '{tag}' not in normalised vocabulary"
-        for tag in p.get("tags", [])
-        if tag not in TAG_LABELS
+        f"{where}: tag '{tag}' not in normalised vocabulary" for tag in p.get("tags", []) if tag not in TAG_LABELS
     )
     lat, lng = p.get("lat"), p.get("lng")
     if lat is None or lng is None:
@@ -184,9 +182,26 @@ def derive_setting(p: Place) -> str:
     if "museum" in tags:
         return "indoor"
     outdoorish = {
-        "archaeological-site", "waterfall", "cave", "forest", "mountain", "viewpoint",
-        "beach", "ski", "hiking", "castle", "citadel", "temple", "seaside", "river",
-        "lake", "nature-reserve", "cedars", "promenade", "garden", "port",
+        "archaeological-site",
+        "waterfall",
+        "cave",
+        "forest",
+        "mountain",
+        "viewpoint",
+        "beach",
+        "ski",
+        "hiking",
+        "castle",
+        "citadel",
+        "temple",
+        "seaside",
+        "river",
+        "lake",
+        "nature-reserve",
+        "cedars",
+        "promenade",
+        "garden",
+        "port",
     }
     if p.get("category") in {"nature", "coast", "adventure"} or (tags & outdoorish):
         return "outdoor"
@@ -201,15 +216,17 @@ def build_facts(p: Place) -> list[dict[str, str]]:
     """Only verifiable, non-business facts."""
     facts: list[dict[str, str]] = []
     if "unesco" in p.get("tags", []):
-        facts.append(
-            {"title": "UNESCO World Heritage", "body": "Part of a UNESCO World Heritage inscription."}
-        )
+        facts.append({"title": "UNESCO World Heritage", "body": "Part of a UNESCO World Heritage inscription."})
     return facts
 
 
 def _photo_credit_fact(attribution: str, license_name: str) -> dict[str, str]:
     """A visible photo credit satisfies CC-BY / CC-BY-SA attribution."""
-    body = f"{attribution} — {license_name} (via Wikimedia Commons)" if license_name else f"{attribution} (via Wikimedia Commons)"
+    body = (
+        f"{attribution} — {license_name} (via Wikimedia Commons)"
+        if license_name
+        else f"{attribution} (via Wikimedia Commons)"
+    )
     return {"title": "Photo", "body": body}
 
 
@@ -257,9 +274,20 @@ def _license_allowed(short: str, raw: str) -> bool:
     Non-commercial (NC), no-derivatives (ND), non-free and 'all rights reserved'
     are rejected."""
     text = f"{short} {raw}".lower().strip()
-    rejected = ("cc-by-nc", "cc by-nc", "cc-by-nd", "cc by-nd", "noncommercial",
-                "non-commercial", "noderiv", "no derivative", "non-free", "nonfree",
-                "fair use", "all rights reserved")
+    rejected = (
+        "cc-by-nc",
+        "cc by-nc",
+        "cc-by-nd",
+        "cc by-nd",
+        "noncommercial",
+        "non-commercial",
+        "noderiv",
+        "no derivative",
+        "non-free",
+        "nonfree",
+        "fair use",
+        "all rights reserved",
+    )
     if any(marker in text for marker in rejected):
         return False
     if "public domain" in text or text.startswith("pd"):
@@ -306,8 +334,12 @@ def resolve_commons_image(commons_file: str, *, timeout: float = 20.0) -> Resolv
 
     title = commons_file if commons_file.lower().startswith("file:") else f"File:{commons_file}"
     params = {
-        "action": "query", "titles": title, "prop": "imageinfo",
-        "iiprop": "url|extmetadata|mime|size", "format": "json", "formatversion": "2",
+        "action": "query",
+        "titles": title,
+        "prop": "imageinfo",
+        "iiprop": "url|extmetadata|mime|size",
+        "format": "json",
+        "formatversion": "2",
     }
     headers = {"User-Agent": "MshwarCatalogueImporter/1.0 (+https://mshwar-lb.com; contact abedhajjo57@gmail.com)"}
     try:
@@ -397,9 +429,15 @@ class ImportStats:
 # sets these to status='archived' so they leave the public catalogue without being
 # deleted (nothing is hard-deleted).
 SAMPLE_EXPERIENCE_SLUGS = [
-    "slow-day-byblos", "coastal-escapes-batroun", "among-ancient-cedars",
-    "take-the-valley-road", "journey-through-baalbek", "beirut-street-to-sea",
-    "byblos-harbour-walls", "beirut-souks-wander", "harbour-lunch-byblos",
+    "slow-day-byblos",
+    "coastal-escapes-batroun",
+    "among-ancient-cedars",
+    "take-the-valley-road",
+    "journey-through-baalbek",
+    "beirut-street-to-sea",
+    "byblos-harbour-walls",
+    "beirut-souks-wander",
+    "harbour-lunch-byblos",
     "coastal-table-batroun",
 ]
 
@@ -434,22 +472,16 @@ def run_import(
         # Resolve the catalogue organisation and pin the RLS org context to it so
         # inserts pass WITH CHECK under mshwar_backend, and are a no-op under a
         # superuser owner (which bypasses RLS anyway).
-        org_row = conn.execute(
-            "SELECT id FROM app.organizations WHERE slug = %s", (CATALOGUE_ORG_SLUG,)
-        ).fetchone()
+        org_row = conn.execute("SELECT id FROM app.organizations WHERE slug = %s", (CATALOGUE_ORG_SLUG,)).fetchone()
         if not org_row:
-            raise SystemExit(
-                f"Organisation '{CATALOGUE_ORG_SLUG}' not found. Run migrations first (013 creates it)."
-            )
+            raise SystemExit(f"Organisation '{CATALOGUE_ORG_SLUG}' not found. Run migrations first (013 creates it).")
         org_id = org_row[0]
         conn.execute("SELECT set_config('app.organization_id', %s, true)", (str(org_id),))
         conn.execute("SELECT set_config('app.user_id', %s, true)", (str(org_id),))
 
         # Currencies referenced by price rules must exist (migration/seed usually
         # creates them; ensure USD is present so quote-required rules insert).
-        conn.execute(
-            "INSERT INTO app.currencies (code, minor_digits) VALUES ('USD', 2) ON CONFLICT (code) DO NOTHING"
-        )
+        conn.execute("INSERT INTO app.currencies (code, minor_digits) VALUES ('USD', 2) ON CONFLICT (code) DO NOTHING")
 
         # 1) Taxonomy: categories + tags (normalised, idempotent).
         term_ids: dict[tuple[str, str], uuid.UUID] = {}
@@ -477,8 +509,7 @@ def run_import(
         # 4) Optionally archive migration-013 sample listings (never delete).
         if archive_samples:
             res = conn.execute(
-                "UPDATE app.experiences SET status = 'archived' "
-                "WHERE slug = ANY(%s) AND status <> 'archived'",
+                "UPDATE app.experiences SET status = 'archived' WHERE slug = ANY(%s) AND status <> 'archived'",
                 (SAMPLE_EXPERIENCE_SLUGS,),
             )
             stats.samples_archived = res.rowcount or 0
@@ -589,8 +620,19 @@ def _import_place(
             "max_party = 20, setting = %s, weather_sensitivity = %s, listing_kind = %s, "
             "inventory_available = true, catalogue_summary = %s, catalogue_facts = %s "
             "WHERE id = %s",
-            (org_id, venue_id, p["name_en"], body, minutes, setting, weather, p["listing_kind"],
-             summary, json.dumps(facts), exp_id),
+            (
+                org_id,
+                venue_id,
+                p["name_en"],
+                body,
+                minutes,
+                setting,
+                weather,
+                p["listing_kind"],
+                summary,
+                json.dumps(facts),
+                exp_id,
+            ),
         )
         stats.experiences_updated += 1
     else:
@@ -600,17 +642,27 @@ def _import_place(
             "listing_kind, inventory_available, catalogue_summary, catalogue_facts) "
             "VALUES (%s, %s, %s, %s, %s, %s, 'published', 'inquiry', %s, 1, 20, %s, %s, %s, true, %s, %s) "
             "RETURNING id",
-            (uuid.uuid4(), org_id, venue_id, p["slug"], p["name_en"], body, minutes, setting, weather,
-             p["listing_kind"], summary, json.dumps(facts)),
+            (
+                uuid.uuid4(),
+                org_id,
+                venue_id,
+                p["slug"],
+                p["name_en"],
+                body,
+                minutes,
+                setting,
+                weather,
+                p["listing_kind"],
+                summary,
+                json.dumps(facts),
+            ),
         ).fetchone()
         exp_id = row[0]
         stats.experiences_inserted += 1
 
     # Price: an explicit "on request" rule (no invented amount). Idempotent: clear
     # any prior curated rule for this experience first.
-    conn.execute(
-        "DELETE FROM app.price_rules WHERE experience_id = %s AND source = 'curated:none'", (exp_id,)
-    )
+    conn.execute("DELETE FROM app.price_rules WHERE experience_id = %s AND source = 'curated:none'", (exp_id,))
     conn.execute(
         "INSERT INTO app.price_rules (id, experience_id, currency, price_type, unit, amount_minor, "
         "valid_during, source) VALUES (%s, %s, 'USD', 'quote-required', 'person', NULL, '(,)', 'curated:none')",
@@ -623,8 +675,7 @@ def _import_place(
     conn.execute("DELETE FROM app.experience_taxonomy WHERE experience_id = %s", (exp_id,))
     for term_id in wanted:
         conn.execute(
-            "INSERT INTO app.experience_taxonomy (experience_id, term_id) VALUES (%s, %s) "
-            "ON CONFLICT DO NOTHING",
+            "INSERT INTO app.experience_taxonomy (experience_id, term_id) VALUES (%s, %s) ON CONFLICT DO NOTHING",
             (exp_id, term_id),
         )
 
@@ -643,9 +694,7 @@ def _import_place(
 
     # Media: only if none present yet (keeps it idempotent, avoids re-upload).
     if do_images and p.get("image_commons"):
-        has_media = conn.execute(
-            "SELECT 1 FROM app.media WHERE experience_id = %s LIMIT 1", (exp_id,)
-        ).fetchone()
+        has_media = conn.execute("SELECT 1 FROM app.media WHERE experience_id = %s LIMIT 1", (exp_id,)).fetchone()
         if not has_media:
             credit = _add_image(conn, exp_id, p, stats)
             if credit is not None:
@@ -679,8 +728,17 @@ def _add_image(conn, exp_id: uuid.UUID, p: Place, stats: ImportStats) -> tuple[s
         "source, source_url, license, license_url, attribution, captured_at) "
         "VALUES (%s, %s, %s, %s, %s, 0, 'approved', 'wikimedia-commons', %s, %s, %s, %s, now()) "
         "ON CONFLICT (provider, object_key) DO NOTHING",
-        (uuid.uuid4(), exp_id, provider, object_key, alt, resolved.source_url, resolved.license,
-         resolved.license_url, resolved.attribution),
+        (
+            uuid.uuid4(),
+            exp_id,
+            provider,
+            object_key,
+            alt,
+            resolved.source_url,
+            resolved.license,
+            resolved.license_url,
+            resolved.attribution,
+        ),
     )
     stats.media_added += 1
     return (resolved.attribution, resolved.license)
@@ -745,8 +803,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dry-run", action="store_true", help="Validate and plan only; no DB, no network.")
     parser.add_argument("--yes", action="store_true", help="Confirm the write to the resolved database.")
     parser.add_argument("--no-images", action="store_true", help="Skip image resolution/upload.")
-    parser.add_argument("--archive-samples", action="store_true",
-                        help="Archive migration-013 sample listings (never deletes).")
+    parser.add_argument(
+        "--archive-samples", action="store_true", help="Archive migration-013 sample listings (never deletes)."
+    )
     parser.add_argument("--report", metavar="PATH", default=None, help="Write a Markdown report to PATH.")
     args = parser.parse_args(argv)
 

@@ -317,7 +317,6 @@ PLACES: list[Place] = [
         "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Beirut_Souks",
     },
-
     # ===================== MOUNT LEBANON =====================
     {
         "slug": "jeita-grotto",
@@ -506,7 +505,6 @@ PLACES: list[Place] = [
         "image_commons": "Nahr el-Kalb stelae.jpg",
         "source_url": "https://en.wikipedia.org/wiki/Nahr_al-Kalb",
     },
-
     # ===================== NORTH LEBANON =====================
     {
         "slug": "citadel-of-tripoli",
@@ -678,7 +676,6 @@ PLACES: list[Place] = [
         "image_commons": "Tannourine Cedars Reserve.jpg",
         "source_url": "https://en.wikipedia.org/wiki/Tannourine",
     },
-
     # ===================== AKKAR =====================
     {
         "slug": "akkar-el-atika",
@@ -748,7 +745,6 @@ PLACES: list[Place] = [
         "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Akkar_District",
     },
-
     # ===================== BEQAA =====================
     {
         "slug": "anjar-umayyad-city",
@@ -852,7 +848,6 @@ PLACES: list[Place] = [
         "image_commons": "Qaraoun Lake.jpg",
         "source_url": "https://en.wikipedia.org/wiki/Lake_Qaraoun",
     },
-
     # ===================== BAALBEK-HERMEL =====================
     {
         "slug": "baalbek-temples",
@@ -922,7 +917,6 @@ PLACES: list[Place] = [
         "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Orontes",
     },
-
     # ===================== SOUTH LEBANON =====================
     {
         "slug": "sidon-sea-castle",
@@ -1026,7 +1020,6 @@ PLACES: list[Place] = [
         "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Maghdouch%C3%A9",
     },
-
     # ===================== NABATIEH =====================
     {
         "slug": "beaufort-castle",
