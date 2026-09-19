@@ -259,9 +259,9 @@ jobs:
              git fetch --all
              git reset --hard origin/main
              C="docker compose -f docker-compose.yml -f docker-compose.staging.yml"
-             $C build api
+             $C build api web
              $C run --rm migrate
-             $C up -d --no-deps api
+             $C up -d --no-deps api web
              docker image prune -f'
       - name: Verify staging health
         env:
@@ -344,9 +344,9 @@ jobs:
              git fetch --all
              git reset --hard origin/main
              C="docker compose -f docker-compose.yml -f docker-compose.staging.yml"
-             $C build api
+             $C build api web
              $C run --rm migrate
-             $C up -d --no-deps api
+             $C up -d --no-deps api web
              docker image prune -f'
       - name: Verify production health
         env:
