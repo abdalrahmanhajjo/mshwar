@@ -403,22 +403,101 @@ def wikipedia_lead_image(title: str, *, timeout: float = 20.0) -> str | None:
         return None
 
 
-def resolve_place_image(p: Place) -> ResolvedImage | None:
-    """Resolve a place's real photo: prefer its Wikipedia article lead image, then
-    any explicit image_commons override. Verifies the licence before returning."""
+def _year_of(datestr: str) -> int:
+    """Extract a plausible 19xx/20xx year from a Commons DateTimeOriginal, else 0."""
+    import re
+
+    m = re.search(r"(19|20)\d{2}", datestr or "")
+    return int(m.group(0)) if m else 0
+
+
+# Skip obvious non-photographs even when geotagged near a place.
+_BAD_TITLE_HINTS = ("locator", "location map", "coat of arms", "flag of", "logo", ".svg", "diagram", "plan of")
+
+
+def _commons_geosearch(
+    lat: float, lng: float, *, radius: int, limit: int, timeout: float = 30.0
+) -> list[dict[str, Any]]:
+    """Files geotagged within `radius` m of a point, with imageinfo + key metadata."""
+    import httpx  # lazy
+
+    params = {
+        "action": "query",
+        "format": "json",
+        "formatversion": "2",
+        "generator": "geosearch",
+        "ggscoord": f"{lat}|{lng}",
+        "ggsradius": str(radius),
+        "ggslimit": str(limit),
+        "ggsnamespace": "6",
+        "prop": "imageinfo",
+        "iiprop": "url|extmetadata|mime|size",
+        "iiextmetadatafilter": "DateTimeOriginal|License|LicenseShortName|LicenseUrl|Artist",
+    }
+    try:
+        with httpx.Client(timeout=timeout, headers={"User-Agent": _UA}, follow_redirects=True) as client:
+            resp = client.get(COMMONS_API, params=params)
+            if resp.status_code != 200:
+                return []
+            return resp.json().get("query", {}).get("pages", []) or []
+    except Exception:
+        return []
+
+
+def _download(url: str, *, timeout: float = 30.0) -> bytes | None:
+    import httpx  # lazy
+
+    try:
+        with httpx.Client(timeout=timeout, headers={"User-Agent": _UA}, follow_redirects=True) as client:
+            img = client.get(url)
+            if img.status_code != 200 or not img.content or len(img.content) > 15 * 1024 * 1024:
+                return None
+            return img.content
+    except Exception:
+        return None
+
+
+def resolve_place_image(p: Place, *, radius: int = 3000) -> ResolvedImage | None:
+    """Resolve a place's real photo, newest first (preferring 2021+). Uses Commons
+    geosearch at the place's coordinates, ranks licence-clean photos by capture year
+    (then size), and downloads the top one. Falls back to the Wikipedia article lead
+    image only when no geotagged photo qualifies."""
+    lat, lng = float(p["lat"]), float(p["lng"])
+    ranked: list[tuple[int, int, str, ResolvedImage]] = []
+    for page in _commons_geosearch(lat, lng, radius=radius, limit=80):
+        title = str(page.get("title", ""))
+        low = title.lower()
+        if any(h in low for h in _BAD_TITLE_HINTS):
+            continue
+        info_list = page.get("imageinfo") or []
+        if not info_list:
+            continue
+        info = info_list[0]
+        meta = _parse_imageinfo(info, title)  # licence + mime gate
+        if meta is None:
+            continue
+        ext = info.get("extmetadata", {}) or {}
+        year = _year_of(_ext_value(ext, "DateTimeOriginal"))
+        width = int(info.get("width") or 0)
+        if width and width < 800:  # skip tiny images
+            continue
+        ranked.append((year, width, str(info.get("url", "")), meta))
+
+    # Newest first (year desc), then largest. A 2021+ photo naturally wins; if none,
+    # the most recent available photo is chosen (never blank when one exists).
+    ranked.sort(key=lambda r: (r[0], r[1]), reverse=True)
+    for _year, _w, url, meta in ranked[:4]:
+        data = _download(url)
+        if data:
+            meta.upload_bytes = data
+            return meta
+
+    # Fallback: the article's lead image (may be older) only if geosearch found none.
     title = _wiki_title_from_url(p.get("source_url", ""))
-    candidates: list[str] = []
     if title:
         lead = wikipedia_lead_image(title)
         if lead:
-            candidates.append(lead)
-    override = p.get("image_commons")
-    if override:
-        candidates.append(override)
-    for commons_file in candidates:
-        resolved = resolve_commons_image(commons_file)
-        if resolved is not None:
-            return resolved
+            return resolve_commons_image(lead)
     return None
 
 
@@ -469,6 +548,7 @@ class ImportStats:
     media_added: int = 0
     images_skipped_no_license: int = 0
     images_skipped_no_imagekit: int = 0
+    images_replaced: int = 0
     places_skipped: list[str] = field(default_factory=list)
     samples_archived: int = 0
     destination_covers: int = 0
@@ -482,6 +562,7 @@ class ImportStats:
             "experiences_inserted": self.experiences_inserted,
             "experiences_updated": self.experiences_updated,
             "media_added": self.media_added,
+            "images_replaced": self.images_replaced,
             "images_skipped_no_license": self.images_skipped_no_license,
             "images_skipped_no_imagekit": self.images_skipped_no_imagekit,
             "places_skipped": self.places_skipped,
@@ -618,6 +699,7 @@ def run_import(
     do_images: bool,
     archive_samples: bool,
     stats: ImportStats,
+    refresh_images: bool = False,
 ) -> ImportStats:
     conn = _connect(db_url)
     try:
@@ -653,7 +735,7 @@ def run_import(
         # 3) Places → venue + experience + taxonomy + translations + media.
         for p in PLACES:
             try:
-                _import_place(conn, p, org_id, dest_ids[p["governorate"]], term_ids, do_images, stats)
+                _import_place(conn, p, org_id, dest_ids[p["governorate"]], term_ids, do_images, stats, refresh_images)
             except Exception as exc:  # noqa: BLE001 - one bad place must not abort the run
                 conn.rollback()
                 raise SystemExit(f"Import failed on '{p.get('slug')}': {exc}") from exc
@@ -746,6 +828,7 @@ def _import_place(
     term_ids: dict[tuple[str, str], uuid.UUID],
     do_images: bool,
     stats: ImportStats,
+    refresh_images: bool = False,
 ) -> None:
     venue_id = _upsert_venue(conn, p, org_id, dest_id)
     stats.venues += 1
@@ -761,8 +844,9 @@ def _import_place(
 
     facts = build_facts(p)
     # Keep an existing image's photo credit stable across re-runs (facts are rebuilt
-    # each run, so re-derive the credit from already-stored media).
-    if exp_id is not None:
+    # each run, so re-derive the credit from already-stored media). When refreshing
+    # images we're about to replace the photo, so skip the stale credit here.
+    if exp_id is not None and not refresh_images:
         cred = conn.execute(
             "SELECT attribution, license FROM app.media WHERE experience_id = %s "
             "AND source = 'wikimedia-commons' ORDER BY sort_order LIMIT 1",
@@ -850,13 +934,14 @@ def _import_place(
             (exp_id, locale, title, descr),
         )
 
-    # Media: only if none present yet (keeps it idempotent, avoids re-upload).
-    # The photo is resolved from the place's Wikipedia article, so no image_commons
-    # is required up front.
+    # Media: add a real photo when none is present, or replace it under
+    # --refresh-images (e.g. to switch to a newer photo). Replacement happens only
+    # after a new photo is successfully fetched, so a flaky fetch never blanks a
+    # listing.
     if do_images:
         has_media = conn.execute("SELECT 1 FROM app.media WHERE experience_id = %s LIMIT 1", (exp_id,)).fetchone()
-        if not has_media:
-            credit = _add_image(conn, exp_id, p, stats)
+        if refresh_images or not has_media:
+            credit = _add_image(conn, exp_id, p, stats, replace=refresh_images)
             if credit is not None:
                 facts_with_photo = facts + [_photo_credit_fact(credit[0], credit[1])]
                 conn.execute(
@@ -868,9 +953,13 @@ def _import_place(
     conn.execute("SELECT app.refresh_experience_search(%s)", (exp_id,))
 
 
-def _add_image(conn, exp_id: uuid.UUID, p: Place, stats: ImportStats) -> tuple[str, str] | None:
-    """Resolve (from the place's Wikipedia article), licence-check and store one
-    real image. Returns (attribution, license) when stored, else None."""
+def _add_image(
+    conn, exp_id: uuid.UUID, p: Place, stats: ImportStats, *, replace: bool = False
+) -> tuple[str, str] | None:
+    """Resolve (newest geotagged photo of the place, preferring 2021+), licence-check
+    and store one real image. Returns (attribution, license) when stored, else None.
+    With replace=True, the existing curated photo is removed only after a new one is
+    fetched and uploaded, so a failed fetch never leaves the listing blank."""
     resolved = resolve_place_image(p)
     if resolved is None:
         stats.images_skipped_no_license += 1
@@ -882,6 +971,11 @@ def _add_image(conn, exp_id: uuid.UUID, p: Place, stats: ImportStats) -> tuple[s
         # rather than attach anything unverified.
         stats.images_skipped_no_imagekit += 1
         return None
+    if replace:
+        removed = conn.execute(
+            "DELETE FROM app.media WHERE experience_id = %s AND source = 'wikimedia-commons'", (exp_id,)
+        )
+        stats.images_replaced += removed.rowcount or 0
     alt = p.get("name_en", "")
     conn.execute(
         "INSERT INTO app.media (id, experience_id, provider, object_key, alt_text, sort_order, moderation, "
@@ -1038,6 +1132,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--archive-samples", action="store_true", help="Archive migration-013 sample listings (never deletes)."
     )
+    parser.add_argument(
+        "--refresh-images",
+        action="store_true",
+        help="Re-fetch and replace existing catalogue photos (e.g. to pick up newer images).",
+    )
     parser.add_argument("--report", metavar="PATH", default=None, help="Write a Markdown report to PATH.")
     args = parser.parse_args(argv)
 
@@ -1077,6 +1176,7 @@ def main(argv: list[str] | None = None) -> int:
         do_images=not args.no_images,
         archive_samples=args.archive_samples,
         stats=stats,
+        refresh_images=args.refresh_images,
     )
     print("\nImport complete:")
     print(json.dumps(stats.as_dict(), indent=2, ensure_ascii=False))
