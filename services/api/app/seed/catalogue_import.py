@@ -457,17 +457,12 @@ def _download(url: str, *, timeout: float = 30.0) -> bytes | None:
         return None
 
 
-def resolve_place_image(p: Place, *, radius: int = 3000) -> ResolvedImage | None:
-    """Resolve a place's real photo, newest first (preferring 2021+). Uses Commons
-    geosearch at the place's coordinates, ranks licence-clean photos by capture year
-    (then size), and downloads the top one. Falls back to the Wikipedia article lead
-    image only when no geotagged photo qualifies."""
-    lat, lng = float(p["lat"]), float(p["lng"])
+def _geosearch_best_image(lat: float, lng: float, radius: int) -> ResolvedImage | None:
+    """Newest licence-clean photo geotagged near the coordinates (fallback source)."""
     ranked: list[tuple[int, int, str, ResolvedImage]] = []
     for page in _commons_geosearch(lat, lng, radius=radius, limit=80):
         title = str(page.get("title", ""))
-        low = title.lower()
-        if any(h in low for h in _BAD_TITLE_HINTS):
+        if any(h in title.lower() for h in _BAD_TITLE_HINTS):
             continue
         info_list = page.get("imageinfo") or []
         if not info_list:
@@ -476,29 +471,35 @@ def resolve_place_image(p: Place, *, radius: int = 3000) -> ResolvedImage | None
         meta = _parse_imageinfo(info, title)  # licence + mime gate
         if meta is None:
             continue
-        ext = info.get("extmetadata", {}) or {}
-        year = _year_of(_ext_value(ext, "DateTimeOriginal"))
         width = int(info.get("width") or 0)
         if width and width < 800:  # skip tiny images
             continue
+        year = _year_of(_ext_value(info.get("extmetadata", {}) or {}, "DateTimeOriginal"))
         ranked.append((year, width, str(info.get("url", "")), meta))
 
-    # Newest first (year desc), then largest. A 2021+ photo naturally wins; if none,
-    # the most recent available photo is chosen (never blank when one exists).
     ranked.sort(key=lambda r: (r[0], r[1]), reverse=True)
     for _year, _w, url, meta in ranked[:4]:
         data = _download(url)
         if data:
             meta.upload_bytes = data
             return meta
+    return None
 
-    # Fallback: the article's lead image (may be older) only if geosearch found none.
+
+def resolve_place_image(p: Place, *, radius: int = 3000) -> ResolvedImage | None:
+    """Resolve a photo that actually represents the place. Primary source is the
+    place's Wikipedia article lead image — the shot editors chose to depict it, so
+    it matches the place and is usually its most attractive view. Only when the
+    article has no usable image do we fall back to the newest licence-clean photo
+    geotagged at the coordinates."""
     title = _wiki_title_from_url(p.get("source_url", ""))
     if title:
         lead = wikipedia_lead_image(title)
         if lead:
-            return resolve_commons_image(lead)
-    return None
+            resolved = resolve_commons_image(lead)
+            if resolved is not None:
+                return resolved
+    return _geosearch_best_image(float(p["lat"]), float(p["lng"]), radius)
 
 
 def _strip_html(value: str) -> str:
@@ -592,6 +593,13 @@ SAMPLE_EXPERIENCE_SLUGS = [
 # (archived, never hard-deleted) on the next run, even without --archive-samples.
 RETIRED_SLUGS = [
     "ouyoun-orghosh",  # misplaced/weak entry — removed from the dataset
+    "tell-arqa",  # trimmed: not scenic/attractive
+    "orontes-source-hermel",  # trimmed: not scenic/attractive
+    "deir-mar-maroun-hermel",  # trimmed: not scenic/attractive
+    "nahr-el-kalb",  # trimmed: not scenic/attractive
+    "martyrs-square-beirut",  # trimmed: not scenic/attractive
+    "nabatieh-old-souk",  # trimmed: not scenic/attractive
+    "khan-el-franj-sidon",  # trimmed: not scenic/attractive
 ]
 
 # Genuinely free, public, un-gated places (no admission booth). Everything not
@@ -600,21 +608,16 @@ RETIRED_SLUGS = [
 FREE_ADMISSION_SLUGS: set[str] = {
     "raouche-pigeon-rocks",
     "corniche-beirut",
-    "martyrs-square-beirut",
     "beirut-souks",
     "mohammad-al-amin-mosque",
     "our-lady-of-lebanon-harissa",
-    "nahr-el-kalb",
     "deir-el-qamar",
     "batroun-old-town",
     "zahle-berdawni",
     "marjeyoun",
-    "nabatieh-old-souk",
     "our-lady-of-mantara-maghdouche",
     "akkar-el-atika",
-    "khan-el-franj-sidon",
     "pyramid-of-hermel",
-    "orontes-source-hermel",
     "qammoua-forest",
 }
 
@@ -699,7 +702,7 @@ COLLECTIONS: list[dict[str, Any]] = [
             "byblos-archaeological-site",
             "deir-el-qamar",
             "citadel-of-tripoli",
-            "khan-el-franj-sidon",
+            "batroun-old-town",
             "beiteddine-palace",
         ],
     },
