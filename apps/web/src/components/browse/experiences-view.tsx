@@ -78,7 +78,7 @@ export function ExperiencesView({
     filters.rating,
     filters.available,
   ].filter(Boolean).length;
-  const [showFilters, setShowFilters] = React.useState(advancedCount > 0);
+  const [showFilters, setShowFilters] = React.useState(false);
   const isMap = filters.view === "map";
 
   return (
