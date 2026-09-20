@@ -51,6 +51,13 @@ export type HubKey =
   | "settingsBody"
   | "createdOn"
   | "openTrip"
+  | "viewList"
+  | "viewCalendar"
+  | "unscheduled"
+  | "scheduledFor"
+  | "planned"
+  | "allDays"
+  | "noTripsDay"
   | "bookedOn"
   | "checkoutBookings"
   | "listingBookings"
@@ -107,6 +114,13 @@ export const hubCopy: Record<Locale, Record<HubKey, string>> = {
     settingsBody: "Profile, preferences, messages and privacy — all in one place.",
     createdOn: "Created",
     openTrip: "Open plan",
+    viewList: "List",
+    viewCalendar: "Calendar",
+    unscheduled: "Unscheduled",
+    scheduledFor: "Scheduled for",
+    planned: "Planned",
+    allDays: "All days",
+    noTripsDay: "No trips on this day.",
     bookedOn: "Requested",
     checkoutBookings: "Checkout bookings",
     listingBookings: "Booking requests",
@@ -162,6 +176,13 @@ export const hubCopy: Record<Locale, Record<HubKey, string>> = {
     settingsBody: "الملف الشخصي والتفضيلات والرسائل والخصوصية في مكان واحد.",
     createdOn: "أُنشئت في",
     openTrip: "افتح الخطة",
+    viewList: "قائمة",
+    viewCalendar: "تقويم",
+    unscheduled: "غير مجدولة",
+    scheduledFor: "مجدولة ليوم",
+    planned: "مخطّطة",
+    allDays: "كل الأيام",
+    noTripsDay: "لا رحلات في هذا اليوم.",
     bookedOn: "طُلب في",
     checkoutBookings: "حجوزات الدفع",
     listingBookings: "طلبات الحجز",
@@ -217,6 +238,13 @@ export const hubCopy: Record<Locale, Record<HubKey, string>> = {
     settingsBody: "Profil, préférences, messages et confidentialité — au même endroit.",
     createdOn: "Créé le",
     openTrip: "Ouvrir le plan",
+    viewList: "Liste",
+    viewCalendar: "Calendrier",
+    unscheduled: "Non planifié",
+    scheduledFor: "Planifié pour",
+    planned: "Planifié",
+    allDays: "Tous les jours",
+    noTripsDay: "Aucun voyage ce jour-là.",
     bookedOn: "Demandé le",
     checkoutBookings: "Réservations payées",
     listingBookings: "Demandes de réservation",

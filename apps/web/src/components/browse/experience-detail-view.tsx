@@ -1,10 +1,22 @@
 "use client";
 
-import { ArrowLeft, ArrowUpRight, Check, Clock, MapPin, Navigation, ShieldCheck, Star, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  CalendarPlus,
+  Check,
+  Clock,
+  MapPin,
+  Navigation,
+  ShieldCheck,
+  Star,
+  Users,
+} from "lucide-react";
 import { BookingWidget } from "@/components/browse/booking-widget";
 import { CatalogImage } from "@/components/browse/catalog-image";
 import { ExperienceCard } from "@/components/browse/experience-card";
 import { SaveExperienceButton } from "@/components/browse/save-button";
+import { Button } from "@/components/ui/button";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { Eyebrow, SectionHeader } from "@/components/ui/page-header";
 import { useBrowseCopy } from "@/lib/browse-copy";
@@ -83,7 +95,15 @@ export function ExperienceDetailView({ experience, related }: { experience: Expe
         </Eyebrow>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <h1 className="title-page max-w-3xl text-balance">{experience.title}</h1>
-          <SaveExperienceButton slug={experience.slug} />
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild size="sm">
+              <LocaleLink href={`/plan?add=${experience.slug}&destination=${experience.destinationSlug}`}>
+                <CalendarPlus aria-hidden />
+                {copy.planDayHere}
+              </LocaleLink>
+            </Button>
+            <SaveExperienceButton slug={experience.slug} />
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-muted">
           <span className="inline-flex items-center gap-1.5">

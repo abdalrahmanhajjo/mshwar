@@ -29,13 +29,26 @@ async def list_trips(
     page, page_size, offset = paging
     rows = (
         await db.execute(
-            text("SELECT id, title, status, created_at, total FROM app.list_my_trips(:user_id, :lim, :off)"),
+            text(
+                "SELECT id, title, status, created_at, total, planned_date, stop_count "
+                "FROM app.list_my_trips(:user_id, :lim, :off)"
+            ),
             {"user_id": str(session["user_id"]), "lim": page_size, "off": offset},
         )
     ).all()
     total = int(rows[0][4]) if rows else 0
     return TripListOut(
-        items=[TripSummary(id=row[0], name=row[1], status=row[2], created_at=row[3]) for row in rows],
+        items=[
+            TripSummary(
+                id=row[0],
+                name=row[1],
+                status=row[2],
+                created_at=row[3],
+                planned_date=row[5],
+                stop_count=int(row[6] or 0),
+            )
+            for row in rows
+        ],
         page=page,
         page_size=page_size,
         total=total,

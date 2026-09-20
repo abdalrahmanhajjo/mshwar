@@ -17,6 +17,8 @@ class TripSummary(BaseModel):
     name: str
     status: str
     created_at: datetime
+    planned_date: datetime | None = None
+    stop_count: int = 0
 
 
 class TripListOut(HubPage):

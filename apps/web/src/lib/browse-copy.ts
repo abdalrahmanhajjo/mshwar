@@ -64,6 +64,7 @@ export type BrowseKey =
   | "ideasEyebrow"
   | "ideasTitle"
   | "ideasBody"
+  | "planDayHere"
   | "exploreDay"
   | "fromPrice"
   | "onRequest"
@@ -242,6 +243,7 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     ideasEyebrow: "A head start on a good day",
     ideasTitle: "A little inspiration, ready to go.",
     ideasBody: "Sample collections you can adapt to your date, group and budget.",
+    planDayHere: "Plan a day here",
     exploreDay: "Explore this day",
     fromPrice: "From",
     onRequest: "On request",
@@ -419,6 +421,7 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     ideasEyebrow: "بداية جيدة ليوم جميل",
     ideasTitle: "قليل من الإلهام، جاهز للانطلاق.",
     ideasBody: "مجموعات عيّنة يمكن تعديلها حسب التاريخ والمجموعة والميزانية.",
+    planDayHere: "خطّط يوماً هنا",
     exploreDay: "استكشف هذا اليوم",
     fromPrice: "من",
     onRequest: "عند الطلب",
@@ -596,6 +599,7 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     ideasEyebrow: "Une longueur d’avance sur une belle journée",
     ideasTitle: "Un peu d’inspiration, prête à partir.",
     ideasBody: "Collections d’exemple à adapter à votre date, groupe et budget.",
+    planDayHere: "Planifier une journée ici",
     exploreDay: "Explorer cette journée",
     fromPrice: "À partir de",
     onRequest: "Sur demande",
