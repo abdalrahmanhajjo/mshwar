@@ -58,6 +58,8 @@ export type HubKey =
   | "planned"
   | "allDays"
   | "noTripsDay"
+  | "stopsOne"
+  | "stopsOther"
   | "bookedOn"
   | "checkoutBookings"
   | "listingBookings"
@@ -121,6 +123,8 @@ export const hubCopy: Record<Locale, Record<HubKey, string>> = {
     planned: "Planned",
     allDays: "All days",
     noTripsDay: "No trips on this day.",
+    stopsOne: "{count} stop",
+    stopsOther: "{count} stops",
     bookedOn: "Requested",
     checkoutBookings: "Checkout bookings",
     listingBookings: "Booking requests",
@@ -183,6 +187,8 @@ export const hubCopy: Record<Locale, Record<HubKey, string>> = {
     planned: "مخطّطة",
     allDays: "كل الأيام",
     noTripsDay: "لا رحلات في هذا اليوم.",
+    stopsOne: "محطة واحدة",
+    stopsOther: "{count} محطات",
     bookedOn: "طُلب في",
     checkoutBookings: "حجوزات الدفع",
     listingBookings: "طلبات الحجز",
@@ -245,6 +251,8 @@ export const hubCopy: Record<Locale, Record<HubKey, string>> = {
     planned: "Planifié",
     allDays: "Tous les jours",
     noTripsDay: "Aucun voyage ce jour-là.",
+    stopsOne: "{count} étape",
+    stopsOther: "{count} étapes",
     bookedOn: "Demandé le",
     checkoutBookings: "Réservations payées",
     listingBookings: "Demandes de réservation",
