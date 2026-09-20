@@ -413,6 +413,23 @@ test.describe("MSHWAR-36 / MSHWAR-39 marketing browse", () => {
     await assertNoHorizontalScroll(page);
   });
 
+  test("filters collapse on a phone and stay open on desktop", async ({ page }) => {
+    // MSHWAR: the advanced filter rail is a toggle on phones so the listing
+    // stays above the fold, but it must never be hidden on desktop.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/experiences?category=coast&sort=price&available=1");
+    await expect(page.getByLabel("Price")).toBeHidden();
+    await page.getByRole("button", { name: "Filters" }).click();
+    await expect(page.getByLabel("Price")).toBeVisible();
+    await expect(page.getByLabel("Distance from Beirut")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/experiences?category=coast&sort=price&available=1");
+    await expect(page.getByLabel("Price")).toBeVisible();
+    await expect(page.getByLabel("Distance from Beirut")).toBeVisible();
+  });
+
   test("checkout at 390px shows mode before pay in EN/AR/FR", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/checkout?listing=slow-day-byblos");
