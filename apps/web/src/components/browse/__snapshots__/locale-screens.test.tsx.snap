@@ -7012,31 +7012,73 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
         >
           A slow day in Byblos
         </h1>
-        <button
-          aria-label="حفظ التجربة"
-          aria-pressed="false"
-          class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-pill font-medium transition-[background-color,color,border-color,box-shadow,transform] duration-quick ease-standard active:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] border border-brand/70 bg-transparent text-text hover:border-brand hover:bg-brand-subtle px-4 text-[0.8125rem]"
-          type="button"
+        <div
+          class="flex flex-wrap items-center gap-2"
         >
-          <svg
-            aria-hidden="true"
-            class="lucide lucide-heart size-4 transition-transform"
-            fill="none"
-            height="24"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-            width="24"
-            xmlns="http://www.w3.org/2000/svg"
+          <a
+            class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-pill font-medium transition-[background-color,color,border-color,box-shadow,transform] duration-quick ease-standard active:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] bg-brand text-brand-foreground shadow-sm hover:bg-brand/90 px-4 text-[0.8125rem]"
+            href="/ar/plan?add=slow-day-byblos&destination=byblos"
           >
-            <path
-              d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-            />
-          </svg>
-          حفظ التجربة
-        </button>
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-calendar-plus"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 2v4"
+              />
+              <path
+                d="M16 2v4"
+              />
+              <path
+                d="M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8"
+              />
+              <path
+                d="M3 10h18"
+              />
+              <path
+                d="M16 19h6"
+              />
+              <path
+                d="M19 16v6"
+              />
+            </svg>
+            خطّط يوماً هنا
+          </a>
+          <button
+            aria-label="حفظ التجربة"
+            aria-pressed="false"
+            class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-pill font-medium transition-[background-color,color,border-color,box-shadow,transform] duration-quick ease-standard active:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] border border-brand/70 bg-transparent text-text hover:border-brand hover:bg-brand-subtle px-4 text-[0.8125rem]"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-heart size-4 transition-transform"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
+              />
+            </svg>
+            حفظ التجربة
+          </button>
+        </div>
       </div>
       <div
         class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-muted"
@@ -8787,31 +8829,73 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
         >
           A slow day in Byblos
         </h1>
-        <button
-          aria-label="Save experience"
-          aria-pressed="false"
-          class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-pill font-medium transition-[background-color,color,border-color,box-shadow,transform] duration-quick ease-standard active:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] border border-brand/70 bg-transparent text-text hover:border-brand hover:bg-brand-subtle px-4 text-[0.8125rem]"
-          type="button"
+        <div
+          class="flex flex-wrap items-center gap-2"
         >
-          <svg
-            aria-hidden="true"
-            class="lucide lucide-heart size-4 transition-transform"
-            fill="none"
-            height="24"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-            width="24"
-            xmlns="http://www.w3.org/2000/svg"
+          <a
+            class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-pill font-medium transition-[background-color,color,border-color,box-shadow,transform] duration-quick ease-standard active:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] bg-brand text-brand-foreground shadow-sm hover:bg-brand/90 px-4 text-[0.8125rem]"
+            href="/plan?add=slow-day-byblos&destination=byblos"
           >
-            <path
-              d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-            />
-          </svg>
-          Save experience
-        </button>
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-calendar-plus"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 2v4"
+              />
+              <path
+                d="M16 2v4"
+              />
+              <path
+                d="M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8"
+              />
+              <path
+                d="M3 10h18"
+              />
+              <path
+                d="M16 19h6"
+              />
+              <path
+                d="M19 16v6"
+              />
+            </svg>
+            Plan a day here
+          </a>
+          <button
+            aria-label="Save experience"
+            aria-pressed="false"
+            class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-pill font-medium transition-[background-color,color,border-color,box-shadow,transform] duration-quick ease-standard active:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] border border-brand/70 bg-transparent text-text hover:border-brand hover:bg-brand-subtle px-4 text-[0.8125rem]"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-heart size-4 transition-transform"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
+              />
+            </svg>
+            Save experience
+          </button>
+        </div>
       </div>
       <div
         class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-muted"
@@ -10562,31 +10646,73 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
         >
           A slow day in Byblos
         </h1>
-        <button
-          aria-label="Enregistrer l’expérience"
-          aria-pressed="false"
-          class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-pill font-medium transition-[background-color,color,border-color,box-shadow,transform] duration-quick ease-standard active:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] border border-brand/70 bg-transparent text-text hover:border-brand hover:bg-brand-subtle px-4 text-[0.8125rem]"
-          type="button"
+        <div
+          class="flex flex-wrap items-center gap-2"
         >
-          <svg
-            aria-hidden="true"
-            class="lucide lucide-heart size-4 transition-transform"
-            fill="none"
-            height="24"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-            width="24"
-            xmlns="http://www.w3.org/2000/svg"
+          <a
+            class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-pill font-medium transition-[background-color,color,border-color,box-shadow,transform] duration-quick ease-standard active:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] bg-brand text-brand-foreground shadow-sm hover:bg-brand/90 px-4 text-[0.8125rem]"
+            href="/fr/plan?add=slow-day-byblos&destination=byblos"
           >
-            <path
-              d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-            />
-          </svg>
-          Enregistrer l’expérience
-        </button>
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-calendar-plus"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 2v4"
+              />
+              <path
+                d="M16 2v4"
+              />
+              <path
+                d="M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8"
+              />
+              <path
+                d="M3 10h18"
+              />
+              <path
+                d="M16 19h6"
+              />
+              <path
+                d="M19 16v6"
+              />
+            </svg>
+            Planifier une journée ici
+          </a>
+          <button
+            aria-label="Enregistrer l’expérience"
+            aria-pressed="false"
+            class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-pill font-medium transition-[background-color,color,border-color,box-shadow,transform] duration-quick ease-standard active:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface min-h-[var(--layout-min-target)] border border-brand/70 bg-transparent text-text hover:border-brand hover:bg-brand-subtle px-4 text-[0.8125rem]"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-heart size-4 transition-transform"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
+              />
+            </svg>
+            Enregistrer l’expérience
+          </button>
+        </div>
       </div>
       <div
         class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-muted"

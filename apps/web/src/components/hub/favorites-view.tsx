@@ -10,7 +10,9 @@ import { LocaleLink } from "@/components/shell/locale-link";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Notice } from "@/components/ui/notice";
-import { getExperience } from "@/lib/catalog";
+import { getExperience, type Experience } from "@/lib/catalog";
+import { apiRequest } from "@/lib/api/client";
+import { listingFromApi } from "@/lib/catalogue-api";
 import { fetchFavorites, mergeFavorites, removeFavorite, type FavoriteRecord } from "@/lib/hub";
 import { useHubCopy } from "@/lib/hub-copy";
 import { useSavedExperiences } from "@/lib/saved-experiences";
@@ -21,6 +23,41 @@ export function FavoritesView() {
   const loader = React.useCallback((page: number) => fetchFavorites(page), []);
   const { page, data, error, pending, load, setData } = useHubPage(loader);
   const synced = React.useRef(false);
+  const [resolved, setResolved] = React.useState<Record<string, Experience>>({});
+
+  React.useEffect(() => {
+    const missing = (data?.items ?? [])
+      .map((item) => item.listing_slug)
+      .filter((slug) => !getExperience(slug) && !resolved[slug]);
+    if (!missing.length) {
+      return;
+    }
+    let cancelled = false;
+    type ApiListingItem = Parameters<typeof listingFromApi>[0];
+    void Promise.all(
+      missing.map((slug) =>
+        apiRequest<ApiListingItem>(`/api/v1/catalogue/experiences/${encodeURIComponent(slug)}`)
+          .then((row) => [slug, listingFromApi(row)] as const)
+          .catch(() => null),
+      ),
+    ).then((pairs) => {
+      if (cancelled) {
+        return;
+      }
+      const additions: Record<string, Experience> = {};
+      for (const pair of pairs) {
+        if (pair) {
+          additions[pair[0]] = pair[1];
+        }
+      }
+      if (Object.keys(additions).length) {
+        setResolved((prev) => ({ ...prev, ...additions }));
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [data, resolved]);
 
   React.useEffect(() => {
     if (synced.current || slugs.length === 0) {
@@ -84,7 +121,7 @@ export function FavoritesView() {
         <div className="grid gap-6">
           <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3">
             {data.items.map((item) => {
-              const experience = getExperience(item.listing_slug);
+              const experience = getExperience(item.listing_slug) ?? resolved[item.listing_slug];
               return (
                 <div key={item.id} className="grid content-start gap-3">
                   {experience ? (

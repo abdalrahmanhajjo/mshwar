@@ -14,6 +14,8 @@ export type TripRecord = {
   name: string;
   status: "draft" | "locked" | "archived" | string;
   created_at: string;
+  planned_date?: string | null;
+  stop_count?: number;
 };
 
 export type FavoriteRecord = {
@@ -44,14 +46,18 @@ export type NotificationRecord = {
   locale?: string | null;
 };
 
-function listUrl(path: string, page: number): string {
-  return `${path}?page=${page}&page_size=${HUB_PAGE_SIZE}`;
+function listUrl(path: string, page: number, pageSize: number = HUB_PAGE_SIZE): string {
+  return `${path}?page=${page}&page_size=${pageSize}`;
 }
 
 const request = apiRequest;
 
 export function fetchTrips(page = 1) {
   return request<HubPage<TripRecord>>(listUrl("/api/v1/trips", page));
+}
+
+export function fetchAllTrips(pageSize = 100) {
+  return request<HubPage<TripRecord>>(listUrl("/api/v1/trips", 1, pageSize));
 }
 
 export function archiveTrip(id: string) {

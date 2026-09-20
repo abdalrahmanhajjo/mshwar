@@ -19,6 +19,7 @@ import {
   Wand2,
 } from "lucide-react";
 import { CatalogImage } from "@/components/browse/catalog-image";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { Badge } from "@/components/ui/badge";
 import { Notice } from "@/components/ui/notice";
 import { Button } from "@/components/ui/button";
@@ -478,6 +479,9 @@ export function Timeline({
           const leg = legsByPosition.get(index);
           const slug = stop.snapshot.slug ?? stop.slug;
           const listing = slug ? getExperience(slug) : undefined;
+          const imageSrc = stop.image || listing?.image || "";
+          const imageAlt = stop.image_alt || listing?.imageAlt || stop.snapshot.title || stop.title || "";
+          const detailHref = slug ? `/experiences/${slug}` : undefined;
           return (
             <li key={stop.id} className="grid gap-3">
               {leg ? (
@@ -502,8 +506,14 @@ export function Timeline({
                   )}
                 >
                   <div className="aspect-[4/3] overflow-hidden rounded-[0.9rem] bg-brand-subtle sm:aspect-square">
-                    {listing ? (
-                      <CatalogImage src={listing.image} alt={listing.imageAlt} />
+                    {imageSrc ? (
+                      detailHref ? (
+                        <LocaleLink href={detailHref} target="_blank" rel="noopener" aria-label={imageAlt}>
+                          <CatalogImage src={imageSrc} alt={imageAlt} />
+                        </LocaleLink>
+                      ) : (
+                        <CatalogImage src={imageSrc} alt={imageAlt} />
+                      )
                     ) : (
                       <div className="grid h-full place-items-center text-text-muted">
                         <MapPin className="size-6" aria-hidden />
@@ -523,7 +533,20 @@ export function Timeline({
                         </Badge>
                       ) : null}
                     </div>
-                    <h3 className="title-card text-[1.3rem]">{stop.snapshot.title || stop.title}</h3>
+                    <h3 className="title-card text-[1.3rem]">
+                      {detailHref ? (
+                        <LocaleLink
+                          href={detailHref}
+                          target="_blank"
+                          rel="noopener"
+                          className="transition-colors hover:text-brand"
+                        >
+                          {stop.snapshot.title || stop.title}
+                        </LocaleLink>
+                      ) : (
+                        stop.snapshot.title || stop.title
+                      )}
+                    </h3>
                     <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-text-muted">
                       <span className="inline-flex items-center gap-1.5">
                         <Clock className="size-3.5" aria-hidden />

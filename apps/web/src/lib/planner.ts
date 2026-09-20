@@ -251,6 +251,8 @@ export type PlanStop = {
   slug?: string;
   title?: string;
   booking_mode?: string;
+  image?: string | null;
+  image_alt?: string | null;
 };
 
 export type PlanLeg = {

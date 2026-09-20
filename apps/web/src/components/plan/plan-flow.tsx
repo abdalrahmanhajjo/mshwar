@@ -72,11 +72,13 @@ export function PlanFlow({
   initialTripId,
   collectionTitle,
   addSlug,
+  addDestination,
 }: {
   destinations: Destination[];
   initialTripId?: string;
   collectionTitle?: string;
   addSlug?: string;
+  addDestination?: string;
 }) {
   const copy = usePlannerCopy();
   const checkout = useCheckoutCopy();
@@ -161,6 +163,49 @@ export function PlanFlow({
     };
   }, [initialTripId, copy]);
 
+  // Deep-link from a place: pre-load it into a manual plan (opened in this tab).
+  React.useEffect(() => {
+    if (!addSlug || initialTripId) {
+      return;
+    }
+    let cancelled = false;
+    type ApiListingItem = Parameters<typeof listingFromApi>[0];
+    void apiRequest<ApiListingItem>(`/api/v1/catalogue/experiences/${encodeURIComponent(addSlug)}`)
+      .then(async (row) => {
+        if (cancelled) {
+          return;
+        }
+        const exp = listingFromApi(row);
+        const destination = addDestination || exp.destinationSlug;
+        setMode("manual");
+        setDestSlug(destination);
+        setPicks([exp]);
+        setStep("places");
+        if (destination) {
+          setLoadingPlaces(true);
+          try {
+            const search = new URLSearchParams({ destination, page: "1", pageSize: "48" });
+            const data = await apiRequest<{ items: ApiListingItem[] }>(`/api/v1/catalogue/experiences?${search}`);
+            if (!cancelled) {
+              setPlaceOptions(data.items.map(listingFromApi));
+            }
+          } catch {
+            if (!cancelled) {
+              setPlaceOptions([]);
+            }
+          } finally {
+            if (!cancelled) {
+              setLoadingPlaces(false);
+            }
+          }
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [addSlug, addDestination, initialTripId]);
+
   async function run(task: () => Promise<PlannerSession>) {
     setPending(true);
     setError(null);
@@ -213,6 +258,56 @@ export function PlanFlow({
         locale,
       }),
     );
+  }
+
+  async function editManually() {
+    if (!plan) {
+      return;
+    }
+    const slugs = plan.stops
+      .map((stop) => stop.snapshot.slug ?? stop.slug)
+      .filter((slug): slug is string => Boolean(slug));
+    if (!slugs.length) {
+      return;
+    }
+    setPending(true);
+    type ApiListingItem = Parameters<typeof listingFromApi>[0];
+    try {
+      const resolved = await Promise.all(
+        slugs.map((slug) =>
+          apiRequest<ApiListingItem>(`/api/v1/catalogue/experiences/${encodeURIComponent(slug)}`)
+            .then(listingFromApi)
+            .catch(() => null),
+        ),
+      );
+      const picksResolved = resolved.filter((item): item is Experience => item !== null);
+      if (!picksResolved.length) {
+        return;
+      }
+      setPicks(picksResolved);
+      setMode("manual");
+      setManualTripId(plan.trip_id);
+      const destination = picksResolved[0]?.destinationSlug;
+      if (destination) {
+        setDestSlug(destination);
+      }
+      setPlaceOptions([]);
+      setStep("places");
+      if (destination) {
+        setLoadingPlaces(true);
+        try {
+          const search = new URLSearchParams({ destination, page: "1", pageSize: "48" });
+          const data = await apiRequest<{ items: ApiListingItem[] }>(`/api/v1/catalogue/experiences?${search}`);
+          setPlaceOptions(data.items.map(listingFromApi));
+        } catch {
+          setPlaceOptions([]);
+        } finally {
+          setLoadingPlaces(false);
+        }
+      }
+    } finally {
+      setPending(false);
+    }
   }
 
   async function openPlaces() {
@@ -460,6 +555,7 @@ export function PlanFlow({
           {picks.length ? (
             <div className="grid gap-3 rounded-card border border-border-subtle bg-surface-raised p-4 md:p-5">
               <p className="text-sm text-text-muted">{copy.flowReorderHint}</p>
+              <p className="text-xs text-text-muted">{copy.flowNoOverlap}</p>
               <ol className="grid gap-2">
                 {picks.map((item, index) => (
                   <li
@@ -689,20 +785,26 @@ export function PlanFlow({
                       : copy.flowReviewHint}
               </p>
             </div>
-            {!initialTripId ? (
-              <div className="flex flex-wrap gap-2">
-                {mode === "manual" ? (
-                  <Button type="button" variant="outline" onClick={() => setStep("places")}>
-                    <Pencil aria-hidden />
-                    {copy.flowAddMore}
-                  </Button>
-                ) : null}
+            <div className="flex flex-wrap gap-2">
+              {plan && mode === "manual" && !initialTripId ? (
+                <Button type="button" variant="outline" onClick={() => setStep("places")}>
+                  <Pencil aria-hidden />
+                  {copy.flowAddMore}
+                </Button>
+              ) : null}
+              {plan && mode === "ai" ? (
+                <Button type="button" variant="outline" disabled={pending} onClick={() => void editManually()}>
+                  <Pencil aria-hidden />
+                  {copy.flowEditManual}
+                </Button>
+              ) : null}
+              {!initialTripId ? (
                 <Button type="button" variant="outline" onClick={startOver}>
                   <RefreshCw aria-hidden />
                   {copy.flowStartOver}
                 </Button>
-              </div>
-            ) : null}
+              ) : null}
+            </div>
           </div>
 
           {pending && !plan ? (

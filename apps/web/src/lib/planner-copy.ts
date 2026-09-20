@@ -124,6 +124,8 @@ export type PlannerKey =
   | "flowAddMore"
   | "flowManualNeedPicks"
   | "flowManualReviewHint"
+  | "flowEditManual"
+  | "flowNoOverlap"
   | "stopsLabel"
   | "estimateLabel"
   | "ofBudget"
@@ -263,6 +265,8 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flowAddMore: "Add more places",
     flowManualNeedPicks: "Add at least one place to continue.",
     flowManualReviewHint: "Saved to My Trips. Times are estimated from each place’s typical visit length.",
+    flowEditManual: "Edit manually",
+    flowNoOverlap: "Stops are scheduled back-to-back, so times never overlap.",
     stopsLabel: "stops",
     estimateLabel: "Your experience estimate",
     ofBudget: "of {budget} budget",
@@ -402,6 +406,8 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flowAddMore: "إضافة أماكن أخرى",
     flowManualNeedPicks: "أضف مكاناً واحداً على الأقل للمتابعة.",
     flowManualReviewHint: "محفوظ في رحلاتي. الأوقات تقديرية بناءً على مدة الزيارة المعتادة لكل مكان.",
+    flowEditManual: "تعديل يدوي",
+    flowNoOverlap: "المحطات مجدولة تِباعاً، لذا لا تتداخل الأوقات.",
     stopsLabel: "محطات",
     estimateLabel: "تقدير تجربتك",
     ofBudget: "من ميزانية {budget}",
@@ -545,6 +551,8 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flowAddMore: "Ajouter d'autres lieux",
     flowManualNeedPicks: "Ajoutez au moins un lieu pour continuer.",
     flowManualReviewHint: "Enregistré dans Mes voyages. Les horaires sont estimés selon la durée de visite habituelle.",
+    flowEditManual: "Modifier manuellement",
+    flowNoOverlap: "Les étapes s'enchaînent, les horaires ne se chevauchent jamais.",
     stopsLabel: "étapes",
     estimateLabel: "Estimation de votre journée",
     ofBudget: "sur un budget de {budget}",

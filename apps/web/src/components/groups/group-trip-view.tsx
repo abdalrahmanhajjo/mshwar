@@ -26,6 +26,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
 import { CostPanel, Timeline } from "@/components/planner/planner-view";
+import { cn } from "@/lib/utils";
 import { useGroupCopy } from "@/lib/group-copy";
 import { usePlannerCopy } from "@/lib/planner-copy";
 import { formatMinor, type PlanDocument } from "@/lib/planner";
@@ -84,6 +85,40 @@ function toPlanDocument(itinerary: GroupItinerary | null): PlanDocument | null {
     cost_items: [],
     total_minor: itinerary.total_minor ?? 0,
   };
+}
+
+function SummaryChips({
+  items,
+  titleToSlug,
+  tone,
+}: {
+  items: { label: string }[];
+  titleToSlug: Map<string, string>;
+  tone: "success" | "danger";
+}) {
+  if (!items.length) {
+    return <p className="text-text-muted">—</p>;
+  }
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {items.map((item) => {
+        const slug = titleToSlug.get(item.label);
+        const chip = cn(
+          "inline-flex items-center gap-1 rounded-pill px-2.5 py-1 text-xs font-medium",
+          tone === "success" ? "bg-success/15 text-success" : "bg-danger/15 text-danger",
+        );
+        return slug ? (
+          <LocaleLink key={item.label} href={`/experiences/${slug}`} target="_blank" rel="noopener" className={chip}>
+            {item.label}
+          </LocaleLink>
+        ) : (
+          <span key={item.label} className={chip}>
+            {item.label}
+          </span>
+        );
+      })}
+    </div>
+  );
 }
 
 export function GroupTripView({ tripId }: { tripId: string }) {
@@ -162,6 +197,14 @@ export function GroupTripView({ tripId }: { tripId: string }) {
 
   const totalVotes = (item: { yes: number; no: number }) => Math.max(1, item.yes + item.no);
   const planDoc = toPlanDocument(itinerary);
+  const titleToSlug = new Map<string, string>();
+  for (const stop of itinerary?.stops ?? []) {
+    const label = stop.snapshot?.title || stop.title;
+    const slug = stop.snapshot?.slug || stop.slug;
+    if (label && slug) {
+      titleToSlug.set(label, slug);
+    }
+  }
   const isOwner = trip?.role === "owner";
   const locked = trip?.status === "locked";
   const perPerson =
@@ -351,11 +394,11 @@ export function GroupTripView({ tripId }: { tripId: string }) {
             <CardContent className="grid gap-4 text-sm sm:grid-cols-3">
               <section className="grid content-start gap-2 rounded-control bg-success-subtle/60 p-4">
                 <h3 className="font-semibold text-success">{copy.agreement}</h3>
-                <p>{(summary?.agreement ?? []).map((item) => item.label).join(", ") || "—"}</p>
+                <SummaryChips items={summary?.agreement ?? []} titleToSlug={titleToSlug} tone="success" />
               </section>
               <section className="grid content-start gap-2 rounded-control bg-danger-subtle/60 p-4">
                 <h3 className="font-semibold text-danger">{copy.disagreement}</h3>
-                <p>{(summary?.disagreement ?? []).map((item) => item.label).join(", ") || "—"}</p>
+                <SummaryChips items={summary?.disagreement ?? []} titleToSlug={titleToSlug} tone="danger" />
               </section>
               <section className="grid content-start gap-2 rounded-control bg-surface-sunken p-4">
                 <h3 className="font-semibold">{copy.tradeoffs}</h3>

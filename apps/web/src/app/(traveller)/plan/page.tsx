@@ -11,6 +11,7 @@ export default async function PlanPage({
   const collectionSlug = typeof params.collection === "string" ? params.collection : "";
   const tripId = typeof params.trip === "string" ? params.trip : "";
   const addSlug = typeof params.add === "string" ? params.add : "";
+  const addDestination = typeof params.destination === "string" ? params.destination : "";
   const [destinations, collection] = await Promise.all([
     loadDestinations(),
     collectionSlug ? loadCollection(collectionSlug) : Promise.resolve(undefined),
@@ -23,6 +24,7 @@ export default async function PlanPage({
         initialTripId={tripId || undefined}
         collectionTitle={collection?.title}
         addSlug={addSlug || undefined}
+        addDestination={addDestination || undefined}
       />
     </ShellMain>
   );
