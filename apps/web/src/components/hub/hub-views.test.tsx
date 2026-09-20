@@ -72,6 +72,42 @@ describe("account hub views", () => {
     await waitFor(() => expect(screen.getByText("Archived")).toBeInTheDocument());
   });
 
+  it("shows trips on a calendar and filters by the planned day", async () => {
+    const iso = new Date().toISOString();
+    const fetchMock = vi.fn(async (url: string) => {
+      if (String(url).includes("/auth/me")) {
+        return jsonResponse({ id: "1", email: "a@b.com", display_name: "Ada", locale: "en" });
+      }
+      return jsonResponse({
+        items: [
+          { id: "trip-9", name: "Cedars Day", status: "draft", created_at: iso, planned_date: iso, stop_count: 3 },
+        ],
+        page: 1,
+        page_size: 100,
+        total: 1,
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(wrap(<TripsView />));
+    expect(await screen.findByText("Cedars Day")).toBeInTheDocument();
+
+    // Switch to the calendar view.
+    fireEvent.click(screen.getByRole("tab", { name: /Calendar/ }));
+    // The month label renders and the trip is listed under the calendar.
+    const monthLabel = new Intl.DateTimeFormat("en", { month: "long", year: "numeric" }).format(new Date());
+    expect(await screen.findByText(monthLabel)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getAllByText("Cedars Day").length).toBeGreaterThan(0));
+
+    // Only days that have trips are enabled; click that day to filter.
+    const dayCell = screen
+      .getAllByRole("button")
+      .find((b) => b.getAttribute("aria-pressed") !== null && !b.hasAttribute("disabled"));
+    expect(dayCell).toBeDefined();
+    fireEvent.click(dayCell as HTMLElement);
+    expect(await screen.findByText("All days")).toBeInTheDocument();
+    expect(screen.getAllByText("Cedars Day").length).toBeGreaterThan(0);
+  });
+
   it("shows favorites empty state and unfavorites a card", async () => {
     const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
       if (String(url).includes("/auth/me")) {
