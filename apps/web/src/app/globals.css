@@ -26,6 +26,7 @@
 
 html {
   max-width: 100%;
+  overflow-x: clip;
   -webkit-text-size-adjust: 100%;
   text-rendering: optimizeLegibility;
 }
@@ -37,6 +38,7 @@ body {
   font-optical-sizing: auto;
   min-height: 100vh;
   max-width: 100%;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
