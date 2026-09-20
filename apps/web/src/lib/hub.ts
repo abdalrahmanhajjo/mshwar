@@ -56,8 +56,17 @@ export function fetchTrips(page = 1) {
   return request<HubPage<TripRecord>>(listUrl("/api/v1/trips", page));
 }
 
-export function fetchAllTrips(pageSize = 100) {
-  return request<HubPage<TripRecord>>(listUrl("/api/v1/trips", 1, pageSize));
+export async function fetchAllTrips(): Promise<HubPage<TripRecord>> {
+  // The API caps page_size at 24, so page through until every trip is collected.
+  const size = 24;
+  const first = await request<HubPage<TripRecord>>(listUrl("/api/v1/trips", 1, size));
+  const items = [...first.items];
+  const totalPages = Math.min(Math.ceil((first.total || 0) / size), 40);
+  for (let pageNumber = 2; pageNumber <= totalPages; pageNumber += 1) {
+    const next = await request<HubPage<TripRecord>>(listUrl("/api/v1/trips", pageNumber, size));
+    items.push(...next.items);
+  }
+  return { ...first, items };
 }
 
 export function archiveTrip(id: string) {
