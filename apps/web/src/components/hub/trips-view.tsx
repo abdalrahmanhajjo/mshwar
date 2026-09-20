@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Notice } from "@/components/ui/notice";
-import { formatDate } from "@/i18n/format";
+import { formatDate, formatPlural } from "@/i18n/format";
 import { useGroupCopy } from "@/lib/group-copy";
 import { archiveTrip, fetchAllTrips, fetchTrips, type TripRecord } from "@/lib/hub";
 import { useHubCopy } from "@/lib/hub-copy";
@@ -97,7 +97,7 @@ function TripCard({
             {trip.stop_count ? (
               <span className="inline-flex items-center gap-1.5">
                 <Route className="size-4" strokeWidth={1.75} aria-hidden />
-                {trip.stop_count} {groupCopy.stopsLabel}
+                {formatPlural(locale, trip.stop_count, { one: copy.stopsOne, other: copy.stopsOther })}
               </span>
             ) : null}
           </div>
