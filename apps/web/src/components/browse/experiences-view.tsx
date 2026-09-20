@@ -105,7 +105,7 @@ export function ExperiencesView({
           <Button
             type="button"
             variant="outline"
-            className="h-12 px-6"
+            className="h-12 px-6 lg:hidden"
             aria-expanded={showFilters}
             aria-controls="experience-filters"
             onClick={() => setShowFilters((value) => !value)}
@@ -119,15 +119,19 @@ export function ExperiencesView({
             ) : null}
           </Button>
         </div>
-        {showFilters ? <FilterRail id="experience-filters" layout="panel" filters={filters} onChange={patch} /> : null}
+        {/* Collapsed on phones until the toggle opens it; always open from `lg` up. */}
+        <div className={cn("lg:block", showFilters ? "block" : "hidden")}>
+          <FilterRail id="experience-filters" layout="panel" filters={filters} onChange={patch} />
+        </div>
       </div>
 
       <div className="grid gap-4">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-3">
+          {/* Scrolls instead of widening the page when the labels outgrow a phone. */}
           <div
             role="group"
             aria-label={copy.kindAll}
-            className="inline-flex rounded-pill border border-border-subtle bg-surface-raised p-1"
+            className="scrollbar-hide inline-flex min-w-0 max-w-full overflow-x-auto rounded-pill border border-border-subtle bg-surface-raised p-1"
           >
             {LISTING_KINDS.map((kind) => {
               const active = (filters.kind ?? "all") === kind.slug;
@@ -137,7 +141,7 @@ export function ExperiencesView({
                   type="button"
                   aria-pressed={active}
                   className={cn(
-                    "inline-flex h-9 items-center rounded-pill px-4 text-sm font-medium transition-colors",
+                    "inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-pill px-4 text-sm font-medium transition-colors",
                     active ? "bg-brand text-brand-foreground" : "text-text-muted hover:text-text",
                     focusRing,
                   )}
