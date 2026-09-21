@@ -75,7 +75,7 @@ export function ContactView() {
       icon: Ticket,
       title: t("contactTravellersTitle"),
       body: t("contactTravellersBody"),
-      href: "/bookings",
+      href: "/trips",
       cta: t("openBookings"),
     },
     {

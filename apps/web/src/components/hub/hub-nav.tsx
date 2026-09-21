@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Bell, Heart, LifeBuoy, Route, Settings, Ticket } from "lucide-react";
+import { Bell, Heart, LifeBuoy, Route, Settings } from "lucide-react";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { useLocale } from "@/components/shell/locale-provider";
 import { PageHeader } from "@/components/ui/page-header";
@@ -11,7 +11,6 @@ import { cn, controlSize, focusRing } from "@/lib/utils";
 const HUB_LINKS = [
   { href: "/trips", key: "myTrips" as const, icon: Route },
   { href: "/favorites", key: "favorites" as const, icon: Heart },
-  { href: "/bookings", key: "bookings" as const, icon: Ticket },
   { href: "/notifications", key: "notifications" as const, icon: Bell },
   { href: "/settings", key: "settings" as const, icon: Settings },
 ];
