@@ -56,6 +56,10 @@ class RouteLeg:
     duration_seconds: int | None = None
     cache_hit: bool = False
     fetched_at: datetime | None = None
+    #: True when the duration came from Google's live/typical traffic model.
+    traffic_aware: bool = False
+    #: Seconds the traffic model adds over the free-flow duration.
+    traffic_delay_seconds: int = 0
 
     @property
     def presented_as(self) -> str:
@@ -178,7 +182,9 @@ class GoogleMapsProvider:
     ) -> RouteLeg:
         bucket = time_bucket(departure_at, settings.routing_time_bucket_minutes)
         payload = (
-            self.fixture if self.fixture is not None else self._fetch(origin_lat, origin_lng, dest_lat, dest_lng, mode)
+            self.fixture
+            if self.fixture is not None
+            else self._fetch(origin_lat, origin_lng, dest_lat, dest_lng, mode, departure_at)
         )
         return parse_google_matrix(payload, origin_lat, origin_lng, dest_lat, dest_lng, mode, bucket)
 
@@ -196,7 +202,9 @@ class GoogleMapsProvider:
         rows_per_call = max(1, GOOGLE_MAX_ELEMENTS_PER_REQUEST // max(len(destinations), 1))
         for start in range(0, len(origins), rows_per_call):
             chunk = origins[start : start + rows_per_call]
-            payload = self.fixture if self.fixture is not None else self._fetch_many(chunk, destinations, mode)
+            payload = (
+                self.fixture if self.fixture is not None else self._fetch_many(chunk, destinations, mode, departure_at)
+            )
             for row_index, origin in enumerate(chunk):
                 for col_index, dest in enumerate(destinations):
                     results[(origin, dest)] = parse_google_matrix(
@@ -205,12 +213,22 @@ class GoogleMapsProvider:
         return [results[pair] for pair in pairs]
 
     def _fetch(
-        self, origin_lat: float, origin_lng: float, dest_lat: float, dest_lng: float, mode: str
+        self,
+        origin_lat: float,
+        origin_lng: float,
+        dest_lat: float,
+        dest_lng: float,
+        mode: str,
+        departure_at: datetime | None = None,
     ) -> dict[str, Any]:
-        return self._fetch_many([(origin_lat, origin_lng)], [(dest_lat, dest_lng)], mode)
+        return self._fetch_many([(origin_lat, origin_lng)], [(dest_lat, dest_lng)], mode, departure_at)
 
     def _fetch_many(
-        self, origins: list[tuple[float, float]], destinations: list[tuple[float, float]], mode: str
+        self,
+        origins: list[tuple[float, float]],
+        destinations: list[tuple[float, float]],
+        mode: str,
+        departure_at: datetime | None = None,
     ) -> dict[str, Any]:
         params = {
             "origins": "|".join(f"{lat},{lng}" for lat, lng in origins),
@@ -218,6 +236,7 @@ class GoogleMapsProvider:
             "mode": "driving" if mode == "driving" else ("walking" if mode == "walking" else "transit"),
             "key": self.credential,
         }
+        params.update(traffic_params(mode, departure_at))
         try:
             with httpx.Client(transport=self.transport, timeout=5.0) as client:
                 response = client.get(self.matrix_url, params=params)
@@ -227,6 +246,24 @@ class GoogleMapsProvider:
             return {"status": "UNKNOWN_ERROR"}
         data = response.json()
         return data if isinstance(data, dict) else {"status": "UNKNOWN_ERROR"}
+
+
+def traffic_params(mode: str, departure_at: datetime | None) -> dict[str, str]:
+    """Ask Distance Matrix for a traffic-aware driving duration.
+
+    Google only returns ``duration_in_traffic`` for driving with a
+    ``departure_time`` that is not in the past, so a stop planned for last week
+    falls back to "now" rather than being rejected outright.
+    """
+    if mode != "driving":
+        return {}
+    if departure_at is None:
+        return {"departure_time": "now", "traffic_model": "best_guess"}
+    aware = departure_at if departure_at.tzinfo else departure_at.replace(tzinfo=UTC)
+    stamp = int(aware.timestamp())
+    if stamp <= int(datetime.now(UTC).timestamp()):
+        return {"departure_time": "now", "traffic_model": "best_guess"}
+    return {"departure_time": str(stamp), "traffic_model": "best_guess"}
 
 
 def parse_google_matrix(
@@ -274,6 +311,12 @@ def parse_google_matrix(
     base.source = "google"
     base.distance_m = distance
     base.duration_seconds = duration
+    in_traffic = (element.get("duration_in_traffic") or {}).get("value")
+    if isinstance(in_traffic, int) and in_traffic > 0:
+        # The traveller feels the jam, not the free-flow number.
+        base.duration_seconds = in_traffic
+        base.traffic_aware = True
+        base.traffic_delay_seconds = max(in_traffic - duration, 0)
     return base
 
 

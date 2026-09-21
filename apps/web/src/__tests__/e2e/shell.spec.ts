@@ -393,7 +393,7 @@ test.describe("MSHWAR-36 / MSHWAR-39 marketing browse", () => {
     await assertNoHorizontalScroll(page);
   });
 
-  test("experience filters stay in the URL and listing detail states booking mode", async ({ page }) => {
+  test("experience filters stay in the URL and listing detail offers the day plan", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/experiences?category=coast&sort=price&available=1");
     await expect(page).toHaveURL(/category=coast/);
@@ -403,8 +403,9 @@ test.describe("MSHWAR-36 / MSHWAR-39 marketing browse", () => {
     await expect(page.getByLabel("Distance from Beirut")).toBeVisible();
     await page.goto("/experiences/slow-day-byblos");
     await expect(page.getByRole("heading", { name: "A slow day in Byblos" })).toBeVisible();
-    await expect(page.locator("aside").first().getByText("Request to book", { exact: true })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Continue to checkout" }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Add to a full-day plan" }).first()).toBeVisible();
+    // Mshwar plans days; nothing on a place page reserves it.
+    await expect(page.getByRole("link", { name: "Continue to checkout" })).toHaveCount(0);
     await expect(page.getByText("Estimated from", { exact: true }).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: "Policies" })).toBeVisible();
     await expect(
@@ -428,22 +429,6 @@ test.describe("MSHWAR-36 / MSHWAR-39 marketing browse", () => {
     await page.goto("/experiences?category=coast&sort=price&available=1");
     await expect(page.getByLabel("Price")).toBeVisible();
     await expect(page.getByLabel("Distance from Beirut")).toBeVisible();
-  });
-
-  test("checkout at 390px shows mode before pay in EN/AR/FR", async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/checkout?listing=slow-day-byblos");
-    await expect(page.getByRole("heading", { name: "Checkout" })).toBeVisible();
-    // Waits out the brief streaming overlap, but still fails if the heading is really duplicated.
-    await expect(page.getByRole("heading", { name: "Booking mode" })).toHaveCount(1);
-    await assertNoHorizontalScroll(page);
-    await page.getByRole("button", { name: "العربية" }).first().click();
-    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-    await expect(page.getByText("طريقة الحجز")).toBeVisible();
-    await assertNoHorizontalScroll(page);
-    await page.getByRole("button", { name: "Français" }).first().click();
-    await expect(page.getByText("Mode de réservation")).toBeVisible();
-    await assertNoHorizontalScroll(page);
   });
 
   test("discover hub and inspiration stay usable at 390px", async ({ page }) => {
@@ -550,42 +535,9 @@ test.describe("MSHWAR-33 account hub", () => {
     await expect(page.getByRole("link", { name: "Explore experiences" })).toBeVisible();
     await assertNoHorizontalScroll(page);
 
-    await page.goto("/bookings");
-    await expect(page.getByRole("heading", { name: "Bookings" }).first()).toBeVisible();
-    await expect(page.getByText("No bookings yet.")).toBeVisible();
-    await assertNoHorizontalScroll(page);
-
     await page.goto("/notifications");
     await expect(page.getByRole("heading", { name: "Notifications" }).first()).toBeVisible();
     await expect(page.getByText("No notifications.")).toBeVisible();
-    await assertNoHorizontalScroll(page);
-  });
-
-  test("bookings show policy and cancel only with a reason", async ({ page }) => {
-    await signInForShell(page);
-    await mockHubApis(page, {
-      bookings: [
-        {
-          id: "book-1",
-          listing_slug: "slow-day-byblos",
-          business_id: 3,
-          status: "confirmed",
-          policy_summary: "Preview booking. Cancel requires a reason. Bookings are never deleted.",
-          reason: null,
-          created_at: "2026-09-01T00:00:00Z",
-        },
-      ],
-    });
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/bookings");
-    await expect(
-      page.getByText("Preview booking. Cancel requires a reason. Bookings are never deleted."),
-    ).toBeVisible();
-    await expect(page.getByRole("button", { name: "Cancel this booking" })).toBeDisabled();
-    await page.getByLabel("Why are you cancelling?").fill("Change of dates");
-    await page.getByRole("button", { name: "Cancel this booking" }).click();
-    await expect(page.getByText("Cancelled")).toBeVisible();
-    await expect(page.getByText("Change of dates")).toBeVisible();
     await assertNoHorizontalScroll(page);
   });
 });

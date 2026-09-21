@@ -7,17 +7,15 @@ import {
   Check,
   ChevronDown,
   ChevronLeft,
-  ChevronUp,
   Loader2,
   MapPin,
   Pencil,
-  Plus,
   RefreshCw,
   Sparkles,
-  Trash2,
   Users,
   Wallet,
   Wand2,
+  X,
 } from "lucide-react";
 import { CatalogImage } from "@/components/browse/catalog-image";
 import { LocaleLink } from "@/components/shell/locale-link";
@@ -31,6 +29,8 @@ import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
 import { Textarea } from "@/components/ui/textarea";
 import { PlanWorkspace } from "@/components/plan/plan-workspace";
+import { DayBuilder } from "@/components/plan/day-builder";
+import { useDayCheck } from "@/components/plan/day-panel";
 import { CostPanel, ReplacePanel, Timeline, plannerErrorMessage } from "@/components/planner/planner-view";
 import {
   acceptReplacement,
@@ -58,7 +58,9 @@ type Mode = "ai" | "manual";
 type Step = "destination" | "places" | "details" | "review";
 
 function stepsFor(mode: Mode): Step[] {
-  return mode === "manual" ? ["destination", "places", "details", "review"] : ["destination", "details", "review"];
+  // Manual: the date and the group decide opening hours, traffic and the driving
+  // estimate, so they are settled before the traveller starts picking places.
+  return mode === "manual" ? ["destination", "details", "places", "review"] : ["destination", "details", "review"];
 }
 
 function tomorrowIso() {
@@ -87,7 +89,7 @@ export function PlanFlow({
 
   const [mode, setMode] = React.useState<Mode>("ai");
   const [step, setStep] = React.useState<Step>(() => (initialTripId ? "review" : "destination"));
-  const [destSlug, setDestSlug] = React.useState<string | null>(null);
+  const [destSlugs, setDestSlugs] = React.useState<string[]>([]);
   const [date, setDate] = React.useState<string>(tomorrowIso);
   const [party, setParty] = React.useState<number>(2);
   const [budget, setBudget] = React.useState<number>(200);
@@ -99,6 +101,7 @@ export function PlanFlow({
   const [loadingPlaces, setLoadingPlaces] = React.useState(false);
   const [picks, setPicks] = React.useState<Experience[]>([]);
   const [manualTripId, setManualTripId] = React.useState<string | undefined>(undefined);
+  const [acceptWarnings, setAcceptWarnings] = React.useState(false);
 
   const [session, setSession] = React.useState<PlannerSession | null>(null);
   const [versions, setVersions] = React.useState<{ version: number; origin: string; sealed_at: string | null }[]>([]);
@@ -119,8 +122,18 @@ export function PlanFlow({
 
   const plan = session?.plan ?? null;
   const sessionId = session?.session_id || undefined;
-  const selectedDestination = destinations.find((item) => item.slug === destSlug) ?? null;
-  const pickedSlugs = new Set(picks.map((item) => item.slug));
+  const selectedDestination = destinations.find((item) => item.slug === destSlugs[0]) ?? null;
+  const windowStart = `${date}T09:00:00`;
+  const { preview: dayPreview, checking: dayChecking } = useDayCheck({
+    slugs: picks.map((item) => item.slug),
+    destinationSlugs: Array.from(new Set(picks.map((item) => item.destinationSlug).filter(Boolean))),
+    partySize: party,
+    windowStart,
+    budgetMinor: Math.round(budget * 100),
+    strictBudget: strict,
+    locale,
+  });
+  const dayBlocked = Boolean(dayPreview && !dayPreview.feasibility.feasible);
 
   // Reopening a saved trip: load its latest version read-only and jump to review.
   React.useEffect(() => {
@@ -178,7 +191,7 @@ export function PlanFlow({
         const exp = listingFromApi(row);
         const destination = addDestination || exp.destinationSlug;
         setMode("manual");
-        setDestSlug(destination);
+        setDestSlugs(destination ? [destination] : []);
         setPicks([exp]);
         setStep("places");
         if (destination) {
@@ -230,7 +243,7 @@ export function PlanFlow({
     const answers: Record<string, unknown> = {
       intent_anchor: selectedDestination.slug,
       party_size: party,
-      window_start: `${date}T09:00:00`,
+      window_start: windowStart,
       budget_minor: Math.round(budget * 100),
       strict_budget: strict,
     };
@@ -250,12 +263,13 @@ export function PlanFlow({
         experience_slugs: picks.map((item) => item.slug),
         destination_slugs: destinationSlugs,
         party_size: party,
-        window_start: `${date}T09:00:00`,
+        window_start: windowStart,
         budget_minor: Math.round(budget * 100),
         strict_budget: strict,
         currency: "USD",
         trip_id: manualTripId,
         locale,
+        accept_warnings: acceptWarnings,
       }),
     );
   }
@@ -289,7 +303,7 @@ export function PlanFlow({
       setManualTripId(plan.trip_id);
       const destination = picksResolved[0]?.destinationSlug;
       if (destination) {
-        setDestSlug(destination);
+        setDestSlugs([destination]);
       }
       setPlaceOptions([]);
       setStep("places");
@@ -312,14 +326,32 @@ export function PlanFlow({
 
   async function openPlaces() {
     setStep("places");
-    if (!selectedDestination) {
+    if (!destSlugs.length) {
       return;
     }
     setLoadingPlaces(true);
     try {
-      const search = new URLSearchParams({ destination: selectedDestination.slug, page: "1", pageSize: "48" });
-      const data = await apiRequest<{ items: ApiListingItem[] }>(`/api/v1/catalogue/experiences?${search}`);
-      setPlaceOptions(data.items.map(listingFromApi));
+      // One request per town, so a single day can mix places from several of them.
+      const pages = await Promise.all(
+        destSlugs.map((slug) => {
+          const search = new URLSearchParams({ destination: slug, page: "1", pageSize: "48" });
+          return apiRequest<{ items: ApiListingItem[] }>(`/api/v1/catalogue/experiences?${search}`).catch(() => ({
+            items: [] as ApiListingItem[],
+          }));
+        }),
+      );
+      const seen = new Set<string>();
+      const merged: Experience[] = [];
+      for (const page of pages) {
+        for (const row of page.items) {
+          const listing = listingFromApi(row);
+          if (!seen.has(listing.slug)) {
+            seen.add(listing.slug);
+            merged.push(listing);
+          }
+        }
+      }
+      setPlaceOptions(merged);
     } catch {
       setPlaceOptions([]);
     } finally {
@@ -327,7 +359,39 @@ export function PlanFlow({
     }
   }
 
+  function toggleDestination(slug: string) {
+    setDestSlugs((current) => {
+      if (mode === "ai") {
+        return [slug];
+      }
+      return current.includes(slug) ? current.filter((item) => item !== slug) : [...current, slug];
+    });
+  }
+
+  /** Put the picks into the order the feasibility check says drives least. */
+  function applyOrder(slugs: string[]) {
+    setPicks((current) => {
+      const bySlug = new Map(current.map((item) => [item.slug, item]));
+      const ordered = slugs.map((slug) => bySlug.get(slug)).filter((item): item is Experience => Boolean(item));
+      const rest = current.filter((item) => !slugs.includes(item.slug));
+      return [...ordered, ...rest];
+    });
+    setAcceptWarnings(false);
+  }
+
+  /** Keep the first suggested cluster; the rest stay in the catalogue for another day. */
+  function keepFirstDay(slugs: string[]) {
+    setPicks((current) => current.filter((item) => slugs.includes(item.slug)));
+    setAcceptWarnings(false);
+  }
+
+  function clearPicks() {
+    setPicks([]);
+    setAcceptWarnings(false);
+  }
+
   function togglePick(exp: Experience) {
+    setAcceptWarnings(false);
     setPicks((current) =>
       current.some((item) => item.slug === exp.slug)
         ? current.filter((item) => item.slug !== exp.slug)
@@ -336,6 +400,7 @@ export function PlanFlow({
   }
 
   function movePick(index: number, direction: -1 | 1) {
+    setAcceptWarnings(false);
     setPicks((current) => {
       const next = [...current];
       const target = index + direction;
@@ -357,7 +422,9 @@ export function PlanFlow({
     setRefine("");
     setPicks([]);
     setPlaceOptions([]);
+    setDestSlugs([]);
     setManualTripId(undefined);
+    setAcceptWarnings(false);
     setStep("destination");
   }
 
@@ -368,7 +435,9 @@ export function PlanFlow({
     setMode(next);
     setSession(null);
     setPicks([]);
+    setDestSlugs((current) => (next === "ai" ? current.slice(0, 1) : current));
     setManualTripId(undefined);
+    setAcceptWarnings(false);
     setError(null);
     setStep("destination");
   }
@@ -381,7 +450,9 @@ export function PlanFlow({
       : item === "places"
         ? copy.flowStepPlaces
         : item === "details"
-          ? copy.flowStepDetails
+          ? mode === "manual"
+            ? copy.flowStepSettings
+            : copy.flowStepDetails
           : copy.flowStepReview;
 
   return (
@@ -482,19 +553,57 @@ export function PlanFlow({
             <h2 id="pf-dest" className="title-section">
               {copy.flowChooseTitle}
             </h2>
-            <p className="max-w-2xl text-text-muted">{copy.flowChooseHint}</p>
+            <p className="max-w-2xl text-text-muted">
+              {mode === "manual" ? copy.flowMultiDestHint : copy.flowChooseHint}
+            </p>
           </div>
+          {mode === "manual" && destSlugs.length ? (
+            // What is chosen, and one tap to undo any of it — a pressed card alone
+            // is easy to lose track of once the grid scrolls.
+            <div className="flex flex-wrap items-center gap-2" aria-live="polite">
+              <span className="text-sm font-medium text-text-muted">
+                {interpolate(copy.flowDestinationsChosen, { n: destSlugs.length })}
+              </span>
+              {destinations
+                .filter((item) => destSlugs.includes(item.slug))
+                .map((item) => (
+                  <button
+                    key={item.slug}
+                    type="button"
+                    onClick={() => toggleDestination(item.slug)}
+                    aria-label={`${copy.flowRemove}: ${item.name}`}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-pill border border-brand/40 bg-brand-subtle px-3 py-1.5 text-sm font-medium text-brand transition-colors hover:bg-brand/15",
+                      focusRing,
+                    )}
+                  >
+                    {item.name}
+                    <X className="size-3.5" aria-hidden />
+                  </button>
+                ))}
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="text-text-muted"
+                onClick={() => setDestSlugs([])}
+              >
+                {copy.flowClearTowns}
+              </Button>
+            </div>
+          ) : null}
           {destinations.length ? (
             <>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {destinations.map((item) => {
-                  const active = item.slug === destSlug;
+                  const active = destSlugs.includes(item.slug);
                   return (
                     <button
                       key={item.slug}
                       type="button"
                       aria-pressed={active}
-                      onClick={() => setDestSlug(item.slug)}
+                      aria-label={item.name}
+                      onClick={() => toggleDestination(item.slug)}
                       className={cn(
                         "group relative grid overflow-hidden rounded-card border bg-surface-raised text-start shadow-sm transition-all hover:shadow-md",
                         active ? "border-brand ring-2 ring-brand/40" : "border-border-subtle",
@@ -522,13 +631,8 @@ export function PlanFlow({
                 })}
               </div>
               <div className="flex justify-end">
-                <Button
-                  type="button"
-                  size="lg"
-                  disabled={!destSlug}
-                  onClick={() => (mode === "manual" ? void openPlaces() : setStep("details"))}
-                >
-                  {copy.flowContinue}
+                <Button type="button" size="lg" disabled={!destSlugs.length} onClick={() => setStep("details")}>
+                  {mode === "manual" ? copy.flowContinueToDetails : copy.flowContinue}
                 </Button>
               </div>
             </>
@@ -539,139 +643,40 @@ export function PlanFlow({
       ) : null}
 
       {step === "places" && mode === "manual" && !initialTripId ? (
-        <section aria-labelledby="pf-places" className="grid gap-6">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="grid gap-2">
-              <h2 id="pf-places" className="title-section">
-                {copy.flowPickTitle}
-              </h2>
-              <p className="max-w-2xl text-text-muted">{copy.flowPickHint}</p>
+        <DayBuilder
+          places={placeOptions}
+          loading={loadingPlaces}
+          picks={picks}
+          towns={destinations.filter((item) => destSlugs.includes(item.slug))}
+          preview={dayPreview}
+          checking={dayChecking}
+          copy={copy}
+          locale={locale}
+          onToggle={togglePick}
+          onMove={movePick}
+          onReorder={applyOrder}
+          onSplit={keepFirstDay}
+          onClear={clearPicks}
+          onBack={() => setStep("details")}
+          action={
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                size="lg"
+                disabled={pending || !picks.length || (dayBlocked && !acceptWarnings)}
+                onClick={() => void saveManual()}
+              >
+                {pending ? <Loader2 className="animate-spin" aria-hidden /> : <Check aria-hidden />}
+                {pending ? copy.flowSaving : copy.flowSave}
+              </Button>
+              {dayBlocked && !acceptWarnings ? (
+                <Button type="button" size="lg" variant="outline" onClick={() => setAcceptWarnings(true)}>
+                  {copy.daySaveAnyway}
+                </Button>
+              ) : null}
             </div>
-            <Badge variant="secondary" className="text-sm">
-              {interpolate(copy.flowSelectedCount, { n: picks.length })}
-            </Badge>
-          </div>
-
-          {picks.length ? (
-            <div className="grid gap-3 rounded-card border border-border-subtle bg-surface-raised p-4 md:p-5">
-              <p className="text-sm text-text-muted">{copy.flowReorderHint}</p>
-              <p className="text-xs text-text-muted">{copy.flowNoOverlap}</p>
-              <ol className="grid gap-2">
-                {picks.map((item, index) => (
-                  <li
-                    key={item.slug}
-                    className="flex items-center gap-3 rounded-control border border-border-subtle bg-surface px-3 py-2.5"
-                  >
-                    <span className="grid size-7 shrink-0 place-items-center rounded-full bg-brand-subtle text-xs font-semibold tabular-nums text-brand">
-                      {index + 1}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate font-medium">{item.title}</span>
-                    <span className="flex items-center gap-1">
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="ghost"
-                        className="size-8 rounded-full"
-                        aria-label={copy.flowMoveUp}
-                        disabled={index === 0}
-                        onClick={() => movePick(index, -1)}
-                      >
-                        <ChevronUp className="size-4" aria-hidden />
-                      </Button>
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="ghost"
-                        className="size-8 rounded-full"
-                        aria-label={copy.flowMoveDown}
-                        disabled={index === picks.length - 1}
-                        onClick={() => movePick(index, 1)}
-                      >
-                        <ChevronDown className="size-4" aria-hidden />
-                      </Button>
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="ghost"
-                        className="size-8 rounded-full text-danger"
-                        aria-label={copy.flowRemove}
-                        onClick={() => togglePick(item)}
-                      >
-                        <Trash2 className="size-4" aria-hidden />
-                      </Button>
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          ) : (
-            <Notice role="status">{copy.flowManualNeedPicks}</Notice>
-          )}
-
-          {loadingPlaces ? (
-            <div className="grid place-items-center gap-2 py-10 text-text-muted">
-              <Loader2 className="size-6 animate-spin" aria-hidden />
-            </div>
-          ) : placeOptions.length ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {placeOptions.map((item) => {
-                const added = pickedSlugs.has(item.slug);
-                return (
-                  <div
-                    key={item.slug}
-                    className={cn(
-                      "grid overflow-hidden rounded-card border bg-surface-raised shadow-sm transition-colors",
-                      added ? "border-brand" : "border-border-subtle",
-                    )}
-                  >
-                    <span className="relative block aspect-[16/10] overflow-hidden">
-                      <CatalogImage src={item.image} alt={item.imageAlt} />
-                    </span>
-                    <div className="grid gap-2 p-4">
-                      <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-text-muted">
-                        <MapPin className="size-3.5" aria-hidden />
-                        {item.placeLabel}
-                      </span>
-                      <span className="title-card text-[1.1rem] leading-snug">{item.title}</span>
-                      <span className="line-clamp-2 text-sm text-text-muted">{item.summary}</span>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={added ? "outline" : "default"}
-                        className="mt-1 w-fit"
-                        onClick={() => togglePick(item)}
-                      >
-                        {added ? (
-                          <>
-                            <Check aria-hidden />
-                            {copy.flowPickAdded}
-                          </>
-                        ) : (
-                          <>
-                            <Plus aria-hidden />
-                            {copy.flowPickAdd}
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <Notice role="status">{copy.flowPickEmpty}</Notice>
-          )}
-
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <Button type="button" variant="ghost" onClick={() => setStep("destination")}>
-              <ChevronLeft className="rtl:-scale-x-100" aria-hidden />
-              {copy.flowBack}
-            </Button>
-            <Button type="button" size="lg" disabled={!picks.length} onClick={() => setStep("details")}>
-              {copy.flowContinue}
-            </Button>
-          </div>
-        </section>
+          }
+        />
       ) : null}
 
       {step === "details" && !initialTripId ? (
@@ -745,11 +750,7 @@ export function PlanFlow({
             ) : null}
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => (mode === "manual" ? setStep("places") : setStep("destination"))}
-            >
+            <Button type="button" variant="ghost" onClick={() => setStep("destination")}>
               <ChevronLeft className="rtl:-scale-x-100" aria-hidden />
               {copy.flowBack}
             </Button>
@@ -759,9 +760,8 @@ export function PlanFlow({
                 {pending ? copy.flowGenerating : copy.flowGenerate}
               </Button>
             ) : (
-              <Button type="button" size="lg" disabled={pending || !picks.length} onClick={() => void saveManual()}>
-                {pending ? <Loader2 className="animate-spin" aria-hidden /> : <Check aria-hidden />}
-                {pending ? copy.flowSaving : copy.flowSave}
+              <Button type="button" size="lg" onClick={() => void openPlaces()}>
+                {copy.flowContinueToPlaces}
               </Button>
             )}
           </div>

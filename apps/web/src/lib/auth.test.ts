@@ -7,7 +7,8 @@ describe("auth helpers", () => {
     expect(isProtectedPath("/saved/list")).toBe(true);
     expect(isProtectedPath("/trips")).toBe(true);
     expect(isProtectedPath("/favorites")).toBe(true);
-    expect(isProtectedPath("/bookings")).toBe(true);
+    // Reservations are gone: /bookings is not a route any more, so it is not gated.
+    expect(isProtectedPath("/bookings")).toBe(false);
     expect(isProtectedPath("/notifications")).toBe(true);
     expect(isProtectedPath("/ar/favorites")).toBe(true);
     expect(isProtectedPath("/settings")).toBe(true);
