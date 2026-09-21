@@ -787,3 +787,44 @@ async def test_manual_plan_persists_chosen_places_in_order(api: AsyncClient) -> 
     group_itinerary = await api.get(f"/api/v1/groups/trips/{plan['trip_id']}/itinerary")
     assert group_itinerary.status_code == 200, group_itinerary.text
     assert [stop["snapshot"]["slug"] for stop in group_itinerary.json()["stops"]] == slugs
+
+
+@pytest.mark.asyncio
+async def test_manual_preview_reports_timings_without_saving(api: AsyncClient) -> None:
+    await _register(api, "manual-preview")
+    listing = await api.get("/api/v1/catalogue/experiences", params={"destination": "byblos", "pageSize": 5})
+    slugs = [item["slug"] for item in listing.json()["items"]][:2]
+    assert slugs, "seed catalogue should expose Byblos experiences"
+
+    preview = await api.post(
+        "/api/v1/planner/manual/preview",
+        json={
+            "experience_slugs": slugs,
+            "destination_slugs": ["byblos"],
+            "party_size": 2,
+            "window_start": "2026-09-20T09:00:00",
+            "budget_minor": 40000,
+            "locale": "en",
+        },
+    )
+    assert preview.status_code == 200, preview.text
+    body = preview.json()
+    assert [stop["slug"] for stop in body["stops"]] == slugs
+    assert body["feasibility"]["destination_slugs"] == ["byblos"]
+    assert body["total_minor"] >= 0
+    for stop in body["stops"]:
+        assert stop["arrives_at"] < stop["leaves_at"]
+    # A preview is a question, not a save: nothing is persisted, so there is no trip to reopen.
+    assert "plan" not in body
+    assert "trip_id" not in body
+    assert body["infeasible_reason"] is None
+
+
+@pytest.mark.asyncio
+async def test_manual_preview_rejects_unknown_places(api: AsyncClient) -> None:
+    await _register(api, "manual-preview-unknown")
+    preview = await api.post(
+        "/api/v1/planner/manual/preview",
+        json={"experience_slugs": ["no-such-place"], "destination_slugs": ["byblos"], "locale": "en"},
+    )
+    assert preview.status_code == 422, preview.text

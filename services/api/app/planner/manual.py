@@ -19,6 +19,7 @@ from app.core.config import settings
 from app.planner.assembly import _price_snapshot
 from app.planner.defaults import apply_defaults
 from app.planner.eligibility import hours_allow, travel_leg, unit_price_minor
+from app.planner.feasibility import FeasibilityReport, assess, day_split
 from app.planner.persist import persist_plan, retrieve_candidates
 from app.planner.schemas import (
     AssembledLeg,
@@ -30,6 +31,15 @@ from app.planner.schemas import (
 
 MANUAL_CANDIDATE_LIMIT = 120
 MAX_MANUAL_STOPS = 12
+
+
+class ManualDayInfeasible(ValueError):
+    """The picks cannot share one day. Carries the report so the UI can explain why."""
+
+    def __init__(self, report: FeasibilityReport, suggested_days: list[list[str]]) -> None:
+        super().__init__("These places do not fit comfortably into one day")
+        self.report = report
+        self.suggested_days = suggested_days
 
 
 def assemble_manual(candidates: list[CandidateRecord], constraints: ExtractedConstraints) -> AssembledPlan:
@@ -102,6 +112,117 @@ def assemble_manual(candidates: list[CandidateRecord], constraints: ExtractedCon
     )
 
 
+def _constraints(
+    *,
+    destination_slugs: list[str],
+    party_size: int | None,
+    window_start: datetime | None,
+    budget_minor: int | None,
+    strict_budget: bool | None,
+    currency: str,
+    start_lat: float | None,
+    start_lng: float | None,
+) -> ExtractedConstraints:
+    return ExtractedConstraints(
+        destination_slugs=destination_slugs,
+        party_size=party_size,
+        window_start=window_start,
+        budget_minor=budget_minor,
+        strict_budget=strict_budget,
+        currency=currency or "USD",
+        start_lat=start_lat,
+        start_lng=start_lng,
+    )
+
+
+async def _gather(
+    db: AsyncSession,
+    *,
+    experience_slugs: list[str],
+    constraints: ExtractedConstraints,
+) -> tuple[list[CandidateRecord], ExtractedConstraints, list[Any]]:
+    """Resolve the traveller's chosen slugs to published candidates, in their order."""
+    merged, assumed = apply_defaults(constraints, None)
+    candidates = await retrieve_candidates(db, merged, limit=MANUAL_CANDIDATE_LIMIT)
+    by_slug = {candidate.slug: candidate for candidate in candidates}
+    chosen: list[CandidateRecord] = []
+    seen: set[str] = set()
+    for slug in experience_slugs:
+        candidate = by_slug.get(slug)
+        if candidate is not None and candidate.slug not in seen:
+            chosen.append(candidate)
+            seen.add(candidate.slug)
+        if len(chosen) >= MAX_MANUAL_STOPS:
+            break
+    if not chosen:
+        raise ValueError("None of the selected places are available to plan")
+    return chosen, merged, assumed
+
+
+def _suggested_days(chosen: list[CandidateRecord]) -> list[list[str]]:
+    clusters = day_split(chosen)
+    if len(clusters) < 2:
+        return []
+    return [[candidate.slug for candidate in cluster] for cluster in clusters]
+
+
+async def preview_manual(
+    db: AsyncSession,
+    *,
+    experience_slugs: list[str],
+    destination_slugs: list[str],
+    party_size: int | None,
+    window_start: datetime | None,
+    budget_minor: int | None,
+    strict_budget: bool | None,
+    currency: str,
+    start_lat: float | None,
+    start_lng: float | None,
+) -> dict[str, Any]:
+    """Cost the day without saving it, so the builder can react as picks change."""
+    chosen, merged, assumed = await _gather(
+        db,
+        experience_slugs=experience_slugs,
+        constraints=_constraints(
+            destination_slugs=destination_slugs,
+            party_size=party_size,
+            window_start=window_start,
+            budget_minor=budget_minor,
+            strict_budget=strict_budget,
+            currency=currency,
+            start_lat=start_lat,
+            start_lng=start_lng,
+        ),
+    )
+    plan = assemble_manual(chosen, merged)
+    base: dict[str, Any] = {
+        "constraints": merged.model_dump(mode="json"),
+        "assumed_defaults": [item.model_dump(mode="json") for item in assumed],
+        "currency": merged.currency,
+    }
+    if plan.infeasible or not plan.stops:
+        return {
+            **base,
+            "stops": [],
+            "feasibility": FeasibilityReport(feasible=False).model_dump(mode="json"),
+            "suggested_days": [],
+            "total_minor": 0,
+            "budget_warning": None,
+            "infeasible_reason": plan.infeasible_reason,
+        }
+    report, timings = assess(chosen, plan, merged)
+    return {
+        **base,
+        "stops": [item.model_dump(mode="json") for item in timings],
+        "feasibility": report.model_dump(mode="json"),
+        "suggested_days": _suggested_days(chosen),
+        "total_minor": plan.total_minor,
+        "currency": plan.currency,
+        "budget_warning": plan.budget_warning,
+        "infeasible_reason": None,
+    }
+
+
 def _manual_title(chosen: list[CandidateRecord], constraints: ExtractedConstraints) -> str:
     if chosen:
         anchor = chosen[0].destination_name or chosen[0].destination_slug
@@ -125,35 +246,29 @@ async def build_manual(
     start_lng: float | None,
     title: str | None,
     trip_id: UUID | None,
+    accept_warnings: bool = False,
 ) -> dict[str, Any]:
     """Retrieve the chosen published places, order them, assemble and persist."""
-    extracted = ExtractedConstraints(
-        destination_slugs=destination_slugs,
-        party_size=party_size,
-        window_start=window_start,
-        budget_minor=budget_minor,
-        strict_budget=strict_budget,
-        currency=currency or "USD",
-        start_lat=start_lat,
-        start_lng=start_lng,
+    chosen, merged, assumed = await _gather(
+        db,
+        experience_slugs=experience_slugs,
+        constraints=_constraints(
+            destination_slugs=destination_slugs,
+            party_size=party_size,
+            window_start=window_start,
+            budget_minor=budget_minor,
+            strict_budget=strict_budget,
+            currency=currency,
+            start_lat=start_lat,
+            start_lng=start_lng,
+        ),
     )
-    merged, assumed = apply_defaults(extracted, None)
-    candidates = await retrieve_candidates(db, merged, limit=MANUAL_CANDIDATE_LIMIT)
-    by_slug = {candidate.slug: candidate for candidate in candidates}
-    chosen: list[CandidateRecord] = []
-    seen: set[str] = set()
-    for slug in experience_slugs:
-        candidate = by_slug.get(slug)
-        if candidate is not None and candidate.slug not in seen:
-            chosen.append(candidate)
-            seen.add(candidate.slug)
-        if len(chosen) >= MAX_MANUAL_STOPS:
-            break
-    if not chosen:
-        raise ValueError("None of the selected places are available to plan")
     plan = assemble_manual(chosen, merged)
     if plan.infeasible or not plan.stops:
         raise ValueError("Could not build a manual itinerary from the selected places")
+    report, timings = assess(chosen, plan, merged)
+    if not report.feasible and not accept_warnings:
+        raise ManualDayInfeasible(report, _suggested_days(chosen))
     retrieved = [str(candidate.id) for candidate in chosen]
     doc = await persist_plan(
         db,
@@ -181,4 +296,6 @@ async def build_manual(
         "plan": doc,
         "llm_never_sets_totals": True,
         "budget_warning": plan.budget_warning,
+        "feasibility": report.model_dump(mode="json"),
+        "stop_timings": [item.model_dump(mode="json") for item in timings],
     }
