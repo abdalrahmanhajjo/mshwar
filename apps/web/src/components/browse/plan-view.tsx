@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { formatPlural, interpolate } from "@/i18n/catalogues";
-import { useCheckoutCopy } from "@/lib/checkout-copy";
 import { usePlannerCopy } from "@/lib/planner-copy";
 import { splitSentence } from "@/lib/text";
 
@@ -24,7 +23,6 @@ export function PlanView({
   addSlug?: string;
 }) {
   const { t, locale } = useLocale();
-  const checkout = useCheckoutCopy();
   const planner = usePlannerCopy();
   const [lead, tail] = splitSentence(planner.pageTitle);
   const description = collectionTitle
@@ -45,8 +43,8 @@ export function PlanView({
         actions={
           addSlug ? (
             <Button asChild size="lg" variant="accent">
-              <LocaleLink href={`/checkout?listing=${addSlug}&source=itinerary`}>
-                {checkout.bookThisStop}
+              <LocaleLink href={`/plan?add=${addSlug}`}>
+                {planner.addToDay}
                 <ArrowUpRight className="rtl:-scale-x-100" aria-hidden />
               </LocaleLink>
             </Button>
