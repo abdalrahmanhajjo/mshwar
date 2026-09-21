@@ -49,7 +49,7 @@ export function NotificationsView() {
           description={copy.notificationsEmptyHint}
           action={
             <Button asChild size="lg">
-              <LocaleLink href="/bookings">{copy.bookingsTitle}</LocaleLink>
+              <LocaleLink href="/trips">{copy.tripsTitle}</LocaleLink>
             </Button>
           }
         />

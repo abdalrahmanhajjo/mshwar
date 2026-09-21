@@ -324,6 +324,76 @@ export function createPlannerSession(input: {
   });
 }
 
+export type DayIssue = {
+  code: string;
+  severity: "blocking" | "warning" | "info";
+  positions: number[];
+  labels: string[];
+  detail: Record<string, number | string>;
+};
+
+export type FeasibilityReport = {
+  feasible: boolean;
+  travel_minutes: number;
+  travel_distance_m: number;
+  day_minutes: number;
+  travel_share: number;
+  spread_m: number;
+  destination_slugs: string[];
+  issues: DayIssue[];
+  suggested_order: string[];
+  order_saves_minutes: number;
+};
+
+export type ManualStopTiming = {
+  position: number;
+  slug: string;
+  title: string;
+  destination_slug: string;
+  destination_name: string;
+  arrives_at: string;
+  leaves_at: string;
+  travel_minutes: number;
+  travel_distance_m: number;
+  travel_available: boolean;
+  opens: string | null;
+  closes: string | null;
+  wait_minutes: number;
+  flags: string[];
+};
+
+export type ManualPreview = {
+  stops: ManualStopTiming[];
+  feasibility: FeasibilityReport;
+  suggested_days: string[][];
+  total_minor: number;
+  currency: string;
+  budget_warning: string | null;
+  infeasible_reason: string | null;
+};
+
+/** Cost and sanity-check a set of picks without saving anything. */
+export function previewManualPlan(
+  input: {
+    experience_slugs: string[];
+    destination_slugs?: string[];
+    party_size?: number;
+    window_start?: string;
+    budget_minor?: number;
+    strict_budget?: boolean;
+    currency?: string;
+    locale?: string;
+  },
+  signal?: AbortSignal,
+) {
+  return readJson<ManualPreview>("/api/v1/planner/manual/preview", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+    signal,
+  });
+}
+
 export function createManualPlan(input: {
   experience_slugs: string[];
   destination_slugs?: string[];
@@ -335,6 +405,7 @@ export function createManualPlan(input: {
   title?: string;
   trip_id?: string;
   locale?: string;
+  accept_warnings?: boolean;
 }) {
   return readJson<PlannerSession>("/api/v1/planner/manual", {
     method: "POST",

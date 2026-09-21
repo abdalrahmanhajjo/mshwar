@@ -12,7 +12,7 @@ import {
   Star,
   Users,
 } from "lucide-react";
-import { BookingWidget } from "@/components/browse/booking-widget";
+import { PlanPanel } from "@/components/browse/plan-panel";
 import { CatalogImage } from "@/components/browse/catalog-image";
 import { ExperienceCard } from "@/components/browse/experience-card";
 import { SaveExperienceButton } from "@/components/browse/save-button";
@@ -251,7 +251,7 @@ export function ExperienceDetailView({ experience, related }: { experience: Expe
             <p className="text-sm leading-relaxed text-text-muted">{copy.sampleOffer}</p>
           </section>
         </div>
-        <BookingWidget experience={experience} />
+        <PlanPanel experience={experience} />
       </div>
 
       {related.length ? (

@@ -18,7 +18,6 @@ export const PROTECTED_PATHS = [
   /^\/saved(?:\/|$)/,
   /^\/trips(?:\/|$)/,
   /^\/favorites(?:\/|$)/,
-  /^\/bookings(?:\/|$)/,
   /^\/notifications(?:\/|$)/,
   /^\/settings(?:\/|$)/,
   /^\/business(?:\/|$)/,

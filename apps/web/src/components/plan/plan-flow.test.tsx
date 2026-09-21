@@ -56,15 +56,20 @@ describe("plan flow (manual mode)", () => {
     expect(screen.getByText("Where do you want to go?")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /Byblos/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+    // The chosen town is echoed back as a chip that can be tapped off again.
+    expect(screen.getByRole("button", { name: "Remove: Byblos" })).toBeInTheDocument();
 
-    // Manual mode loads real places for the destination.
-    expect(await screen.findByText("Harbour walk")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Add" }));
-
-    // Continue to details -> Save.
-    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+    // Day settings come first: opening hours and traffic both depend on them.
+    fireEvent.click(screen.getByRole("button", { name: "Next: your day" }));
     expect(await screen.findByText("Trip details")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Generate itinerary|Save itinerary/ })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Next: pick places" }));
+    expect(await screen.findByText("Harbour walk")).toBeInTheDocument();
+    // Nothing picked yet, so the day says what to do rather than sitting empty.
+    expect(screen.getByText(/Nothing picked yet/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Save itinerary/ })).toBeDisabled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+    expect(screen.getByRole("button", { name: /Save itinerary/ })).toBeEnabled();
   });
 });

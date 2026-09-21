@@ -47,6 +47,11 @@ def _hours_for(candidate: CandidateRecord, when: datetime) -> tuple[time | None,
     return None, None, False
 
 
+def opening_hours_for(candidate: CandidateRecord, when: datetime) -> tuple[time | None, time | None, bool]:
+    """Opening and closing time for the local day of ``when``, plus a closed-exception flag."""
+    return _hours_for(candidate, when)
+
+
 def hours_allow(candidate: CandidateRecord, start: datetime, end: datetime) -> tuple[bool, str]:
     opens, closes, closed = _hours_for(candidate, start)
     if closed:

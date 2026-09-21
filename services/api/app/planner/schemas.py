@@ -240,6 +240,23 @@ class ManualPlanRequest(BaseModel):
     title: str | None = Field(default=None, max_length=120)
     trip_id: UUID | None = None
     locale: str = "en"
+    #: The traveller saw the comfort warnings and chose to save the day anyway.
+    accept_warnings: bool = False
+
+
+class ManualPreviewRequest(BaseModel):
+    """Same picks as a manual save, costed and checked but never written."""
+
+    experience_slugs: list[str] = Field(min_length=1, max_length=12)
+    destination_slugs: list[str] = Field(default_factory=list, max_length=8)
+    party_size: int | None = Field(default=None, ge=1, le=20)
+    window_start: datetime | None = None
+    budget_minor: int | None = Field(default=None, ge=0)
+    strict_budget: bool | None = None
+    currency: str = "USD"
+    start_lat: float | None = None
+    start_lng: float | None = None
+    locale: str = "en"
 
 
 class LockRequest(BaseModel):
