@@ -139,6 +139,44 @@ export type PlannerKey =
   | "suggestion2"
   | "suggestion3"
   | "routeStart"
+  | "flowMultiDestHint"
+  | "flowDestinationsChosen"
+  | "flowAllDestinations"
+  | "flowClearTowns"
+  | "flowFilterTown"
+  | "flowStepSettings"
+  | "flowContinueToDetails"
+  | "flowContinueToPlaces"
+  | "dayPanelTitle"
+  | "dayPanelEmpty"
+  | "dayPanelShow"
+  | "dayPanelHide"
+  | "dayClearAll"
+  | "dayStopsCount"
+  | "dayEndsBy"
+  | "dayCheckChecking"
+  | "dayCheckDriving"
+  | "dayCheckFits"
+  | "dayCheckBlocked"
+  | "dayReorder"
+  | "dayReorderSaves"
+  | "daySplit"
+  | "daySaveAnyway"
+  | "issueRegionSpread"
+  | "issueLongTransfer"
+  | "issueTravelHeavy"
+  | "issueDayOverflow"
+  | "issueClosedThatDay"
+  | "issueAfterHours"
+  | "issueLongWait"
+  | "issueHoursUnknown"
+  | "issueRouteUnavailable"
+  | "stopArrives"
+  | "stopOpenBetween"
+  | "stopHoursUnknown"
+  | "stopDriveFrom"
+  | "stopWaits"
+  | "addToDay"
   | "replacementsTitle";
 
 export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
@@ -281,6 +319,44 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     suggestion2: "Cedars and a mountain lunch with family",
     suggestion3: "بدي يوم هادي بجبيل",
     routeStart: "Starting point",
+    flowMultiDestHint: "Pick as many towns as you like — we will tell you if they are too far apart for one day.",
+    flowDestinationsChosen: "{n} chosen",
+    flowAllDestinations: "All chosen towns",
+    flowClearTowns: "Clear",
+    flowFilterTown: "Filter by town",
+    flowStepSettings: "Your day",
+    flowContinueToDetails: "Next: your day",
+    flowContinueToPlaces: "Next: pick places",
+    dayPanelTitle: "Your day",
+    dayPanelEmpty: "Nothing picked yet. Add a place and the day builds itself around opening times and driving.",
+    dayPanelShow: "Show your day",
+    dayPanelHide: "Hide your day",
+    dayClearAll: "Clear all",
+    dayStopsCount: "{n} stops",
+    dayEndsBy: "Back by {time}",
+    dayCheckChecking: "Checking distances, traffic and opening times…",
+    dayCheckDriving: "{minutes} min driving · {km} km",
+    dayCheckFits: "This day fits comfortably.",
+    dayCheckBlocked: "Something needs to change before this day can be saved.",
+    dayReorder: "Use the shortest driving order",
+    dayReorderSaves: "saves about {n} min",
+    daySplit: "Split into {n} days",
+    daySaveAnyway: "Save it anyway",
+    issueRegionSpread: "{a} and {b} are about {km} km apart — too far for one day.",
+    issueLongTransfer: "{a} is a {n} min drive from the stop before it.",
+    issueTravelHeavy: "{n} of your {total} min day would be spent driving.",
+    issueDayOverflow: "{a} ends {n} min after you wanted to be back.",
+    issueClosedThatDay: "{a} is closed on that date.",
+    issueAfterHours: "{a} runs past its closing time.",
+    issueLongWait: "You would reach {a} {n} min before it opens.",
+    issueHoursUnknown: "We have no opening hours for {a} — check before you go.",
+    issueRouteUnavailable: "No live driving time for {a}; the estimate is approximate.",
+    stopArrives: "Arrive {time}",
+    stopOpenBetween: "Open {opens}–{closes}",
+    stopHoursUnknown: "Opening hours unknown",
+    stopDriveFrom: "{minutes} min · {km} km",
+    stopWaits: "{n} min wait",
+    addToDay: "Add to your day",
     replacementsTitle: "Alternatives",
   },
   ar: {
@@ -422,6 +498,44 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     suggestion2: "الأرز وغداء جبلي مع العائلة",
     suggestion3: "بدي يوم هادي بجبيل",
     routeStart: "نقطة الانطلاق",
+    flowMultiDestHint: "اختر ما تشاء من المدن — وسنخبرك إن كانت متباعدة أكثر من اللازم ليوم واحد.",
+    flowDestinationsChosen: "{n} مختارة",
+    flowAllDestinations: "كل المدن المختارة",
+    flowClearTowns: "مسح",
+    flowFilterTown: "تصفية حسب المدينة",
+    flowStepSettings: "يومك",
+    flowContinueToDetails: "التالي: يومك",
+    flowContinueToPlaces: "التالي: اختر الأماكن",
+    dayPanelTitle: "يومك",
+    dayPanelEmpty: "لم تختر شيئاً بعد. أضف مكاناً وسيُبنى اليوم حول أوقات العمل والقيادة.",
+    dayPanelShow: "أظهر يومك",
+    dayPanelHide: "أخفِ يومك",
+    dayClearAll: "امسح الكل",
+    dayStopsCount: "{n} محطات",
+    dayEndsBy: "العودة قبل {time}",
+    dayCheckChecking: "نتحقق من المسافات وحركة السير وأوقات العمل…",
+    dayCheckDriving: "{minutes} دقيقة قيادة · {km} كم",
+    dayCheckFits: "هذا اليوم مريح ومناسب.",
+    dayCheckBlocked: "هناك ما يجب تعديله قبل حفظ هذا اليوم.",
+    dayReorder: "استخدم الترتيب الأقصر قيادةً",
+    dayReorderSaves: "يوفّر نحو {n} دقيقة",
+    daySplit: "قسّمه إلى {n} أيام",
+    daySaveAnyway: "احفظه على أي حال",
+    issueRegionSpread: "{a} و{b} تبعدان نحو {km} كم — بعيدتان جداً ليوم واحد.",
+    issueLongTransfer: "{a} تبعد {n} دقيقة قيادة عن المحطة السابقة.",
+    issueTravelHeavy: "{n} دقيقة من أصل {total} دقيقة ستمضيها في السيارة.",
+    issueDayOverflow: "{a} ينتهي بعد {n} دقيقة من موعد عودتك.",
+    issueClosedThatDay: "{a} مغلق في ذلك التاريخ.",
+    issueAfterHours: "{a} يمتد بعد وقت الإغلاق.",
+    issueLongWait: "ستصل إلى {a} قبل {n} دقيقة من فتحه.",
+    issueHoursUnknown: "لا نملك أوقات عمل {a} — تحقّق قبل الذهاب.",
+    issueRouteUnavailable: "لا يوجد زمن قيادة مباشر لـ{a}؛ التقدير تقريبي.",
+    stopArrives: "الوصول {time}",
+    stopOpenBetween: "مفتوح {opens}–{closes}",
+    stopHoursUnknown: "أوقات العمل غير معروفة",
+    stopDriveFrom: "{minutes} دقيقة · {km} كم",
+    stopWaits: "انتظار {n} دقيقة",
+    addToDay: "أضفه إلى يومك",
     replacementsTitle: "بدائل",
   },
   fr: {
@@ -567,6 +681,46 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     suggestion2: "Les cèdres et un déjeuner en montagne en famille",
     suggestion3: "Une journée d’histoire à Baalbek",
     routeStart: "Point de départ",
+    flowMultiDestHint:
+      "Choisissez autant de villes que vous voulez — nous vous dirons si elles sont trop éloignées pour une seule journée.",
+    flowDestinationsChosen: "{n} sélectionnées",
+    flowAllDestinations: "Toutes les villes choisies",
+    flowClearTowns: "Effacer",
+    flowFilterTown: "Filtrer par ville",
+    flowStepSettings: "Votre journée",
+    flowContinueToDetails: "Suite : votre journée",
+    flowContinueToPlaces: "Suite : choisir les lieux",
+    dayPanelTitle: "Votre journée",
+    dayPanelEmpty:
+      "Rien de choisi pour l’instant. Ajoutez un lieu et la journée se construit autour des horaires et de la route.",
+    dayPanelShow: "Afficher votre journée",
+    dayPanelHide: "Masquer votre journée",
+    dayClearAll: "Tout effacer",
+    dayStopsCount: "{n} étapes",
+    dayEndsBy: "Retour avant {time}",
+    dayCheckChecking: "Vérification des distances, du trafic et des horaires…",
+    dayCheckDriving: "{minutes} min de route · {km} km",
+    dayCheckFits: "Cette journée tient confortablement.",
+    dayCheckBlocked: "Quelque chose doit changer avant d’enregistrer cette journée.",
+    dayReorder: "Adopter l’ordre le plus court",
+    dayReorderSaves: "économise environ {n} min",
+    daySplit: "Répartir sur {n} journées",
+    daySaveAnyway: "Enregistrer quand même",
+    issueRegionSpread: "{a} et {b} sont à environ {km} km l’une de l’autre — trop loin pour une journée.",
+    issueLongTransfer: "{a} est à {n} min de route de l’étape précédente.",
+    issueTravelHeavy: "{n} des {total} min de votre journée se passeraient en voiture.",
+    issueDayOverflow: "{a} se termine {n} min après votre heure de retour.",
+    issueClosedThatDay: "{a} est fermé ce jour-là.",
+    issueAfterHours: "{a} dépasse son heure de fermeture.",
+    issueLongWait: "Vous arriveriez à {a} {n} min avant l’ouverture.",
+    issueHoursUnknown: "Nous n’avons pas les horaires de {a} — vérifiez avant de partir.",
+    issueRouteUnavailable: "Pas de temps de trajet en direct pour {a} ; l’estimation est approximative.",
+    stopArrives: "Arrivée {time}",
+    stopOpenBetween: "Ouvert {opens}–{closes}",
+    stopHoursUnknown: "Horaires inconnus",
+    stopDriveFrom: "{minutes} min · {km} km",
+    stopWaits: "{n} min d’attente",
+    addToDay: "Ajouter à votre journée",
     replacementsTitle: "Alternatives",
   },
 };
