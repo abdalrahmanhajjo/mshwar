@@ -18,6 +18,10 @@ import { ApiError } from "@/lib/api/client";
 import { useGuideWorkCopy, type GuideWorkCopy } from "@/lib/guide-work-copy";
 import { fetchGuideRequests, respondGuideRequest, type GuideRequest } from "@/lib/guide-work";
 import { BOOKING_STATUS_VARIANT } from "@/lib/status";
+import { LocaleLink } from "@/components/shell/locale-link";
+import { engagementStateLabel, engagementTone } from "@/components/guide/hire-a-guide";
+import { useGuideHireCopy } from "@/lib/guide-hire-copy";
+import { fetchMyEngagements, type Engagement } from "@/lib/guide-hire";
 
 type Filter = "pending" | "confirmed" | "all";
 
@@ -138,6 +142,77 @@ function RequestCard({ row, onAnswered }: { row: GuideRequest; onAnswered: () =>
   );
 }
 
+const ENGAGEMENT_FILTER: Record<Filter, Engagement["state"][] | null> = {
+  pending: ["requested", "accepted", "changes_proposed"],
+  confirmed: ["confirmed"],
+  all: null,
+};
+
+function EngagementList({ filter }: { filter: Filter }) {
+  const copy = useGuideHireCopy();
+  const { locale } = useLocale();
+  const [rows, setRows] = React.useState<Engagement[] | null>(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    void fetchMyEngagements()
+      .then((next) => {
+        if (!cancelled) {
+          setRows(Array.isArray(next) ? next : []);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setRows([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const wanted = ENGAGEMENT_FILTER[filter];
+  const shown = (rows ?? []).filter((row) => !wanted || wanted.includes(row.state));
+  if (rows === null) {
+    return null;
+  }
+
+  return (
+    <section className="grid gap-3" aria-labelledby="hired-days">
+      <h2 id="hired-days" className="title-section text-[1.15rem]">
+        {copy.engListTitle}
+      </h2>
+      {shown.length === 0 ? (
+        <p className="text-sm text-text-muted">{copy.engListEmpty}</p>
+      ) : (
+        <ul className="grid gap-2">
+          {shown.map((row) => (
+            <li
+              key={row.id}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-border-subtle bg-surface-raised px-4 py-3"
+            >
+              <span className="grid gap-0.5">
+                <span className="font-medium">{row.trip_title}</span>
+                <span className="text-sm text-text-muted">
+                  {formatDate(locale, `${row.local_date}T12:00:00Z`, { dateStyle: "medium" })} ·{" "}
+                  {interpolate(copy.engFrom, { name: row.traveller_name })} ·{" "}
+                  {interpolate(copy.engParty, { n: String(row.party_size) })}
+                </span>
+              </span>
+              <span className="flex items-center gap-2">
+                <Badge variant={engagementTone(row.state)}>{engagementStateLabel(row.state, copy)}</Badge>
+                <Button asChild size="sm" variant="outline">
+                  <LocaleLink href={`/guide/requests/${row.id}`}>{copy.engOpen}</LocaleLink>
+                </Button>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 function Requests() {
   const copy = useGuideWorkCopy();
   const [filter, setFilter] = React.useState<Filter>("pending");
@@ -185,6 +260,7 @@ function Requests() {
           <TabsTrigger value="all">{copy.requestsAll}</TabsTrigger>
         </TabsList>
       </Tabs>
+      <EngagementList filter={filter} />
       {failed ? (
         <Notice tone="danger" role="alert">
           {copy.loadError}

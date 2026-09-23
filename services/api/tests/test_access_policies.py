@@ -84,6 +84,8 @@ BUSINESS_RULE_DENIALS = {
     "review requires a confirmed or completed stay",
     "businesses cannot edit, hide or delete reviews",
     "a local host cannot charge: price must be free",
+    "a local host cannot be hired from the planner",
+    "guide is not available for hire",
     "invitation email mismatch",
     "immutable record: % cannot be truncated",
 }
