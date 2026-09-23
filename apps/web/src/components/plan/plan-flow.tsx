@@ -625,6 +625,11 @@ export function PlanFlow({
                         </span>
                         <span className="title-card text-[1.15rem]">{item.name}</span>
                         <span className="line-clamp-2 text-sm text-text-muted">{item.blurb}</span>
+                        {item.experienceCount ? (
+                          <span className="text-xs font-medium text-text-muted">
+                            {interpolate(copy.destinationPlaces, { n: item.experienceCount })}
+                          </span>
+                        ) : null}
                       </span>
                     </button>
                   );

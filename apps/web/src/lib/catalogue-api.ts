@@ -70,6 +70,7 @@ type ApiDestination = {
   image?: string | null;
   image_alt?: string | null;
   tags: string[];
+  experience_count?: number;
 };
 
 type ApiCollection = {
@@ -137,6 +138,7 @@ function destinationFromApi(item: ApiDestination): Destination {
     tags: item.tags ?? [],
     image: item.image ?? "",
     imageAlt: item.image_alt ?? item.name,
+    experienceCount: item.experience_count,
   };
 }
 

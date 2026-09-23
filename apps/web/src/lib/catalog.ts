@@ -34,6 +34,8 @@ export type Destination = {
   tags: string[];
   image: string;
   imageAlt: string;
+  /** Published places the planner can build a day from. Absent on sample data. */
+  experienceCount?: number;
 };
 
 export type Experience = {
