@@ -6,15 +6,15 @@ The policy model is described in [authorization.md](authorization.md).
 | Policy | Routes |
 |---|---|
 | `actor` | 15 |
-| `admin` | 57 |
+| `admin` | 61 |
 | `dev` | 1 |
 | `job` | 6 |
-| `public` | 28 |
-| `session` | 101 |
+| `public` | 30 |
+| `session` | 105 |
 | `signature` | 1 |
 | `token` | 5 |
 | `verified` | 5 |
-| **Total** | **219** |
+| **Total** | **229** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -36,6 +36,10 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/admin/experiences/{experience_id}/weather-sensitivity` | `admin` |
 | GET | `/api/v1/admin/flags` | `admin` |
 | PUT | `/api/v1/admin/flags` | `admin` |
+| GET | `/api/v1/admin/guides` | `admin` |
+| POST | `/api/v1/admin/guides/documents/{credential_id}` | `admin` |
+| GET | `/api/v1/admin/guides/{profile_id}` | `admin` |
+| POST | `/api/v1/admin/guides/{profile_id}` | `admin` |
 | GET | `/api/v1/admin/kpis` | `admin` |
 | GET | `/api/v1/admin/me` | `admin` |
 | GET | `/api/v1/admin/moderation` | `admin` |
@@ -132,6 +136,12 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/groups/trips/{trip_id}/summary` | `actor` |
 | GET | `/api/v1/groups/trips/{trip_id}/tally` | `actor` |
 | PUT | `/api/v1/groups/trips/{trip_id}/votes` | `actor` |
+| GET | `/api/v1/guides` | `public` |
+| GET | `/api/v1/guides/me` | `session` |
+| PUT | `/api/v1/guides/me` | `session` |
+| PUT | `/api/v1/guides/me/documents` | `session` |
+| POST | `/api/v1/guides/me/submit` | `session` |
+| GET | `/api/v1/guides/{slug}` | `public` |
 | GET | `/api/v1/health` | `public` |
 | GET | `/api/v1/health/metrics` | `job` |
 | GET | `/api/v1/locations/areas` | `public` |

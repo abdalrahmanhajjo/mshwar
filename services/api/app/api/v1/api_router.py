@@ -9,6 +9,7 @@ from app.api.v1.endpoints import (
     checkout,
     favorites,
     groups,
+    guides,
     health,
     locations,
     notifications,
@@ -33,6 +34,7 @@ router.include_router(planner.router, prefix="/planner", tags=["planner"])
 router.include_router(catalogue.router, prefix="/catalogue", tags=["catalogue"])
 router.include_router(portal.router, prefix="/portal", tags=["portal"])
 router.include_router(businesses.router, prefix="/businesses", tags=["businesses"])
+router.include_router(guides.router, prefix="/guides", tags=["guides"])
 router.include_router(bookings.router, prefix="/bookings", tags=["bookings"])
 router.include_router(checkout.router, prefix="/checkout", tags=["checkout"])
 router.include_router(webhooks.router, prefix="/webhooks", tags=["webhooks"])

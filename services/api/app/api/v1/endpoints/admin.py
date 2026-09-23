@@ -34,6 +34,7 @@ from app.schemas.admin import (
     TaxonomyMergeIn,
     TaxonomyRenameIn,
 )
+from app.schemas.guides import GuideDecisionIn, GuideDocumentDecisionIn
 from app.schemas.planner import ThresholdIn
 from app.schemas.portal import AdminVerificationAction
 
@@ -868,3 +869,76 @@ async def resend_notification(
 ) -> Any:
     session = await _admin(request, db)
     return await notification_service.resend(db, _uid(session), str(notification_id), payload.reason)
+
+
+@router.get("/guides", dependencies=[access.ADMIN])
+async def list_guide_applications(
+    request: Request,
+    status_filter: str | None = Query(default=None, alias="status"),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """The guide verification queue, newest submission last."""
+    session = await _admin(request, db)
+    filt = {"status": status_filter} if status_filter else {}
+    return await fetch_json(
+        db,
+        "SELECT app.admin_list_guide_applications(CAST(:admin_id AS uuid), CAST(:filt AS jsonb))",
+        {"admin_id": _uid(session), "filt": json.dumps(filt)},
+    )
+
+
+@router.get("/guides/{profile_id}", dependencies=[access.ADMIN])
+async def get_guide_case(
+    profile_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """One application with its documents, for the reviewer."""
+    session = await _admin(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.admin_get_guide_case(CAST(:admin_id AS uuid), CAST(:profile AS uuid))",
+        {"admin_id": _uid(session), "profile": str(profile_id)},
+    )
+
+
+@router.post("/guides/documents/{credential_id}", dependencies=[access.ADMIN])
+async def review_guide_document(
+    credential_id: UUID,
+    payload: GuideDocumentDecisionIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Verify or reject one document. Approval needs every required one verified."""
+    session = await _admin(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.admin_review_guide_document(CAST(:admin_id AS uuid), CAST(:cred AS uuid), :decision, :reason)",
+        {
+            "admin_id": _uid(session),
+            "cred": str(credential_id),
+            "decision": payload.decision,
+            "reason": payload.reason,
+        },
+    )
+
+
+@router.post("/guides/{profile_id}", dependencies=[access.ADMIN])
+async def decide_guide_application(
+    profile_id: UUID,
+    payload: GuideDecisionIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Approve, reject or suspend. Approving creates the guide's solo organisation."""
+    session = await _admin(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.admin_decide_guide(CAST(:admin_id AS uuid), CAST(:profile AS uuid), :decision, :reason)",
+        {
+            "admin_id": _uid(session),
+            "profile": str(profile_id),
+            "decision": payload.decision,
+            "reason": payload.reason,
+        },
+    )
