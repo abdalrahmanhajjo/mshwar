@@ -177,6 +177,7 @@ export type PlannerKey =
   | "stopDriveFrom"
   | "stopWaits"
   | "addToDay"
+  | "destinationPlaces"
   | "replacementsTitle";
 
 export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
@@ -357,6 +358,7 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     stopDriveFrom: "{minutes} min · {km} km",
     stopWaits: "{n} min wait",
     addToDay: "Add to your day",
+    destinationPlaces: "{n} places to plan from",
     replacementsTitle: "Alternatives",
   },
   ar: {
@@ -536,6 +538,7 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     stopDriveFrom: "{minutes} دقيقة · {km} كم",
     stopWaits: "انتظار {n} دقيقة",
     addToDay: "أضفه إلى يومك",
+    destinationPlaces: "{n} مكاناً للتخطيط منها",
     replacementsTitle: "بدائل",
   },
   fr: {
@@ -721,6 +724,7 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     stopDriveFrom: "{minutes} min · {km} km",
     stopWaits: "{n} min d’attente",
     addToDay: "Ajouter à votre journée",
+    destinationPlaces: "{n} lieux à planifier",
     replacementsTitle: "Alternatives",
   },
 };
