@@ -40,6 +40,10 @@ PUBLIC_ROUTES = {
     "GET /api/v1/businesses/experiences/{slug}",
     "GET /api/v1/businesses/{slug}",
     "GET /api/v1/catalogue/destinations",
+    # The guide directory and a guide's page: approved guides only, and the
+    # function behind them never returns a document or a phone number.
+    "GET /api/v1/guides",
+    "GET /api/v1/guides/{slug}",
     "GET /api/v1/catalogue/experiences",
     "GET /api/v1/catalogue/experiences/{slug}",
     "GET /api/v1/catalogue/experiences/{slug}/related",
