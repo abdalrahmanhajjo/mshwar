@@ -9,7 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
 import { ApprovedGuide } from "@/components/guide/guide-provider";
+import { useLocale } from "@/components/shell/locale-provider";
 import { interpolate } from "@/i18n/catalogues";
+import { formatDate } from "@/i18n/format";
 import { ApiError } from "@/lib/api/client";
 import { useGuideWorkCopy, type GuideWorkKey } from "@/lib/guide-work-copy";
 import {
@@ -42,6 +44,15 @@ export function normalisePattern(pattern: WeeklyStart[]): WeeklyStart[] {
 
 function Calendar() {
   const copy = useGuideWorkCopy();
+  const { locale } = useLocale();
+  const dayLabel = (localDate: string) =>
+    formatDate(locale, `${localDate}T12:00:00Z`, {
+      dateStyle: undefined,
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
   const [value, setValue] = React.useState<GuideAvailability | null>(null);
   const [tours, setTours] = React.useState<GuideTour[]>([]);
   const [failed, setFailed] = React.useState(false);
@@ -249,11 +260,11 @@ function Calendar() {
               {value.exceptions.map((entry) => (
                 <li key={entry.local_date}>
                   <Badge variant="outline" className="gap-1.5 tabular-nums">
-                    {entry.local_date}
+                    <time dateTime={entry.local_date}>{dayLabel(entry.local_date)}</time>
                     {entry.reason ? <span className="text-text-muted">· {entry.reason}</span> : null}
                     <button
                       type="button"
-                      aria-label={`${copy.calendarRemoveStart} ${entry.local_date}`}
+                      aria-label={`${copy.calendarRemoveStart} ${dayLabel(entry.local_date)}`}
                       className="rounded-full p-0.5 hover:bg-surface-sunken"
                       onClick={() =>
                         update({ exceptions: value.exceptions.filter((item) => item.local_date !== entry.local_date) })

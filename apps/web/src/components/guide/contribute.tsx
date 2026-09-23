@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ExternalLink, ImagePlus, Loader2, MapPinned, Plus, Send, Trash2 } from "lucide-react";
+import { ExternalLink, ImagePlus, Loader2, MapPin, MapPinned, Plus, Send, Trash2 } from "lucide-react";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { ApprovedGuide } from "@/components/guide/guide-provider";
+import { PlaceSearch } from "@/components/guide/place-search";
+import { DestinationSelect, ListSearch, LocateButton, PinSummary } from "@/components/guide/pickers";
 import { interpolate } from "@/i18n/catalogues";
 import { ApiError } from "@/lib/api/client";
 import { useContributeCopy, type ContributeCopy, type ContributeKey } from "@/lib/contribute-copy";
@@ -28,9 +30,11 @@ import {
   type ProposalKind,
   type ProposalStatus,
 } from "@/lib/guide-contribute";
+import { matchesQuery, type PlaceHit } from "@/lib/place-search";
 import { fileToBase64 } from "@/lib/portal";
+import { useSearchCopy } from "@/lib/search-copy";
 
-// The catalogue's categories and destinations. The server checks them again.
+// The catalogue's categories. The server checks them (and the destination) again.
 export const PROPOSAL_CATEGORIES = [
   "adventure",
   "city",
@@ -42,21 +46,8 @@ export const PROPOSAL_CATEGORIES = [
   "wellness",
   "workshop",
 ] as const;
-const DESTINATION_SLUGS = [
-  "baalbek",
-  "batroun",
-  "beirut",
-  "bekaa",
-  "bsharri",
-  "byblos",
-  "mount-lebanon",
-  "nabatieh",
-  "north-lebanon",
-  "qadisha-valley",
-  "south-lebanon",
-];
 
-function categoryLabel(slug: string, copy: ContributeCopy): string {
+export function categoryLabel(slug: string, copy: ContributeCopy): string {
   const key = `cat${slug.charAt(0).toUpperCase()}${slug.slice(1)}` as ContributeKey;
   return copy[key] ?? slug;
 }
@@ -73,7 +64,7 @@ export function proposalStatusLabel(status: ProposalStatus, copy: ContributeCopy
 function EvidenceFields({ urls, onChange }: { urls: string[]; onChange: (next: string[]) => void }) {
   const copy = useContributeCopy();
   return (
-    <fieldset className="grid gap-2">
+    <fieldset className="grid min-w-0 grid-cols-1 gap-2">
       <legend className="pb-1 text-sm font-medium">{copy.evidence}</legend>
       <p className="text-xs text-text-muted">{copy.evidenceHint}</p>
       {urls.map((url, index) => (
@@ -109,8 +100,27 @@ function EvidenceFields({ urls, onChange }: { urls: string[]; onChange: (next: s
   );
 }
 
+function ChosenPlace({ place, onChange }: { place: PlaceHit; onChange: () => void }) {
+  const search = useSearchCopy();
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-brand bg-brand-subtle px-3 py-2">
+      <span className="flex min-w-0 items-center gap-2 text-sm">
+        <MapPin className="size-4 shrink-0" aria-hidden />
+        <span className="grid min-w-0">
+          <span className="truncate font-medium">{interpolate(search.placeChosen, { title: place.title })}</span>
+          {place.placeLabel ? <span className="truncate text-xs text-text-muted">{place.placeLabel}</span> : null}
+        </span>
+      </span>
+      <Button type="button" size="sm" variant="ghost" onClick={onChange}>
+        {search.placeChange}
+      </Button>
+    </div>
+  );
+}
+
 function ProposalForm({ onSent }: { onSent: (proposal: PlaceProposal) => void }) {
   const copy = useContributeCopy();
+  const [target, setTarget] = React.useState<PlaceHit | null>(null);
   const [kind, setKind] = React.useState<ProposalKind>("new");
   const [fields, setFields] = React.useState<Record<string, string>>({
     category: "heritage",
@@ -128,6 +138,10 @@ function ProposalForm({ onSent }: { onSent: (proposal: PlaceProposal) => void })
       setFields((prev) => ({ ...prev, [name]: event.target.value })),
   });
   const number = (name: string) => (fields[name] ? Number(fields[name]) : undefined);
+  const setPin = (lat: number, lng: number) => setFields((prev) => ({ ...prev, lat: String(lat), lng: String(lng) }));
+  const pinLat = Number(fields.lat);
+  const pinLng = Number(fields.lng);
+  const pinShown = Boolean(fields.lat && fields.lng) && Number.isFinite(pinLat) && Number.isFinite(pinLng);
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -159,13 +173,14 @@ function ProposalForm({ onSent }: { onSent: (proposal: PlaceProposal) => void })
       onSent(
         await submitProposal({
           kind,
-          target_slug: kind === "correction" ? fields.target?.trim() : undefined,
+          target_slug: kind === "correction" ? target?.slug : undefined,
           place,
           evidence_urls: evidence.map((url) => url.trim()).filter(Boolean),
         }),
       );
       setFields({ category: "heritage", destination_slug: "beirut", suggested_minutes: "60" });
       setEvidence([""]);
+      setTarget(null);
       setFreeEntry(false);
       setClosed(false);
     } catch (caught) {
@@ -210,13 +225,11 @@ function ProposalForm({ onSent }: { onSent: (proposal: PlaceProposal) => void })
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="p-destination">{copy.destination}</Label>
-            <NativeSelect id="p-destination" {...field("destination_slug")}>
-              {DESTINATION_SLUGS.map((slug) => (
-                <option key={slug} value={slug}>
-                  {slug}
-                </option>
-              ))}
-            </NativeSelect>
+            <DestinationSelect
+              id="p-destination"
+              value={fields.destination_slug ?? ""}
+              onChange={(slug) => setFields((prev) => ({ ...prev, destination_slug: slug }))}
+            />
           </div>
           <div className="grid gap-1.5 md:col-span-2">
             <Label htmlFor="p-address">{copy.address}</Label>
@@ -230,6 +243,10 @@ function ProposalForm({ onSent }: { onSent: (proposal: PlaceProposal) => void })
             <Label htmlFor="p-lng">{copy.lng}</Label>
             <Input id="p-lng" inputMode="decimal" required placeholder="35.50" {...field("lng")} />
           </div>
+          <div className="grid gap-2 md:col-span-2">
+            {pinShown ? <PinSummary lat={pinLat} lng={pinLng} /> : null}
+            <LocateButton onLocate={setPin} />
+          </div>
           <div className="grid gap-1.5">
             <Label htmlFor="p-minutes">{copy.minutes}</Label>
             <Input id="p-minutes" type="number" min={15} max={600} {...field("suggested_minutes")} />
@@ -242,8 +259,14 @@ function ProposalForm({ onSent }: { onSent: (proposal: PlaceProposal) => void })
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           <div className="grid gap-1.5 md:col-span-2">
-            <Label htmlFor="p-target">{copy.target}</Label>
-            <Input id="p-target" required placeholder="byblos-citadel" {...field("target")} />
+            {target ? (
+              <>
+                <span className="text-sm font-medium">{copy.target}</span>
+                <ChosenPlace place={target} onChange={() => setTarget(null)} />
+              </>
+            ) : (
+              <PlaceSearch id="p-target" label={copy.target} onPick={setTarget} />
+            )}
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="p-title">{copy.newTitle}</Label>
@@ -265,6 +288,10 @@ function ProposalForm({ onSent }: { onSent: (proposal: PlaceProposal) => void })
             <Label htmlFor="p-lng">{copy.lng}</Label>
             <Input id="p-lng" inputMode="decimal" {...field("lng")} />
           </div>
+          <div className="grid gap-2 md:col-span-2">
+            {pinShown ? <PinSummary lat={pinLat} lng={pinLng} /> : null}
+            <LocateButton onLocate={setPin} />
+          </div>
           <label className="flex items-center gap-2 text-sm md:col-span-2">
             <input type="checkbox" checked={closed} onChange={(event) => setClosed(event.target.checked)} />
             {copy.closed}
@@ -282,7 +309,7 @@ function ProposalForm({ onSent }: { onSent: (proposal: PlaceProposal) => void })
           {error}
         </Notice>
       ) : null}
-      <Button type="submit" className="w-fit" disabled={pending}>
+      <Button type="submit" className="w-fit" disabled={pending || (kind === "correction" && !target)}>
         {pending ? <Loader2 className="animate-spin" aria-hidden /> : <Send aria-hidden />}
         {pending ? copy.sending : copy.submit}
       </Button>
@@ -347,7 +374,7 @@ function PhotoPanel({ proposal, onChanged }: { proposal: PlaceProposal; onChange
         <Label htmlFor={`alt-${proposal.id}`}>{copy.alt}</Label>
         <Input id={`alt-${proposal.id}`} value={alt} onChange={(event) => setAlt(event.target.value)} />
       </div>
-      <fieldset className="grid gap-2 rounded-control border border-border-subtle p-3">
+      <fieldset className="grid min-w-0 grid-cols-1 gap-2 rounded-control border border-border-subtle p-3">
         <legend className="px-1 text-sm font-medium">{copy.photoOwn}</legend>
         <label className="flex items-start gap-2 text-sm">
           <input type="checkbox" checked={granted} onChange={(event) => setGranted(event.target.checked)} />
@@ -367,7 +394,7 @@ function PhotoPanel({ proposal, onChanged }: { proposal: PlaceProposal; onChange
           </label>
         </Button>
       </fieldset>
-      <fieldset className="grid gap-2 rounded-control border border-border-subtle p-3">
+      <fieldset className="grid min-w-0 grid-cols-1 gap-2 rounded-control border border-border-subtle p-3">
         <legend className="px-1 text-sm font-medium">{copy.photoCommons}</legend>
         <Input
           aria-label={copy.commonsPage}
@@ -489,6 +516,10 @@ function ProposalRow({
   );
 }
 
+function proposalMatches(proposal: PlaceProposal, query: string): boolean {
+  return matchesQuery(query, proposal.payload.name, proposal.payload.title, proposal.target?.title);
+}
+
 function Contribute() {
   const copy = useContributeCopy();
   const [allowance, setAllowance] = React.useState<ProposalAllowance | null>(null);
@@ -497,6 +528,8 @@ function Contribute() {
   const [sent, setSent] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
   const [version, setVersion] = React.useState(0);
+  const [query, setQuery] = React.useState("");
+  const search = useSearchCopy();
 
   React.useEffect(() => {
     let cancelled = false;
@@ -517,6 +550,7 @@ function Contribute() {
     };
   }, [version]);
 
+  const shownProposals = (proposals ?? []).filter((proposal) => proposalMatches(proposal, query));
   const replace = (next: PlaceProposal) =>
     setProposals((prev) => (prev ?? []).map((row) => (row.id === next.id ? next : row)));
 
@@ -556,17 +590,29 @@ function Contribute() {
         ) : proposals.length === 0 ? (
           <EmptyState icon={<MapPinned aria-hidden />} title={copy.mineEmpty} />
         ) : (
-          <ul className="grid gap-3">
-            {proposals.map((proposal) => (
-              <ProposalRow
-                key={proposal.id}
-                proposal={proposal}
-                open={openId === proposal.id}
-                onToggle={() => setOpenId((current) => (current === proposal.id ? null : proposal.id))}
-                onChanged={replace}
+          <>
+            {proposals.length > 3 ? (
+              <ListSearch
+                value={query}
+                onChange={setQuery}
+                placeholder={search.proposalSearch}
+                shown={shownProposals.length}
+                total={proposals.length}
               />
-            ))}
-          </ul>
+            ) : null}
+            {shownProposals.length === 0 ? <p className="text-sm text-text-muted">{search.noResults}</p> : null}
+            <ul className="grid gap-3">
+              {shownProposals.map((proposal) => (
+                <ProposalRow
+                  key={proposal.id}
+                  proposal={proposal}
+                  open={openId === proposal.id}
+                  onToggle={() => setOpenId((current) => (current === proposal.id ? null : proposal.id))}
+                  onChanged={replace}
+                />
+              ))}
+            </ul>
+          </>
         )}
       </section>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ArrowLeft, Check, Loader2, Lock, Phone, Plus, Send, Trash2, X } from "lucide-react";
+import { ArrowLeft, Check, Loader2, Lock, Phone, Send, Trash2, X } from "lucide-react";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { useLocale } from "@/components/shell/locale-provider";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Textarea } from "@/components/ui/textarea";
 import { engagementStateLabel, engagementTone } from "@/components/guide/hire-a-guide";
 import { ApprovedGuide } from "@/components/guide/guide-provider";
+import { PlaceSearch } from "@/components/guide/place-search";
 import { ProposalDiff } from "@/components/guide/proposal-diff";
 import { ReportProblem } from "@/components/guide/report-problem";
 import { interpolate } from "@/i18n/catalogues";
@@ -29,6 +30,7 @@ import {
   type Engagement,
   type ProposedStop,
 } from "@/lib/guide-hire";
+import type { PlaceHit } from "@/lib/place-search";
 
 type Row = {
   key: string;
@@ -57,13 +59,13 @@ function ProposalEditor({ engagement, onSent }: { engagement: Engagement; onSent
     engagement.itinerary.stops.map((stop) => ({
       key: stop.id,
       stop_id: stop.id,
+      slug: stop.slug,
       title: stop.title,
       locked: stop.locked,
       starts_at: stop.starts_at,
       ends_at: stop.ends_at,
     })),
   );
-  const [slug, setSlug] = React.useState("");
   const [note, setNote] = React.useState("");
   const [rate, setRate] = React.useState("");
   const [pending, setPending] = React.useState(false);
@@ -74,24 +76,22 @@ function ProposalEditor({ engagement, onSent }: { engagement: Engagement; onSent
       prev.map((row) => (row.key === key ? { ...row, [field]: withBeirutTime(row[field], value) } : row)),
     );
 
-  function addPlace() {
+  function addPlace(place: PlaceHit) {
     const last = [...rows].sort((a, b) => a.ends_at.localeCompare(b.ends_at)).at(-1);
     const base = last?.ends_at ?? engagement.itinerary.window_start;
     const starts = new Date(new Date(base).getTime() + 15 * 60_000).toISOString();
     const ends = new Date(new Date(starts).getTime() + 60 * 60_000).toISOString();
-    const handle = slug.trim().toLowerCase();
     setRows((prev) => [
       ...prev,
       {
-        key: `new-${handle}-${prev.length}`,
-        slug: handle,
-        title: handle,
+        key: `new-${place.slug}-${prev.length}`,
+        slug: place.slug,
+        title: place.title,
         locked: false,
         starts_at: starts,
         ends_at: ends,
       },
     ]);
-    setSlug("");
   }
 
   async function onSubmit(event: React.FormEvent) {
@@ -174,18 +174,11 @@ function ProposalEditor({ engagement, onSent }: { engagement: Engagement; onSent
             </li>
           ))}
       </ol>
-      <div className="flex gap-2">
-        <Input
-          aria-label={copy.engAddPlace}
-          placeholder={copy.engAddSlug}
-          value={slug}
-          onChange={(event) => setSlug(event.target.value)}
-        />
-        <Button type="button" variant="outline" disabled={!slug.trim()} onClick={addPlace}>
-          <Plus aria-hidden />
-          {copy.engAddPlace}
-        </Button>
-      </div>
+      <PlaceSearch
+        label={copy.engAddPlace}
+        exclude={rows.flatMap((row) => (row.slug ? [row.slug] : []))}
+        onPick={addPlace}
+      />
       <div className="grid gap-3 sm:grid-cols-[1fr_14rem]">
         <div className="grid gap-1.5">
           <Label htmlFor="proposal-note">{copy.engProposalNote}</Label>
