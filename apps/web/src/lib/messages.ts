@@ -76,6 +76,13 @@ export type MessageKey =
   | "moderation"
   | "settings"
   | "guideQueue"
+  | "forGuides"
+  | "guideSurface"
+  | "guideFooter"
+  | "guideHome"
+  | "guideTours"
+  | "guideCalendar"
+  | "guideRequests"
   | "verificationQueue"
   | "taxonomy"
   | "supportCases"
@@ -216,6 +223,13 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     moderation: "Moderation",
     verificationQueue: "Verification",
     guideQueue: "Guides",
+    forGuides: "Guide with us",
+    guideSurface: "Guide",
+    guideFooter: "Guide portal — you are paid on the day, never through Mshwar.",
+    guideHome: "Home",
+    guideTours: "Tours",
+    guideCalendar: "Calendar",
+    guideRequests: "Requests",
     taxonomy: "Taxonomy",
     supportCases: "Cases",
     dataQuality: "Quality",
@@ -265,12 +279,13 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     contactKicker: "We’re here to help",
     contactTravellersTitle: "Your trips",
     contactTravellersBody: "Reopen a saved day, change its stops, or start a new plan from your trips.",
-    contactBusinessTitle: "List your business",
-    contactBusinessBody: "Verified local partners manage listings, availability and requests in the business portal.",
+    contactBusinessTitle: "Guide with Mshwar",
+    contactBusinessBody:
+      "Licensed guides and local hosts publish tours, set their days and answer requests in the guide portal.",
     contactPrivacyTitle: "Your data",
     contactPrivacyBody: "Export, reset or delete your account data at any time from settings.",
     openBookings: "Open my trips",
-    openPortal: "Open the business portal",
+    openPortal: "Open the guide portal",
     openSettings: "Open settings",
     legalKicker: "The small print",
     consoleGreeting: "Signed in to",
@@ -355,6 +370,13 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     moderation: "الإشراف",
     verificationQueue: "التحقق",
     guideQueue: "المرشدون",
+    forGuides: "أرشِد معنا",
+    guideSurface: "المرشد",
+    guideFooter: "بوابة المرشد — تتقاضى أجرك في يوم الجولة، لا عبر مشوار.",
+    guideHome: "الرئيسية",
+    guideTours: "الجولات",
+    guideCalendar: "التقويم",
+    guideRequests: "الطلبات",
     taxonomy: "التصنيف",
     supportCases: "الحالات",
     dataQuality: "الجودة",
@@ -404,12 +426,13 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     contactKicker: "نحن هنا للمساعدة",
     contactTravellersTitle: "رحلاتك",
     contactTravellersBody: "أعد فتح يوماً محفوظاً أو غيّر محطاته أو ابدأ خطة جديدة من رحلاتك.",
-    contactBusinessTitle: "أضف نشاطك التجاري",
-    contactBusinessBody: "يدير الشركاء المحليون الموثّقون العروض والتوفر والطلبات من بوابة الأعمال.",
+    contactBusinessTitle: "أرشِد مع مشوار",
+    contactBusinessBody:
+      "ينشر المرشدون المرخّصون والمضيفون المحليون جولاتهم، ويحدّدون أيامهم، ويردّون على الطلبات من بوابة المرشد.",
     contactPrivacyTitle: "بياناتك",
     contactPrivacyBody: "صدّر بيانات حسابك أو أعد ضبطها أو احذفها في أي وقت من الإعدادات.",
     openBookings: "افتح رحلاتي",
-    openPortal: "افتح بوابة الأعمال",
+    openPortal: "افتح بوابة المرشد",
     openSettings: "افتح الإعدادات",
     legalKicker: "التفاصيل الدقيقة",
     consoleGreeting: "مسجّل الدخول إلى",
@@ -495,6 +518,13 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     moderation: "Modération",
     verificationQueue: "Vérification",
     guideQueue: "Guides",
+    forGuides: "Guidez avec nous",
+    guideSurface: "Guide",
+    guideFooter: "Espace guide — vous êtes payé le jour même, jamais via Mshwar.",
+    guideHome: "Accueil",
+    guideTours: "Circuits",
+    guideCalendar: "Agenda",
+    guideRequests: "Demandes",
     taxonomy: "Taxonomie",
     supportCases: "Tickets",
     dataQuality: "Qualité",
@@ -546,14 +576,14 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     contactTravellersTitle: "Vos voyages",
     contactTravellersBody:
       "Rouvrez une journée enregistrée, modifiez ses étapes ou lancez un nouveau plan depuis vos voyages.",
-    contactBusinessTitle: "Référencer votre activité",
+    contactBusinessTitle: "Guider avec Mshwar",
     contactBusinessBody:
-      "Les partenaires locaux vérifiés gèrent offres, disponibilités et demandes dans le portail professionnel.",
+      "Guides agréés et hôtes locaux publient leurs circuits, règlent leurs jours et répondent aux demandes dans l’espace guide.",
     contactPrivacyTitle: "Vos données",
     contactPrivacyBody:
       "Exportez, réinitialisez ou supprimez les données de votre compte à tout moment depuis les paramètres.",
     openBookings: "Ouvrir mes voyages",
-    openPortal: "Ouvrir le portail professionnel",
+    openPortal: "Ouvrir l’espace guide",
     openSettings: "Ouvrir les paramètres",
     legalKicker: "Les détails",
     consoleGreeting: "Connecté à",

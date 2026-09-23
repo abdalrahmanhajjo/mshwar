@@ -13,7 +13,8 @@ import { LanguageSwitcher } from "@/components/shell/language-switcher";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { MobileNav } from "@/components/shell/mobile-nav";
 import { NavLink } from "@/components/shell/nav-link";
-import { NAV_BY_SURFACE, isNavActive, type ShellSurface } from "@/components/shell/nav-config";
+import { NAV_BY_SURFACE, isNavActive, type ShellNavItem, type ShellSurface } from "@/components/shell/nav-config";
+import type { MessageKey } from "@/lib/messages";
 import { ShellFooter } from "@/components/shell/shell-footer";
 import { useLocale } from "@/components/shell/locale-provider";
 import { localeDirection } from "@/lib/locale";
@@ -23,21 +24,25 @@ export interface AppShellProps {
   children: React.ReactNode;
   auth?: AuthState;
   currentPath?: string;
+  /** Navigation for a surface outside the registry (the legacy business portal). */
+  items?: ShellNavItem[];
+  surfaceLabel?: MessageKey;
 }
 
 const SURFACE_LABEL = {
   traveller: "travellerSurface",
-  business: "businessSurface",
+  guide: "guideSurface",
   admin: "adminSurface",
 } as const;
 
-export function AppShell({ surface, children, auth, currentPath }: AppShellProps) {
+export function AppShell({ surface, children, auth, currentPath, items: itemsOverride, surfaceLabel }: AppShellProps) {
   const pathname = usePathname() ?? "/";
   const activePath = currentPath ?? pathname;
   const { t, locale } = useLocale();
   const ctx = useAuth();
   const resolvedAuth = auth ?? ctx.auth;
-  const items = NAV_BY_SURFACE[surface];
+  const items = itemsOverride ?? NAV_BY_SURFACE[surface];
+  const label = surfaceLabel ?? SURFACE_LABEL[surface];
   const homeHref = items[0]?.href ?? "/";
   const isSidebar = surface !== "traveller";
   const activeItem = items.find((item) => isNavActive(activePath, item));
@@ -63,7 +68,7 @@ export function AppShell({ surface, children, auth, currentPath }: AppShellProps
               <div className="flex items-center justify-between gap-2 px-1">
                 <BrandMark href={homeHref} compact />
                 <span className="rounded-pill bg-brand-subtle px-2.5 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-text">
-                  {t(SURFACE_LABEL[surface])}
+                  {t(label)}
                 </span>
               </div>
               <nav aria-label={t("menu")} className="-mx-1 flex flex-col gap-0.5 overflow-y-auto">
@@ -73,7 +78,7 @@ export function AppShell({ surface, children, auth, currentPath }: AppShellProps
               </nav>
               <div className="mt-auto grid gap-3">
                 <p className="px-1 text-xs leading-relaxed text-text-muted">
-                  {t(surface === "admin" ? "adminFooter" : "businessFooter")}
+                  {t(surface === "admin" ? "adminFooter" : "guideFooter")}
                 </p>
                 <AuthStatus auth={resolvedAuth} variant="panel" />
               </div>
@@ -85,12 +90,12 @@ export function AppShell({ surface, children, auth, currentPath }: AppShellProps
                 <div className="flex min-w-0 items-center gap-3">
                   <MobileNav items={items} pathname={activePath} auth={auth} />
                   <div className="flex min-w-0 items-center gap-2 text-sm">
-                    <span className="hidden text-text-muted sm:inline">{t(SURFACE_LABEL[surface])}</span>
+                    <span className="hidden text-text-muted sm:inline">{t(label)}</span>
                     <span className="hidden text-border sm:inline" aria-hidden>
                       /
                     </span>
                     <span className="truncate font-semibold text-text">
-                      {activeItem ? t(activeItem.labelKey) : t(SURFACE_LABEL[surface])}
+                      {activeItem ? t(activeItem.labelKey) : t(label)}
                     </span>
                   </div>
                 </div>
@@ -121,13 +126,13 @@ export function AppShell({ surface, children, auth, currentPath }: AppShellProps
               </nav>
               <div className="flex items-center justify-end gap-1.5 sm:gap-3">
                 <LocaleLink
-                  href="/business"
+                  href="/guide"
                   className={cn(
                     "hidden items-center gap-1 rounded-control px-2 py-2 text-sm text-text hover:text-text/70 xl:inline-flex",
                     focusRing,
                   )}
                 >
-                  {t("forBusinesses")}
+                  {t("forGuides")}
                   <ArrowUpRight className="size-3.5 rtl:-scale-x-100" aria-hidden />
                 </LocaleLink>
                 <LanguageSwitcher compact />
@@ -165,8 +170,8 @@ export function TravellerShell(props: Omit<AppShellProps, "surface">) {
   return <AppShell surface="traveller" {...props} />;
 }
 
-export function BusinessShell(props: Omit<AppShellProps, "surface">) {
-  return <AppShell surface="business" {...props} />;
+export function GuideShell(props: Omit<AppShellProps, "surface">) {
+  return <AppShell surface="guide" {...props} />;
 }
 
 export function AdminShell(props: Omit<AppShellProps, "surface">) {

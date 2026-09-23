@@ -9,12 +9,12 @@ The policy model is described in [authorization.md](authorization.md).
 | `admin` | 61 |
 | `dev` | 1 |
 | `job` | 6 |
-| `public` | 30 |
-| `session` | 105 |
+| `public` | 31 |
+| `session` | 113 |
 | `signature` | 1 |
 | `token` | 5 |
-| `verified` | 5 |
-| **Total** | **229** |
+| `verified` | 6 |
+| **Total** | **239** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -139,9 +139,19 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/guides` | `public` |
 | GET | `/api/v1/guides/me` | `session` |
 | PUT | `/api/v1/guides/me` | `session` |
+| GET | `/api/v1/guides/me/availability` | `session` |
+| PUT | `/api/v1/guides/me/availability` | `session` |
 | PUT | `/api/v1/guides/me/documents` | `session` |
+| GET | `/api/v1/guides/me/requests` | `session` |
+| POST | `/api/v1/guides/me/requests/{booking_id}/respond` | `session` |
 | POST | `/api/v1/guides/me/submit` | `session` |
+| GET | `/api/v1/guides/me/tours` | `session` |
+| PUT | `/api/v1/guides/me/tours` | `session` |
+| POST | `/api/v1/guides/me/tours/{tour_id}/publish` | `session` |
+| POST | `/api/v1/guides/me/tours/{tour_id}/slots` | `session` |
+| POST | `/api/v1/guides/tours/{tour_slug}/request` | `verified` |
 | GET | `/api/v1/guides/{slug}` | `public` |
+| GET | `/api/v1/guides/{slug}/tours` | `public` |
 | GET | `/api/v1/health` | `public` |
 | GET | `/api/v1/health/metrics` | `job` |
 | GET | `/api/v1/locations/areas` | `public` |

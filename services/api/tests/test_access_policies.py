@@ -44,6 +44,7 @@ PUBLIC_ROUTES = {
     # function behind them never returns a document or a phone number.
     "GET /api/v1/guides",
     "GET /api/v1/guides/{slug}",
+    "GET /api/v1/guides/{slug}/tours",
     "GET /api/v1/catalogue/experiences",
     "GET /api/v1/catalogue/experiences/{slug}",
     "GET /api/v1/catalogue/experiences/{slug}/related",
@@ -82,6 +83,7 @@ BUSINESS_RULE_DENIALS = {
     "voting is closed",
     "review requires a confirmed or completed stay",
     "businesses cannot edit, hide or delete reviews",
+    "a local host cannot charge: price must be free",
     "invitation email mismatch",
     "immutable record: % cannot be truncated",
 }

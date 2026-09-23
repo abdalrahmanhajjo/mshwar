@@ -1,10 +1,10 @@
 import { ShellMain } from "@/components/shell/app-shell";
-import { GuideApplication } from "@/components/guide/guide-application";
+import { GuideHome } from "@/components/guide/guide-home";
 
 export default function GuidePortalPage() {
   return (
     <ShellMain>
-      <GuideApplication />
+      <GuideHome />
     </ShellMain>
   );
 }

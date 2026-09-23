@@ -2,10 +2,11 @@ import type { LucideIcon } from "lucide-react";
 import {
   Bell,
   Bot,
-  Building2,
+  CalendarDays,
   ClipboardCheck,
   Compass,
   Heart,
+  Inbox,
   KeyRound,
   LayoutDashboard,
   LifeBuoy,
@@ -16,15 +17,13 @@ import {
   Shield,
   ShieldCheck,
   Sparkles,
-  Store,
   Tags,
   Ticket,
   Users,
-  Wallet,
 } from "lucide-react";
 import type { MessageKey } from "@/lib/messages";
 
-export type ShellSurface = "traveller" | "business" | "admin";
+export type ShellSurface = "traveller" | "guide" | "admin";
 
 export interface ShellNavItem {
   href: string;
@@ -41,21 +40,19 @@ export const TRAVELLER_NAV: ShellNavItem[] = [
   { href: "/trips", labelKey: "myTrips", icon: Heart },
 ];
 
-export const BUSINESS_NAV: ShellNavItem[] = [
-  { href: "/business", labelKey: "dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/business/listings", labelKey: "listings", icon: Store },
-  { href: "/business/bookings", labelKey: "bookings", icon: Ticket },
-  { href: "/business/reviews", labelKey: "reviews", icon: ClipboardCheck },
-  { href: "/business/finance", labelKey: "finance", icon: Wallet },
-  { href: "/business/team", labelKey: "team", icon: Users },
-  { href: "/business/settings", labelKey: "settings", icon: Settings },
+// The business portal is hidden while Mshwar works supply-side through guides (it
+// stays in the codebase behind NEXT_PUBLIC_BUSINESS_PORTAL). Guides get this instead.
+export const GUIDE_NAV: ShellNavItem[] = [
+  { href: "/guide", labelKey: "guideHome", icon: LayoutDashboard, exact: true },
+  { href: "/guide/requests", labelKey: "guideRequests", icon: Inbox },
+  { href: "/guide/tours", labelKey: "guideTours", icon: Route },
+  { href: "/guide/calendar", labelKey: "guideCalendar", icon: CalendarDays },
 ];
 
 export const ADMIN_NAV: ShellNavItem[] = [
   { href: "/admin", labelKey: "overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/users", labelKey: "users", icon: Users },
   { href: "/admin/roles", labelKey: "adminRoles", icon: KeyRound },
-  { href: "/admin/businesses", labelKey: "verificationQueue", icon: Building2 },
   { href: "/admin/guides", labelKey: "guideQueue", icon: ShieldCheck },
   { href: "/admin/moderation", labelKey: "moderation", icon: Shield },
   { href: "/admin/bookings", labelKey: "adminBookings", icon: Ticket },
@@ -71,7 +68,7 @@ export const ADMIN_NAV: ShellNavItem[] = [
 
 export const NAV_BY_SURFACE: Record<ShellSurface, ShellNavItem[]> = {
   traveller: TRAVELLER_NAV,
-  business: BUSINESS_NAV,
+  guide: GUIDE_NAV,
   admin: ADMIN_NAV,
 };
 

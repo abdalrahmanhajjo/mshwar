@@ -13901,9 +13901,9 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
         >
           <a
             class="hidden items-center gap-1 rounded-control px-2 py-2 text-sm text-text hover:text-text/70 xl:inline-flex outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-            href="/ar/business"
+            href="/ar/guide"
           >
-            للأعمال
+            أرشِد معنا
             <svg
               aria-hidden="true"
               class="lucide lucide-arrow-up-right size-3.5 rtl:-scale-x-100"
@@ -14085,9 +14085,9 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
               <li>
                 <a
                   class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                  href="/ar/business"
+                  href="/ar/guide"
                 >
-                  شارك معنا
+                  أرشِد مع مشوار
                 </a>
               </li>
               <li>
@@ -14378,9 +14378,9 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
         >
           <a
             class="hidden items-center gap-1 rounded-control px-2 py-2 text-sm text-text hover:text-text/70 xl:inline-flex outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-            href="/business"
+            href="/guide"
           >
-            For businesses
+            Guide with us
             <svg
               aria-hidden="true"
               class="lucide lucide-arrow-up-right size-3.5 rtl:-scale-x-100"
@@ -14562,9 +14562,9 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
               <li>
                 <a
                   class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                  href="/business"
+                  href="/guide"
                 >
-                  Partner with us
+                  Guide with Mshwar
                 </a>
               </li>
               <li>
@@ -14855,9 +14855,9 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
         >
           <a
             class="hidden items-center gap-1 rounded-control px-2 py-2 text-sm text-text hover:text-text/70 xl:inline-flex outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-            href="/fr/business"
+            href="/fr/guide"
           >
-            Pour les entreprises
+            Guidez avec nous
             <svg
               aria-hidden="true"
               class="lucide lucide-arrow-up-right size-3.5 rtl:-scale-x-100"
@@ -15039,9 +15039,9 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
               <li>
                 <a
                   class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                  href="/fr/business"
+                  href="/fr/guide"
                 >
-                  Devenir partenaire
+                  Guider avec Mshwar
                 </a>
               </li>
               <li>
