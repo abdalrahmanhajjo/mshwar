@@ -22,6 +22,9 @@ import { LocaleLink } from "@/components/shell/locale-link";
 import { engagementStateLabel, engagementTone } from "@/components/guide/hire-a-guide";
 import { useGuideHireCopy } from "@/lib/guide-hire-copy";
 import { fetchMyEngagements, type Engagement } from "@/lib/guide-hire";
+import { ListSearch } from "@/components/guide/pickers";
+import { matchesQuery } from "@/lib/place-search";
+import { useSearchCopy } from "@/lib/search-copy";
 
 type Filter = "pending" | "confirmed" | "all";
 
@@ -148,7 +151,7 @@ const ENGAGEMENT_FILTER: Record<Filter, Engagement["state"][] | null> = {
   all: null,
 };
 
-function EngagementList({ filter }: { filter: Filter }) {
+function EngagementList({ filter, query }: { filter: Filter; query: string }) {
   const copy = useGuideHireCopy();
   const { locale } = useLocale();
   const [rows, setRows] = React.useState<Engagement[] | null>(null);
@@ -172,7 +175,9 @@ function EngagementList({ filter }: { filter: Filter }) {
   }, []);
 
   const wanted = ENGAGEMENT_FILTER[filter];
-  const shown = (rows ?? []).filter((row) => !wanted || wanted.includes(row.state));
+  const shown = (rows ?? []).filter(
+    (row) => (!wanted || wanted.includes(row.state)) && matchesQuery(query, row.trip_title, row.traveller_name),
+  );
   if (rows === null) {
     return null;
   }
@@ -219,6 +224,9 @@ function Requests() {
   const [rows, setRows] = React.useState<GuideRequest[] | null>(null);
   const [failed, setFailed] = React.useState(false);
   const [version, setVersion] = React.useState(0);
+  const [query, setQuery] = React.useState("");
+  const search = useSearchCopy();
+  const shown = (rows ?? []).filter((row) => matchesQuery(query, row.experience_title, row.traveller_note));
 
   React.useEffect(() => {
     let cancelled = false;
@@ -260,7 +268,8 @@ function Requests() {
           <TabsTrigger value="all">{copy.requestsAll}</TabsTrigger>
         </TabsList>
       </Tabs>
-      <EngagementList filter={filter} />
+      <ListSearch value={query} onChange={setQuery} placeholder={search.requestSearch} />
+      <EngagementList filter={filter} query={query} />
       {failed ? (
         <Notice tone="danger" role="alert">
           {copy.loadError}
@@ -271,9 +280,11 @@ function Requests() {
         </div>
       ) : rows.length === 0 ? (
         <EmptyState icon={<Inbox aria-hidden />} title={copy.requestsEmpty} />
+      ) : shown.length === 0 ? (
+        <p className="text-sm text-text-muted">{search.noResults}</p>
       ) : (
         <ul className="grid gap-4">
-          {rows.map((row) => (
+          {shown.map((row) => (
             <RequestCard key={row.id} row={row} onAnswered={() => setVersion((value) => value + 1)} />
           ))}
         </ul>

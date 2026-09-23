@@ -17,6 +17,7 @@ import { ApiError } from "@/lib/api/client";
 import { useGuideWorkCopy } from "@/lib/guide-work-copy";
 import { requestTour, type PublicTour } from "@/lib/guide-work";
 import type { PublicGuide } from "@/lib/guides";
+import { languageName } from "@/lib/place-search";
 
 function newKey() {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -70,7 +71,7 @@ function TourPanel({ guide, tour }: { guide: PublicGuide; tour: PublicTour }) {
           {tour.languages.length ? (
             <span className="inline-flex items-center gap-1">
               <Globe className="size-3.5" aria-hidden />
-              {tour.languages.join(", ")}
+              {tour.languages.map((code) => languageName(code, locale)).join(", ")}
             </span>
           ) : null}
           <span className="inline-flex items-center gap-1 font-medium text-text">

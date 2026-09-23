@@ -86,7 +86,7 @@ describe("guide tours and requests", () => {
       minAge: "",
       price: "25",
       unit: "person" as const,
-      languages: "ar, en",
+      languages: ["ar", "en"],
       included: "",
       bring: "",
       cancellation: "",
@@ -95,12 +95,13 @@ describe("guide tours and requests", () => {
       lat: "33.9",
       lng: "35.5",
       destination: "beirut",
-      route: ["byblos-citadel"],
+      route: [{ slug: "byblos-citadel", title: "Byblos Citadel" }],
     };
     expect(toTourInput(draft, "host").price_minor).toBe(0);
     expect(toTourInput(draft, "licensed").price_minor).toBe(2500);
     expect(toTourInput(draft, "licensed").languages).toEqual(["ar", "en"]);
     expect(toTourInput(draft, "licensed").title).toBe("Walk");
+    expect(toTourInput(draft, "licensed").route).toEqual(["byblos-citadel"]);
   });
 
   it("sorts and de-duplicates the weekly pattern", () => {

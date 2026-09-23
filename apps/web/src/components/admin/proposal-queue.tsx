@@ -14,6 +14,10 @@ import { interpolate } from "@/i18n/catalogues";
 import { ApiError } from "@/lib/api/client";
 import { useContributeCopy } from "@/lib/contribute-copy";
 import { decideProposal, fetchProposalQueue, type QueuedProposal } from "@/lib/guide-contribute";
+import { categoryLabel } from "@/components/guide/contribute";
+import { ListSearch, useDisplayNames } from "@/components/guide/pickers";
+import { matchesQuery } from "@/lib/place-search";
+import { useSearchCopy } from "@/lib/search-copy";
 
 const COMPARED = ["title", "description", "address"] as const;
 
@@ -23,6 +27,7 @@ function ProposalCase({ proposal, onDecided }: { proposal: QueuedProposal; onDec
   const [busy, setBusy] = React.useState<null | "accepted" | "rejected">(null);
   const [error, setError] = React.useState<string | null>(null);
   const place = proposal.payload;
+  const names = useDisplayNames();
 
   async function decide(decision: "accepted" | "rejected") {
     setBusy(decision);
@@ -63,11 +68,11 @@ function ProposalCase({ proposal, onDecided }: { proposal: QueuedProposal; onDec
           </div>
           <div>
             <dt className="text-xs font-medium uppercase tracking-wide text-text-muted">{copy.category}</dt>
-            <dd>{place.category}</dd>
+            <dd>{place.category ? categoryLabel(place.category, copy) : null}</dd>
           </div>
           <div>
             <dt className="text-xs font-medium uppercase tracking-wide text-text-muted">{copy.destination}</dt>
-            <dd>{place.destination_slug}</dd>
+            <dd>{place.destination_slug ? names.region(place.destination_slug) : null}</dd>
           </div>
           <div className="sm:col-span-2">
             <dt className="text-xs font-medium uppercase tracking-wide text-text-muted">{copy.address}</dt>
@@ -203,6 +208,11 @@ export function ProposalQueue() {
   const [rows, setRows] = React.useState<QueuedProposal[] | null>(null);
   const [failed, setFailed] = React.useState(false);
   const [version, setVersion] = React.useState(0);
+  const [query, setQuery] = React.useState("");
+  const search = useSearchCopy();
+  const shown = (rows ?? []).filter((row) =>
+    matchesQuery(query, row.payload.name, row.payload.title, row.target?.title, row.guide.display_name),
+  );
 
   React.useEffect(() => {
     let cancelled = false;
@@ -236,11 +246,21 @@ export function ProposalQueue() {
       ) : rows.length === 0 ? (
         <EmptyState icon={<MapPinned aria-hidden />} title={copy.queueEmpty} />
       ) : (
-        <ul className="grid gap-4">
-          {rows.map((row) => (
-            <ProposalCase key={row.id} proposal={row} onDecided={() => setVersion((value) => value + 1)} />
-          ))}
-        </ul>
+        <div className="grid gap-4">
+          <ListSearch
+            value={query}
+            onChange={setQuery}
+            placeholder={search.proposalSearch}
+            shown={shown.length}
+            total={rows.length}
+          />
+          {shown.length === 0 ? <p className="text-sm text-text-muted">{search.noResults}</p> : null}
+          <ul className="grid gap-4">
+            {shown.map((row) => (
+              <ProposalCase key={row.id} proposal={row} onDecided={() => setVersion((value) => value + 1)} />
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );

@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
 import { documentLabel } from "@/components/guide/guide-application";
+import { ListSearch } from "@/components/guide/pickers";
+import { matchesQuery } from "@/lib/place-search";
+import { useSearchCopy } from "@/lib/search-copy";
 import { useGuideCopy, type GuideCopy } from "@/lib/guide-copy";
 import {
   decideGuideApplication,
@@ -22,6 +25,23 @@ import { interpolate } from "@/i18n/catalogues";
 import { cn, focusRing } from "@/lib/utils";
 
 const FILTERS = ["submitted", "approved", "rejected", ""] as const;
+
+function queueStatusLabel(status: string, copy: GuideCopy): string {
+  switch (status) {
+    case "draft":
+      return copy.statusDraft;
+    case "submitted":
+      return copy.statusSubmitted;
+    case "approved":
+      return copy.statusApproved;
+    case "rejected":
+      return copy.statusRejected;
+    case "suspended":
+      return copy.statusSuspended;
+    default:
+      return status;
+  }
+}
 
 function CaseView({
   guideCase,
@@ -159,6 +179,9 @@ export function GuideQueue() {
   const [loading, setLoading] = React.useState(true);
   const [pending, setPending] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [query, setQuery] = React.useState("");
+  const search = useSearchCopy();
+  const shown = rows.filter((row) => matchesQuery(query, row.display_name));
 
   const load = React.useCallback(
     async (status: string) => {
@@ -255,18 +278,26 @@ export function GuideQueue() {
                   focusRing,
                 )}
               >
-                {item ? item : copy.queueFilterAll}
+                {item ? queueStatusLabel(item, copy) : copy.queueFilterAll}
               </button>
             ))}
           </div>
+
+          <ListSearch
+            value={query}
+            onChange={setQuery}
+            placeholder={search.queueSearch}
+            shown={shown.length}
+            total={rows.length}
+          />
 
           {loading ? (
             <div className="grid place-items-center py-16 text-text-muted">
               <Loader2 className="size-6 animate-spin" aria-hidden />
             </div>
-          ) : rows.length ? (
+          ) : shown.length ? (
             <ul className="grid gap-3">
-              {rows.map((row) => (
+              {shown.map((row) => (
                 <li
                   key={row.id}
                   className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-border-subtle bg-surface-raised p-4"
@@ -278,7 +309,7 @@ export function GuideQueue() {
                         {row.tier === "licensed" ? copy.badgeLicensed : copy.badgeHost}
                       </Badge>
                       <Badge variant="secondary" className="text-xs">
-                        {row.status}
+                        {queueStatusLabel(row.status, copy)}
                       </Badge>
                     </span>
                     <span className="text-xs text-text-muted">
@@ -302,7 +333,7 @@ export function GuideQueue() {
               ))}
             </ul>
           ) : (
-            <Notice role="status">{copy.queueEmpty}</Notice>
+            <Notice role="status">{rows.length ? search.noResults : copy.queueEmpty}</Notice>
           )}
         </>
       )}

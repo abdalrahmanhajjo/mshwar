@@ -27,6 +27,8 @@ import { fileToBase64 } from "@/lib/portal";
 import { interpolate } from "@/i18n/catalogues";
 import { cn, focusRing } from "@/lib/utils";
 import { useGuideTrustCopy } from "@/lib/guide-trust-copy";
+import { useSearchCopy } from "@/lib/search-copy";
+import { LanguagePicker, RegionPicker } from "@/components/guide/pickers";
 import { GUIDE_AGREEMENT_VERSION } from "@/lib/legal/guide-agreement";
 
 const OPTIONAL_DOCUMENTS: DocumentKind[] = ["first_aid", "insurance", "driving"];
@@ -182,6 +184,7 @@ function DocumentRow({
  * only ever asks; the decision belongs to a reviewer.
  */
 export function GuideApplication() {
+  const search = useSearchCopy();
   const copy = useGuideCopy();
   const trust = useGuideTrustCopy();
   const [agreeChecked, setAgreeChecked] = React.useState(false);
@@ -195,8 +198,8 @@ export function GuideApplication() {
   const [displayName, setDisplayName] = React.useState("");
   const [headline, setHeadline] = React.useState("");
   const [bio, setBio] = React.useState("");
-  const [languages, setLanguages] = React.useState("");
-  const [regions, setRegions] = React.useState("");
+  const [languages, setLanguages] = React.useState<string[]>([]);
+  const [regions, setRegions] = React.useState<string[]>([]);
   const [specialities, setSpecialities] = React.useState("");
   const [years, setYears] = React.useState("");
   const [phone, setPhone] = React.useState("");
@@ -210,8 +213,8 @@ export function GuideApplication() {
     setDisplayName(next.display_name);
     setHeadline(next.headline);
     setBio(next.bio);
-    setLanguages(next.languages.join(", "));
-    setRegions(next.regions.join(", "));
+    setLanguages([...next.languages]);
+    setRegions([...next.regions]);
     setSpecialities(next.specialities.join(", "));
     setYears(next.years_guiding === null ? "" : String(next.years_guiding));
     setPhone(next.phone);
@@ -351,20 +354,25 @@ export function GuideApplication() {
           />
         </label>
 
-        <div className="grid gap-4 sm:grid-cols-3">
-          <label className="grid gap-1.5 text-sm font-medium">
+        <div className="grid gap-2">
+          <span id="guide-languages" className="text-sm font-medium">
             {copy.languagesLabel}
-            <Input value={languages} placeholder="ar, en, fr" onChange={(event) => setLanguages(event.target.value)} />
-          </label>
-          <label className="grid gap-1.5 text-sm font-medium">
-            {copy.regionsLabel}
-            <Input value={regions} placeholder="north-lebanon" onChange={(event) => setRegions(event.target.value)} />
-          </label>
-          <label className="grid gap-1.5 text-sm font-medium">
-            {copy.specialitiesLabel}
-            <Input value={specialities} onChange={(event) => setSpecialities(event.target.value)} />
-          </label>
+          </span>
+          <LanguagePicker value={languages} onChange={setLanguages} disabled={!editable} labelledBy="guide-languages" />
         </div>
+
+        <div className="grid gap-2">
+          <span id="guide-regions" className="text-sm font-medium">
+            {copy.regionsLabel}
+          </span>
+          <p className="text-xs text-text-muted">{search.regionsHint}</p>
+          <RegionPicker value={regions} onChange={setRegions} disabled={!editable} labelledBy="guide-regions" />
+        </div>
+
+        <label className="grid gap-1.5 text-sm font-medium">
+          {copy.specialitiesLabel}
+          <Input value={specialities} onChange={(event) => setSpecialities(event.target.value)} />
+        </label>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="grid gap-1.5 text-sm font-medium">
@@ -389,8 +397,8 @@ export function GuideApplication() {
                     display_name: displayName.trim(),
                     headline: headline.trim(),
                     bio: bio.trim(),
-                    languages: list(languages),
-                    regions: list(regions),
+                    languages,
+                    regions,
                     specialities: list(specialities),
                     years_guiding: years ? Number(years) : null,
                     phone: phone.trim(),

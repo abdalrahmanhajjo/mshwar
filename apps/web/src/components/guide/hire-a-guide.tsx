@@ -14,6 +14,7 @@ import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
 import { Textarea } from "@/components/ui/textarea";
 import { ProposalDiff } from "@/components/guide/proposal-diff";
+import { ListSearch, useDisplayNames } from "@/components/guide/pickers";
 import { ReportProblem } from "@/components/guide/report-problem";
 import { interpolate } from "@/i18n/catalogues";
 import { formatCurrency, formatDate } from "@/i18n/format";
@@ -29,9 +30,11 @@ import {
   type EngagementState,
   type MatchedGuide,
 } from "@/lib/guide-hire";
+import { COMMON_LANGUAGES, languageName, matchesQuery } from "@/lib/place-search";
 import { fetchTripVersions } from "@/lib/planner";
+import { useSearchCopy } from "@/lib/search-copy";
 
-const LANGUAGES = ["ar", "en", "fr"] as const;
+const LANGUAGES = COMMON_LANGUAGES;
 
 export function engagementStateLabel(state: EngagementState, copy: GuideHireCopy): string {
   return {
@@ -265,6 +268,7 @@ function GuideMatch({ guide, versionId, onSent }: { guide: MatchedGuide; version
   const copy = useGuideHireCopy();
   const { locale } = useLocale();
   const [asking, setAsking] = React.useState(false);
+  const names = useDisplayNames();
 
   return (
     <li className="grid gap-3 rounded-card border border-border-subtle bg-surface-raised p-5 shadow-sm">
@@ -285,12 +289,12 @@ function GuideMatch({ guide, versionId, onSent }: { guide: MatchedGuide; version
         {guide.matched_regions.length ? (
           <span className="inline-flex items-center gap-1">
             <MapPin className="size-3" aria-hidden />
-            {interpolate(copy.hireCovers, { regions: guide.matched_regions.join(", ") })}
+            {interpolate(copy.hireCovers, { regions: guide.matched_regions.map(names.region).join(", ") })}
           </span>
         ) : null}
         <span className="inline-flex items-center gap-1">
           <Globe className="size-3" aria-hidden />
-          {guide.languages.join(", ")}
+          {guide.languages.map(names.language).join(", ")}
         </span>
         <span className="inline-flex items-center gap-1">
           <Users className="size-3" aria-hidden />
@@ -324,6 +328,9 @@ export function HireAGuide({ tripId }: { tripId: string }) {
   const [engagements, setEngagements] = React.useState<Engagement[]>([]);
   const [matches, setMatches] = React.useState<MatchedGuide[] | null>(null);
   const [language, setLanguage] = React.useState("");
+  const [query, setQuery] = React.useState("");
+  const search = useSearchCopy();
+  const { locale } = useLocale();
   const [failed, setFailed] = React.useState(false);
   const [version, setVersion] = React.useState(0);
 
@@ -375,6 +382,9 @@ export function HireAGuide({ tripId }: { tripId: string }) {
       .filter((row) => ["requested", "accepted", "changes_proposed", "confirmed"].includes(row.state))
       .map((row) => row.guide.slug),
   );
+
+  const open = (matches ?? []).filter((row) => !asked.has(row.slug));
+  const shownMatches = open.filter((row) => matchesQuery(query, row.display_name, row.headline));
 
   if (failed) {
     return (
@@ -438,6 +448,7 @@ export function HireAGuide({ tripId }: { tripId: string }) {
           </h2>
           <div className="grid gap-1.5">
             <Label htmlFor="hire-language">{copy.hireLanguage}</Label>
+
             <NativeSelect
               id="hire-language"
               wrapperClassName="w-44"
@@ -450,25 +461,34 @@ export function HireAGuide({ tripId }: { tripId: string }) {
               <option value="">{copy.hireAnyLanguage}</option>
               {LANGUAGES.map((code) => (
                 <option key={code} value={code}>
-                  {code.toUpperCase()}
+                  {languageName(code, locale)}
                 </option>
               ))}
             </NativeSelect>
           </div>
         </div>
+        {open.length > 3 ? (
+          <ListSearch
+            value={query}
+            onChange={setQuery}
+            placeholder={search.guideSearch}
+            shown={shownMatches.length}
+            total={open.length}
+          />
+        ) : null}
         {matches === null ? (
           <div className="grid place-items-center py-10 text-text-muted">
             <Loader2 className="size-6 animate-spin" aria-hidden />
           </div>
-        ) : matches.filter((row) => !asked.has(row.slug)).length === 0 ? (
+        ) : open.length === 0 ? (
           <Notice role="status">{copy.hireEmpty}</Notice>
+        ) : shownMatches.length === 0 ? (
+          <p className="text-sm text-text-muted">{search.noResults}</p>
         ) : (
           <ul className="grid gap-3 md:grid-cols-2">
-            {matches
-              .filter((row) => !asked.has(row.slug))
-              .map((row) => (
-                <GuideMatch key={row.slug} guide={row} versionId={versionId} onSent={refresh} />
-              ))}
+            {shownMatches.map((row) => (
+              <GuideMatch key={row.slug} guide={row} versionId={versionId} onSent={refresh} />
+            ))}
           </ul>
         )}
       </section>

@@ -153,7 +153,8 @@ describe("guide page", () => {
     render(wrap(<GuidePage guide={guide} />));
     expect(screen.getAllByText("Licensed guide").length).toBeGreaterThan(0);
     expect(screen.getByText("Twenty years in the souks.")).toBeInTheDocument();
-    expect(screen.getByText("north-lebanon")).toBeInTheDocument();
+    expect(screen.getByText("North Lebanon")).toBeInTheDocument();
+    expect(screen.getByText("Arabic, English")).toBeInTheDocument();
     expect(screen.queryByText(/private\//)).not.toBeInTheDocument();
   });
 });

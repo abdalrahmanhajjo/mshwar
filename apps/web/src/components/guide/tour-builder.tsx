@@ -26,21 +26,24 @@ import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
 import { Textarea } from "@/components/ui/textarea";
 import { ApprovedGuide } from "@/components/guide/guide-provider";
+import { PlaceSearch } from "@/components/guide/place-search";
+import {
+  DestinationSelect,
+  LanguagePicker,
+  ListSearch,
+  LocateButton,
+  PinSummary,
+  useDestinations,
+} from "@/components/guide/pickers";
 import { interpolate } from "@/i18n/catalogues";
 import { formatCurrency } from "@/i18n/format";
 import { ApiError } from "@/lib/api/client";
 import { useGuideWorkCopy, type GuideWorkCopy } from "@/lib/guide-work-copy";
-import {
-  fetchMyTours,
-  openTourDates,
-  publishTour,
-  saveTour,
-  splitList,
-  type GuideTour,
-  type TourInput,
-} from "@/lib/guide-work";
+import { fetchMyTours, openTourDates, publishTour, saveTour, type GuideTour, type TourInput } from "@/lib/guide-work";
 import type { MyGuideProfile } from "@/lib/guides";
+import { matchesQuery, type PlaceHit } from "@/lib/place-search";
 import { fileToBase64, uploadPortalFile } from "@/lib/portal";
+import { useSearchCopy } from "@/lib/search-copy";
 
 // Central Beirut: a starting pin the guide moves, never a claim about their tour.
 const DEFAULT_LAT = 33.8938;
@@ -55,7 +58,7 @@ type Draft = {
   minAge: string;
   price: string;
   unit: "person" | "group";
-  languages: string;
+  languages: string[];
   included: string;
   bring: string;
   cancellation: string;
@@ -64,8 +67,11 @@ type Draft = {
   lat: string;
   lng: string;
   destination: string;
-  route: string[];
+  route: RouteStop[];
 };
+
+/** A stop as the editor holds it: the handle it sends and the name it shows. */
+export type RouteStop = { slug: string; title: string };
 
 function emptyDraft(profile: MyGuideProfile): Draft {
   return {
@@ -76,7 +82,7 @@ function emptyDraft(profile: MyGuideProfile): Draft {
     minAge: "",
     price: "0",
     unit: "person",
-    languages: profile.languages.join(", "),
+    languages: [...profile.languages],
     included: "",
     bring: "",
     cancellation: "",
@@ -99,7 +105,7 @@ function draftFrom(tour: GuideTour): Draft {
     minAge: "",
     price: String((tour.price?.amount_minor ?? 0) / 100),
     unit: tour.price?.unit === "group" ? "group" : "person",
-    languages: tour.languages.join(", "),
+    languages: [...tour.languages],
     included: tour.included,
     bring: tour.bring,
     cancellation: tour.cancellation_terms,
@@ -108,7 +114,7 @@ function draftFrom(tour: GuideTour): Draft {
     lat: String(tour.venue?.lat ?? DEFAULT_LAT),
     lng: String(tour.venue?.lng ?? DEFAULT_LNG),
     destination: tour.route[0]?.destination_slug ?? "beirut",
-    route: tour.route.map((stop) => stop.slug),
+    route: tour.route.map((stop) => ({ slug: stop.slug, title: stop.title })),
   };
 }
 
@@ -123,7 +129,7 @@ export function toTourInput(draft: Draft, tier: MyGuideProfile["tier"]): TourInp
     min_age: draft.minAge ? Number(draft.minAge) : null,
     price_minor: Number.isFinite(price) ? price : 0,
     price_unit: draft.unit,
-    languages: splitList(draft.languages),
+    languages: draft.languages,
     included: draft.included.trim(),
     bring: draft.bring.trim(),
     cancellation_terms: draft.cancellation.trim(),
@@ -134,7 +140,7 @@ export function toTourInput(draft: Draft, tier: MyGuideProfile["tier"]): TourInp
       lng: Number(draft.lng),
       destination_slug: draft.destination.trim() || "beirut",
     },
-    route: draft.route,
+    route: draft.route.map((stop) => stop.slug),
   };
 }
 
@@ -150,44 +156,44 @@ function RouteEditor({
   onChange,
   copy,
 }: {
-  route: string[];
-  onChange: (next: string[]) => void;
+  route: RouteStop[];
+  onChange: (next: RouteStop[]) => void;
   copy: GuideWorkCopy;
 }) {
-  const [slug, setSlug] = React.useState("");
   const move = (index: number, by: number) => {
     const next = [...route];
     const [item] = next.splice(index, 1);
-    next.splice(index + by, 0, item as string);
+    next.splice(index + by, 0, item as RouteStop);
     onChange(next);
   };
+  const full = route.length >= 12;
 
   return (
-    <fieldset className="grid gap-3">
-      <legend className="flex items-center gap-2 pb-1 text-sm font-medium">
+    <fieldset className="grid min-w-0 grid-cols-1 gap-3 rounded-control border border-border-subtle p-4">
+      <legend className="flex items-center gap-2 px-1 text-sm font-medium">
         <Route className="size-4 text-text-muted" aria-hidden />
         {copy.tourRoute}
       </legend>
       <p className="text-xs text-text-muted">{copy.tourRouteHint}</p>
       {route.length ? (
-        <ol className="grid gap-2">
+        <ol className="grid grid-cols-1 gap-2">
           {route.map((stop, index) => (
             <li
-              key={`${stop}-${index}`}
+              key={stop.slug}
               className="flex items-center justify-between gap-2 rounded-control border border-border-subtle bg-surface px-3 py-2 text-sm"
             >
               <span className="flex min-w-0 items-center gap-2">
                 <span className="grid size-6 shrink-0 place-items-center rounded-full bg-brand-subtle text-xs font-semibold tabular-nums">
                   {index + 1}
                 </span>
-                <span className="truncate">{stop}</span>
+                <span className="min-w-0 break-words font-medium">{stop.title}</span>
               </span>
               <span className="flex shrink-0 gap-1">
                 <Button
                   type="button"
                   size="sm"
                   variant="ghost"
-                  aria-label={copy.tourRouteUp}
+                  aria-label={`${copy.tourRouteUp}: ${stop.title}`}
                   disabled={index === 0}
                   onClick={() => move(index, -1)}
                 >
@@ -197,7 +203,7 @@ function RouteEditor({
                   type="button"
                   size="sm"
                   variant="ghost"
-                  aria-label={copy.tourRouteDown}
+                  aria-label={`${copy.tourRouteDown}: ${stop.title}`}
                   disabled={index === route.length - 1}
                   onClick={() => move(index, 1)}
                 >
@@ -207,7 +213,7 @@ function RouteEditor({
                   type="button"
                   size="sm"
                   variant="ghost"
-                  aria-label={copy.tourRouteRemove}
+                  aria-label={`${copy.tourRouteRemove}: ${stop.title}`}
                   onClick={() => onChange(route.filter((_, at) => at !== index))}
                 >
                   <Trash2 aria-hidden />
@@ -219,26 +225,101 @@ function RouteEditor({
       ) : (
         <p className="text-sm text-text-muted">{copy.tourRouteEmpty}</p>
       )}
-      <div className="flex gap-2">
-        <Input
-          aria-label={copy.tourRouteAdd}
-          value={slug}
-          placeholder={copy.tourRoutePlaceholder}
-          onChange={(event) => setSlug(event.target.value)}
+      {full ? null : (
+        <PlaceSearch
+          label={copy.tourRouteAdd}
+          exclude={route.map((stop) => stop.slug)}
+          onPick={(place) => onChange([...route, { slug: place.slug, title: place.title }])}
         />
-        <Button
-          type="button"
-          variant="outline"
-          disabled={!slug.trim() || route.length >= 12}
-          onClick={() => {
-            onChange([...route, slug.trim().toLowerCase()]);
-            setSlug("");
-          }}
-        >
-          <Plus aria-hidden />
-          {copy.tourRouteAdd}
-        </Button>
+      )}
+    </fieldset>
+  );
+}
+
+function MeetingPoint({
+  draft,
+  setDraft,
+  copy,
+}: {
+  draft: Draft;
+  setDraft: React.Dispatch<React.SetStateAction<Draft>>;
+  copy: GuideWorkCopy;
+}) {
+  const search = useSearchCopy();
+  const destinations = useDestinations();
+  const lat = Number(draft.lat);
+  const lng = Number(draft.lng);
+  const field =
+    (key: "meetingName" | "meetingAddress" | "lat" | "lng") => (event: React.ChangeEvent<HTMLInputElement>) =>
+      setDraft((prev) => ({ ...prev, [key]: event.target.value }));
+
+  function choosePlace(place: PlaceHit) {
+    setDraft((prev) => ({
+      ...prev,
+      meetingName: place.title,
+      meetingAddress: prev.meetingAddress || place.placeLabel,
+      lat: place.lat === null ? prev.lat : String(place.lat),
+      lng: place.lng === null ? prev.lng : String(place.lng),
+      destination: place.destinationSlug || prev.destination,
+    }));
+  }
+
+  function pickDestination(slug: string) {
+    setDraft((prev) => {
+      const before = destinations.find((row) => row.slug === prev.destination);
+      const after = destinations.find((row) => row.slug === slug);
+      // Move the pin with the destination only while it still sits on a default
+      // or on the old destination's centre; never over a pin the guide chose.
+      const untouched =
+        (Number(prev.lat) === DEFAULT_LAT && Number(prev.lng) === DEFAULT_LNG) ||
+        (before?.lat != null && Number(prev.lat) === before.lat && Number(prev.lng) === before.lng);
+      if (after?.lat != null && after.lng != null && untouched) {
+        return { ...prev, destination: slug, lat: String(after.lat), lng: String(after.lng) };
+      }
+      return { ...prev, destination: slug };
+    });
+  }
+
+  return (
+    <fieldset className="grid min-w-0 grid-cols-1 gap-4 rounded-control border border-border-subtle p-4">
+      <legend className="flex items-center gap-1.5 px-1 text-sm font-medium">
+        <MapPin className="size-4 text-text-muted" aria-hidden />
+        {copy.tourMeetingName}
+      </legend>
+      <PlaceSearch label={search.placeUse} onPick={choosePlace} />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-1.5">
+          <Label htmlFor="tour-meet">{copy.tourMeetingName}</Label>
+          <Input id="tour-meet" required minLength={2} value={draft.meetingName} onChange={field("meetingName")} />
+        </div>
+        <div className="grid gap-1.5">
+          <Label htmlFor="tour-address">{copy.tourMeetingAddress}</Label>
+          <Input id="tour-address" value={draft.meetingAddress} onChange={field("meetingAddress")} />
+        </div>
+        <div className="grid gap-1.5 sm:col-span-2">
+          <Label htmlFor="tour-destination">{copy.tourMeetingDestination}</Label>
+          <DestinationSelect id="tour-destination" value={draft.destination} onChange={pickDestination} />
+        </div>
       </div>
+      <div className="grid gap-2">
+        {Number.isFinite(lat) && Number.isFinite(lng) ? <PinSummary lat={lat} lng={lng} /> : null}
+        <LocateButton
+          onLocate={(nextLat, nextLng) => setDraft((prev) => ({ ...prev, lat: String(nextLat), lng: String(nextLng) }))}
+        />
+      </div>
+      <details className="group rounded-control border border-border-subtle px-3 py-2">
+        <summary className="cursor-pointer text-sm font-medium">{search.exactPin}</summary>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-1.5">
+            <Label htmlFor="tour-lat">{copy.tourMeetingLat}</Label>
+            <Input id="tour-lat" inputMode="decimal" value={draft.lat} onChange={field("lat")} />
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="tour-lng">{copy.tourMeetingLng}</Label>
+            <Input id="tour-lng" inputMode="decimal" value={draft.lng} onChange={field("lng")} />
+          </div>
+        </div>
+      </details>
     </fieldset>
   );
 }
@@ -287,7 +368,7 @@ function TourForm({
   return (
     <form
       onSubmit={(event) => void onSubmit(event)}
-      className="grid gap-5 rounded-card border border-border-subtle bg-surface-raised p-5 md:p-6"
+      className="grid min-w-0 grid-cols-1 gap-5 rounded-card border border-border-subtle bg-surface-raised p-5 md:p-6"
       aria-label={draft.id ? copy.tourEdit : copy.tourNew}
     >
       {error ? (
@@ -331,13 +412,15 @@ function TourForm({
           <Label htmlFor="tour-age">{copy.tourMinAge}</Label>
           <Input id="tour-age" type="number" min={0} max={21} value={draft.minAge} onChange={field("minAge")} />
         </div>
-        <div className="grid gap-1.5">
-          <Label htmlFor="tour-languages">{copy.tourLanguages}</Label>
-          <Input id="tour-languages" value={draft.languages} onChange={field("languages")} />
+        <div className="grid gap-1.5 md:col-span-2">
+          <span id="tour-languages" className="text-sm font-medium">
+            {copy.tourLanguages}
+          </span>
+          <LanguagePicker value={draft.languages} onChange={set("languages")} labelledBy="tour-languages" />
         </div>
       </div>
 
-      <fieldset className="grid gap-3 rounded-control border border-border-subtle p-4">
+      <fieldset className="grid min-w-0 grid-cols-1 gap-3 rounded-control border border-border-subtle p-4">
         <legend className="px-1 text-sm font-medium">{copy.tourPrice}</legend>
         {host ? (
           <Notice tone="info">{copy.tourHostFree}</Notice>
@@ -365,34 +448,7 @@ function TourForm({
         )}
       </fieldset>
 
-      <fieldset className="grid gap-3 rounded-control border border-border-subtle p-4">
-        <legend className="flex items-center gap-1.5 px-1 text-sm font-medium">
-          <MapPin className="size-4 text-text-muted" aria-hidden />
-          {copy.tourMeetingName}
-        </legend>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="grid gap-1.5">
-            <Label htmlFor="tour-meet">{copy.tourMeetingName}</Label>
-            <Input id="tour-meet" required minLength={2} value={draft.meetingName} onChange={field("meetingName")} />
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="tour-address">{copy.tourMeetingAddress}</Label>
-            <Input id="tour-address" value={draft.meetingAddress} onChange={field("meetingAddress")} />
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="tour-lat">{copy.tourMeetingLat}</Label>
-            <Input id="tour-lat" inputMode="decimal" value={draft.lat} onChange={field("lat")} />
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="tour-lng">{copy.tourMeetingLng}</Label>
-            <Input id="tour-lng" inputMode="decimal" value={draft.lng} onChange={field("lng")} />
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="tour-destination">{copy.tourMeetingDestination}</Label>
-            <Input id="tour-destination" value={draft.destination} onChange={field("destination")} />
-          </div>
-        </div>
-      </fieldset>
+      <MeetingPoint draft={draft} setDraft={setDraft} copy={copy} />
 
       <RouteEditor route={draft.route} onChange={set("route")} copy={copy} />
 
@@ -607,6 +663,11 @@ function Tours({ profile }: { profile: MyGuideProfile }) {
   const [failed, setFailed] = React.useState(false);
   const [editing, setEditing] = React.useState<Draft | null>(null);
   const [version, setVersion] = React.useState(0);
+  const [query, setQuery] = React.useState("");
+  const search = useSearchCopy();
+  const shown = (tours ?? []).filter((tour) =>
+    matchesQuery(query, tour.title, tour.meeting_point, ...tour.route.map((stop) => stop.title)),
+  );
 
   React.useEffect(() => {
     let cancelled = false;
@@ -629,7 +690,7 @@ function Tours({ profile }: { profile: MyGuideProfile }) {
   const refresh = () => setVersion((value) => value + 1);
 
   return (
-    <div className="grid gap-8">
+    <div className="grid grid-cols-1 gap-8">
       <PageHeader
         eyebrow={copy.portalKicker}
         icon={<Route aria-hidden />}
@@ -664,17 +725,29 @@ function Tours({ profile }: { profile: MyGuideProfile }) {
       ) : tours.length === 0 && !editing ? (
         <EmptyState icon={<Route aria-hidden />} title={copy.toursEmpty} />
       ) : (
-        <ul className="grid gap-4">
-          {tours.map((tour) => (
-            <TourCard
-              key={tour.id}
-              tour={tour}
-              profile={profile}
-              onChanged={refresh}
-              onEdit={() => setEditing(draftFrom(tour))}
+        <div className="grid gap-4">
+          {tours.length > 3 ? (
+            <ListSearch
+              value={query}
+              onChange={setQuery}
+              placeholder={search.tourSearch}
+              shown={shown.length}
+              total={tours.length}
             />
-          ))}
-        </ul>
+          ) : null}
+          {shown.length === 0 && tours.length ? <p className="text-sm text-text-muted">{search.noResults}</p> : null}
+          <ul className="grid gap-4">
+            {shown.map((tour) => (
+              <TourCard
+                key={tour.id}
+                tour={tour}
+                profile={profile}
+                onChanged={refresh}
+                onEdit={() => setEditing(draftFrom(tour))}
+              />
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );
