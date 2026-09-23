@@ -89,7 +89,8 @@ export type GuideHireKey =
   | "termsHost"
   | "termsLapsed"
   | "termsLive"
-  | "hireGuideLink";
+  | "hireGuideLink"
+  | "hireReviewGuide";
 
 export const guideHireCopy: Record<Locale, Record<GuideHireKey, string>> = {
   en: {
@@ -182,6 +183,7 @@ export const guideHireCopy: Record<Locale, Record<GuideHireKey, string>> = {
     termsLapsed: "Your licence has to be verified and in date before travellers can hire you.",
     termsLive: "Travellers can hire you.",
     hireGuideLink: "Hire a guide",
+    hireReviewGuide: "Review your guide",
   },
   ar: {
     hireKicker: "استأجر مرشدًا",
@@ -272,6 +274,7 @@ export const guideHireCopy: Record<Locale, Record<GuideHireKey, string>> = {
     termsLapsed: "يجب أن تكون رخصتك موثّقة وسارية قبل أن يستأجرك المسافرون.",
     termsLive: "يمكن للمسافرين استئجارك.",
     hireGuideLink: "استأجر مرشدًا",
+    hireReviewGuide: "قيّم مرشدك",
   },
   fr: {
     hireKicker: "Engager un guide",
@@ -365,6 +368,7 @@ export const guideHireCopy: Record<Locale, Record<GuideHireKey, string>> = {
     termsLapsed: "Votre licence doit être vérifiée et valide pour être engagé.",
     termsLive: "Les voyageurs peuvent vous engager.",
     hireGuideLink: "Engager un guide",
+    hireReviewGuide: "Évaluer votre guide",
   },
 };
 

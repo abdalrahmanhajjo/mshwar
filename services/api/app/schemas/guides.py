@@ -292,3 +292,61 @@ class ProposalDecisionIn(BaseModel):
 
     decision: str = Field(pattern="^(accepted|rejected)$")
     reason: str = Field(default="", max_length=500)
+
+
+# ---- G5: running the day ------------------------------------------------------------------
+
+
+class GuideReviewIn(BaseModel):
+    """One half of a two-sided review. A guide names the traveller; a traveller does not."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    run_id: str
+    traveller_id: str | None = None
+    rating: int = Field(ge=1, le=5)
+    body: str = Field(default="", max_length=2000)
+
+
+# ---- G6: trust and safety -------------------------------------------------------------
+
+
+class GuideAgreementIn(BaseModel):
+    """The version of the guide agreement the guide was shown and accepts."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    version: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
+
+
+class GuideReportIn(BaseModel):
+    """A problem with a day, from either side of it."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    category: str = Field(pattern="^(safety|no_show|payment|conduct|other)$")
+    details: str = Field(min_length=10, max_length=4000)
+    engagement_id: str | None = None
+    booking_id: str | None = None
+
+
+class GuideDocumentUploadIn(BaseModel):
+    """One document, uploaded as a file. It is stored privately and only reviewers can open it."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: str
+    filename: str = Field(min_length=1, max_length=200)
+    content_type: str = Field(max_length=60)
+    content_base64: str
+    reference: str = Field(default="", max_length=120)
+    issuer: str = Field(default="", max_length=120)
+    issued_on: date | None = None
+    expires_on: date | None = None
+
+    @field_validator("kind")
+    @classmethod
+    def known_kind(cls, value: str) -> str:
+        if value not in DOCUMENT_KINDS:
+            raise ValueError("unknown document kind")
+        return value

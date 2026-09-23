@@ -77,6 +77,7 @@ async def _approved_guide(clients: dict[str, AsyncClient], tier: str = "licensed
         if kind == "licence":
             body["expires_on"] = (date.today() + timedelta(days=365)).isoformat()
         assert (await guide.put("/api/v1/guides/me/documents", json=body)).status_code == 200
+    assert (await guide.put("/api/v1/guides/me/agreement", json={"version": "2026-09-22"})).status_code == 200
     assert (await guide.post("/api/v1/guides/me/submit")).status_code == 200
 
     admin_user = await _register(admin, "admin")

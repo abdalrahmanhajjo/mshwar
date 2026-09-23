@@ -86,7 +86,8 @@ export type GuideKey =
   | "docId"
   | "docFirstAid"
   | "docInsurance"
-  | "docDriving";
+  | "docDriving"
+  | "openDocument";
 
 export const guideCopy: Record<Locale, Record<GuideKey, string>> = {
   en: {
@@ -120,7 +121,7 @@ export const guideCopy: Record<Locale, Record<GuideKey, string>> = {
     documentReference: "Reference",
     documentIssuer: "Issued by",
     documentExpires: "Expires",
-    documentFile: "File reference",
+    documentFile: "File (PDF or photo)",
     documentPending: "Waiting for review",
     documentVerified: "Verified",
     documentRejected: "Rejected",
@@ -175,6 +176,7 @@ export const guideCopy: Record<Locale, Record<GuideKey, string>> = {
     docFirstAid: "First aid",
     docInsurance: "Insurance",
     docDriving: "Driving licence",
+    openDocument: "Open the file",
   },
   ar: {
     kicker: "أرشد مع مشوار",
@@ -207,7 +209,7 @@ export const guideCopy: Record<Locale, Record<GuideKey, string>> = {
     documentReference: "الرقم",
     documentIssuer: "جهة الإصدار",
     documentExpires: "تنتهي في",
-    documentFile: "مرجع الملف",
+    documentFile: "الملف (PDF أو صورة)",
     documentPending: "بانتظار المراجعة",
     documentVerified: "تم التحقق",
     documentRejected: "مرفوض",
@@ -262,6 +264,7 @@ export const guideCopy: Record<Locale, Record<GuideKey, string>> = {
     docFirstAid: "إسعافات أولية",
     docInsurance: "تأمين",
     docDriving: "رخصة قيادة",
+    openDocument: "افتح الملف",
   },
   fr: {
     kicker: "Guider avec Mshwar",
@@ -295,7 +298,7 @@ export const guideCopy: Record<Locale, Record<GuideKey, string>> = {
     documentReference: "Référence",
     documentIssuer: "Délivré par",
     documentExpires: "Expire le",
-    documentFile: "Référence du fichier",
+    documentFile: "Fichier (PDF ou photo)",
     documentPending: "En attente d’examen",
     documentVerified: "Vérifié",
     documentRejected: "Refusé",
@@ -350,6 +353,7 @@ export const guideCopy: Record<Locale, Record<GuideKey, string>> = {
     docFirstAid: "Premiers secours",
     docInsurance: "Assurance",
     docDriving: "Permis de conduire",
+    openDocument: "Ouvrir le fichier",
   },
 };
 

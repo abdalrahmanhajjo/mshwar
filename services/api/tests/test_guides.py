@@ -67,6 +67,8 @@ async def _apply(api: AsyncClient, tier: str = "licensed") -> dict[str, Any]:
         },
     )
     assert response.status_code == 200, response.text
+    agreed = await api.put("/api/v1/guides/me/agreement", json={"version": "2026-09-22"})
+    assert agreed.status_code == 200, agreed.text
     return dict(response.json())
 
 
@@ -212,3 +214,58 @@ async def test_a_rejected_application_goes_back_to_the_guide(api: AsyncClient) -
     assert rejected.status_code == 200, rejected.text
     assert rejected.json()["status"] == "rejected"
     assert rejected.json()["decision_reason"] == "Licence unreadable"
+
+
+@pytest.mark.asyncio
+async def test_the_agreement_comes_before_review(api: AsyncClient) -> None:
+    await _register(api, "unsigned")
+    applied = await api.put("/api/v1/guides/me", json={"tier": "host", "display_name": "Nour Saad"})
+    assert applied.json()["agreement"] == {"current": "2026-09-22", "accepted": None}
+    await _document(api, "id")
+    refused = await api.post("/api/v1/guides/me/submit")
+    assert refused.status_code == 422
+    assert "guide agreement" in refused.text
+    stale = await api.put("/api/v1/guides/me/agreement", json={"version": "2020-01-01"})
+    assert stale.status_code == 422, "acceptance counts only for the text the guide was shown"
+    assert (await api.put("/api/v1/guides/me/agreement", json={"version": "2026-09-22"})).status_code == 200
+    assert (await api.post("/api/v1/guides/me/submit")).status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_a_document_is_uploaded_as_a_file_and_only_a_reviewer_can_open_it(api: AsyncClient) -> None:
+    from tests.media_fixtures import b64, tiny_pdf
+
+    await _register(api, "uploader")
+    await _apply(api, tier="host")
+    uploaded = await api.post(
+        "/api/v1/guides/me/documents/upload",
+        json={
+            "kind": "id",
+            "filename": "id-card.pdf",
+            "content_type": "application/pdf",
+            "content_base64": b64(tiny_pdf()),
+        },
+    )
+    assert uploaded.status_code == 200, uploaded.text
+    profile = uploaded.json()
+    assert [doc["kind"] for doc in profile["documents"]] == ["id"]
+    assert "document_key" not in str(profile), "the applicant never sees a storage key"
+
+    wrong = await api.post(
+        "/api/v1/guides/me/documents/upload",
+        json={
+            "kind": "id",
+            "filename": "id.pdf",
+            "content_type": "application/pdf",
+            "content_base64": b64(b"not a pdf"),
+        },
+    )
+    assert wrong.status_code == 415, "the file must really be what it says"
+
+    admin = await _register(api, "reviewer")
+    await _grant_admin(admin["id"])
+    case = (await api.get(f"/api/v1/admin/guides/{profile['id']}")).json()
+    link = case["document_links"]["id"]
+    opened = await api.get(link)
+    assert opened.status_code == 200
+    assert opened.content.startswith(b"%PDF")

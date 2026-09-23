@@ -6,15 +6,15 @@ The policy model is described in [authorization.md](authorization.md).
 | Policy | Routes |
 |---|---|
 | `actor` | 15 |
-| `admin` | 63 |
+| `admin` | 64 |
 | `dev` | 1 |
 | `job` | 6 |
-| `public` | 32 |
-| `session` | 126 |
+| `public` | 33 |
+| `session` | 135 |
 | `signature` | 1 |
 | `token` | 5 |
 | `verified` | 7 |
-| **Total** | **256** |
+| **Total** | **267** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -36,6 +36,7 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/admin/experiences/{experience_id}/weather-sensitivity` | `admin` |
 | GET | `/api/v1/admin/flags` | `admin` |
 | PUT | `/api/v1/admin/flags` | `admin` |
+| GET | `/api/v1/admin/guide-funnel` | `admin` |
 | GET | `/api/v1/admin/guides` | `admin` |
 | POST | `/api/v1/admin/guides/documents/{credential_id}` | `admin` |
 | GET | `/api/v1/admin/guides/{profile_id}` | `admin` |
@@ -146,9 +147,15 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/guides/match` | `session` |
 | GET | `/api/v1/guides/me` | `session` |
 | PUT | `/api/v1/guides/me` | `session` |
+| PUT | `/api/v1/guides/me/agreement` | `session` |
 | GET | `/api/v1/guides/me/availability` | `session` |
 | PUT | `/api/v1/guides/me/availability` | `session` |
+| GET | `/api/v1/guides/me/days` | `session` |
+| GET | `/api/v1/guides/me/days/{day_id}` | `session` |
+| POST | `/api/v1/guides/me/days/{day_id}/complete` | `session` |
+| POST | `/api/v1/guides/me/days/{day_id}/start` | `session` |
 | PUT | `/api/v1/guides/me/documents` | `session` |
+| POST | `/api/v1/guides/me/documents/upload` | `session` |
 | GET | `/api/v1/guides/me/engagements` | `session` |
 | POST | `/api/v1/guides/me/engagements/{engagement_id}/answer` | `session` |
 | POST | `/api/v1/guides/me/engagements/{engagement_id}/proposal` | `session` |
@@ -165,9 +172,13 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/guides/me/tours/{tour_id}/publish` | `session` |
 | POST | `/api/v1/guides/me/tours/{tour_id}/slots` | `session` |
 | GET | `/api/v1/guides/places/{place_slug}/contributors` | `public` |
+| POST | `/api/v1/guides/reports` | `session` |
+| POST | `/api/v1/guides/reviews` | `session` |
+| GET | `/api/v1/guides/reviews/inbox` | `session` |
 | POST | `/api/v1/guides/tours/{tour_slug}/request` | `verified` |
 | GET | `/api/v1/guides/trips/{trip_id}/engagements` | `session` |
 | GET | `/api/v1/guides/{slug}` | `public` |
+| GET | `/api/v1/guides/{slug}/reviews` | `public` |
 | GET | `/api/v1/guides/{slug}/tours` | `public` |
 | GET | `/api/v1/health` | `public` |
 | GET | `/api/v1/health/metrics` | `job` |

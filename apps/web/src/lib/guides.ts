@@ -41,6 +41,8 @@ export type MyGuideProfile = PublicGuide & {
   decision_reason: string;
   required_documents: DocumentKind[];
   documents: GuideDocument[];
+  /** Where the guide stands on the guide agreement (absent on older API responses). */
+  agreement?: { current: string; accepted: string | null };
 };
 
 export type GuideApplicationRow = {
@@ -55,7 +57,11 @@ export type GuideApplicationRow = {
   missing_documents: DocumentKind[];
 };
 
-export type GuideCase = MyGuideProfile & { document_keys: Record<string, string> };
+export type GuideCase = MyGuideProfile & {
+  document_keys: Record<string, string>;
+  /** Short-lived links to open uploaded files. */
+  document_links?: Record<string, string>;
+};
 
 export type GuideProfileInput = {
   tier: GuideTier;
@@ -141,5 +147,70 @@ export function decideGuideApplication(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ decision, reason }),
+  });
+}
+
+/** Accept the guide agreement at the version the guide was shown. */
+export function acceptGuideAgreement(version: string) {
+  return apiRequest<MyGuideProfile>("/api/v1/guides/me/agreement", json({ version }));
+}
+
+export type GuideReportInput = {
+  category: "safety" | "no_show" | "payment" | "conduct" | "other";
+  details: string;
+  engagement_id?: string;
+  booking_id?: string;
+};
+
+/** Report a problem with a day, from either side of it. */
+export function reportGuideDay(input: GuideReportInput) {
+  return apiRequest<{ id: string; category: string; escalated: boolean }>("/api/v1/guides/reports", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+}
+
+export type GuideFunnel = {
+  days: number;
+  since: string;
+  applications: Record<"started" | "submitted" | "approved" | "rejected" | "waiting" | "suspended", number>;
+  guides: Record<"approved" | "licensed" | "hosts" | "with_badge" | "hireable" | "with_published_tour", number>;
+  tours: { published: number; draft: number };
+  tour_requests: Record<"received" | "confirmed" | "declined" | "completed", number>;
+  engagements: {
+    requested: number;
+    accepted_or_proposed: number;
+    declined: number;
+    confirmed: number;
+    completed: number;
+    median_response_hours: number | null;
+  };
+  days_completed: number;
+  proposals: Record<"submitted" | "accepted" | "rejected" | "waiting", number>;
+  reviews: { written: number; of_guides_average: number | null };
+  reports: { open: number; safety: number };
+};
+
+export function fetchGuideFunnel(days = 30) {
+  return apiRequest<GuideFunnel>(`/api/v1/admin/guide-funnel?days=${days}`);
+}
+
+export type GuideDocumentUpload = {
+  kind: DocumentKind;
+  filename: string;
+  content_type: string;
+  content_base64: string;
+  expires_on?: string | null;
+  reference?: string;
+  issuer?: string;
+};
+
+/** Upload a document file to private storage; only reviewers can open it. */
+export function uploadGuideDocument(input: GuideDocumentUpload) {
+  return apiRequest<MyGuideProfile>("/api/v1/guides/me/documents/upload", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
   });
 }

@@ -34,9 +34,13 @@ from app.schemas.guides import (
     EngagementDecisionIn,
     EngagementProposalIn,
     EngagementRequestIn,
+    GuideAgreementIn,
     GuideAvailabilityIn,
     GuideCredentialIn,
+    GuideDocumentUploadIn,
     GuideProfileIn,
+    GuideReportIn,
+    GuideReviewIn,
     GuideTourIn,
     HireTermsIn,
     ProposalIn,
@@ -107,6 +111,36 @@ async def put_guide_document(
         "SELECT app.guide_put_credential(CAST(:uid AS uuid), CAST(:body AS jsonb))",
         {"uid": str(session["user_id"]), "body": _payload(payload)},
     )
+
+
+@router.post("/me/documents/upload", dependencies=[access.SESSION, limit("guide-write")])
+async def upload_guide_document(
+    payload: GuideDocumentUploadIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Upload a document file. It goes to private storage; the application keeps only its key."""
+    uid = await _uid(request, db)
+    raw = validate_upload(payload.content_base64, payload.content_type, "verification")
+    inspect_or_reject(raw, payload.content_type)
+    stored = put_private_bytes(raw, payload.filename, payload.content_type)
+    body = {
+        "kind": payload.kind,
+        "document_key": stored["object_key"],
+        "reference": payload.reference,
+        "issuer": payload.issuer,
+        "issued_on": payload.issued_on.isoformat() if payload.issued_on else None,
+        "expires_on": payload.expires_on.isoformat() if payload.expires_on else None,
+    }
+    try:
+        return await fetch_json(
+            db,
+            "SELECT app.guide_put_credential(CAST(:uid AS uuid), CAST(:body AS jsonb))",
+            {"uid": uid, "body": json.dumps(body)},
+        )
+    except Exception:
+        delete_private_bytes(stored["object_key"])
+        raise
 
 
 @router.post("/me/submit", dependencies=[access.SESSION, limit("guide-write")])
@@ -555,6 +589,135 @@ async def place_contributors(
     """The guides who added or corrected a place, for the credit line on its page."""
     rows = await fetch_json(db, "SELECT app.place_contributors(:slug)", {"slug": place_slug})
     return list(rows or [])
+
+
+# ---- G5: running the day ----------------------------------------------------------------
+
+
+@router.get("/me/days", dependencies=[access.SESSION])
+async def my_days(
+    request: Request,
+    days: int = 14,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Tour starts with confirmed travellers and confirmed hired days, soonest first."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_list_days(CAST(:uid AS uuid), :days)",
+        {"uid": uid, "days": max(1, min(days, 60))},
+    )
+
+
+@router.get("/me/days/{day_id}", dependencies=[access.SESSION])
+async def day_sheet(
+    day_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """The day sheet: stops, times, legs, the group and what to know about them."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db, "SELECT app.guide_day_sheet(CAST(:uid AS uuid), CAST(:id AS uuid))", {"uid": uid, "id": day_id}
+    )
+
+
+@router.post("/me/days/{day_id}/start", dependencies=[access.SESSION, limit("guide-write")])
+async def start_day(
+    day_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db, "SELECT app.guide_start_day(CAST(:uid AS uuid), CAST(:id AS uuid))", {"uid": uid, "id": day_id}
+    )
+
+
+@router.post("/me/days/{day_id}/complete", dependencies=[access.SESSION, limit("guide-write")])
+async def complete_day(
+    day_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Close the day. Bookings are completed and both sides are asked for a review."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db, "SELECT app.guide_complete_day(CAST(:uid AS uuid), CAST(:id AS uuid))", {"uid": uid, "id": day_id}
+    )
+
+
+@router.get("/reviews/inbox", dependencies=[access.SESSION])
+async def review_inbox(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Reviews still owed, in either role, and the released reviews about the caller."""
+    uid = await _uid(request, db)
+    return await fetch_json(db, "SELECT app.guide_review_inbox(CAST(:uid AS uuid))", {"uid": uid})
+
+
+@router.post("/reviews", dependencies=[access.SESSION, limit("community-write")])
+async def write_review(
+    payload: GuideReviewIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Write one half. It stays hidden from the other side until both halves exist or 14 days pass."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.write_guide_review(CAST(:uid AS uuid), CAST(:run AS uuid), CAST(:traveller AS uuid), :rating, :body)",
+        {
+            "uid": uid,
+            "run": payload.run_id,
+            "traveller": payload.traveller_id,
+            "rating": payload.rating,
+            "body": payload.body,
+        },
+    )
+
+
+@router.get("/{slug}/reviews", dependencies=[access.PUBLIC])
+async def guide_reviews(
+    slug: str,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Released traveller reviews of a guide, with the average."""
+    return await fetch_json(db, "SELECT app.public_guide_reviews(:slug)", {"slug": slug})
+
+
+# ---- G6: trust and safety -----------------------------------------------------------------
+
+
+@router.put("/me/agreement", dependencies=[access.SESSION, limit("guide-write")])
+async def accept_agreement(
+    payload: GuideAgreementIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Accept the guide agreement and code of conduct, at the version the guide was shown."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_accept_agreement(CAST(:uid AS uuid), :version)",
+        {"uid": uid, "version": payload.version},
+    )
+
+
+@router.post("/reports", dependencies=[access.SESSION, limit("community-write")])
+async def report_day(
+    payload: GuideReportIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Either side of a day reports a problem. It opens a support case; safety is escalated."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.report_guide_day(CAST(:uid AS uuid), CAST(:body AS jsonb))",
+        {"uid": uid, "body": _payload(payload)},
+    )
 
 
 # ---- G2: the traveller's side ---------------------------------------------------------

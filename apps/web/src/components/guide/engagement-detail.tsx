@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { engagementStateLabel, engagementTone } from "@/components/guide/hire-a-guide";
 import { ApprovedGuide } from "@/components/guide/guide-provider";
 import { ProposalDiff } from "@/components/guide/proposal-diff";
+import { ReportProblem } from "@/components/guide/report-problem";
 import { interpolate } from "@/i18n/catalogues";
 import { formatCurrency, formatDate } from "@/i18n/format";
 import { ApiError } from "@/lib/api/client";
@@ -355,6 +356,14 @@ function Detail({ engagementId }: { engagementId: string }) {
         </>
       ) : null}
       {engagement.state === "accepted" ? <p className="text-sm text-text-muted">{copy.engWaiting}</p> : null}
+      {engagement.state === "confirmed" ? (
+        <div className="flex flex-wrap items-center gap-3">
+          <Button asChild variant="outline">
+            <LocaleLink href={`/guide/day/${engagement.id}`}>{copy.engItinerary}</LocaleLink>
+          </Button>
+          <ReportProblem engagementId={engagement.id} />
+        </div>
+      ) : null}
 
       {error ? (
         <Notice tone="danger" role="alert">

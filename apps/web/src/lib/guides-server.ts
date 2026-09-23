@@ -2,6 +2,7 @@ import "server-only";
 import type { PublicGuide } from "@/lib/guides";
 import type { PublicTour } from "@/lib/guide-work";
 import type { PlaceContributor } from "@/lib/guide-contribute";
+import type { PublicGuideReviews } from "@/lib/guide-day";
 
 const API_ROOT = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const REVALIDATE_SECONDS = 60;
@@ -49,5 +50,17 @@ export async function loadPlaceContributors(slug: string): Promise<PlaceContribu
     return (await response.json()) as PlaceContributor[];
   } catch {
     return [];
+  }
+}
+
+/** Released traveller reviews of a guide. */
+export async function loadGuideReviews(slug: string): Promise<PublicGuideReviews | null> {
+  try {
+    const response = await fetch(`${API_ROOT}/api/v1/guides/${encodeURIComponent(slug)}/reviews`, {
+      next: { revalidate: REVALIDATE_SECONDS },
+    });
+    return response.ok ? ((await response.json()) as PublicGuideReviews) : null;
+  } catch {
+    return null;
   }
 }
