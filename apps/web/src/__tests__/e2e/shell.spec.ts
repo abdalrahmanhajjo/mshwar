@@ -5,7 +5,7 @@
  * 390 / 1440 Figma frames remains a later manual designer step. These tests
  * lock the engineering acceptance criteria: no horizontal scroll, mobile nav
  * collapse below `lg`, language switcher direction flip without a reload, and
- * distinct traveller / business / admin navigation.
+ * distinct traveller / guide / admin navigation.
  */
 import { expect, test, type Page } from "@playwright/test";
 
@@ -99,7 +99,7 @@ test.describe("MSHWAR-26 responsive app shell", () => {
     await page.reload();
     await expect(page.locator("aside")).toBeHidden();
     await page.getByRole("button", { name: "Open menu" }).click();
-    await expect(page.getByRole("dialog").getByRole("link", { name: "Listings" })).toBeVisible();
+    await expect(page.getByRole("dialog").getByRole("link", { name: "Tours" })).toBeVisible();
     await page.keyboard.press("Escape");
     await assertNoHorizontalScroll(page);
 
@@ -107,7 +107,7 @@ test.describe("MSHWAR-26 responsive app shell", () => {
     await page.goto("/admin");
     await expect(page.locator("[data-shell='admin']").first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Moderation" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Listings" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Tours" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Discover" })).toHaveCount(0);
     await assertNoHorizontalScroll(page);
   });
