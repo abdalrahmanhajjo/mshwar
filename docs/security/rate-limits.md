@@ -39,6 +39,9 @@ Owner: platform · Story: MSHWAR-110 · Code: `services/api/app/core/rate_limit.
 | `token-link`        | 30 / 10 min                                                  | –                                                   | Share links, unsubscribe links, signed file links, password reset and email verification submissions           |
 | `community-write`   | –                                                            | 30 / h                                              | Reviews, review reports, group suggestions and votes                                                           |
 | `upload-org`        | –                                                            | `UPLOAD_ORG_HOURLY_LIMIT` (60) / h per organisation | `POST /portal/organizations/{id}/files` (counted only after the caller's permission is confirmed)              |
+| `guide-write`       | –                                                            | 120 / h                                             | Guide profile, documents, tours, calendar, slot runs, answers to requests and engagements, hire terms          |
+| `guide-contribute`  | –                                                            | 20 / h                                              | `POST /guides/me/proposals`, `…/photos`, `…/withdraw` (on top of the daily reputation allowance in Postgres)   |
+| `guide-hire`        | –                                                            | 10 / h                                              | `POST /guides/engagements` (asking a guide to run a planned day)                                               |
 
 Every route's rule is declared next to its access policy in `services/api/app/api/v1/endpoints/*.py`. `tests/test_abuse_controls.py` fails if a rule in `RULES` is missing from this table.
 

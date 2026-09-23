@@ -237,6 +237,9 @@ def _rules() -> dict[str, Rule]:
         Rule("token-link", Allowance(30, 10 * minute), None, "Share, unsubscribe and signed-file links"),
         Rule("community-write", None, Allowance(30, hour), "Reviews, reports, group suggestions and votes"),
         Rule("upload-org", None, Allowance(settings.upload_org_hourly_limit, hour), "File uploads per organisation"),
+        Rule("guide-write", None, Allowance(120, hour), "Guide profile, tours, calendar and answers"),
+        Rule("guide-contribute", None, Allowance(20, hour), "Guide place proposals and their photos"),
+        Rule("guide-hire", None, Allowance(10, hour), "Requests to hire a guide from the planner"),
     ]
     return {rule.name: rule for rule in items}
 

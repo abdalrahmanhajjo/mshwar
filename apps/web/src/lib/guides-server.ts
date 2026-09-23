@@ -1,6 +1,7 @@
 import "server-only";
 import type { PublicGuide } from "@/lib/guides";
 import type { PublicTour } from "@/lib/guide-work";
+import type { PlaceContributor } from "@/lib/guide-contribute";
 
 const API_ROOT = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const REVALIDATE_SECONDS = 60;
@@ -31,6 +32,21 @@ export async function loadGuideTours(slug: string): Promise<PublicTour[]> {
       return [];
     }
     return (await response.json()) as PublicTour[];
+  } catch {
+    return [];
+  }
+}
+
+/** Guides who added or corrected a place, for the credit line on its page. */
+export async function loadPlaceContributors(slug: string): Promise<PlaceContributor[]> {
+  try {
+    const response = await fetch(`${API_ROOT}/api/v1/guides/places/${encodeURIComponent(slug)}/contributors`, {
+      next: { revalidate: REVALIDATE_SECONDS },
+    });
+    if (!response.ok) {
+      return [];
+    }
+    return (await response.json()) as PlaceContributor[];
   } catch {
     return [];
   }

@@ -83,6 +83,8 @@ export type MessageKey =
   | "guideTours"
   | "guideCalendar"
   | "guideRequests"
+  | "guideContribute"
+  | "placeProposals"
   | "verificationQueue"
   | "taxonomy"
   | "supportCases"
@@ -230,6 +232,8 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     guideTours: "Tours",
     guideCalendar: "Calendar",
     guideRequests: "Requests",
+    guideContribute: "Places",
+    placeProposals: "Place proposals",
     taxonomy: "Taxonomy",
     supportCases: "Cases",
     dataQuality: "Quality",
@@ -377,6 +381,8 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     guideTours: "الجولات",
     guideCalendar: "التقويم",
     guideRequests: "الطلبات",
+    guideContribute: "الأماكن",
+    placeProposals: "اقتراحات الأماكن",
     taxonomy: "التصنيف",
     supportCases: "الحالات",
     dataQuality: "الجودة",
@@ -525,6 +531,8 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     guideTours: "Circuits",
     guideCalendar: "Agenda",
     guideRequests: "Demandes",
+    guideContribute: "Lieux",
+    placeProposals: "Propositions de lieux",
     taxonomy: "Taxonomie",
     supportCases: "Tickets",
     dataQuality: "Qualité",

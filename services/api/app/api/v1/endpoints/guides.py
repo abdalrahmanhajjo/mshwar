@@ -20,10 +20,13 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core import access
+from app.core import access, imagekit
 from app.core.auth_session import require_session, require_verified_user
+from app.core.licences import COMMONS_IMAGE, COMMONS_PAGE, license_allowed
 from app.core.rate_limit import limit
 from app.core.sql import fetch_json
+from app.core.storage import delete_private_bytes, media_url, put_private_bytes
+from app.core.uploads import inspect_or_reject, validate_upload
 from app.dependencies import get_auth_db
 from app.schemas.guides import (
     EngagementAnswerIn,
@@ -36,6 +39,8 @@ from app.schemas.guides import (
     GuideProfileIn,
     GuideTourIn,
     HireTermsIn,
+    ProposalIn,
+    ProposalPhotoIn,
     TourRequestIn,
     TourRequestResponseIn,
 )
@@ -74,7 +79,7 @@ async def my_guide_profile(
     return await fetch_json(db, "SELECT app.get_my_guide_profile(CAST(:uid AS uuid))", {"uid": str(session["user_id"])})
 
 
-@router.put("/me", dependencies=[access.SESSION])
+@router.put("/me", dependencies=[access.SESSION, limit("guide-write")])
 async def upsert_guide_profile(
     payload: GuideProfileIn,
     request: Request,
@@ -89,7 +94,7 @@ async def upsert_guide_profile(
     )
 
 
-@router.put("/me/documents", dependencies=[access.SESSION])
+@router.put("/me/documents", dependencies=[access.SESSION, limit("guide-write")])
 async def put_guide_document(
     payload: GuideCredentialIn,
     request: Request,
@@ -104,7 +109,7 @@ async def put_guide_document(
     )
 
 
-@router.post("/me/submit", dependencies=[access.SESSION])
+@router.post("/me/submit", dependencies=[access.SESSION, limit("guide-write")])
 async def submit_guide_application(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -132,7 +137,7 @@ async def my_tours(
     return await fetch_json(db, "SELECT app.guide_list_tours(CAST(:uid AS uuid))", {"uid": uid})
 
 
-@router.put("/me/tours", dependencies=[access.SESSION])
+@router.put("/me/tours", dependencies=[access.SESSION, limit("guide-write")])
 async def upsert_tour(
     payload: GuideTourIn,
     request: Request,
@@ -147,7 +152,7 @@ async def upsert_tour(
     )
 
 
-@router.post("/me/tours/{tour_id}/publish", dependencies=[access.SESSION])
+@router.post("/me/tours/{tour_id}/publish", dependencies=[access.SESSION, limit("guide-write")])
 async def publish_tour(
     tour_id: str,
     request: Request,
@@ -162,7 +167,7 @@ async def publish_tour(
     )
 
 
-@router.post("/me/tours/{tour_id}/slots", dependencies=[access.SESSION])
+@router.post("/me/tours/{tour_id}/slots", dependencies=[access.SESSION, limit("guide-write")])
 async def generate_tour_slots(
     tour_id: str,
     request: Request,
@@ -187,7 +192,7 @@ async def my_availability(
     return await fetch_json(db, "SELECT app.guide_get_availability(CAST(:uid AS uuid))", {"uid": uid})
 
 
-@router.put("/me/availability", dependencies=[access.SESSION])
+@router.put("/me/availability", dependencies=[access.SESSION, limit("guide-write")])
 async def set_availability(
     payload: GuideAvailabilityIn,
     request: Request,
@@ -216,7 +221,7 @@ async def my_requests(
     )
 
 
-@router.post("/me/requests/{booking_id}/respond", dependencies=[access.SESSION])
+@router.post("/me/requests/{booking_id}/respond", dependencies=[access.SESSION, limit("guide-write")])
 async def respond_request(
     booking_id: str,
     payload: TourRequestResponseIn,
@@ -241,7 +246,7 @@ async def respond_request(
 # ---- G3: hire a guide from the planner ------------------------------------------------
 
 
-@router.put("/me/hire-terms", dependencies=[access.SESSION])
+@router.put("/me/hire-terms", dependencies=[access.SESSION, limit("guide-write")])
 async def set_hire_terms(
     payload: HireTermsIn,
     request: Request,
@@ -271,7 +276,7 @@ async def my_engagements(
     )
 
 
-@router.post("/me/engagements/{engagement_id}/answer", dependencies=[access.SESSION])
+@router.post("/me/engagements/{engagement_id}/answer", dependencies=[access.SESSION, limit("guide-write")])
 async def answer_engagement(
     engagement_id: str,
     payload: EngagementAnswerIn,
@@ -286,7 +291,7 @@ async def answer_engagement(
     )
 
 
-@router.post("/me/engagements/{engagement_id}/proposal", dependencies=[access.SESSION])
+@router.post("/me/engagements/{engagement_id}/proposal", dependencies=[access.SESSION, limit("guide-write")])
 async def propose_changes(
     engagement_id: str,
     payload: EngagementProposalIn,
@@ -320,7 +325,7 @@ async def match_guides(
     )
 
 
-@router.post("/engagements", dependencies=[access.VERIFIED, limit("booking"), limit("booking-ip")])
+@router.post("/engagements", dependencies=[access.VERIFIED, limit("guide-hire"), limit("booking-ip")])
 async def request_engagement(
     payload: EngagementRequestIn,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
@@ -368,7 +373,7 @@ async def get_engagement(
     )
 
 
-@router.post("/engagements/{engagement_id}/decision", dependencies=[access.SESSION])
+@router.post("/engagements/{engagement_id}/decision", dependencies=[access.SESSION, limit("guide-write")])
 async def decide_engagement(
     engagement_id: str,
     payload: EngagementDecisionIn,
@@ -384,7 +389,7 @@ async def decide_engagement(
     )
 
 
-@router.post("/engagements/{engagement_id}/cancel", dependencies=[access.SESSION])
+@router.post("/engagements/{engagement_id}/cancel", dependencies=[access.SESSION, limit("guide-write")])
 async def cancel_engagement(
     engagement_id: str,
     payload: EngagementCancelIn,
@@ -397,6 +402,159 @@ async def cancel_engagement(
         "SELECT app.cancel_engagement(CAST(:uid AS uuid), CAST(:id AS uuid), :reason)",
         {"uid": uid, "id": engagement_id, "reason": payload.reason},
     )
+
+
+# ---- G4: place proposals and corrections -------------------------------------------------
+
+_PHOTO_SUFFIX = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp"}
+
+
+def _with_photo_urls(proposal: Any) -> Any:
+    """Add a viewable URL to each photo; the database keeps only provider and key."""
+    if isinstance(proposal, dict):
+        for photo in proposal.get("photos") or []:
+            photo["url"] = media_url(photo.get("provider"), photo.get("object_key"))
+    return proposal
+
+
+@router.get("/me/proposals", dependencies=[access.SESSION])
+async def my_proposals(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """The guide's proposals, newest first, with today's allowance."""
+    uid = await _uid(request, db)
+    body = await fetch_json(db, "SELECT app.guide_list_proposals(CAST(:uid AS uuid))", {"uid": uid})
+    for proposal in (body or {}).get("proposals", []):
+        _with_photo_urls(proposal)
+    return body
+
+
+@router.post("/me/proposals", dependencies=[access.SESSION, limit("guide-contribute")])
+async def submit_proposal(
+    payload: ProposalIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Propose a new place or a correction. Evidence is required; nothing changes until review."""
+    uid = await _uid(request, db)
+    try:
+        return await fetch_json(
+            db,
+            "SELECT app.guide_submit_proposal(CAST(:uid AS uuid), CAST(:body AS jsonb))",
+            {"uid": uid, "body": json.dumps(payload.model_dump(mode="json", exclude_none=True))},
+        )
+    except HTTPException as exc:
+        # The reputation gate is a rate limit, so it answers like one.
+        if exc.status_code == 413 and "daily proposal limit" in str(exc.detail):
+            raise HTTPException(status_code=429, detail=exc.detail, headers={"Retry-After": "3600"}) from exc
+        raise
+
+
+@router.post("/me/proposals/{proposal_id}/withdraw", dependencies=[access.SESSION, limit("guide-contribute")])
+async def withdraw_proposal(
+    proposal_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    uid = await _uid(request, db)
+    return _with_photo_urls(
+        await fetch_json(
+            db,
+            "SELECT app.guide_withdraw_proposal(CAST(:uid AS uuid), CAST(:id AS uuid))",
+            {"uid": uid, "id": proposal_id},
+        )
+    )
+
+
+@router.post("/me/proposals/{proposal_id}/photos", dependencies=[access.SESSION, limit("guide-contribute")])
+async def add_proposal_photo(
+    proposal_id: str,
+    payload: ProposalPhotoIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """A photo for a proposal: the guide's own (with their grant) or a Commons file under an allowed licence."""
+    uid = await _uid(request, db)
+    if payload.content_base64:
+        if not payload.rights_granted:
+            raise HTTPException(status_code=422, detail="confirm you took this photo and let Mshwar publish it")
+        content_type = payload.content_type or ""
+        if content_type not in _PHOTO_SUFFIX:
+            raise HTTPException(status_code=422, detail="photos must be JPEG, PNG or WebP")
+        raw = validate_upload(payload.content_base64, content_type, "listing")
+        inspected = inspect_or_reject(raw, content_type)
+        stored_key: str | None = None
+        photo: dict[str, Any]
+        if imagekit.enabled():
+            uploaded = await imagekit.get_client().upload(
+                raw,
+                filename=f"{uuid4().hex}{_PHOTO_SUFFIX[content_type]}",
+                folder=f"/proposals/{proposal_id}",
+                content_type=content_type,
+            )
+            photo = {
+                "provider": "imagekit",
+                "object_key": uploaded.file_path.lstrip("/"),
+                "provider_file_id": uploaded.file_id,
+            }
+        else:
+            stored = put_private_bytes(raw, payload.filename or f"photo{_PHOTO_SUFFIX[content_type]}", content_type)
+            stored_key = stored["object_key"]
+            photo = {"provider": "local", "object_key": stored_key}
+        photo |= {
+            "source": "guide-upload",
+            "content_type": inspected.content_type,
+            "byte_size": len(raw),
+            "width": inspected.width,
+            "height": inspected.height,
+            "rights_granted": True,
+            "alt_text": payload.alt_text,
+        }
+        try:
+            body = await fetch_json(
+                db,
+                "SELECT app.guide_attach_proposal_photo(CAST(:uid AS uuid), CAST(:id AS uuid), CAST(:photo AS jsonb))",
+                {"uid": uid, "id": proposal_id, "photo": json.dumps(photo)},
+            )
+        except Exception:
+            if stored_key:
+                delete_private_bytes(stored_key)
+            raise
+        return _with_photo_urls(body)
+
+    page, image = payload.commons_page_url or "", payload.commons_image_url or ""
+    if not COMMONS_PAGE.fullmatch(page) or not COMMONS_IMAGE.fullmatch(image):
+        raise HTTPException(status_code=422, detail="give the Commons file page and its upload.wikimedia.org image")
+    if not payload.license or not license_allowed(payload.license, payload.license_url or ""):
+        raise HTTPException(status_code=422, detail="that licence does not allow Mshwar to publish the photo")
+    commons: dict[str, Any] = {
+        "source": "wikimedia-commons",
+        "provider": "external",
+        "object_key": image,
+        "source_url": page,
+        "license": payload.license,
+        "license_url": payload.license_url,
+        "attribution": payload.attribution or "",
+        "alt_text": payload.alt_text,
+    }
+    return _with_photo_urls(
+        await fetch_json(
+            db,
+            "SELECT app.guide_attach_proposal_photo(CAST(:uid AS uuid), CAST(:id AS uuid), CAST(:photo AS jsonb))",
+            {"uid": uid, "id": proposal_id, "photo": json.dumps(commons)},
+        )
+    )
+
+
+@router.get("/places/{place_slug}/contributors", dependencies=[access.PUBLIC])
+async def place_contributors(
+    place_slug: str,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> list[dict[str, Any]]:
+    """The guides who added or corrected a place, for the credit line on its page."""
+    rows = await fetch_json(db, "SELECT app.place_contributors(:slug)", {"slug": place_slug})
+    return list(rows or [])
 
 
 # ---- G2: the traveller's side ---------------------------------------------------------

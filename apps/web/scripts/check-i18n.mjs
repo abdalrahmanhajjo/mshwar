@@ -22,6 +22,7 @@ const CATALOGUES = [
   "src/lib/guide-copy.ts",
   "src/lib/guide-work-copy.ts",
   "src/lib/guide-hire-copy.ts",
+  "src/lib/contribute-copy.ts",
 ];
 
 const MVP_PAGES = [

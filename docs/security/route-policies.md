@@ -6,15 +6,15 @@ The policy model is described in [authorization.md](authorization.md).
 | Policy | Routes |
 |---|---|
 | `actor` | 15 |
-| `admin` | 61 |
+| `admin` | 63 |
 | `dev` | 1 |
 | `job` | 6 |
-| `public` | 31 |
-| `session` | 122 |
+| `public` | 32 |
+| `session` | 126 |
 | `signature` | 1 |
 | `token` | 5 |
 | `verified` | 7 |
-| **Total** | **249** |
+| **Total** | **256** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -58,6 +58,8 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/admin/organizations/{org_id}/verify` | `admin` |
 | POST | `/api/v1/admin/payments/reconcile` | `admin` |
 | GET | `/api/v1/admin/payments/reconciliation` | `admin` |
+| GET | `/api/v1/admin/proposals` | `admin` |
+| POST | `/api/v1/admin/proposals/{proposal_id}` | `admin` |
 | GET | `/api/v1/admin/quality` | `admin` |
 | POST | `/api/v1/admin/quality/run` | `admin` |
 | POST | `/api/v1/admin/quality/{issue_id}/notify` | `admin` |
@@ -151,6 +153,10 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/guides/me/engagements/{engagement_id}/answer` | `session` |
 | POST | `/api/v1/guides/me/engagements/{engagement_id}/proposal` | `session` |
 | PUT | `/api/v1/guides/me/hire-terms` | `session` |
+| GET | `/api/v1/guides/me/proposals` | `session` |
+| POST | `/api/v1/guides/me/proposals` | `session` |
+| POST | `/api/v1/guides/me/proposals/{proposal_id}/photos` | `session` |
+| POST | `/api/v1/guides/me/proposals/{proposal_id}/withdraw` | `session` |
 | GET | `/api/v1/guides/me/requests` | `session` |
 | POST | `/api/v1/guides/me/requests/{booking_id}/respond` | `session` |
 | POST | `/api/v1/guides/me/submit` | `session` |
@@ -158,6 +164,7 @@ The policy model is described in [authorization.md](authorization.md).
 | PUT | `/api/v1/guides/me/tours` | `session` |
 | POST | `/api/v1/guides/me/tours/{tour_id}/publish` | `session` |
 | POST | `/api/v1/guides/me/tours/{tour_id}/slots` | `session` |
+| GET | `/api/v1/guides/places/{place_slug}/contributors` | `public` |
 | POST | `/api/v1/guides/tours/{tour_slug}/request` | `verified` |
 | GET | `/api/v1/guides/trips/{trip_id}/engagements` | `session` |
 | GET | `/api/v1/guides/{slug}` | `public` |

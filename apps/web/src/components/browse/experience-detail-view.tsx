@@ -1,5 +1,7 @@
 "use client";
 
+import { PlaceCredit } from "@/components/guide/place-credit";
+import type { PlaceContributor } from "@/lib/guide-contribute";
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -40,7 +42,15 @@ import { cn, focusRing } from "@/lib/utils";
 
 const FACT_ICONS = [Clock, Users, MapPin, ShieldCheck];
 
-export function ExperienceDetailView({ experience, related }: { experience: Experience; related: Experience[] }) {
+export function ExperienceDetailView({
+  experience,
+  related,
+  contributors = [],
+}: {
+  experience: Experience;
+  related: Experience[];
+  contributors?: PlaceContributor[];
+}) {
   const copy = useBrowseCopy();
   const category = CATEGORIES.find((item) => item.slug === experience.category)?.label ?? experience.category;
   const mapsQuery = encodeURIComponent(experience.placeLabel);
@@ -210,6 +220,8 @@ export function ExperienceDetailView({ experience, related }: { experience: Expe
               })}
             </ul>
           </section>
+
+          <PlaceCredit contributors={contributors} />
 
           <section className="grid gap-3 rounded-card border border-border-subtle bg-surface-sunken/60 p-6">
             <h2 className="font-semibold">{copy.availabilityStatus}</h2>

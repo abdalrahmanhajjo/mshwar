@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ExperienceDetailView } from "@/components/browse/experience-detail-view";
 import { loadExperience, loadRelated } from "@/lib/catalogue-api";
 import { EXPERIENCES } from "@/lib/catalog";
+import { loadPlaceContributors } from "@/lib/guides-server";
 
 export function generateStaticParams() {
   return EXPERIENCES.map((experience) => ({ slug: experience.slug }));
@@ -26,5 +27,6 @@ export default async function ExperienceDetailPage({ params }: { params: Promise
   if (!experience) {
     notFound();
   }
-  return <ExperienceDetailView experience={experience} related={await loadRelated(slug)} />;
+  const [related, contributors] = await Promise.all([loadRelated(slug), loadPlaceContributors(slug)]);
+  return <ExperienceDetailView experience={experience} related={related} contributors={contributors} />;
 }
