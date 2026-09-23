@@ -2,7 +2,7 @@
 import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { axe } from "vitest-axe";
-import { AdminShell, BusinessShell, TravellerShell } from "./app-shell";
+import { AdminShell, GuideShell, TravellerShell } from "./app-shell";
 import { LocaleProvider } from "./locale-provider";
 import { ShellPage } from "./shell-page";
 
@@ -25,9 +25,9 @@ describe("axe-core on app shells", () => {
   it("business and admin shells", async () => {
     const business = render(
       <LocaleProvider>
-        <BusinessShell currentPath="/business">
+        <GuideShell currentPath="/guide">
           <ShellPage title="Dashboard" description="Biz" />
-        </BusinessShell>
+        </GuideShell>
       </LocaleProvider>,
     );
     await expectAccessible(business.container);

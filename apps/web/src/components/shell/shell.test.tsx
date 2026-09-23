@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { AdminShell, BusinessShell, TravellerShell } from "./app-shell";
+import { AdminShell, GuideShell, TravellerShell } from "./app-shell";
 import { LocaleProvider } from "./locale-provider";
 import { ShellPage } from "./shell-page";
 
@@ -25,12 +25,14 @@ describe("responsive app shells", () => {
 
     render(
       <LocaleProvider>
-        <BusinessShell currentPath="/business">
-          <ShellPage title="Dashboard" description="Biz" />
-        </BusinessShell>
+        <GuideShell currentPath="/guide">
+          <ShellPage title="Your days" description="Guide" />
+        </GuideShell>
       </LocaleProvider>,
     );
-    expect(screen.getAllByRole("link", { name: "Listings" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("link", { name: "Tours" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("link", { name: "Requests" }).length).toBeGreaterThan(0);
+    expect(screen.queryByRole("link", { name: "Listings" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Discover" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Moderation" })).not.toBeInTheDocument();
   });

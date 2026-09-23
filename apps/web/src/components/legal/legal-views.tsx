@@ -82,7 +82,7 @@ export function ContactView() {
       icon: Building2,
       title: t("contactBusinessTitle"),
       body: t("contactBusinessBody"),
-      href: "/business",
+      href: "/guide",
       cta: t("openPortal"),
     },
     {

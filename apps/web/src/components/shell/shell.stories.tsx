@@ -5,7 +5,7 @@
  */
 import type { ReactNode } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { AdminShell, BusinessShell, TravellerShell } from "./app-shell";
+import { AdminShell, GuideShell, TravellerShell } from "./app-shell";
 import { LocaleProvider } from "./locale-provider";
 import { ShellPage } from "./shell-page";
 
@@ -81,9 +81,9 @@ export const Business1440: Story = {
   parameters: { viewport: { defaultViewport: "desktop1440" } },
   render: () => (
     <Frame>
-      <BusinessShell currentPath="/business" auth={{ status: "signed-in", name: "Nour" }}>
+      <GuideShell currentPath="/guide" auth={{ status: "signed-in", name: "Nour" }}>
         <ShellPage title="Dashboard" description="Business sidebar shell at 1440px." />
-      </BusinessShell>
+      </GuideShell>
     </Frame>
   ),
 };
@@ -94,9 +94,9 @@ export const Business390: Story = {
   parameters: { viewport: { defaultViewport: "mobile390" } },
   render: () => (
     <Frame>
-      <BusinessShell currentPath="/business" auth={{ status: "signed-in", name: "Nour" }}>
+      <GuideShell currentPath="/guide" auth={{ status: "signed-in", name: "Nour" }}>
         <ShellPage title="Dashboard" description="Business shell collapses to a sheet below lg." />
-      </BusinessShell>
+      </GuideShell>
     </Frame>
   ),
 };

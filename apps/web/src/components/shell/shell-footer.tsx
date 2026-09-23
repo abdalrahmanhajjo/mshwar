@@ -12,9 +12,9 @@ import { useTrustCopy } from "@/lib/trust-copy";
 import { splitAtQuote } from "@/lib/text";
 import type { ShellSurface } from "@/components/shell/nav-config";
 
-const FOOTER_COPY: Record<ShellSurface, "travellerFooter" | "businessFooter" | "adminFooter"> = {
+const FOOTER_COPY: Record<ShellSurface, "travellerFooter" | "guideFooter" | "adminFooter"> = {
   traveller: "travellerFooter",
-  business: "businessFooter",
+  guide: "guideFooter",
   admin: "adminFooter",
 };
 
@@ -58,7 +58,7 @@ export function ShellFooter({ surface }: { surface: ShellSurface }) {
   const columns = [
     { href: "/destinations", label: copy.exploreLebanon },
     { href: "/plan", label: copy.planATrip },
-    { href: "/business", label: copy.partnerWithUs },
+    { href: "/guide", label: copy.partnerWithUs },
     { href: "/collections", label: copy.tripIdeas },
     { href: "/contact", label: copy.aboutMshwar },
     { href: "/contact", label: copy.helpCenter },

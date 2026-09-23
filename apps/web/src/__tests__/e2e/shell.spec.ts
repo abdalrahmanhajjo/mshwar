@@ -84,13 +84,13 @@ test.describe("MSHWAR-26 responsive app shell", () => {
     ).toBeVisible();
   });
 
-  test("business and admin shells share chrome but differ in navigation", async ({ page }) => {
+  test("guide and admin shells share chrome but differ in navigation", async ({ page }) => {
     await signInForShell(page);
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/business");
-    await expect(page.locator("[data-shell='business']").first()).toBeVisible();
+    await page.goto("/guide");
+    await expect(page.locator("[data-shell='guide']").first()).toBeVisible();
     await expect(page.locator("aside")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Listings" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Tours" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Discover" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Moderation" })).toHaveCount(0);
     await assertNoHorizontalScroll(page);
