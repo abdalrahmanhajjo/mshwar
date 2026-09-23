@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   LifeBuoy,
   MapPin,
+  MapPinned,
   Route,
   ScrollText,
   Settings,
@@ -47,6 +48,7 @@ export const GUIDE_NAV: ShellNavItem[] = [
   { href: "/guide/requests", labelKey: "guideRequests", icon: Inbox },
   { href: "/guide/tours", labelKey: "guideTours", icon: Route },
   { href: "/guide/calendar", labelKey: "guideCalendar", icon: CalendarDays },
+  { href: "/guide/contribute", labelKey: "guideContribute", icon: MapPinned },
 ];
 
 export const ADMIN_NAV: ShellNavItem[] = [
@@ -54,6 +56,7 @@ export const ADMIN_NAV: ShellNavItem[] = [
   { href: "/admin/users", labelKey: "users", icon: Users },
   { href: "/admin/roles", labelKey: "adminRoles", icon: KeyRound },
   { href: "/admin/guides", labelKey: "guideQueue", icon: ShieldCheck },
+  { href: "/admin/proposals", labelKey: "placeProposals", icon: MapPinned },
   { href: "/admin/moderation", labelKey: "moderation", icon: Shield },
   { href: "/admin/bookings", labelKey: "adminBookings", icon: Ticket },
   { href: "/admin/taxonomy", labelKey: "taxonomy", icon: Tags },

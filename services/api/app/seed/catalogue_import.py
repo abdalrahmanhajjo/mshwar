@@ -55,6 +55,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+from app.core.licences import license_allowed
 from app.seed.lebanon_catalogue import (
     GOVERNORATES,
     LEBANON_BBOX,
@@ -274,27 +275,8 @@ class ResolvedImage:
 def _license_allowed(short: str, raw: str) -> bool:
     """True only for reusable licences (CC0 / CC-BY / CC-BY-SA / public domain).
     Non-commercial (NC), no-derivatives (ND), non-free and 'all rights reserved'
-    are rejected."""
-    text = f"{short} {raw}".lower().strip()
-    rejected = (
-        "cc-by-nc",
-        "cc by-nc",
-        "cc-by-nd",
-        "cc by-nd",
-        "noncommercial",
-        "non-commercial",
-        "noderiv",
-        "no derivative",
-        "non-free",
-        "nonfree",
-        "fair use",
-        "all rights reserved",
-    )
-    if any(marker in text for marker in rejected):
-        return False
-    if "public domain" in text or text.startswith("pd"):
-        return True
-    return text.startswith("cc0") or text.startswith("cc-by") or text.startswith("cc by")
+    are rejected. The rule lives in app.core.licences so guide proposals share it."""
+    return license_allowed(short, raw)
 
 
 def _ext_value(ext: dict[str, Any], key: str) -> str:

@@ -16,7 +16,7 @@ from app.core.data_quality import run_checks, scheduler_status
 from app.core.notifications import service as notification_service
 from app.core.search_reindex import reindex_provider
 from app.core.sql import fetch_json
-from app.core.storage import sign_object_url
+from app.core.storage import media_url, sign_object_url
 from app.dependencies import get_auth_db
 from app.schemas.admin import (
     AdminGrantIn,
@@ -34,7 +34,7 @@ from app.schemas.admin import (
     TaxonomyMergeIn,
     TaxonomyRenameIn,
 )
-from app.schemas.guides import GuideDecisionIn, GuideDocumentDecisionIn
+from app.schemas.guides import GuideDecisionIn, GuideDocumentDecisionIn, ProposalDecisionIn
 from app.schemas.planner import ThresholdIn
 from app.schemas.portal import AdminVerificationAction
 
@@ -941,4 +941,45 @@ async def decide_guide_application(
             "decision": payload.decision,
             "reason": payload.reason,
         },
+    )
+
+
+def _proposal_photos(proposal: Any) -> Any:
+    if isinstance(proposal, dict):
+        for photo in proposal.get("photos") or []:
+            photo["url"] = media_url(photo.get("provider"), photo.get("object_key"))
+    return proposal
+
+
+@router.get("/proposals", dependencies=[access.ADMIN])
+async def list_place_proposals(
+    request: Request,
+    status_filter: str | None = Query(default="submitted", alias="status"),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Guides' new places and corrections, oldest waiting first, with each guide's standing."""
+    session = await _admin(request, db)
+    rows = await fetch_json(
+        db,
+        "SELECT app.admin_list_proposals(CAST(:admin_id AS uuid), :status)",
+        {"admin_id": _uid(session), "status": None if status_filter == "all" else status_filter},
+    )
+    return [_proposal_photos(row) for row in rows or []]
+
+
+@router.post("/proposals/{proposal_id}", dependencies=[access.ADMIN])
+async def decide_place_proposal(
+    proposal_id: UUID,
+    payload: ProposalDecisionIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Accept (the catalogue changes, photos move in, credit is recorded) or reject with a reason."""
+    session = await _admin(request, db)
+    return _proposal_photos(
+        await fetch_json(
+            db,
+            "SELECT app.admin_decide_proposal(CAST(:admin_id AS uuid), CAST(:id AS uuid), :decision, :reason)",
+            {"admin_id": _uid(session), "id": str(proposal_id), "decision": payload.decision, "reason": payload.reason},
+        )
     )

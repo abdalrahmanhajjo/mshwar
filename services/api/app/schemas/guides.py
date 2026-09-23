@@ -233,3 +233,62 @@ class EngagementCancelIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     reason: str = Field(default="", max_length=500)
+
+
+# ---- G4: place proposals and corrections ---------------------------------------------
+
+
+class ProposedPlaceIn(BaseModel):
+    """For a new place, everything a listing needs; for a correction, only what changes."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str | None = Field(default=None, max_length=140)
+    title: str | None = Field(default=None, max_length=140)
+    description: str | None = Field(default=None, max_length=4000)
+    category: str | None = Field(default=None, max_length=40)
+    destination_slug: str | None = Field(default=None, max_length=80)
+    address: str | None = Field(default=None, max_length=240)
+    lat: float | None = Field(default=None, ge=33.0, le=34.8)
+    lng: float | None = Field(default=None, ge=35.0, le=36.7)
+    setting: str | None = Field(default=None, pattern="^(indoor|outdoor|mixed)$")
+    listing_kind: str | None = Field(default=None, pattern="^(experience|attraction|restaurant)$")
+    suggested_minutes: int | None = Field(default=None, ge=15, le=600)
+    free_entry: bool | None = None
+    closed: bool | None = None
+    note: str | None = Field(default=None, max_length=1000)
+
+
+class ProposalIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: str = Field(pattern="^(new|correction)$")
+    target_slug: str | None = Field(default=None, max_length=160)
+    place: ProposedPlaceIn
+    evidence_urls: list[str] = Field(min_length=1, max_length=5)
+
+
+class ProposalPhotoIn(BaseModel):
+    """Either the guide's own photo, uploaded, or a Wikimedia Commons file."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    # The guide's own photo.
+    filename: str | None = Field(default=None, max_length=200)
+    content_type: str | None = Field(default=None, max_length=40)
+    content_base64: str | None = None
+    rights_granted: bool = False
+    # A Commons photo.
+    commons_page_url: str | None = Field(default=None, max_length=500)
+    commons_image_url: str | None = Field(default=None, max_length=500)
+    license: str | None = Field(default=None, max_length=80)
+    license_url: str | None = Field(default=None, max_length=500)
+    attribution: str | None = Field(default=None, max_length=200)
+    alt_text: str = Field(default="", max_length=200)
+
+
+class ProposalDecisionIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    decision: str = Field(pattern="^(accepted|rejected)$")
+    reason: str = Field(default="", max_length=500)
