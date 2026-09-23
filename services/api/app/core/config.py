@@ -111,6 +111,10 @@ class Settings(BaseSettings):
         default="stub",
         validation_alias=AliasChoices("PLANNER_LLM_PROVIDER", "planner_llm_provider"),
     )
+    planner_llm_model: str = Field(
+        default="gpt-4o-mini",
+        validation_alias=AliasChoices("PLANNER_LLM_MODEL", "planner_llm_model"),
+    )
     planner_llm_max_attempts: int = Field(
         default=2,
         validation_alias=AliasChoices("PLANNER_LLM_MAX_ATTEMPTS", "planner_llm_max_attempts"),

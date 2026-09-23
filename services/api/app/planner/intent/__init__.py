@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from app.planner.intent.catalogue import match_destinations, resolve_anchors
 from app.planner.intent.constraints import MISSING_ANCHOR, clarification_for, extract_constraints
 from app.planner.intent.extractor import ExtractedIntent, extract_intent
 
@@ -9,4 +10,6 @@ __all__ = [
     "clarification_for",
     "extract_constraints",
     "extract_intent",
+    "match_destinations",
+    "resolve_anchors",
 ]
