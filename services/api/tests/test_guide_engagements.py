@@ -50,6 +50,7 @@ async def _approve(guide: AsyncClient, admin: AsyncClient, tier: str, regions: l
         if kind == "licence":
             body["expires_on"] = (date.today() + timedelta(days=365)).isoformat()
         await guide.put("/api/v1/guides/me/documents", json=body)
+    await guide.put("/api/v1/guides/me/agreement", json={"version": "2026-09-22"})
     await guide.post("/api/v1/guides/me/submit")
     if not admin.cookies:
         admin_user = await _register(admin, "admin")

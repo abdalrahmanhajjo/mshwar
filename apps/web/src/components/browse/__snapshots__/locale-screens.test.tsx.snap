@@ -13761,7 +13761,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
       تخطّ إلى المحتوى
     </a>
     <header
-      class="sticky top-0 z-40 border-b border-border-subtle bg-surface/85 backdrop-blur-md"
+      class="sticky top-0 z-40 border-b border-border-subtle bg-surface/85 backdrop-blur-md print:hidden"
     >
       <div
         class="shell-frame grid min-h-16 grid-cols-[1fr_auto] items-center gap-3 py-2 lg:min-h-[4.5rem] lg:grid-cols-[1fr_auto_1fr]"
@@ -14238,7 +14238,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
       Skip to content
     </a>
     <header
-      class="sticky top-0 z-40 border-b border-border-subtle bg-surface/85 backdrop-blur-md"
+      class="sticky top-0 z-40 border-b border-border-subtle bg-surface/85 backdrop-blur-md print:hidden"
     >
       <div
         class="shell-frame grid min-h-16 grid-cols-[1fr_auto] items-center gap-3 py-2 lg:min-h-[4.5rem] lg:grid-cols-[1fr_auto_1fr]"
@@ -14715,7 +14715,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
       Aller au contenu
     </a>
     <header
-      class="sticky top-0 z-40 border-b border-border-subtle bg-surface/85 backdrop-blur-md"
+      class="sticky top-0 z-40 border-b border-border-subtle bg-surface/85 backdrop-blur-md print:hidden"
     >
       <div
         class="shell-frame grid min-h-16 grid-cols-[1fr_auto] items-center gap-3 py-2 lg:min-h-[4.5rem] lg:grid-cols-[1fr_auto_1fr]"

@@ -17,6 +17,8 @@ export const PROTECTED_PATHS = [
   /^\/plan(?:\/|$)/,
   // The guide portal: an application is private to the person making it.
   /^\/guide(?:\/|$)/,
+  // Reviews a traveller owes a guide are theirs alone.
+  /^\/guides\/review$/,
   /^\/saved(?:\/|$)/,
   /^\/trips(?:\/|$)/,
   /^\/favorites(?:\/|$)/,

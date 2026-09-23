@@ -14,6 +14,7 @@ import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
 import { Textarea } from "@/components/ui/textarea";
 import { ProposalDiff } from "@/components/guide/proposal-diff";
+import { ReportProblem } from "@/components/guide/report-problem";
 import { interpolate } from "@/i18n/catalogues";
 import { formatCurrency, formatDate } from "@/i18n/format";
 import { ApiError } from "@/lib/api/client";
@@ -107,6 +108,14 @@ function EngagementCard({ engagement, onChanged }: { engagement: Engagement; onC
               : copy.hireNoPhone}
           </p>
         </div>
+      ) : null}
+      {engagement.state === "confirmed" || engagement.state === "completed" ? (
+        <ReportProblem engagementId={engagement.id} />
+      ) : null}
+      {engagement.state === "completed" ? (
+        <Button asChild variant="outline" className="w-fit">
+          <LocaleLink href="/guides/review">{copy.hireReviewGuide}</LocaleLink>
+        </Button>
       ) : null}
       {error ? (
         <Notice tone="danger" role="alert">

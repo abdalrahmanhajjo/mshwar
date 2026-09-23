@@ -88,6 +88,16 @@ function CaseView({
                     ]}
               </Badge>
             </span>
+            {guideCase.document_links?.[document.kind] ? (
+              <a
+                href={guideCase.document_links[document.kind]}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-fit text-sm underline"
+              >
+                {copy.openDocument}
+              </a>
+            ) : null}
             <span className="break-all font-mono text-xs text-text-muted">
               {guideCase.document_keys[document.kind] ?? ""}
               {document.expires_on ? ` · ${copy.documentExpires} ${document.expires_on}` : ""}

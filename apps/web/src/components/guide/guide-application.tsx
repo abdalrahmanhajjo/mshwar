@@ -13,17 +13,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { useGuideCopy, type GuideCopy } from "@/lib/guide-copy";
 import {
   fetchMyGuideProfile,
-  saveGuideDocument,
+  uploadGuideDocument,
   saveGuideProfile,
   submitGuideApplication,
+  acceptGuideAgreement,
   type DocumentKind,
   type GuideDocument,
   type GuideTier,
   type MyGuideProfile,
 } from "@/lib/guides";
 import { ApiError } from "@/lib/api/client";
+import { fileToBase64 } from "@/lib/portal";
 import { interpolate } from "@/i18n/catalogues";
 import { cn, focusRing } from "@/lib/utils";
+import { useGuideTrustCopy } from "@/lib/guide-trust-copy";
+import { GUIDE_AGREEMENT_VERSION } from "@/lib/legal/guide-agreement";
 
 const OPTIONAL_DOCUMENTS: DocumentKind[] = ["first_aid", "insurance", "driving"];
 
@@ -104,9 +108,9 @@ function DocumentRow({
   document: GuideDocument | undefined;
   copy: GuideCopy;
   pending: boolean;
-  onSave: (kind: DocumentKind, key: string, expires: string) => void;
+  onSave: (kind: DocumentKind, file: File, expires: string) => void;
 }) {
-  const [key, setKey] = React.useState("");
+  const [file, setFile] = React.useState<File | null>(null);
   const [expires, setExpires] = React.useState(document?.expires_on ?? "");
   const state = document
     ? document.expired
@@ -146,9 +150,9 @@ function DocumentRow({
           </Label>
           <Input
             id={`doc-${kind}`}
-            value={key}
-            placeholder="private/licence.pdf"
-            onChange={(event) => setKey(event.target.value)}
+            type="file"
+            accept="application/pdf,image/jpeg,image/png,image/webp"
+            onChange={(event) => setFile(event.target.files?.[0] ?? null)}
           />
         </div>
         <div className="grid gap-1.5">
@@ -160,8 +164,8 @@ function DocumentRow({
         <Button
           type="button"
           variant={document ? "outline" : "default"}
-          disabled={pending || !key.trim()}
-          onClick={() => onSave(kind, key.trim(), expires)}
+          disabled={pending || !file}
+          onClick={() => file && onSave(kind, file, expires)}
         >
           {document ? copy.documentReplace : copy.documentAdd}
         </Button>
@@ -179,6 +183,8 @@ function DocumentRow({
  */
 export function GuideApplication() {
   const copy = useGuideCopy();
+  const trust = useGuideTrustCopy();
+  const [agreeChecked, setAgreeChecked] = React.useState(false);
   const [profile, setProfile] = React.useState<MyGuideProfile | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [pending, setPending] = React.useState(false);
@@ -258,6 +264,9 @@ export function GuideApplication() {
   const required: DocumentKind[] = profile?.required_documents ?? (tier === "licensed" ? ["id", "licence"] : ["id"]);
   const byKind = new Map((profile?.documents ?? []).map((item) => [item.kind, item]));
   const missing = required.filter((kind) => !byKind.has(kind));
+  const agreementVersion = profile?.agreement?.current ?? GUIDE_AGREEMENT_VERSION;
+  // Older API responses carry no agreement field; treat them as not needing one.
+  const agreed = !profile?.agreement || profile.agreement.accepted === profile.agreement.current;
 
   if (loading) {
     return (
@@ -418,11 +427,13 @@ export function GuideApplication() {
                 document={byKind.get(kind)}
                 copy={copy}
                 pending={pending}
-                onSave={(chosen, key, expires) =>
-                  void run(() =>
-                    saveGuideDocument({
+                onSave={(chosen, file, expires) =>
+                  void run(async () =>
+                    uploadGuideDocument({
                       kind: chosen,
-                      document_key: key,
+                      filename: file.name,
+                      content_type: file.type || "application/pdf",
+                      content_base64: await fileToBase64(file),
                       expires_on: expires || null,
                     }),
                   )
@@ -440,17 +451,54 @@ export function GuideApplication() {
           ) : null}
 
           {editable ? (
+            <div className="grid gap-3 rounded-control border border-border-subtle bg-surface p-4">
+              <h3 className="font-medium">{trust.agreementTitle}</h3>
+              <p className="text-sm text-text-muted">{trust.agreementBody}</p>
+              <LocaleLink href="/guides/agreement" className="w-fit text-sm underline" target="_blank">
+                {trust.agreementRead}
+              </LocaleLink>
+              {agreed ? (
+                <p className="text-sm text-success">
+                  {interpolate(trust.agreementAccepted, { version: agreementVersion })}
+                </p>
+              ) : (
+                <div className="flex flex-wrap items-center gap-3">
+                  <label className="flex items-start gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={agreeChecked}
+                      onChange={(event) => setAgreeChecked(event.target.checked)}
+                    />
+                    {interpolate(trust.agreementCheck, { version: agreementVersion })}
+                  </label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={pending || !agreeChecked}
+                    onClick={() => void run(() => acceptGuideAgreement(agreementVersion))}
+                  >
+                    {trust.agreementAccept}
+                  </Button>
+                </div>
+              )}
+            </div>
+          ) : null}
+
+          {editable ? (
             <div className="flex flex-wrap items-center gap-3">
               <Button
                 type="button"
                 size="lg"
-                disabled={pending || missing.length > 0}
+                disabled={pending || missing.length > 0 || !agreed}
                 onClick={() => void run(() => submitGuideApplication())}
               >
                 {pending ? <Loader2 className="animate-spin" aria-hidden /> : null}
                 {pending ? copy.submitting : copy.submitAction}
               </Button>
               {missing.length ? <span className="text-sm text-text-muted">{copy.submitBlocked}</span> : null}
+              {!missing.length && !agreed ? (
+                <span className="text-sm text-text-muted">{trust.agreementNeeded}</span>
+              ) : null}
             </div>
           ) : null}
         </section>

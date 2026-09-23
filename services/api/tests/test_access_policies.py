@@ -46,6 +46,7 @@ PUBLIC_ROUTES = {
     "GET /api/v1/guides/{slug}",
     "GET /api/v1/guides/{slug}/tours",
     "GET /api/v1/guides/places/{place_slug}/contributors",
+    "GET /api/v1/guides/{slug}/reviews",
     "GET /api/v1/catalogue/experiences",
     "GET /api/v1/catalogue/experiences/{slug}",
     "GET /api/v1/catalogue/experiences/{slug}/related",

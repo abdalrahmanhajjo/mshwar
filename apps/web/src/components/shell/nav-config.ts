@@ -5,6 +5,7 @@ import {
   CalendarDays,
   ClipboardCheck,
   Compass,
+  Filter,
   Heart,
   Inbox,
   KeyRound,
@@ -18,6 +19,7 @@ import {
   Shield,
   ShieldCheck,
   Sparkles,
+  Star,
   Tags,
   Ticket,
   Users,
@@ -49,6 +51,8 @@ export const GUIDE_NAV: ShellNavItem[] = [
   { href: "/guide/tours", labelKey: "guideTours", icon: Route },
   { href: "/guide/calendar", labelKey: "guideCalendar", icon: CalendarDays },
   { href: "/guide/contribute", labelKey: "guideContribute", icon: MapPinned },
+  { href: "/guide/reviews", labelKey: "guideReviews", icon: Star },
+  { href: "/guide/help", labelKey: "guideHelp", icon: LifeBuoy },
 ];
 
 export const ADMIN_NAV: ShellNavItem[] = [
@@ -57,6 +61,7 @@ export const ADMIN_NAV: ShellNavItem[] = [
   { href: "/admin/roles", labelKey: "adminRoles", icon: KeyRound },
   { href: "/admin/guides", labelKey: "guideQueue", icon: ShieldCheck },
   { href: "/admin/proposals", labelKey: "placeProposals", icon: MapPinned },
+  { href: "/admin/guide-funnel", labelKey: "guideFunnel", icon: Filter },
   { href: "/admin/moderation", labelKey: "moderation", icon: Shield },
   { href: "/admin/bookings", labelKey: "adminBookings", icon: Ticket },
   { href: "/admin/taxonomy", labelKey: "taxonomy", icon: Tags },

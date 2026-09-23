@@ -63,7 +63,7 @@ export function AppShell({ surface, children, auth, currentPath, items: itemsOve
 
       {isSidebar ? (
         <div className="flex min-h-dvh min-w-0 flex-1">
-          <div className="hidden w-[17rem] shrink-0 border-e border-border-subtle bg-surface-raised/60 lg:block">
+          <div className="hidden w-[17rem] shrink-0 border-e border-border-subtle bg-surface-raised/60 lg:block print:hidden">
             <aside className="sticky top-0 flex h-dvh flex-col gap-8 px-4 py-5">
               <div className="flex items-center justify-between gap-2 px-1">
                 <BrandMark href={homeHref} compact />
@@ -85,7 +85,7 @@ export function AppShell({ surface, children, auth, currentPath, items: itemsOve
             </aside>
           </div>
           <div className="flex min-w-0 flex-1 flex-col">
-            <header className="sticky top-0 z-40 border-b border-border-subtle bg-surface/85 backdrop-blur-md">
+            <header className="sticky top-0 z-40 border-b border-border-subtle bg-surface/85 backdrop-blur-md print:hidden">
               <div className="shell-gutter flex min-h-16 items-center justify-between gap-3 py-2">
                 <div className="flex min-w-0 items-center gap-3">
                   <MobileNav items={items} pathname={activePath} auth={auth} />
@@ -113,7 +113,7 @@ export function AppShell({ surface, children, auth, currentPath, items: itemsOve
         </div>
       ) : (
         <>
-          <header className="sticky top-0 z-40 border-b border-border-subtle bg-surface/85 backdrop-blur-md">
+          <header className="sticky top-0 z-40 border-b border-border-subtle bg-surface/85 backdrop-blur-md print:hidden">
             <div className="shell-frame grid min-h-16 grid-cols-[1fr_auto] items-center gap-3 py-2 lg:min-h-[4.5rem] lg:grid-cols-[1fr_auto_1fr]">
               <div className="flex min-w-0 items-center gap-2">
                 <MobileNav items={items} pathname={activePath} auth={auth} />

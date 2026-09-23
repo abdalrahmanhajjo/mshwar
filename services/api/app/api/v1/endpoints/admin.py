@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime
 from typing import Any
 from uuid import UUID
@@ -893,13 +894,21 @@ async def get_guide_case(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
-    """One application with its documents, for the reviewer."""
+    """One application with its documents, for the reviewer, with short-lived links to open them."""
     session = await _admin(request, db)
-    return await fetch_json(
+    case = await fetch_json(
         db,
         "SELECT app.admin_get_guide_case(CAST(:admin_id AS uuid), CAST(:profile AS uuid))",
         {"admin_id": _uid(session), "profile": str(profile_id)},
     )
+    if isinstance(case, dict):
+        links: dict[str, str] = {}
+        for kind, key in (case.get("document_keys") or {}).items():
+            # Only files uploaded through the API have a key the signer accepts.
+            if isinstance(key, str) and re.fullmatch(r"\d{4}/\d{2}/[0-9a-f]{32}-[\w.-]+", key):
+                links[kind] = sign_object_url(key, ttl_seconds=900)["url"]
+        case["document_links"] = links
+    return case
 
 
 @router.post("/guides/documents/{credential_id}", dependencies=[access.ADMIN])
@@ -982,4 +991,19 @@ async def decide_place_proposal(
             "SELECT app.admin_decide_proposal(CAST(:admin_id AS uuid), CAST(:id AS uuid), :decision, :reason)",
             {"admin_id": _uid(session), "id": str(proposal_id), "decision": payload.decision, "reason": payload.reason},
         )
+    )
+
+
+@router.get("/guide-funnel", dependencies=[access.ADMIN])
+async def guide_funnel(
+    request: Request,
+    days: int = Query(default=30, ge=1, le=365),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Applications to approved guides to published tours to requests to completed days."""
+    session = await _admin(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.admin_guide_funnel(CAST(:admin_id AS uuid), :days)",
+        {"admin_id": _uid(session), "days": days},
     )
