@@ -56,5 +56,27 @@ def bind_request_id(session: Session, transaction: object, connection: Connectio
 
 
 async def bind_actor(session: AsyncSession, user_id: object) -> None:
-    """Expose the signed-in account to the function layer (audit trigger reads app.actor_id)."""
-    await session.execute(text("SELECT set_config('app.actor_id', :uid, true)"), {"uid": str(user_id)})
+    """Expose the signed-in account to the function layer and to row-level security.
+
+    Two names, deliberately. ``app.actor_id`` is what the audit trigger stamps on
+    every row it writes. ``app.user_id`` is what ``app.current_user_id()`` reads,
+    and that is what the RLS policies in migration 006 are written against - it
+    had never been set on a request, so every user-scoped policy evaluated
+    against NULL and matched nothing. The portal only worked because it goes
+    through SECURITY DEFINER functions, which do not consult RLS at all.
+    """
+    await session.execute(
+        text("SELECT set_config('app.actor_id', :uid, true), set_config('app.user_id', :uid, true)"),
+        {"uid": str(user_id)},
+    )
+
+
+async def bind_organization(session: AsyncSession, organization_id: object) -> None:
+    """Scope the transaction to one organisation, for the org-scoped RLS policies.
+
+    Call this before touching an org-owned table directly. Passing None clears
+    the scope, which denies rather than widens: the policies compare against
+    NULL, so nothing matches.
+    """
+    value = "" if organization_id is None else str(organization_id)
+    await session.execute(text("SELECT set_config('app.organization_id', :oid, true)"), {"oid": value})
