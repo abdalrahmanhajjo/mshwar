@@ -48,6 +48,59 @@ class LLMClient:
         raise NotImplementedError
 
 
+class OpenAILLM(LLMClient):
+    """The real provider, used when a credential is configured.
+
+    Kept deliberately small: one chat completion, JSON response format, no
+    streaming and no tools. Anything the provider does wrong - a timeout, a
+    non-200, a body that is not JSON - surfaces as ProviderError so the caller's
+    circuit breaker can fall back to the deterministic extractor.
+    """
+
+    url = "https://api.openai.com/v1/chat/completions"
+
+    def __init__(self, credential: str, model: str, timeout: float, transport: object | None = None) -> None:
+        self.credential = credential
+        self.model = model
+        self.timeout = timeout
+        self.transport = transport
+
+    def complete(self, prompt: str, schema_name: str) -> str:
+        import httpx
+
+        payload = {
+            "model": self.model,
+            "temperature": 0,
+            "response_format": {"type": "json_object"},
+            "messages": [
+                {"role": "system", "content": "Reply with JSON only. No prose, no code fences."},
+                {"role": "user", "content": prompt},
+            ],
+        }
+        try:
+            client_kwargs: dict[str, object] = {"timeout": self.timeout}
+            if self.transport is not None:
+                client_kwargs["transport"] = self.transport
+            with httpx.Client(**client_kwargs) as client:  # type: ignore[arg-type]
+                response = client.post(
+                    self.url,
+                    headers={"Authorization": f"Bearer {self.credential}", "Content-Type": "application/json"},
+                    json=payload,
+                )
+        except httpx.HTTPError as exc:
+            raise ProviderError(f"openai transport error: {exc}") from exc
+        if response.status_code >= 400:
+            raise ProviderError(f"openai returned {response.status_code}")
+        try:
+            body = response.json()
+            content = body["choices"][0]["message"]["content"]
+        except (ValueError, KeyError, IndexError, TypeError) as exc:
+            raise ProviderError("openai returned an unreadable body") from exc
+        if not isinstance(content, str) or not content.strip():
+            raise ProviderError("openai returned an empty completion")
+        return content
+
+
 class StubLLM(LLMClient):
     def __init__(self, responder: object | None = None) -> None:
         self.responder = responder
@@ -100,4 +153,17 @@ def _repair_prompt(original: str, raw: str) -> str:
 
 
 def build_client(responder: object | None = None) -> ValidatingLLM:
-    return ValidatingLLM(StubLLM(responder=responder), max_attempts=settings.planner_llm_max_attempts)
+    """The configured provider, or the deterministic stub when there is none.
+
+    A responder (tests) always wins, so a test never reaches the network.
+    """
+    inner: LLMClient
+    if responder is None and llm_provider_name() == "openai":
+        inner = OpenAILLM(
+            credential=settings.openai_api_key,
+            model=settings.planner_llm_model,
+            timeout=settings.planner_llm_timeout_seconds,
+        )
+    else:
+        inner = StubLLM(responder=responder)
+    return ValidatingLLM(inner, max_attempts=settings.planner_llm_max_attempts)

@@ -13,6 +13,7 @@ from app.planner.defaults import apply_defaults, has_intent_anchor
 from app.planner.eligibility import evaluate_candidate
 from app.planner.explanations import explain_plan
 from app.planner.intent import clarification_for, extract_constraints
+from app.planner.intent.catalogue import resolve_anchors
 from app.planner.llm import ProviderError, SchemaRetryExhausted
 from app.planner.persist import (
     get_session,
@@ -196,6 +197,9 @@ async def start_or_continue(
     started = time.monotonic()
     injection = await _scan_input(db, user_id, session_id, raw)
     extracted, degraded = _extract(raw, locale, degraded=False)
+    # The extractor reads the sentence; the catalogue knows the names. A town the
+    # extractor never heard of is still answerable if the traveller named it.
+    extracted = await resolve_anchors(db, raw, extracted)
     if injection:
         degraded = degraded or False
     stored = None
