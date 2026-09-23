@@ -158,6 +158,7 @@ describe("guide tours and requests", () => {
     const calls = route({
       "/api/v1/guides/me/requests/b1/respond": { ...REQUEST, status: "confirmed" },
       "/api/v1/guides/me/requests": [REQUEST],
+      "/api/v1/guides/me/engagements": [],
       "/api/v1/guides/me": GUIDE,
     });
     render(

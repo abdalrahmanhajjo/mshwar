@@ -10,11 +10,11 @@ The policy model is described in [authorization.md](authorization.md).
 | `dev` | 1 |
 | `job` | 6 |
 | `public` | 31 |
-| `session` | 113 |
+| `session` | 122 |
 | `signature` | 1 |
 | `token` | 5 |
-| `verified` | 6 |
-| **Total** | **239** |
+| `verified` | 7 |
+| **Total** | **249** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -137,11 +137,20 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/groups/trips/{trip_id}/tally` | `actor` |
 | PUT | `/api/v1/groups/trips/{trip_id}/votes` | `actor` |
 | GET | `/api/v1/guides` | `public` |
+| POST | `/api/v1/guides/engagements` | `verified` |
+| GET | `/api/v1/guides/engagements/{engagement_id}` | `session` |
+| POST | `/api/v1/guides/engagements/{engagement_id}/cancel` | `session` |
+| POST | `/api/v1/guides/engagements/{engagement_id}/decision` | `session` |
+| GET | `/api/v1/guides/match` | `session` |
 | GET | `/api/v1/guides/me` | `session` |
 | PUT | `/api/v1/guides/me` | `session` |
 | GET | `/api/v1/guides/me/availability` | `session` |
 | PUT | `/api/v1/guides/me/availability` | `session` |
 | PUT | `/api/v1/guides/me/documents` | `session` |
+| GET | `/api/v1/guides/me/engagements` | `session` |
+| POST | `/api/v1/guides/me/engagements/{engagement_id}/answer` | `session` |
+| POST | `/api/v1/guides/me/engagements/{engagement_id}/proposal` | `session` |
+| PUT | `/api/v1/guides/me/hire-terms` | `session` |
 | GET | `/api/v1/guides/me/requests` | `session` |
 | POST | `/api/v1/guides/me/requests/{booking_id}/respond` | `session` |
 | POST | `/api/v1/guides/me/submit` | `session` |
@@ -150,6 +159,7 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/guides/me/tours/{tour_id}/publish` | `session` |
 | POST | `/api/v1/guides/me/tours/{tour_id}/slots` | `session` |
 | POST | `/api/v1/guides/tours/{tour_slug}/request` | `verified` |
+| GET | `/api/v1/guides/trips/{trip_id}/engagements` | `session` |
 | GET | `/api/v1/guides/{slug}` | `public` |
 | GET | `/api/v1/guides/{slug}/tours` | `public` |
 | GET | `/api/v1/health` | `public` |

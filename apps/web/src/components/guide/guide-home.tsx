@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { GuideApplication } from "@/components/guide/guide-application";
 import { useGuide } from "@/components/guide/guide-provider";
+import { HireTerms } from "@/components/guide/hire-terms";
 import { interpolate } from "@/i18n/catalogues";
 import { formatDate } from "@/i18n/format";
 import { useGuideWorkCopy } from "@/lib/guide-work-copy";
@@ -126,6 +127,7 @@ function Dashboard() {
           </div>
         </>
       )}
+      <HireTerms />
       <h2 className="title-section pt-4 text-[1.15rem]">{copy.homeYourPage}</h2>
     </section>
   );

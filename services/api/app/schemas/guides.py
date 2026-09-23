@@ -162,3 +162,74 @@ class TourRequestResponseIn(BaseModel):
     status: str = Field(pattern="^(confirmed|rejected)$")
     reason: str = Field(min_length=2, max_length=500)
     message: str | None = Field(default=None, max_length=1000)
+
+
+# ---- G3: hire a guide from the planner -------------------------------------------------
+
+
+class HireTermsIn(BaseModel):
+    """What a licensed guide charges for a hired day, and the largest group they take."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    day_rate_minor: int | None = Field(default=None, ge=0, le=100_000_00)
+    max_group: int = Field(default=12, ge=1, le=60)
+
+
+class PartyNotesIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    dietary: str = Field(default="", max_length=500)
+    accessibility: str = Field(default="", max_length=500)
+    children: str = Field(default="", max_length=500)
+
+
+class EngagementRequestIn(BaseModel):
+    """A traveller asks a guide to run one version of their plan."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    version_id: str
+    guide_slug: str = Field(min_length=1, max_length=120)
+    party_size: int | None = Field(default=None, ge=1, le=60)
+    message: str = Field(default="", max_length=2000)
+    party_notes: PartyNotesIn = Field(default_factory=PartyNotesIn)
+    contact_phone: str = Field(default="", max_length=32)
+
+
+class EngagementAnswerIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    answer: str = Field(pattern="^(accept|decline)$")
+    reason: str = Field(default="", max_length=500)
+
+
+class ProposedStopIn(BaseModel):
+    """Either an existing stop (by id) at its new time, or a new place (by slug)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    stop_id: str | None = None
+    slug: str | None = Field(default=None, max_length=160)
+    starts_at: str
+    ends_at: str
+
+
+class EngagementProposalIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    stops: list[ProposedStopIn] = Field(min_length=1, max_length=20)
+    note: str = Field(default="", max_length=1000)
+    rate_minor: int | None = Field(default=None, ge=0, le=100_000_00)
+
+
+class EngagementDecisionIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    decision: str = Field(pattern="^(confirm|accept_changes|reject_changes)$")
+
+
+class EngagementCancelIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    reason: str = Field(default="", max_length=500)

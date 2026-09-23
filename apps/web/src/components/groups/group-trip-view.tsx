@@ -12,6 +12,7 @@ import {
   ThumbsDown,
   ThumbsUp,
   UserPlus,
+  UserRound,
   Users,
   Wallet,
 } from "lucide-react";
@@ -29,6 +30,7 @@ import { CostPanel, Timeline } from "@/components/planner/planner-view";
 import { cn } from "@/lib/utils";
 import { useGroupCopy } from "@/lib/group-copy";
 import { usePlannerCopy } from "@/lib/planner-copy";
+import { useGuideHireCopy } from "@/lib/guide-hire-copy";
 import { formatMinor, type PlanDocument } from "@/lib/planner";
 import {
   GROUP_POLL_MS,
@@ -123,6 +125,7 @@ function SummaryChips({
 
 export function GroupTripView({ tripId }: { tripId: string }) {
   const copy = useGroupCopy();
+  const hireCopy = useGuideHireCopy();
   const plannerCopy = usePlannerCopy();
   const [trip, setTrip] = React.useState<GroupTrip | null>(null);
   const [participants, setParticipants] = React.useState<{ display_name: string; role: string }[]>([]);
@@ -233,6 +236,14 @@ export function GroupTripView({ tripId }: { tripId: string }) {
                 <LocaleLink href={`/plan?trip=${tripId}`}>
                   <Route aria-hidden />
                   {copy.openPlanner}
+                </LocaleLink>
+              </Button>
+            ) : null}
+            {isOwner && planDoc ? (
+              <Button asChild variant="outline">
+                <LocaleLink href={`/plan/${tripId}/guide`}>
+                  <UserRound aria-hidden />
+                  {hireCopy.hireGuideLink}
                 </LocaleLink>
               </Button>
             ) : null}
