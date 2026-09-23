@@ -15,6 +15,8 @@ export type AuthUser = {
 
 export const PROTECTED_PATHS = [
   /^\/plan(?:\/|$)/,
+  // The guide portal: an application is private to the person making it.
+  /^\/guide(?:\/|$)/,
   /^\/saved(?:\/|$)/,
   /^\/trips(?:\/|$)/,
   /^\/favorites(?:\/|$)/,

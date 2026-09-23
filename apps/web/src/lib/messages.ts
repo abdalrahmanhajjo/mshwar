@@ -75,6 +75,7 @@ export type MessageKey =
   | "businesses"
   | "moderation"
   | "settings"
+  | "guideQueue"
   | "verificationQueue"
   | "taxonomy"
   | "supportCases"
@@ -214,6 +215,7 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     businesses: "Businesses",
     moderation: "Moderation",
     verificationQueue: "Verification",
+    guideQueue: "Guides",
     taxonomy: "Taxonomy",
     supportCases: "Cases",
     dataQuality: "Quality",
@@ -352,6 +354,7 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     businesses: "الشركات",
     moderation: "الإشراف",
     verificationQueue: "التحقق",
+    guideQueue: "المرشدون",
     taxonomy: "التصنيف",
     supportCases: "الحالات",
     dataQuality: "الجودة",
@@ -491,6 +494,7 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     businesses: "Entreprises",
     moderation: "Modération",
     verificationQueue: "Vérification",
+    guideQueue: "Guides",
     taxonomy: "Taxonomie",
     supportCases: "Tickets",
     dataQuality: "Qualité",
