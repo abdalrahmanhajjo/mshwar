@@ -1,6 +1,12 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  ArrowLeftRight,
+  BadgeCheck,
+  Banknote,
   Bell,
+  BusFront,
+  Car,
+  UtensilsCrossed,
   Bot,
   CalendarDays,
   ClipboardCheck,
@@ -26,7 +32,7 @@ import {
 } from "lucide-react";
 import type { MessageKey } from "@/lib/messages";
 
-export type ShellSurface = "traveller" | "guide" | "admin";
+export type ShellSurface = "traveller" | "guide" | "admin" | "partner";
 
 export interface ShellNavItem {
   href: string;
@@ -62,6 +68,10 @@ export const ADMIN_NAV: ShellNavItem[] = [
   { href: "/admin/guides", labelKey: "guideQueue", icon: ShieldCheck },
   { href: "/admin/proposals", labelKey: "placeProposals", icon: MapPinned },
   { href: "/admin/guide-funnel", labelKey: "guideFunnel", icon: Filter },
+  { href: "/admin/verification", labelKey: "adminVerification", icon: BadgeCheck },
+  { href: "/admin/transport", labelKey: "adminTransport", icon: BusFront },
+  { href: "/admin/exchange", labelKey: "adminExchange", icon: Banknote },
+  { href: "/admin/venues", labelKey: "adminVenues", icon: UtensilsCrossed },
   { href: "/admin/moderation", labelKey: "moderation", icon: Shield },
   { href: "/admin/bookings", labelKey: "adminBookings", icon: Ticket },
   { href: "/admin/taxonomy", labelKey: "taxonomy", icon: Tags },
@@ -74,10 +84,23 @@ export const ADMIN_NAV: ShellNavItem[] = [
   { href: "/admin/planner", labelKey: "plannerHealth", icon: Bot },
 ];
 
+// Verified drivers and money changers each get their own portal (V1-V4).
+export const DRIVER_NAV: ShellNavItem[] = [
+  { href: "/drive", labelKey: "driverHome", icon: Car, exact: true },
+  { href: "/drive/requests", labelKey: "driverRequests", icon: Inbox },
+  { href: "/drive/rides", labelKey: "driverRides", icon: Route },
+];
+
+export const CHANGER_NAV: ShellNavItem[] = [
+  { href: "/exchange", labelKey: "changerHome", icon: Banknote, exact: true },
+  { href: "/exchange/rates", labelKey: "changerRates", icon: ArrowLeftRight },
+];
+
 export const NAV_BY_SURFACE: Record<ShellSurface, ShellNavItem[]> = {
   traveller: TRAVELLER_NAV,
   guide: GUIDE_NAV,
   admin: ADMIN_NAV,
+  partner: DRIVER_NAV,
 };
 
 export function isNavActive(pathname: string, item: ShellNavItem) {

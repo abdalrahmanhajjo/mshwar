@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { LegTransport, NearbyVenues } from "@/components/plan/leg-transport";
 import { Notice } from "@/components/ui/notice";
 import { previewManualPlan, type DayIssue, type ManualPreview, type ManualStopTiming } from "@/lib/planner";
 import type { PlannerCopy } from "@/lib/planner-copy";
@@ -364,6 +365,8 @@ export function DayPanel({
               </Button>
             ) : null}
           </div>
+          <LegTransport picks={picks} />
+          <NearbyVenues pick={picks.at(-1)} />
         </div>
       ) : null}
     </section>

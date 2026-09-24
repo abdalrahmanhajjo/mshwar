@@ -3,6 +3,7 @@
 import { ArrowLeft, ArrowUpRight, Clock, Info, MapPin, Route } from "lucide-react";
 import { CatalogImage } from "@/components/browse/catalog-image";
 import { ExperienceCard } from "@/components/browse/experience-card";
+import { DestinationServices } from "@/components/local/destination-services";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { Button } from "@/components/ui/button";
 import { Eyebrow, SectionHeader } from "@/components/ui/page-header";
@@ -122,6 +123,8 @@ export function DestinationDetailView({
           </div>
         </div>
       ) : null}
+
+      <DestinationServices slug={destination.slug} name={destination.name} />
     </div>
   );
 }

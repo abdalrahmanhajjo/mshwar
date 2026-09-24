@@ -2,23 +2,29 @@ from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
     admin,
+    admin_trust,
     auth,
     bookings,
     businesses,
     catalogue,
     checkout,
+    exchange,
     favorites,
     groups,
     guides,
     health,
     locations,
     notifications,
+    partners,
     planner,
     portal,
     privacy,
     profile,
     reviews,
+    rides,
+    transport,
     trips,
+    venues,
     webhooks,
 )
 
@@ -27,6 +33,7 @@ router = APIRouter()
 router.include_router(health.router, prefix="/health", tags=["health"])
 router.include_router(auth.router, prefix="/auth", tags=["auth"])
 router.include_router(admin.router, prefix="/admin", tags=["admin"])
+router.include_router(admin_trust.router, prefix="/admin", tags=["admin"])
 router.include_router(profile.router, prefix="/profile", tags=["profile"])
 router.include_router(privacy.router, prefix="/privacy", tags=["privacy"])
 router.include_router(locations.router, prefix="/locations", tags=["locations"])
@@ -35,6 +42,11 @@ router.include_router(catalogue.router, prefix="/catalogue", tags=["catalogue"])
 router.include_router(portal.router, prefix="/portal", tags=["portal"])
 router.include_router(businesses.router, prefix="/businesses", tags=["businesses"])
 router.include_router(guides.router, prefix="/guides", tags=["guides"])
+router.include_router(partners.router, prefix="/partners", tags=["partners"])
+router.include_router(transport.router, prefix="/transport", tags=["transport"])
+router.include_router(rides.router, prefix="/rides", tags=["rides"])
+router.include_router(exchange.router, prefix="/exchange", tags=["exchange"])
+router.include_router(venues.router, prefix="/venues", tags=["venues"])
 router.include_router(bookings.router, prefix="/bookings", tags=["bookings"])
 router.include_router(checkout.router, prefix="/checkout", tags=["checkout"])
 router.include_router(webhooks.router, prefix="/webhooks", tags=["webhooks"])

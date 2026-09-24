@@ -19,6 +19,11 @@ export const PROTECTED_PATHS = [
   /^\/guide(?:\/|$)/,
   // Reviews a traveller owes a guide are theirs alone.
   /^\/guides\/review$/,
+  // Driver and money-changer portals, and a traveller's own ride requests. The
+  // share link family members open (/rides/shared/...) stays public.
+  /^\/drive(?:\/|$)/,
+  /^\/exchange(?:\/|$)/,
+  /^\/rides(?:\/(?!shared\/)|$)/,
   /^\/saved(?:\/|$)/,
   /^\/trips(?:\/|$)/,
   /^\/favorites(?:\/|$)/,

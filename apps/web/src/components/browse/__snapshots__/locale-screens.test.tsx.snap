@@ -14085,9 +14085,33 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
               <li>
                 <a
                   class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                  href="/ar/drivers"
+                >
+                  سائقون موثّقون
+                </a>
+              </li>
+              <li>
+                <a
+                  class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                   href="/ar/guide"
                 >
                   أرشِد مع مشوار
+                </a>
+              </li>
+              <li>
+                <a
+                  class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                  href="/ar/drive"
+                >
+                  قُد مع مشوار
+                </a>
+              </li>
+              <li>
+                <a
+                  class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                  href="/ar/exchange"
+                >
+                  أدرج مكتب الصرافة
                 </a>
               </li>
               <li>
@@ -14562,9 +14586,33 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
               <li>
                 <a
                   class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                  href="/drivers"
+                >
+                  Verified drivers
+                </a>
+              </li>
+              <li>
+                <a
+                  class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                   href="/guide"
                 >
                   Guide with Mshwar
+                </a>
+              </li>
+              <li>
+                <a
+                  class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                  href="/drive"
+                >
+                  Drive with Mshwar
+                </a>
+              </li>
+              <li>
+                <a
+                  class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                  href="/exchange"
+                >
+                  List your exchange
                 </a>
               </li>
               <li>
@@ -15039,9 +15087,33 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
               <li>
                 <a
                   class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                  href="/fr/drivers"
+                >
+                  Chauffeurs vérifiés
+                </a>
+              </li>
+              <li>
+                <a
+                  class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                   href="/fr/guide"
                 >
                   Guider avec Mshwar
+                </a>
+              </li>
+              <li>
+                <a
+                  class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                  href="/fr/drive"
+                >
+                  Conduire avec Mshwar
+                </a>
+              </li>
+              <li>
+                <a
+                  class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                  href="/fr/exchange"
+                >
+                  Référencez votre bureau de change
                 </a>
               </li>
               <li>

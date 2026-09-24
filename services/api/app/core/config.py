@@ -186,6 +186,14 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("SMTP_FROM", "smtp_from"),
     )
     sendgrid_api_key: str = Field(default="", validation_alias=AliasChoices("SENDGRID_API_KEY", "sendgrid_api_key"))
+    # Partner phone checks (V1). console logs that a code was sent (never the
+    # code); twilio sends a real SMS through Twilio's Messages API.
+    sms_backend: str = Field(default="console", validation_alias=AliasChoices("SMS_BACKEND", "sms_backend"))
+    twilio_account_sid: str = Field(
+        default="", validation_alias=AliasChoices("TWILIO_ACCOUNT_SID", "twilio_account_sid")
+    )
+    twilio_auth_token: str = Field(default="", validation_alias=AliasChoices("TWILIO_AUTH_TOKEN", "twilio_auth_token"))
+    twilio_from: str = Field(default="", validation_alias=AliasChoices("TWILIO_FROM", "twilio_from"))
     notification_max_attempts: int = Field(
         default=8,
         validation_alias=AliasChoices("NOTIFICATION_MAX_ATTEMPTS", "notification_max_attempts"),

@@ -48,7 +48,10 @@ def test_every_guide_notification_has_a_template_in_every_language() -> None:
         emitted |= set(re.findall(r"notify_engagement\([^,]+,\s*'([a-z_.]+)'", body))
         emitted |= set(re.findall(r"WHEN [^\n]*THEN '(engagement\.[a-z_]+)'", body))
         emitted |= set(re.findall(r"ELSE '(engagement\.[a-z_]+)'", body))
-        for event, locale in re.findall(r"\('((?:guide|engagement)\.[a-z_]+)', '(en|ar|fr)', 'traveller'", body):
+        for event, locale in re.findall(
+            r"\('((?:guide|engagement|partner|transport|ride|exchange|venue)\.[a-z_]+)', '(en|ar|fr)', 'traveller'",
+            body,
+        ):
             templated.setdefault(event, set()).add(locale)
     assert emitted, "the taxonomy test found no events; the pattern is stale"
     missing = {event: {"en", "ar", "fr"} - templated.get(event, set()) for event in emitted}
