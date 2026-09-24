@@ -61,8 +61,8 @@ restaurants and 3 stays per destination. A check lasts a year.
 - **SMS**: set `SMS_BACKEND=twilio` and `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM`
   in the server's `.env`, then send a test with `scripts/send_test_sms.py`. Production refuses to
   boot without them.
-- **Legal review**: send counsel the review packet and follow
-  `docs/legal/partner-agreements-review.md`. Partners see a draft notice until
-  `NEXT_PUBLIC_PARTNER_AGREEMENTS_REVIEWED=true`.
+- **Legal review**: counsel approved the driver and money-changer agreements (version
+  2026-09-23) on 24 September 2026. A future version shows the draft notice again until its
+  approval is recorded; see `docs/legal/partner-agreements-review.md`.
 - Start with Beirut, Byblos and Batroun: load the BDL list, write transport cards, and recruit
   and check the first drivers, changers and venues.

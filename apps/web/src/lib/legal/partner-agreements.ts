@@ -5,9 +5,22 @@ import type { LegalLibrary } from "./types";
 export const PARTNER_AGREEMENT_VERSION = "2026-09-23";
 
 /**
+ * Versions counsel has approved, with the date of sign-off. Recorded in code rather than an
+ * environment flag so the approval travels with the exact text it covers: a new version shows
+ * the "pending legal review" notice again until it is added here.
+ * See docs/legal/partner-agreements-review.md.
+ */
+export const PARTNER_AGREEMENT_REVIEWS: Readonly<Record<string, string>> = {
+  "2026-09-23": "2026-09-24",
+};
+
+export function partnerAgreementReviewed(version: string): boolean {
+  return version in PARTNER_AGREEMENT_REVIEWS;
+}
+
+/**
  * The driver agreement and the money-changer agreement. They state, in plain words,
- * the rules the product already enforces. Like the other trust documents they carry
- * the "pending legal review" notice until counsel signs them off.
+ * the rules the product already enforces.
  */
 export const DRIVER_AGREEMENT: LegalLibrary = {
   en: {

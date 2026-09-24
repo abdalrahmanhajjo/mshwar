@@ -55,7 +55,7 @@ sudo -u deploy git clone https://github.com/abdalrahmanhajjo/mshwar.git /opt/msh
 ## 4. Write the environment file
 
 `/opt/mshwar/.env`, owned by `deploy`, mode `600`, never committed. Start from `.env.example` — it
-declares 59 variables — and set every one that staging needs. The four the compose override refuses
+declares 58 variables — and set every one that staging needs. The four the compose override refuses
 to start without:
 
 ```
