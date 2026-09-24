@@ -47,18 +47,28 @@ class RecordingSms:
 
 
 class TwilioSms:
-    def __init__(self, account_sid: str, auth_token: str, sender: str) -> None:
+    """TWILIO_FROM is a Twilio number (+1...), an alphanumeric sender ID ("Mshwar") where the
+    destination country allows one, or a Messaging Service SID (MG...), which lets Twilio
+    pick the sender per country."""
+
+    def __init__(
+        self, account_sid: str, auth_token: str, sender: str, *, transport: httpx.AsyncBaseTransport | None = None
+    ) -> None:
         self.account_sid = account_sid
         self.auth_token = auth_token
         self.sender = sender
+        self.transport = transport
+
+    def payload(self, to: str, body: str) -> dict[str, str]:
+        if self.sender.startswith("MG"):
+            return {"To": to, "MessagingServiceSid": self.sender, "Body": body}
+        return {"To": to, "From": self.sender, "Body": body}
 
     async def send(self, to: str, body: str, *, code: str | None = None) -> None:
         url = f"https://api.twilio.com/2010-04-01/Accounts/{self.account_sid}/Messages.json"
         try:
-            async with httpx.AsyncClient(timeout=10) as client:
-                response = await client.post(
-                    url, data={"To": to, "From": self.sender, "Body": body}, auth=(self.account_sid, self.auth_token)
-                )
+            async with httpx.AsyncClient(timeout=10, transport=self.transport) as client:
+                response = await client.post(url, data=self.payload(to, body), auth=(self.account_sid, self.auth_token))
         except httpx.HTTPError as exc:
             raise SmsError("could not reach the SMS provider") from exc
         if response.status_code >= 400:
