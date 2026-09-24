@@ -7,18 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/ui/notice";
 import { errorText } from "@/components/partners/step";
 import { interpolate } from "@/i18n/catalogues";
-import { PARTNER_AGREEMENTS, PARTNER_AGREEMENT_VERSION } from "@/lib/legal/partner-agreements";
+import {
+  PARTNER_AGREEMENTS,
+  PARTNER_AGREEMENT_VERSION,
+  partnerAgreementReviewed,
+} from "@/lib/legal/partner-agreements";
 import { acceptPartnerAgreement, type MyPartner, type PartnerKind } from "@/lib/partners";
 import { usePartnerCopy } from "@/lib/partner-copy";
 import { useTrustCopy } from "@/lib/trust-copy";
 import { useVerifiedCopy } from "@/lib/verified-copy";
-
-/**
- * Partner agreements are reviewed separately from the site terms, so they carry their
- * own switch: set NEXT_PUBLIC_PARTNER_AGREEMENTS_REVIEWED=true once a lawyer has approved
- * the published version. Until then every partner sees that the text is a draft.
- */
-const REVIEWED = process.env.NEXT_PUBLIC_PARTNER_AGREEMENTS_REVIEWED === "true";
 
 /** The agreement text, then an explicit acceptance of the exact version shown. */
 export function PartnerAgreementStep({
@@ -59,7 +56,7 @@ export function PartnerAgreementStep({
       <p className="text-sm text-text-muted">
         {doc.title} · {trust.legalVersion} <span className="tabular-nums">{current}</span>
       </p>
-      {REVIEWED ? null : <Notice tone="warning">{trust.legalDraft}</Notice>}
+      {partnerAgreementReviewed(current) ? null : <Notice tone="warning">{trust.legalDraft}</Notice>}
       {partner.agreement.accepted && !accepted ? <Notice tone="warning">{copy.agreementNew}</Notice> : null}
       <Button
         type="button"
