@@ -6,16 +6,19 @@ import { cn, focusRing } from "@/lib/utils";
 import { Wordmark } from "@/components/shell/brand-mark";
 import { Eyebrow } from "@/components/ui/page-header";
 import { useBrowseCopy } from "@/lib/browse-copy";
+import { useLocalCopy } from "@/lib/local-copy";
+import { usePartnerCopy } from "@/lib/partner-copy";
 import { useLocale } from "@/components/shell/locale-provider";
 import { CookieSettingsButton } from "@/components/legal/cookie-consent";
 import { useTrustCopy } from "@/lib/trust-copy";
 import { splitAtQuote } from "@/lib/text";
 import type { ShellSurface } from "@/components/shell/nav-config";
 
-const FOOTER_COPY: Record<ShellSurface, "travellerFooter" | "guideFooter" | "adminFooter"> = {
+const FOOTER_COPY: Record<ShellSurface, "travellerFooter" | "guideFooter" | "adminFooter" | "partnerFooter"> = {
   traveller: "travellerFooter",
   guide: "guideFooter",
   admin: "adminFooter",
+  partner: "partnerFooter",
 };
 
 const linkClass = cn("rounded-sm text-text transition-colors hover:text-text/60", focusRing);
@@ -23,6 +26,8 @@ const linkClass = cn("rounded-sm text-text transition-colors hover:text-text/60"
 export function ShellFooter({ surface }: { surface: ShellSurface }) {
   const { t } = useLocale();
   const copy = useBrowseCopy();
+  const local = useLocalCopy();
+  const partner = usePartnerCopy();
   const trust = useTrustCopy();
 
   if (surface !== "traveller") {
@@ -58,7 +63,10 @@ export function ShellFooter({ surface }: { surface: ShellSurface }) {
   const columns = [
     { href: "/destinations", label: copy.exploreLebanon },
     { href: "/plan", label: copy.planATrip },
+    { href: "/drivers", label: local.driversTitle },
     { href: "/guide", label: copy.partnerWithUs },
+    { href: "/drive", label: partner.driveKicker },
+    { href: "/exchange", label: partner.exchangeTitle },
     { href: "/collections", label: copy.tripIdeas },
     { href: "/contact", label: copy.aboutMshwar },
     { href: "/contact", label: copy.helpCenter },

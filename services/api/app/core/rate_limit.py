@@ -240,6 +240,9 @@ def _rules() -> dict[str, Rule]:
         Rule("guide-write", None, Allowance(120, hour), "Guide profile, tours, calendar and answers"),
         Rule("guide-contribute", None, Allowance(20, hour), "Guide place proposals and their photos"),
         Rule("guide-hire", None, Allowance(10, hour), "Requests to hire a guide from the planner"),
+        Rule("partner-write", None, Allowance(120, hour), "Driver and changer applications, vehicles and documents"),
+        Rule("ride-request", None, Allowance(30, hour), "Ride requests, bookings and cancellations"),
+        Rule("partner-security", None, Allowance(20, hour), "Phone codes, authenticator set-up and step-up checks"),
     ]
     return {rule.name: rule for rule in items}
 

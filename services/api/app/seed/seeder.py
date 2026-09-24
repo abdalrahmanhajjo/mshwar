@@ -172,7 +172,8 @@ def seed_experiences(
 
 
 def seed_currencies(conn: psycopg.Connection) -> None:
-    for code, minor_digits in [("USD", 2), ("LBP", 0), ("EUR", 2)]:
+    # Matches migration 001: every currency Mshwar uses has two minor digits.
+    for code, minor_digits in [("USD", 2), ("LBP", 2), ("EUR", 2)]:
         sql = "INSERT INTO app.currencies (code, minor_digits) VALUES (%s, %s) ON CONFLICT (code) DO NOTHING"
         conn.execute(sql, (code, minor_digits))
 

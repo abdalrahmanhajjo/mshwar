@@ -47,6 +47,14 @@ PUBLIC_ROUTES = {
     "GET /api/v1/guides/{slug}/tours",
     "GET /api/v1/guides/places/{place_slug}/contributors",
     "GET /api/v1/guides/{slug}/reviews",
+    "GET /api/v1/partners/public/{slug}",
+    "GET /api/v1/transport/destinations/{slug}",
+    "GET /api/v1/transport/between",
+    "GET /api/v1/rides/drivers",
+    "GET /api/v1/rides/drivers/{slug}",
+    "GET /api/v1/exchange/destinations/{slug}",
+    "GET /api/v1/venues/destinations/{slug}",
+    "GET /api/v1/venues/near",
     "GET /api/v1/catalogue/experiences",
     "GET /api/v1/catalogue/experiences/{slug}",
     "GET /api/v1/catalogue/experiences/{slug}/related",
@@ -69,6 +77,7 @@ TOKEN_ROUTES = {
     "GET /api/v1/notifications/unsubscribe/{token}",
     "POST /api/v1/notifications/unsubscribe/{token}",
     "GET /api/v1/portal/files/{token}",
+    "GET /api/v1/rides/shared/{token}",
 }
 SIGNATURE_ROUTES = {"POST /api/v1/webhooks/payments"}
 # 42501 messages that are business rules the caller should read, not authorisation decisions.

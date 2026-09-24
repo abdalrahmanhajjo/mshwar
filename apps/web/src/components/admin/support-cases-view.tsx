@@ -11,10 +11,23 @@ import { Input } from "@/components/ui/input";
 import { assignCase, createCase, escalateCase, listCases, resolveCase } from "@/lib/admin";
 import { useAdminCopy } from "@/lib/admin-copy";
 import { useAuth } from "@/components/shell/auth-provider";
+import { upholdExchangeReport } from "@/lib/exchange";
+import { useAdminTrustCopy } from "@/lib/admin-trust-copy";
 
 export function SupportCasesView() {
   const copy = useAdminCopy();
+  const trust = useAdminTrustCopy();
   const { user } = useAuth();
+  const [upheld, setUpheld] = React.useState<Record<string, string>>({});
+
+  async function uphold(id: string) {
+    try {
+      const result = await upholdExchangeReport(id);
+      setUpheld((current) => ({ ...current, [id]: result.rates_paused ? trust.ratesPausedNow : trust.upheld }));
+    } catch (caught) {
+      setUpheld((current) => ({ ...current, [id]: caught instanceof Error ? caught.message : trust.loadError }));
+    }
+  }
   const [reason, setReason] = React.useState("Reported listing");
   const [outcome, setOutcome] = React.useState("");
   const [rows, setRows] = React.useState<{ id: string; status: string; reason: string; age_hours: number }[]>([]);
@@ -122,6 +135,15 @@ export function SupportCasesView() {
                     <Check aria-hidden />
                     {copy.resolve}
                   </Button>
+                  {row.reason.startsWith("exchange_") ? (
+                    upheld[row.id] ? (
+                      <span className="text-sm text-text-muted">{upheld[row.id]}</span>
+                    ) : (
+                      <Button type="button" size="sm" variant="outline" onClick={() => void uphold(row.id)}>
+                        {trust.upholdExchange}
+                      </Button>
+                    )
+                  ) : null}
                 </div>
               </td>
             </tr>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardCheck, LayoutDashboard, Settings, Store, Ticket, Users, Wallet } from "lucide-react";
+import { BadgeCheck, ClipboardCheck, LayoutDashboard, Settings, Store, Ticket, Users, Wallet } from "lucide-react";
 import { AppShell } from "@/components/shell/app-shell";
 import type { ShellNavItem } from "@/components/shell/nav-config";
 
@@ -9,6 +9,7 @@ import type { ShellNavItem } from "@/components/shell/nav-config";
 const LEGACY_BUSINESS_NAV: ShellNavItem[] = [
   { href: "/business", labelKey: "dashboard", icon: LayoutDashboard, exact: true },
   { href: "/business/listings", labelKey: "listings", icon: Store },
+  { href: "/business/claims", labelKey: "listingClaims", icon: BadgeCheck },
   { href: "/business/bookings", labelKey: "bookings", icon: Ticket },
   { href: "/business/reviews", labelKey: "reviews", icon: ClipboardCheck },
   { href: "/business/finance", labelKey: "finance", icon: Wallet },

@@ -33,6 +33,7 @@ const SURFACE_LABEL = {
   traveller: "travellerSurface",
   guide: "guideSurface",
   admin: "adminSurface",
+  partner: "partnerSurface",
 } as const;
 
 export function AppShell({ surface, children, auth, currentPath, items: itemsOverride, surfaceLabel }: AppShellProps) {
@@ -78,7 +79,7 @@ export function AppShell({ surface, children, auth, currentPath, items: itemsOve
               </nav>
               <div className="mt-auto grid gap-3">
                 <p className="px-1 text-xs leading-relaxed text-text-muted">
-                  {t(surface === "admin" ? "adminFooter" : "guideFooter")}
+                  {t(surface === "admin" ? "adminFooter" : surface === "partner" ? "partnerFooter" : "guideFooter")}
                 </p>
                 <AuthStatus auth={resolvedAuth} variant="panel" />
               </div>
@@ -176,6 +177,10 @@ export function GuideShell(props: Omit<AppShellProps, "surface">) {
 
 export function AdminShell(props: Omit<AppShellProps, "surface">) {
   return <AppShell surface="admin" {...props} />;
+}
+
+export function PartnerShell(props: Omit<AppShellProps, "surface">) {
+  return <AppShell surface="partner" {...props} />;
 }
 
 export function ShellMain({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {

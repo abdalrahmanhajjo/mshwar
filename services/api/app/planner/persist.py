@@ -36,7 +36,13 @@ async def retrieve_candidates(
         items = row
     else:
         items = []
-    return [CandidateRecord.model_validate(item) for item in items]
+    # Places to stay are where a day ends, not a stop in it: the planner suggests
+    # them separately (app.public_venues_near) and never schedules one as a visit.
+    return [
+        CandidateRecord.model_validate(item)
+        for item in items
+        if not (isinstance(item, dict) and item.get("listing_kind") == "hotel")
+    ]
 
 
 async def load_weights(db: AsyncSession) -> dict[str, float]:

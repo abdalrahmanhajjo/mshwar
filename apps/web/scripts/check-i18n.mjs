@@ -26,6 +26,11 @@ const CATALOGUES = [
   "src/lib/guide-day-copy.ts",
   "src/lib/guide-trust-copy.ts",
   "src/lib/search-copy.ts",
+  "src/lib/verified-copy.ts",
+  "src/lib/partner-copy.ts",
+  "src/lib/local-copy.ts",
+  "src/lib/admin-trust-copy.ts",
+  "src/lib/venue-portal-copy.ts",
 ];
 
 const MVP_PAGES = [

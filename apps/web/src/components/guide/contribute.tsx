@@ -12,6 +12,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { GuideTransport } from "@/components/transport/guide-transport";
 import { Textarea } from "@/components/ui/textarea";
 import { ApprovedGuide } from "@/components/guide/guide-provider";
 import { PlaceSearch } from "@/components/guide/place-search";
@@ -615,6 +616,7 @@ function Contribute() {
           </>
         )}
       </section>
+      <GuideTransport />
     </div>
   );
 }

@@ -68,6 +68,7 @@ export type MessageKey =
   | "reviews"
   | "dashboard"
   | "listings"
+  | "listingClaims"
   | "finance"
   | "team"
   | "overview"
@@ -107,6 +108,18 @@ export type MessageKey =
   | "businessSurface"
   | "adminSurface"
   | "plannerHealth"
+  | "partnerSurface"
+  | "partnerFooter"
+  | "driverHome"
+  | "driverRequests"
+  | "driverRides"
+  | "changerHome"
+  | "changerRates"
+  | "adminVerification"
+  | "adminTransport"
+  | "adminExchange"
+  | "adminVenues"
+  | "myRides"
   | "auditLog"
   | "notFound"
   | "notFoundBody"
@@ -220,6 +233,7 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     reviews: "Reviews",
     dashboard: "Dashboard",
     listings: "Listings",
+    listingClaims: "Claim a place",
     finance: "Finance",
     team: "Team",
     overview: "Overview",
@@ -259,6 +273,18 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     businessSurface: "Business",
     adminSurface: "Admin",
     plannerHealth: "Planner health",
+    partnerSurface: "Partner",
+    partnerFooter: "Partner portal — travellers pay you directly, never through Mshwar.",
+    driverHome: "My application",
+    driverRequests: "Ride requests",
+    driverRides: "My rides",
+    changerHome: "My exchange",
+    changerRates: "Today’s rates",
+    adminVerification: "Verification queue",
+    adminTransport: "Transport cards",
+    adminExchange: "Money changers",
+    adminVenues: "Restaurants and stays",
+    myRides: "My rides",
     auditLog: "Audit log",
     notFound: "Page not found",
     notFoundBody: "That page is not in the catalogue.",
@@ -372,6 +398,7 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     reviews: "التقييمات",
     dashboard: "لوحة التحكم",
     listings: "العروض",
+    listingClaims: "المطالبة بمكان",
     finance: "المالية",
     team: "الفريق",
     overview: "نظرة عامة",
@@ -411,6 +438,18 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     businessSurface: "الأعمال",
     adminSurface: "الإدارة",
     plannerHealth: "صحة المخطِّط",
+    partnerSurface: "شريك",
+    partnerFooter: "بوابة الشركاء — يدفع لك المسافرون مباشرةً، لا عبر مشوار.",
+    driverHome: "طلبي",
+    driverRequests: "طلبات الرحلات",
+    driverRides: "رحلاتي",
+    changerHome: "مكتب الصرافة",
+    changerRates: "أسعار اليوم",
+    adminVerification: "طابور التحقّق",
+    adminTransport: "بطاقات التنقّل",
+    adminExchange: "الصرّافون",
+    adminVenues: "المطاعم وأماكن الإقامة",
+    myRides: "رحلاتي",
     auditLog: "سجل التدقيق",
     notFound: "الصفحة غير موجودة",
     notFoundBody: "هذه الصفحة ليست في الكتالوج.",
@@ -525,6 +564,7 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     reviews: "Avis",
     dashboard: "Tableau de bord",
     listings: "Annonces",
+    listingClaims: "Revendiquer un lieu",
     finance: "Finance",
     team: "Équipe",
     overview: "Aperçu",
@@ -564,6 +604,18 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     businessSurface: "Professionnel",
     adminSurface: "Admin",
     plannerHealth: "Santé du planificateur",
+    partnerSurface: "Partenaire",
+    partnerFooter: "Portail partenaire — les voyageurs vous paient directement, jamais via Mshwar.",
+    driverHome: "Ma candidature",
+    driverRequests: "Demandes de course",
+    driverRides: "Mes courses",
+    changerHome: "Mon bureau de change",
+    changerRates: "Taux du jour",
+    adminVerification: "File de vérification",
+    adminTransport: "Fiches transport",
+    adminExchange: "Bureaux de change",
+    adminVenues: "Restaurants et hébergements",
+    myRides: "Mes courses",
     auditLog: "Journal d’audit",
     notFound: "Page introuvable",
     notFoundBody: "Cette page n’est pas dans le catalogue.",

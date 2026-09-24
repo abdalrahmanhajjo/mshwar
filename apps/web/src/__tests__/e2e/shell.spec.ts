@@ -601,3 +601,137 @@ test.describe("MSHWAR-113 trust pages and cookie choices", () => {
     await assertNoHorizontalScroll(page);
   });
 });
+
+async function mockLocalServices(page: Page) {
+  const json = (body: unknown) => ({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
+  const trust = {
+    level: "verified",
+    checks: [{ kind: "public_licence", checked_on: "2026-09-01", valid_until: "2027-09-01", vehicle_plate: null }],
+    in_person: { kind: "video_call", on: "2026-09-02" },
+    approved_on: "2026-09-02",
+  };
+  const driver = {
+    id: "d1",
+    kind: "driver",
+    slug: "georges",
+    display_name: "Georges Haddad",
+    headline: "Airport runs and the north coast",
+    bio: "",
+    languages: ["ar", "en", "fr"],
+    regions: [],
+    live: true,
+    trust,
+    photo_url: null,
+    vehicles: [
+      {
+        id: "v1",
+        plate: "P 123456",
+        make: "Toyota",
+        model: "Corolla",
+        colour: "Grey",
+        year: 2019,
+        seats: 4,
+        live: true,
+      },
+    ],
+    rating: { average: 4.9, count: 21, completed_rides: 40 },
+    day_rate_minor: 9000,
+    airport_pickups: true,
+  };
+  await page.route("**/api/v1/rides/drivers**", (route) => route.fulfill(json([driver])));
+  await page.route("**/api/v1/transport/destinations/**", (route) =>
+    route.fulfill(
+      json({
+        destination: { slug: "byblos", name: "Byblos" },
+        from_airport: [],
+        from_beirut: [
+          {
+            id: "t1",
+            scope: "between",
+            mode: "service_taxi",
+            line_name: "Dora – Jbeil service with a much longer operator name to test wrapping",
+            from: { slug: "beirut", name: "Beirut" },
+            to: { slug: "byblos", name: "Byblos" },
+            pickup: { name: "Dora roundabout, under the bridge by the bus stop", lat: null, lng: null },
+            dropoff: { name: "Jbeil old souk", lat: null, lng: null },
+            fare: { basis: "person", low_minor: 200, high_minor: 300, currency: "USD" },
+            duration: { min: 40, max: 60 },
+            frequency_minutes: 15,
+            first_departure: "06:00",
+            last_departure: "20:00",
+            runs_sunday: false,
+            tips: { en: "Say Jbeil, not Byblos." },
+            step_free: null,
+            night_service: false,
+            luggage_ok: true,
+            safety_note: "",
+            checked_on: "2026-09-10",
+            review_by: "2026-12-09",
+            live: true,
+          },
+        ],
+        between: [],
+        around: [],
+      }),
+    ),
+  );
+  await page.route("**/api/v1/exchange/destinations/**", (route) => route.fulfill(json([])));
+  await page.route("**/api/v1/venues/destinations/**", (route) =>
+    route.fulfill(json({ restaurants: [], stays: [], targets: { restaurants: 5, stays: 3 } })),
+  );
+}
+
+test.describe("V1–V6 local services", () => {
+  test("a destination page shows checked transport and verified drivers without overflow", async ({ page }) => {
+    await mockLocalServices(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/destinations/byblos");
+    await expect(page.getByRole("heading", { name: "Getting there and around" })).toBeVisible();
+    await expect(page.getByText("$2–$3 per person").first()).toBeVisible();
+    await expect(page.getByText("Georges Haddad")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+    await page.goto("/ar/destinations/byblos");
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(page.getByText("Georges Haddad")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+
+  for (const width of [390, 1440] as const) {
+    test(`the driver directory is usable at ${width}px`, async ({ page }) => {
+      await mockLocalServices(page);
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+      await page.goto("/drivers");
+      await expect(page.getByRole("heading", { name: "Verified drivers in Lebanon" })).toBeVisible();
+      await expect(page.getByRole("link", { name: /See Georges Haddad/ })).toBeVisible();
+      await assertNoHorizontalScroll(page);
+    });
+  }
+
+  test("ride requests need an account; a shared ride link does not", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/rides/new?destination=byblos");
+    await expect(page).toHaveURL(/\/signin\?next=/);
+    await page.route("**/api/v1/rides/shared/**", (route) =>
+      route.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ detail: "not found" }) }),
+    );
+    await page.goto("/rides/shared/expired-token");
+    await expect(page).toHaveURL(/\/rides\/shared\/expired-token$/);
+    await expect(page.getByText("This link has expired or was replaced.")).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+
+  test("the driver and changer portals start from a plain introduction at 390px", async ({ page }) => {
+    await signInForShell(page);
+    const nothing = { status: 200, contentType: "application/json", body: "null" };
+    await page.route("**/api/v1/partners/me/driver", (route) => route.fulfill(nothing));
+    await page.route("**/api/v1/exchange/me", (route) => route.fulfill(nothing));
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/drive");
+    await expect(page.getByRole("heading", { name: "Drive travellers around Lebanon" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Start my application" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+    await page.goto("/exchange");
+    await expect(page.getByRole("heading", { name: "List your exchange" })).toBeVisible();
+    await assertNoHorizontalScroll(page);
+  });
+});

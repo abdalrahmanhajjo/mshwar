@@ -6,15 +6,15 @@ The policy model is described in [authorization.md](authorization.md).
 | Policy | Routes |
 |---|---|
 | `actor` | 15 |
-| `admin` | 64 |
+| `admin` | 84 |
 | `dev` | 1 |
-| `job` | 6 |
-| `public` | 33 |
-| `session` | 135 |
+| `job` | 7 |
+| `public` | 41 |
+| `session` | 175 |
 | `signature` | 1 |
-| `token` | 5 |
+| `token` | 6 |
 | `verified` | 7 |
-| **Total** | **267** |
+| **Total** | **337** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -33,6 +33,12 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/admin/config` | `admin` |
 | PUT | `/api/v1/admin/config` | `admin` |
 | POST | `/api/v1/admin/config/{key}/rollback` | `admin` |
+| GET | `/api/v1/admin/coverage` | `admin` |
+| GET | `/api/v1/admin/exchange` | `admin` |
+| POST | `/api/v1/admin/exchange/offices/{office_id}/verify` | `admin` |
+| POST | `/api/v1/admin/exchange/rates/{rate_id}` | `admin` |
+| POST | `/api/v1/admin/exchange/register` | `admin` |
+| POST | `/api/v1/admin/exchange/reports/{case_id}/uphold` | `admin` |
 | POST | `/api/v1/admin/experiences/{experience_id}/weather-sensitivity` | `admin` |
 | GET | `/api/v1/admin/flags` | `admin` |
 | PUT | `/api/v1/admin/flags` | `admin` |
@@ -57,6 +63,12 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/admin/organizations/{org_id}/revoke` | `admin` |
 | POST | `/api/v1/admin/organizations/{org_id}/suspend` | `admin` |
 | POST | `/api/v1/admin/organizations/{org_id}/verify` | `admin` |
+| GET | `/api/v1/admin/partners` | `admin` |
+| POST | `/api/v1/admin/partners/documents/{document_id}` | `admin` |
+| GET | `/api/v1/admin/partners/recheck-sample` | `admin` |
+| GET | `/api/v1/admin/partners/{partner_id}` | `admin` |
+| POST | `/api/v1/admin/partners/{partner_id}` | `admin` |
+| POST | `/api/v1/admin/partners/{partner_id}/checks` | `admin` |
 | POST | `/api/v1/admin/payments/reconcile` | `admin` |
 | GET | `/api/v1/admin/payments/reconciliation` | `admin` |
 | GET | `/api/v1/admin/proposals` | `admin` |
@@ -73,7 +85,15 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/admin/taxonomy/{term_id}/merge` | `admin` |
 | POST | `/api/v1/admin/taxonomy/{term_id}/rename` | `admin` |
 | POST | `/api/v1/admin/taxonomy/{term_id}/retire` | `admin` |
+| GET | `/api/v1/admin/transport` | `admin` |
+| POST | `/api/v1/admin/transport` | `admin` |
+| PUT | `/api/v1/admin/transport/{route_id}` | `admin` |
+| POST | `/api/v1/admin/transport/{route_id}/decision` | `admin` |
 | GET | `/api/v1/admin/users` | `admin` |
+| GET | `/api/v1/admin/venues` | `admin` |
+| POST | `/api/v1/admin/venues` | `admin` |
+| POST | `/api/v1/admin/venues/claims/{claim_id}` | `admin` |
+| POST | `/api/v1/admin/venues/{experience_id}/check` | `admin` |
 | GET | `/api/v1/admin/weather-thresholds` | `admin` |
 | PUT | `/api/v1/admin/weather-thresholds` | `admin` |
 | POST | `/api/v1/auth/forgot-password` | `public` |
@@ -119,6 +139,12 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/checkout/{booking_id}/pay` | `verified` |
 | POST | `/api/v1/checkout/{booking_id}/simulate` | `dev` |
 | GET | `/api/v1/checkout/{booking_id}/timeline` | `session` |
+| GET | `/api/v1/exchange/destinations/{slug}` | `public` |
+| GET | `/api/v1/exchange/me` | `session` |
+| PUT | `/api/v1/exchange/me/licence` | `session` |
+| PUT | `/api/v1/exchange/me/offices` | `session` |
+| POST | `/api/v1/exchange/me/rates` | `session` |
+| POST | `/api/v1/exchange/reports` | `session` |
 | GET | `/api/v1/favorites` | `session` |
 | POST | `/api/v1/favorites` | `session` |
 | POST | `/api/v1/favorites/merge` | `session` |
@@ -197,6 +223,20 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/notifications/unsubscribe/{token}` | `token` |
 | POST | `/api/v1/notifications/unsubscribe/{token}` | `token` |
 | POST | `/api/v1/notifications/{notification_id}/read` | `session` |
+| PUT | `/api/v1/partners/me/driver/vehicles` | `session` |
+| GET | `/api/v1/partners/me/{kind}` | `session` |
+| PUT | `/api/v1/partners/me/{kind}` | `session` |
+| PUT | `/api/v1/partners/me/{kind}/agreement` | `session` |
+| POST | `/api/v1/partners/me/{kind}/documents` | `session` |
+| POST | `/api/v1/partners/me/{kind}/submit` | `session` |
+| POST | `/api/v1/partners/ops/sweep` | `job` |
+| GET | `/api/v1/partners/public/{slug}` | `public` |
+| GET | `/api/v1/partners/security` | `session` |
+| POST | `/api/v1/partners/security/phone` | `session` |
+| POST | `/api/v1/partners/security/phone/confirm` | `session` |
+| POST | `/api/v1/partners/security/step-up` | `session` |
+| POST | `/api/v1/partners/security/totp` | `session` |
+| POST | `/api/v1/partners/security/totp/confirm` | `session` |
 | GET | `/api/v1/planner/admin/health` | `admin` |
 | GET | `/api/v1/planner/admin/injections` | `admin` |
 | PUT | `/api/v1/planner/admin/ranker` | `admin` |
@@ -280,8 +320,38 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/reviews/aggregates` | `public` |
 | GET | `/api/v1/reviews/eligibility` | `actor` |
 | POST | `/api/v1/reviews/{review_id}/report` | `actor` |
+| GET | `/api/v1/rides/driver/requests` | `session` |
+| POST | `/api/v1/rides/driver/requests/{request_id}/quote` | `session` |
+| POST | `/api/v1/rides/driver/requests/{request_id}/withdraw` | `session` |
+| GET | `/api/v1/rides/driver/rides` | `session` |
+| PUT | `/api/v1/rides/driver/terms` | `session` |
+| GET | `/api/v1/rides/drivers` | `public` |
+| GET | `/api/v1/rides/drivers/{slug}` | `public` |
+| GET | `/api/v1/rides/mine` | `session` |
+| POST | `/api/v1/rides/quotes/{quote_id}/accept` | `session` |
+| POST | `/api/v1/rides/reports` | `session` |
+| POST | `/api/v1/rides/requests` | `session` |
+| GET | `/api/v1/rides/requests/{request_id}` | `session` |
+| POST | `/api/v1/rides/requests/{request_id}/cancel` | `session` |
+| GET | `/api/v1/rides/shared/{token}` | `token` |
+| GET | `/api/v1/rides/{ride_id}` | `session` |
+| POST | `/api/v1/rides/{ride_id}/cancel` | `session` |
+| POST | `/api/v1/rides/{ride_id}/finish` | `session` |
+| POST | `/api/v1/rides/{ride_id}/review` | `session` |
+| POST | `/api/v1/rides/{ride_id}/share` | `session` |
+| GET | `/api/v1/transport/between` | `public` |
+| GET | `/api/v1/transport/destinations/{slug}` | `public` |
+| GET | `/api/v1/transport/guide` | `session` |
+| POST | `/api/v1/transport/guide` | `session` |
+| POST | `/api/v1/transport/routes/{route_id}/flags` | `session` |
 | GET | `/api/v1/trips` | `session` |
 | POST | `/api/v1/trips` | `session` |
 | POST | `/api/v1/trips/{trip_id}/archive` | `session` |
+| GET | `/api/v1/venues/destinations/{slug}` | `public` |
+| GET | `/api/v1/venues/near` | `public` |
+| GET | `/api/v1/venues/portal/{org_id}/claims` | `session` |
+| POST | `/api/v1/venues/portal/{org_id}/claims` | `session` |
+| GET | `/api/v1/venues/portal/{org_id}/listings/{experience_id}` | `session` |
+| PUT | `/api/v1/venues/portal/{org_id}/listings/{experience_id}` | `session` |
 | POST | `/api/v1/webhooks/payments` | `signature` |
 | GET | `/health` | `public` |
