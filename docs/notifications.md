@@ -29,12 +29,12 @@ Marketing email always includes a working unsubscribe URL. Opting out of marketi
 
 ## Retry and dead-letter
 
-| Setting                     | Default                               | Notes                                                                       |
-| --------------------------- | ------------------------------------- | --------------------------------------------------------------------------- |
-| `NOTIFICATION_MAX_ATTEMPTS` | `8`                                   | After this, the row is dead-lettered                                        |
-| Backoff                     | `2^(attempt-1)` minutes               | Capped at 1440 minutes                                                      |
-| Dispatch                    | `POST /api/v1/notifications/dispatch` | Cron this. Empty `NOTIFICATION_DISPATCH_TOKEN` is allowed in development/CI |
-| Escalation                  | `POST /api/v1/notifications/escalate` | Unanswered `request` bookings; per-org schedule                             |
+| Setting                     | Default                               | Notes                                                                                                         |
+| --------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `NOTIFICATION_MAX_ATTEMPTS` | `8`                                   | After this, the row is dead-lettered                                                                          |
+| Backoff                     | `2^(attempt-1)` minutes               | Capped at 1440 minutes                                                                                        |
+| Dispatch                    | `POST /api/v1/notifications/dispatch` | Run every minute by the `scheduler` service. Empty `NOTIFICATION_DISPATCH_TOKEN` is allowed in development/CI |
+| Escalation                  | `POST /api/v1/notifications/escalate` | Unanswered `request` bookings; per-org schedule                                                               |
 
 Manual resend is `POST /api/v1/admin/notifications/{id}/resend` with a reason (audit log). It only re-queues delivery.
 

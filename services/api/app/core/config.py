@@ -252,6 +252,7 @@ class Settings(BaseSettings):
     def _validate_for_environment(self) -> None:
         if self.environment not in KNOWN_ENVIRONMENTS:
             raise ValueError(f"ENVIRONMENT must be one of {sorted(KNOWN_ENVIRONMENTS)}")
+        self._validate_sms()
         if self.is_deployed:
             self._validate_deployed()
         if self.is_production:
@@ -274,6 +275,28 @@ class Settings(BaseSettings):
             raise ValueError(f"{self.environment} PUBLIC_WEB_ORIGIN must be the site's https:// origin")
         if self.sql_echo:
             raise ValueError(f"SQL_ECHO logs query parameters (personal data) and must be off in {self.environment}")
+
+    def _validate_sms(self) -> None:
+        """Partner phone checks. A half-configured provider fails at boot, not at a partner's first code."""
+        if self.sms_backend not in {"console", "twilio"}:
+            raise ValueError("SMS_BACKEND must be console or twilio")
+        if self.sms_backend == "twilio":
+            missing = [
+                name
+                for name, value in (
+                    ("TWILIO_ACCOUNT_SID", self.twilio_account_sid),
+                    ("TWILIO_AUTH_TOKEN", self.twilio_auth_token),
+                    ("TWILIO_FROM", self.twilio_from),
+                )
+                if not value
+            ]
+            if missing:
+                raise ValueError(f"SMS_BACKEND=twilio needs {', '.join(missing)}")
+            if not self.twilio_account_sid.startswith("AC"):
+                raise ValueError("TWILIO_ACCOUNT_SID is the account SID that starts with AC")
+        if self.is_production and self.sms_backend != "twilio":
+            # console only logs that a code went out; partners could never verify their phone.
+            raise ValueError("Production needs SMS_BACKEND=twilio so partners receive their phone codes")
 
     def _validate_production(self) -> None:
         if self.database_url.startswith(DEFAULT_DATABASE_CREDENTIALS):

@@ -51,6 +51,30 @@ services:
       ENABLE_DEV_ENDPOINTS: "false"
       RATE_LIMIT_STORE: redis
 
+  # Calls the API's job endpoints on a timetable (app/core/scheduler.py): the partner
+  # sweep daily at 03:00 Beirut time (and once at start-up), and notification
+  # dispatch every minute. It holds no database credentials; it only presents the
+  # internal job token to the API over the compose network.
+  scheduler:
+    build:
+      context: ./services/api
+    command: ["python", "scripts/scheduler.py"]
+    env_file:
+      - path: .env
+        required: true
+    environment:
+      SCHEDULER_API_URL: http://api:8000
+      DATABASE_URL: ""
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "scripts/scheduler.py", "--check"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      api:
+        condition: service_healthy
+
   web:
     restart: unless-stopped
     # Only Caddy is public; reach the web app through it, not on port 3000.

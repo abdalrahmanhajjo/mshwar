@@ -13,6 +13,13 @@ import { usePartnerCopy } from "@/lib/partner-copy";
 import { useTrustCopy } from "@/lib/trust-copy";
 import { useVerifiedCopy } from "@/lib/verified-copy";
 
+/**
+ * Partner agreements are reviewed separately from the site terms, so they carry their
+ * own switch: set NEXT_PUBLIC_PARTNER_AGREEMENTS_REVIEWED=true once a lawyer has approved
+ * the published version. Until then every partner sees that the text is a draft.
+ */
+const REVIEWED = process.env.NEXT_PUBLIC_PARTNER_AGREEMENTS_REVIEWED === "true";
+
 /** The agreement text, then an explicit acceptance of the exact version shown. */
 export function PartnerAgreementStep({
   kind,
@@ -52,6 +59,7 @@ export function PartnerAgreementStep({
       <p className="text-sm text-text-muted">
         {doc.title} · {trust.legalVersion} <span className="tabular-nums">{current}</span>
       </p>
+      {REVIEWED ? null : <Notice tone="warning">{trust.legalDraft}</Notice>}
       {partner.agreement.accepted && !accepted ? <Notice tone="warning">{copy.agreementNew}</Notice> : null}
       <Button
         type="button"

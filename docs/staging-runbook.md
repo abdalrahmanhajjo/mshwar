@@ -55,7 +55,7 @@ sudo -u deploy git clone https://github.com/abdalrahmanhajjo/mshwar.git /opt/msh
 ## 4. Write the environment file
 
 `/opt/mshwar/.env`, owned by `deploy`, mode `600`, never committed. Start from `.env.example` — it
-declares 53 variables — and set every one that staging needs. The four the compose override refuses
+declares 59 variables — and set every one that staging needs. The four the compose override refuses
 to start without:
 
 ```
@@ -74,6 +74,8 @@ Also required in a deployed environment, per the security review:
 | `PUBLIC_WEB_ORIGIN`                   | Must be `https://…`; the cross-site request guard checks it (SR-03)           |
 | `NEXT_PUBLIC_LEGAL_REVIEWED=true`     | Legal review completed 18 Sep 2026; without this the draft notice still shows |
 | `SENTRY_DSN`                          | AC-15 cannot be demonstrated until Sentry reports from a deployed environment |
+| `INTERNAL_JOB_TOKEN`                  | The scheduler presents it to the API's job endpoints; at least 32 characters  |
+| `SMS_BACKEND=twilio`, `TWILIO_*`      | Partner phone codes. Production refuses to boot without them (see below)      |
 
 Generate secrets with `openssl rand -base64 32`. Record where each lives; `docs/KEY_ROTATION.md`
 covers rotating them.
@@ -119,6 +121,31 @@ docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d
 docker compose ps
 ```
 
+### Partner phone codes (Twilio)
+
+Drivers and money changers confirm their phone with an SMS code. Set, in `/opt/mshwar/.env`:
+
+```
+SMS_BACKEND=twilio
+TWILIO_ACCOUNT_SID=AC...           # Account SID from the Twilio console
+TWILIO_AUTH_TOKEN=...              # Auth token (rotate like any secret; see KEY_ROTATION.md)
+TWILIO_FROM=MG...                  # a Messaging Service SID, a Twilio number (+1...), or a sender ID
+```
+
+A Messaging Service is the easiest `TWILIO_FROM` for Lebanese numbers: Twilio picks a sender that
+the destination network accepts. In the Twilio console, allow SMS to Lebanon (+961) under
+Messaging → Geo permissions.
+
+The API refuses to boot with `SMS_BACKEND=twilio` and a missing value, and production refuses
+`SMS_BACKEND=console` (which only logs that a code went out). Staging may stay on `console` while
+you set Twilio up, but partners cannot verify their phone until it is switched. Check it end to
+end with one real message:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.staging.yml run --rm api \
+  python scripts/send_test_sms.py +9613xxxxxx
+```
+
 ## 7. Terminate TLS
 
 Put Caddy or nginx in front, terminating TLS for `staging-api.<your-domain>` and proxying to the
@@ -148,15 +175,42 @@ In the repository settings:
 Push to `main` and watch `Deploy API to Staging`. It pulls, rebuilds, runs migrations, restarts the
 API and polls `/health` ten times before giving up.
 
+## Migrations and scheduled jobs
+
+Every deploy runs `migrate` before restarting the API, so pushing to `main` applies new migrations
+(039–043 for the local services) on its own. The runner is checksum-verified and idempotent. To run
+them by hand on the box:
+
+```bash
+cd /opt/mshwar && git pull
+docker compose -f docker-compose.yml -f docker-compose.staging.yml run --rm migrate
+```
+
+The `scheduler` service calls the API's job endpoints with `INTERNAL_JOB_TOKEN`, so nothing needs
+a crontab:
+
+| Job                   | When                                 | Does                                                                   |
+| --------------------- | ------------------------------------ | ---------------------------------------------------------------------- |
+| Partner sweep         | 03:00 Beirut time daily, and at boot | Expiry warnings (30 and 7 days), lapses, transport and venue re-checks |
+| Notification dispatch | Every minute                         | Sends queued email and in-app notifications                            |
+
+Both are safe to repeat. `SCHEDULER_JOBS=sweep` limits it to the sweep. It is deployed and
+restarted with the API; to start it by hand:
+`docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d scheduler`, then
+`docker compose logs -f scheduler` shows one JSON line per run (`"ok": true`).
+
 ## 9. Verify
 
-| Check                            | How                                                                             | Satisfies    |
-| -------------------------------- | ------------------------------------------------------------------------------- | ------------ |
-| API is up                        | `curl -fsS https://staging-api.<domain>/health`                                 | Deploy gate  |
-| Connected as the restricted role | `SELECT current_user;` from inside the API                                      | SR-02        |
-| Rate limits are shared           | Exceed a limit, confirm `Retry-After` and `RateLimit` headers                   | SR-07        |
-| Sentry receives errors           | Trigger a controlled error, confirm it arrives with a request id and no secrets | AC-15, SR-09 |
-| Legal notice is gone             | Load `/terms`; the draft banner should not appear                               | SR-19        |
+| Check                            | How                                                                                  | Satisfies      |
+| -------------------------------- | ------------------------------------------------------------------------------------ | -------------- |
+| API is up                        | `curl -fsS https://staging-api.<domain>/health`                                      | Deploy gate    |
+| Connected as the restricted role | `SELECT current_user;` from inside the API                                           | SR-02          |
+| Rate limits are shared           | Exceed a limit, confirm `Retry-After` and `RateLimit` headers                        | SR-07          |
+| Sentry receives errors           | Trigger a controlled error, confirm it arrives with a request id and no secrets      | AC-15, SR-09   |
+| Legal notice is gone             | Load `/terms`; the draft banner should not appear                                    | SR-19          |
+| Migrations applied               | `SELECT max(name) FROM mshwar_migrations.applied;` shows `043_venues.sql` or later   | Deploy gate    |
+| Scheduler runs                   | `docker compose ps scheduler` is healthy; its log shows `"job": "sweep", "ok": true` | V1 sweep       |
+| SMS reaches a phone              | `scripts/send_test_sms.py` with your own number                                      | V1 phone check |
 
 ## 10. Backups before anything real exists
 

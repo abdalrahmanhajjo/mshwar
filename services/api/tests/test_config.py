@@ -18,6 +18,10 @@ def _settings(**overrides: object) -> Settings:
         "enable_dev_endpoints": False,
         "rate_limit_store": "redis",
         "public_web_origin": "https://mshwar.example",
+        "sms_backend": "twilio",
+        "twilio_account_sid": "AC" + "0" * 32,
+        "twilio_auth_token": "twilio-token",
+        "twilio_from": "MG" + "0" * 32,
     }
     payload["secret_key"] = _PROD_SECRET
     payload.update(overrides)
@@ -142,6 +146,11 @@ def test_unknown_environment_is_rejected() -> None:
         ({"sql_echo": True}, "SQL_ECHO"),
         ({"public_web_origin": "http://localhost:3000"}, "PUBLIC_WEB_ORIGIN"),
         ({"public_web_origin": "http://mshwar.example"}, "PUBLIC_WEB_ORIGIN"),
+        ({"sms_backend": "console"}, "SMS_BACKEND=twilio"),
+        ({"sms_backend": "carrier-pigeon"}, "SMS_BACKEND must be"),
+        ({"twilio_auth_token": ""}, "TWILIO_AUTH_TOKEN"),
+        ({"twilio_from": "", "twilio_account_sid": ""}, "TWILIO_ACCOUNT_SID, TWILIO_FROM"),
+        ({"twilio_account_sid": "SK123"}, "starts with AC"),
     ],
 )
 def test_production_fails_closed(overrides: dict[str, object], message: str) -> None:
@@ -158,3 +167,17 @@ def test_valid_production_settings_load() -> None:
     prod = _settings()
     assert prod.is_production is True
     assert prod.dev_endpoints_enabled is False
+
+
+def test_staging_may_log_codes_but_a_half_set_twilio_fails_at_boot() -> None:
+    staging = {
+        "environment": "staging",
+        "secret_key": _PROD_SECRET,
+        "internal_job_token": "j" * 40,
+        "enable_dev_endpoints": False,
+        "rate_limit_store": "redis",
+        "public_web_origin": "https://staging.mshwar.example",
+    }
+    assert Settings(**staging).sms_backend == "console"  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="TWILIO_FROM"):
+        Settings(**staging, sms_backend="twilio", twilio_account_sid="AC1", twilio_auth_token="t")  # type: ignore[arg-type]
