@@ -364,20 +364,59 @@ export type DayPrice = {
 
 export type DayStepOutcome = {
   order: number;
-  role: string;
+  role: "meal" | "sight" | "activity" | "stay" | "service" | "exchange";
+  tags: string[];
+  meal: string | null;
+  text: string;
   status: "filled" | "office" | "empty" | "skipped";
   reason: string | null;
-  title: string | null;
   starts_at: string | null;
+  ends_at: string | null;
+  travel_minutes: number | null;
+  wait_minutes: number;
+  experience_id: string | null;
+  slug: string | null;
+  title: string | null;
+  destination_slug: string | null;
+  office: { branch_name?: string; address?: string; phone?: string; changer?: { bdl_number?: string } } | null;
+  trust: { level?: string; checked_on?: string | null };
   flags: string[];
+  named_place: string | null;
   price: PriceLine | null;
   actions: Record<string, string>;
 };
+
+/** Every step of a day told step by step: from the live session, or from what the sealed version kept. */
+export function dayOf(session: PlannerSession | null, plan: PlanDocument | null): DayStepOutcome[] {
+  const kept = plan?.constraints?.day;
+  if (session?.day?.length) return session.day;
+  return Array.isArray(kept) ? (kept as DayStepOutcome[]) : [];
+}
 
 /** The day's price: from the live session, or from what the sealed version kept. */
 export function dayPriceOf(session: PlannerSession | null, plan: PlanDocument | null): DayPrice | null {
   const kept = plan?.constraints?.pricing;
   return session?.pricing ?? (kept && typeof kept === "object" ? (kept as DayPrice) : null);
+}
+
+export type UnderstoodDay = {
+  steps: { order: number; role: DayStepOutcome["role"]; tags: string[]; meal: string | null; optional: boolean }[];
+  transport: string | null;
+  pickup_requested: boolean;
+  ends_overnight: boolean;
+  avoid_tags: string[];
+  unparsed: string[];
+  destination_slugs: string[];
+  plans_as_day: boolean;
+};
+
+/** How the planner reads a request, step by step - before planning anything. */
+export function understandRequest(text: string, locale: string) {
+  return readJson<UnderstoodDay>("/api/v1/planner/understand", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, locale }),
+  });
 }
 
 export function requestDayDriver(

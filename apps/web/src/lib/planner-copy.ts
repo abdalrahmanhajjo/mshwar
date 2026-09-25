@@ -207,7 +207,57 @@ export type PlannerKey =
   | "driverPickup"
   | "driverSend"
   | "driverSent"
-  | "priceSource";
+  | "priceSource"
+  | "dayTitle"
+  | "dayBody"
+  | "role_meal"
+  | "role_sight"
+  | "role_activity"
+  | "role_stay"
+  | "role_service"
+  | "role_exchange"
+  | "status_empty"
+  | "status_skipped"
+  | "askedFor"
+  | "reason_no_trusted_match"
+  | "reason_closed_that_day"
+  | "reason_opens_too_late"
+  | "reason_closes_too_early"
+  | "reason_does_not_fit_the_day"
+  | "reason_too_late_for_the_time_asked"
+  | "reason_over_the_budget"
+  | "reason_already_in_the_day"
+  | "reason_travel_unavailable"
+  | "reason_office_without_location"
+  | "flag_check_times"
+  | "flag_outside_destination"
+  | "flag_long_wait"
+  | "flag_hours_unknown"
+  | "flag_meal_unconfirmed"
+  | "flag_quote_required"
+  | "flag_estimated_price"
+  | "trust_checked_by_mshwar"
+  | "trust_licensed_claimed"
+  | "trust_verified_organisation"
+  | "trust_changer"
+  | "action_call"
+  | "action_whatsapp"
+  | "action_reserve"
+  | "action_book"
+  | "checkInFrom"
+  | "driveMinutes"
+  | "freeMinutes"
+  | "understoodTitle"
+  | "understoodDriver"
+  | "understoodNight"
+  | "understoodOptional"
+  | "understoodAvoid"
+  | "understoodUnclear"
+  | "meal_breakfast"
+  | "meal_brunch"
+  | "meal_lunch"
+  | "meal_dinner"
+  | "meal_snack";
 
 export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
   en: {
@@ -419,6 +469,57 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     driverSend: "Ask drivers for prices",
     driverSent: "Sent. Fixed prices from verified drivers will appear in Rides.",
     priceSource: "Published by {source} · checked {date}",
+    dayTitle: "Your day, step by step",
+    dayBody:
+      "Every step you asked for, in your order. Places come only from trusted listings; a step we could not fill says why.",
+    role_meal: "Meal",
+    role_sight: "Sight",
+    role_activity: "Activity",
+    role_stay: "Night",
+    role_service: "Errand",
+    role_exchange: "Money changer",
+    status_empty: "Not filled",
+    status_skipped: "Skipped – it did not fit",
+    askedFor: "You asked for: {text}",
+    reason_no_trusted_match: "No trusted place of this kind here yet.",
+    reason_closed_that_day: "The only matching places are closed that day.",
+    reason_opens_too_late: "Matching places open too late for this step.",
+    reason_closes_too_early: "Matching places close before this step would end.",
+    reason_does_not_fit_the_day: "It does not fit in the time your day allows.",
+    reason_too_late_for_the_time_asked: "The day cannot get there by the time you asked.",
+    reason_over_the_budget: "Matching places are over your strict budget.",
+    reason_already_in_the_day: "The only matching place is already another step.",
+    reason_travel_unavailable: "We could not work out the travel time.",
+    reason_office_without_location: "The changer's office has no location on record.",
+    flag_check_times: "Check showtimes",
+    flag_outside_destination: "Outside your destination",
+    flag_long_wait: "Free time before this step",
+    flag_hours_unknown: "Hours not confirmed",
+    flag_meal_unconfirmed: "Meals served not confirmed",
+    flag_quote_required: "Price on request",
+    flag_estimated_price: "Price not fixed",
+    trust_checked_by_mshwar: "Visited by Mshwar",
+    trust_licensed_claimed: "Licence checked",
+    trust_verified_organisation: "Verified business",
+    trust_changer: "Registered money changer",
+    action_call: "Call",
+    action_whatsapp: "WhatsApp",
+    action_reserve: "Reserve online",
+    action_book: "Book the stay",
+    checkInFrom: "Check-in from {time}",
+    driveMinutes: "{minutes} min drive",
+    freeMinutes: "{minutes} min free before",
+    understoodTitle: "Here's your day as I understood it",
+    understoodDriver: "With a driver",
+    understoodNight: "Ends with a night away",
+    understoodOptional: "if there is time",
+    understoodAvoid: "Not: {items}",
+    understoodUnclear: "Not sure what you meant by: {text}",
+    meal_breakfast: "Breakfast",
+    meal_brunch: "Brunch",
+    meal_lunch: "Lunch",
+    meal_dinner: "Dinner",
+    meal_snack: "A bite",
   },
   ar: {
     startTitle: "من أين تبدأ هذه الخطة؟",
@@ -629,6 +730,56 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     driverSend: "اطلب أسعارًا من السائقين",
     driverSent: "تم الإرسال. ستظهر أسعار السائقين الموثّقين الثابتة في قسم الرحلات.",
     priceSource: "منشور من {source} · جرى التحقّق في {date}",
+    dayTitle: "يومك خطوة بخطوة",
+    dayBody: "كل خطوة طلبتها، بترتيبك. الأماكن من منشورات موثوقة فقط؛ والخطوة التي لم نستطع ملأها تذكر السبب.",
+    role_meal: "وجبة",
+    role_sight: "معلم",
+    role_activity: "نشاط",
+    role_stay: "مبيت",
+    role_service: "مشوار",
+    role_exchange: "صرّاف",
+    status_empty: "غير مملوءة",
+    status_skipped: "تم تخطيها – لم تتّسع",
+    askedFor: "طلبت: {text}",
+    reason_no_trusted_match: "لا يوجد بعد مكان موثوق من هذا النوع هنا.",
+    reason_closed_that_day: "الأماكن المطابقة مغلقة في ذلك اليوم.",
+    reason_opens_too_late: "الأماكن المطابقة تفتح متأخرة على هذه الخطوة.",
+    reason_closes_too_early: "الأماكن المطابقة تُغلق قبل نهاية هذه الخطوة.",
+    reason_does_not_fit_the_day: "لا تتّسع ضمن وقت يومك.",
+    reason_too_late_for_the_time_asked: "لا يمكن الوصول في الوقت الذي طلبته.",
+    reason_over_the_budget: "الأماكن المطابقة تتجاوز ميزانيتك المحدّدة.",
+    reason_already_in_the_day: "المكان المطابق الوحيد مستخدم في خطوة أخرى.",
+    reason_travel_unavailable: "تعذّر حساب وقت التنقّل.",
+    reason_office_without_location: "لا يوجد موقع مسجّل لمكتب الصرّاف.",
+    flag_check_times: "تحقّق من مواعيد العروض",
+    flag_outside_destination: "خارج وجهتك",
+    flag_long_wait: "وقت حرّ قبل هذه الخطوة",
+    flag_hours_unknown: "ساعات العمل غير مؤكَّدة",
+    flag_meal_unconfirmed: "الوجبات المقدَّمة غير مؤكَّدة",
+    flag_quote_required: "السعر عند الطلب",
+    flag_estimated_price: "السعر غير ثابت",
+    trust_checked_by_mshwar: "زاره فريق مشوار",
+    trust_licensed_claimed: "جرى التحقّق من الترخيص",
+    trust_verified_organisation: "مؤسسة موثّقة",
+    trust_changer: "صرّاف مسجّل",
+    action_call: "اتصل",
+    action_whatsapp: "واتساب",
+    action_reserve: "احجز عبر الإنترنت",
+    action_book: "احجز الإقامة",
+    checkInFrom: "تسجيل الدخول من {time}",
+    driveMinutes: "{minutes} دقيقة بالسيارة",
+    freeMinutes: "{minutes} دقيقة حرّة قبلها",
+    understoodTitle: "هكذا فهمت يومك",
+    understoodDriver: "مع سائق",
+    understoodNight: "ينتهي بمبيت",
+    understoodOptional: "إذا توفّر الوقت",
+    understoodAvoid: "بدون: {items}",
+    understoodUnclear: "لم أفهم تمامًا ما تقصده بـ: {text}",
+    meal_breakfast: "فطور",
+    meal_brunch: "برانش",
+    meal_lunch: "غداء",
+    meal_dinner: "عشاء",
+    meal_snack: "لقمة سريعة",
   },
   fr: {
     startTitle: "D’où part ce plan ?",
@@ -846,6 +997,57 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     driverSend: "Demander des prix aux chauffeurs",
     driverSent: "Envoyé. Les prix fixes des chauffeurs vérifiés apparaîtront dans Trajets.",
     priceSource: "Publié par {source} · vérifié le {date}",
+    dayTitle: "Votre journée, étape par étape",
+    dayBody:
+      "Chaque étape demandée, dans votre ordre. Les lieux viennent uniquement de fiches vérifiées ; une étape non remplie dit pourquoi.",
+    role_meal: "Repas",
+    role_sight: "Visite",
+    role_activity: "Activité",
+    role_stay: "Nuit",
+    role_service: "Course",
+    role_exchange: "Bureau de change",
+    status_empty: "Non remplie",
+    status_skipped: "Passée – elle ne tenait pas",
+    askedFor: "Vous avez demandé : {text}",
+    reason_no_trusted_match: "Pas encore de lieu vérifié de ce type ici.",
+    reason_closed_that_day: "Les lieux correspondants sont fermés ce jour-là.",
+    reason_opens_too_late: "Les lieux correspondants ouvrent trop tard pour cette étape.",
+    reason_closes_too_early: "Les lieux correspondants ferment avant la fin de l'étape.",
+    reason_does_not_fit_the_day: "Elle ne tient pas dans le temps de votre journée.",
+    reason_too_late_for_the_time_asked: "Impossible d'arriver à l'heure demandée.",
+    reason_over_the_budget: "Les lieux correspondants dépassent votre budget strict.",
+    reason_already_in_the_day: "Le seul lieu correspondant est déjà une autre étape.",
+    reason_travel_unavailable: "Temps de trajet indisponible.",
+    reason_office_without_location: "Le bureau de change n'a pas d'adresse enregistrée.",
+    flag_check_times: "Vérifier les séances",
+    flag_outside_destination: "Hors de votre destination",
+    flag_long_wait: "Temps libre avant cette étape",
+    flag_hours_unknown: "Horaires non confirmés",
+    flag_meal_unconfirmed: "Repas servis non confirmés",
+    flag_quote_required: "Prix sur demande",
+    flag_estimated_price: "Prix non fixe",
+    trust_checked_by_mshwar: "Visité par Mshwar",
+    trust_licensed_claimed: "Licence vérifiée",
+    trust_verified_organisation: "Entreprise vérifiée",
+    trust_changer: "Changeur enregistré",
+    action_call: "Appeler",
+    action_whatsapp: "WhatsApp",
+    action_reserve: "Réserver en ligne",
+    action_book: "Réserver le séjour",
+    checkInFrom: "Arrivée dès {time}",
+    driveMinutes: "{minutes} min de route",
+    freeMinutes: "{minutes} min libres avant",
+    understoodTitle: "Voici votre journée telle que je l'ai comprise",
+    understoodDriver: "Avec chauffeur",
+    understoodNight: "Se termine par une nuit",
+    understoodOptional: "si on a le temps",
+    understoodAvoid: "Sans : {items}",
+    understoodUnclear: "Je ne suis pas sûr de comprendre : {text}",
+    meal_breakfast: "Petit-déjeuner",
+    meal_brunch: "Brunch",
+    meal_lunch: "Déjeuner",
+    meal_dinner: "Dîner",
+    meal_snack: "Un en-cas",
   },
 };
 
