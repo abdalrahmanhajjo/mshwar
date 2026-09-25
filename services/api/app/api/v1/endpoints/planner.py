@@ -5,7 +5,7 @@ from datetime import date
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -553,6 +553,7 @@ async def day_step_alternatives(
     session_id: UUID,
     order: int,
     request: Request,
+    day: int = Query(default=1, ge=1, le=7),
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> list[dict[str, Any]]:
     """Trusted options for one step of a day, near the step before it, with published prices."""
@@ -560,7 +561,7 @@ async def day_step_alternatives(
 
     session = await require_session(request, db)
     try:
-        return await alternatives_for_step(db, session["user_id"], session_id, order)
+        return await alternatives_for_step(db, session["user_id"], session_id, order, day)
     except (ValueError, TypeError) as exc:
         raise _http(exc) from exc
 
@@ -571,6 +572,7 @@ async def day_step_choose(
     order: int,
     payload: ChooseStepRequest,
     request: Request,
+    day: int = Query(default=1, ge=1, le=7),
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> dict[str, Any]:
     """Use one of the step's trusted alternatives; the other steps keep their places."""
@@ -578,7 +580,7 @@ async def day_step_choose(
 
     session = await require_session(request, db)
     try:
-        return await choose_for_step(db, session["user_id"], session_id, order, payload.experience_id)
+        return await choose_for_step(db, session["user_id"], session_id, order, payload.experience_id, day)
     except DBAPIError as exc:
         raise_from_db(exc)
         raise

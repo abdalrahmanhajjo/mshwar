@@ -408,6 +408,8 @@ class DayDriverRequest(BaseModel):
     pickup_lng: float | None = Field(default=None, ge=35.0, le=36.7)
     luggage: int = Field(default=0, ge=0, le=20)
     notes: str = Field(default="", max_length=300)
+    #: Which day of a trip the driver is for (1 for a single day).
+    day: int = Field(default=1, ge=1, le=7)
 
 
 class ChooseStepRequest(BaseModel):

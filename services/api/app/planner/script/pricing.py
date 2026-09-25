@@ -49,6 +49,8 @@ _PRICE_KIND: dict[str, str] = {"fixed": "fixed", "free": "fixed", "on_request": 
 
 
 class PriceLine(BaseModel):
+    #: Which day of a trip (1 for a single day).
+    day: int = 1
     order: int | None = None
     kind: Literal["stop", "stay", "driver", "exchange"]
     label: str
