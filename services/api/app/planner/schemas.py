@@ -410,6 +410,15 @@ class DayDriverRequest(BaseModel):
     notes: str = Field(default="", max_length=300)
 
 
+class UnderstandRequest(BaseModel):
+    """Read a request into steps for the "here is what I understood" chips. Never plans or stores."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    text: str = Field(min_length=1, max_length=4000)
+    locale: str = "en"
+
+
 class SourcedPriceIn(BaseModel):
     """A price a place or an authority published, recorded by staff with its proof (migration 047)."""
 

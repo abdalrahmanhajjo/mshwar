@@ -55,6 +55,7 @@ from app.planner.schemas import (
     RefineRequest,
     ReplaceAcceptRequest,
     ReplacePreviewRequest,
+    UnderstandRequest,
 )
 from app.planner.warnings import WarningStop, evaluate_warnings
 from app.planner.weather import WeatherService, persist_forecast
@@ -521,6 +522,27 @@ async def read_session(
     if stored.get("current_version_id"):
         plan = await get_version(db, session["user_id"], UUID(str(stored["current_version_id"])), False)
     return {"session": stored, "plan": plan}
+
+
+@router.post("/understand", dependencies=[access.SESSION, limit("search")])
+async def understand(
+    payload: UnderstandRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    """What the planner reads in a request, step by step, before planning anything.
+
+    Deterministic only: no language model, no quota, nothing stored.
+    """
+    from app.planner.day_session import MIN_DAY_STEPS, catalogue_terms
+    from app.planner.script import parse_day_script
+
+    await require_session(request, db)
+    script = parse_day_script(payload.text, payload.locale, terms=await catalogue_terms(db))
+    body = script.model_dump(mode="json", exclude={"constraints"})
+    body["destination_slugs"] = script.constraints.destination_slugs
+    body["plans_as_day"] = len(script.steps) >= MIN_DAY_STEPS
+    return body
 
 
 @router.post("/sessions/{session_id}/driver-request", dependencies=[access.SESSION, limit("ride-request")])
