@@ -41,6 +41,7 @@ import {
   previewReplacement,
   refinePlannerSession,
   regeneratePlannerSession,
+  dayOf,
   dayPriceOf,
   type DayPrice,
   type PlanDocument,
@@ -50,6 +51,7 @@ import { useHubCopy } from "@/lib/hub-copy";
 import { ApiError } from "@/lib/api/client";
 import { type PlannerCopy, usePlannerCopy } from "@/lib/planner-copy";
 import { DayCostPanel, DriverRequestPanel, dayTotal } from "@/components/planner/day-cost";
+import { DayTimeline } from "@/components/planner/day-timeline";
 import { interpolate } from "@/i18n/catalogues";
 import { formatDate } from "@/i18n/format";
 import { DESTINATIONS, getExperience } from "@/lib/catalog";
@@ -304,7 +306,23 @@ export function PlannerView({ initialTripId }: { initialTripId?: string }) {
         {!plan && initialTripId && tripChecked ? <Notice role="status">{copy.noSavedPlan}</Notice> : null}
 
         {plan ? (
-          <Timeline plan={plan} copy={copy} sessionId={session?.session_id} onLock={run} onReplace={setReplaceStopId} />
+          dayOf(session, plan).length ? (
+            <DayTimeline
+              steps={dayOf(session, plan)}
+              plan={plan}
+              copy={copy}
+              sessionId={session?.session_id}
+              onLock={run}
+            />
+          ) : (
+            <Timeline
+              plan={plan}
+              copy={copy}
+              sessionId={session?.session_id}
+              onLock={run}
+              onReplace={setReplaceStopId}
+            />
+          )
         ) : (
           <EmptyPlan copy={copy} pending={pending} />
         )}
