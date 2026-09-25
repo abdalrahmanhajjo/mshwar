@@ -112,7 +112,7 @@ Two paths produce the same `DayScript`:
 equally good options are far apart), or "What time should the day start?" Everything else gets a
 visible default (`AssumedDefault`).
 
-### 3.3 Taxonomy and data (migration `045_day_script_taxonomy.sql`)
+### 3.3 Taxonomy and data (migration `045_place_types.sql`)
 
 - New `taxonomy` kind `activity`, with slugs such as `cinema`, `bowling`, `escape-room`, `karting`,
   `water-park`, `nightlife`, `spa`, `shopping`, `viewpoint`, `mountain`, `beach-club`, `museum`,
@@ -278,7 +278,7 @@ values plus 5 categories. v2 adds a **place-type catalogue** that covers everyth
 Lebanon might ask for, and **rich facts** for each place, so any request maps to a type and every type
 can be filled.
 
-#### Place types (migration `047_place_types.sql`)
+#### Place types (migration `045_place_types.sql`, shipped with phase 2)
 
 `app.place_types` holds about 250 types in a two-level tree (group → type). Each type records:
 
@@ -376,17 +376,42 @@ authority) and helps in an emergency.
 
 ## 4. Delivery phases
 
-| Phase    | Scope                                                                                                                                                            | Done when                                                                                           |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| **1** ✅ | `DayScript`/`StepSpec` schemas, deterministic parser `app/planner/script/` (en/ar/Arabizi/fr), `dayscript-v1` prompt, eval set                                   | 40 multi-step scenario prompts parse to the expected roles, in order, at ≥ 90%                      |
-| **1b**   | Migration 046 language dataset, layers L2–L6, variant generator, seed vocabulary, review queue, "what I understood" step                                         | 8,000 seed and 40,000 generated phrases loaded; eval set at 1,000 prompts, ≥ 90% without the LLM    |
-| **2**    | Migration 045 (activity taxonomy, meal services, schedule note, `planner_retrieve_step`), portal and admin tag editing                                           | Owners and staff can tag cinemas, bowling and sweets; PGlite suite passes                           |
-| **2b**   | Migration 047 place types (≈250) and `place_facts`, `place_leads` with dedupe, OSM/Wikidata/official-list importers, `/admin/leads` queue, trust level per place | Every type has en/ar/fr names; leads loaded and measured; first 500 places checked with rich facts  |
-| **3**    | `planner/steps.py` slot fill + beam search + optimiser precedence and meal windows; evening/overnight day window                                                 | The Batroun example yields 7 stops in order with a hotel end, or honest empty slots                 |
-| **4**    | Service steps: changer stops, hotel end anchor, "request a driver for this day" (ride request with the itinerary)                                                | The ride request shows the full day to drivers; changer stops show rate and time                    |
-| **5**    | Web timeline, step pills, per-step swap, lock and actions, trust chips, i18n and RTL                                                                             | e2e: type the example, then see, edit and save the day                                              |
-| **6**    | Step refinement (`StepPatch`), multi-day scripts ("day 2: …"), analytics on empty slots to guide coverage                                                        | "Move cinema before dinner" re-plans correctly; the admin coverage page lists missing tags          |
-| **7**    | Dataset at full size: reviewed synthetic paraphrases, real-traffic misses loop, few-shot retrieval for L1, lead import for places                                | Eval set of 5,000 prompts at ≥ 92% step and ≥ 95% order accuracy; coverage targets met in 8 regions |
+| Phase    | Scope                                                                                                                                                        | Done when                                                                                           |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| **1** ✅ | `DayScript`/`StepSpec` schemas, deterministic parser `app/planner/script/` (en/ar/Arabizi/fr), `dayscript-v1` prompt, eval set                               | 40 multi-step scenario prompts parse to the expected roles, in order, at ≥ 90%                      |
+| **1b**   | Migration 046 language dataset, layers L2–L6, variant generator, seed vocabulary, review queue, "what I understood" step                                     | 8,000 seed and 40,000 generated phrases loaded; eval set at 1,000 prompts, ≥ 90% without the LLM    |
+| **2** ✅ | Migration 045 (place types, meal services, schedule note, `planner_retrieve_step`), portal and admin tag editing                                             | Owners and staff can tag cinemas, bowling and sweets; PGlite suite passes                           |
+| **2b**   | Migration 047: more place types, `place_facts`, `place_leads` with dedupe, OSM/Wikidata/official-list importers, `/admin/leads` queue, trust level per place | Every type has en/ar/fr names; leads loaded and measured; first 500 places checked with rich facts  |
+| **3**    | `planner/steps.py` slot fill + beam search + optimiser precedence and meal windows; evening/overnight day window                                             | The Batroun example yields 7 stops in order with a hotel end, or honest empty slots                 |
+| **4**    | Service steps: changer stops, hotel end anchor, "request a driver for this day" (ride request with the itinerary)                                            | The ride request shows the full day to drivers; changer stops show rate and time                    |
+| **5**    | Web timeline, step pills, per-step swap, lock and actions, trust chips, i18n and RTL                                                                         | e2e: type the example, then see, edit and save the day                                              |
+| **6**    | Step refinement (`StepPatch`), multi-day scripts ("day 2: …"), analytics on empty slots to guide coverage                                                    | "Move cinema before dinner" re-plans correctly; the admin coverage page lists missing tags          |
+| **7**    | Dataset at full size: reviewed synthetic paraphrases, real-traffic misses loop, few-shot retrieval for L1, lead import for places                            | Eval set of 5,000 prompts at ≥ 92% step and ≥ 95% order accuracy; coverage targets met in 8 regions |
+
+### Phase 2 status (shipped)
+
+- Database, in `045_place_types.sql`:
+  - `app.place_types`: 123 kinds of place in 11 groups, each named in en/ar/fr, with a planner role,
+    a usual visit length, the meals it usually serves, a season, and whether its times vary.
+  - `app.experience_place_types`: which kinds each listing is. Changes are audited, and the first
+    type is the main one.
+  - `listing_details.meal_services` and `listing_details.schedule_note`.
+  - `app.planner_retrieve_step`: trusted candidates for one step. A listing must be published,
+    visible, from a verified organisation and in a published destination; a meal or a night must
+    also be a checked venue. Kind-of-place tags filter; other tags (a sea view, a sunset) only rank.
+    Candidates can be looked for near a point, within a radius.
+- Owners set types at `PUT /venues/portal/{org}/listings/{id}/place-types` and staff at
+  `PUT /admin/place-types/listings/{id}`. Staff see coverage per destination and type at
+  `GET /admin/place-types/coverage`. The catalogue is public at `GET /venues/place-types`.
+- A restaurant can take only meal types and a stay only stay types, and no other listing can take
+  either. A meal or a night therefore always comes from a checked venue.
+- Business portal: a "What kind of place is this?" section in the listing editor.
+- Tests:
+  - PGlite: 64/64. A mutation check confirmed the suite fails if the venue check is removed.
+  - A contract test fails if the text reader produces a kind of place the database doesn't know.
+  - Web: vitest plus axe.
+- Still to come: a staff UI for coverage (the API is ready), and wiring into the planner session in
+  phase 3.
 
 ### Phase 1 status (shipped)
 

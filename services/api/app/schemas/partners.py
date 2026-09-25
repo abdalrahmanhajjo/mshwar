@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -308,6 +309,22 @@ class ListingDetailsIn(_Strict):
     accepts_requests: bool = False
     amenities: list[str] = Field(default_factory=list, max_length=20)
     accessibility: list[str] = Field(default_factory=list, max_length=10)
+
+
+class PlaceTypesIn(_Strict):
+    """What kinds of place a listing is (migration 045). The first is the main one.
+
+    ``meal_services`` and ``schedule_note`` are optional: leave them out to keep what is set,
+    send an empty list or text to clear them.
+    """
+
+    place_types: list[Annotated[str, Field(pattern=r"^[a-z0-9]+(-[a-z0-9]+)*$", max_length=40)]] = Field(
+        min_length=1, max_length=6
+    )
+    meal_services: list[Literal["breakfast", "brunch", "lunch", "dinner", "late"]] | None = Field(
+        default=None, max_length=5
+    )
+    schedule_note: str | None = Field(default=None, max_length=280)
 
 
 class ClaimIn(_Strict):

@@ -27,6 +27,7 @@ from app.schemas.partners import (
     PartnerCheckIn,
     PartnerDecisionIn,
     PartnerDocumentDecisionIn,
+    PlaceTypesIn,
     RateDecisionIn,
     RegisterLoadIn,
     TransportDecisionIn,
@@ -365,3 +366,26 @@ async def coverage(request: Request, db: AsyncSession = Depends(get_auth_db)) ->
     """Per destination: checked restaurants and stays against 5 and 3, transport cards, drivers, changers."""
     admin = await _admin_id(request, db)
     return await fetch_json(db, "SELECT app.admin_venue_coverage(CAST(:admin AS uuid))", {"admin": admin})
+
+
+@router.put("/place-types/listings/{experience_id}", dependencies=[access.ADMIN])
+async def set_place_types(
+    experience_id: UUID,
+    payload: PlaceTypesIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Staff set what kinds of place a listing is; a meal or a night must still be a checked venue."""
+    admin = await _admin_id(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.admin_set_place_types(CAST(:admin AS uuid), CAST(:id AS uuid), CAST(:body AS jsonb))",
+        {"admin": admin, "id": str(experience_id), "body": payload.model_dump_json(exclude_none=True)},
+    )
+
+
+@router.get("/place-types/coverage", dependencies=[access.ADMIN])
+async def place_type_coverage(request: Request, db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    """Per destination: how many places the planner may use, by kind, and how many have no kind yet."""
+    admin = await _admin_id(request, db)
+    return await fetch_json(db, "SELECT app.admin_place_type_coverage(CAST(:admin AS uuid))", {"admin": admin})

@@ -6,15 +6,15 @@ The policy model is described in [authorization.md](authorization.md).
 | Policy | Routes |
 |---|---|
 | `actor` | 15 |
-| `admin` | 84 |
+| `admin` | 86 |
 | `dev` | 1 |
 | `job` | 7 |
-| `public` | 42 |
-| `session` | 175 |
+| `public` | 43 |
+| `session` | 177 |
 | `signature` | 1 |
 | `token` | 6 |
 | `verified` | 7 |
-| **Total** | **338** |
+| **Total** | **343** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -71,6 +71,8 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/admin/partners/{partner_id}/checks` | `admin` |
 | POST | `/api/v1/admin/payments/reconcile` | `admin` |
 | GET | `/api/v1/admin/payments/reconciliation` | `admin` |
+| GET | `/api/v1/admin/place-types/coverage` | `admin` |
+| PUT | `/api/v1/admin/place-types/listings/{experience_id}` | `admin` |
 | GET | `/api/v1/admin/proposals` | `admin` |
 | POST | `/api/v1/admin/proposals/{proposal_id}` | `admin` |
 | GET | `/api/v1/admin/quality` | `admin` |
@@ -350,9 +352,12 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/trips/{trip_id}/archive` | `session` |
 | GET | `/api/v1/venues/destinations/{slug}` | `public` |
 | GET | `/api/v1/venues/near` | `public` |
+| GET | `/api/v1/venues/place-types` | `public` |
 | GET | `/api/v1/venues/portal/{org_id}/claims` | `session` |
 | POST | `/api/v1/venues/portal/{org_id}/claims` | `session` |
 | GET | `/api/v1/venues/portal/{org_id}/listings/{experience_id}` | `session` |
 | PUT | `/api/v1/venues/portal/{org_id}/listings/{experience_id}` | `session` |
+| GET | `/api/v1/venues/portal/{org_id}/listings/{experience_id}/place-types` | `session` |
+| PUT | `/api/v1/venues/portal/{org_id}/listings/{experience_id}/place-types` | `session` |
 | POST | `/api/v1/webhooks/payments` | `signature` |
 | GET | `/health` | `public` |
