@@ -20,6 +20,7 @@ from app.core.admin_auth import require_admin
 from app.core.sql import fetch_json
 from app.core.storage import media_url, sign_object_url
 from app.dependencies import get_auth_db
+from app.planner.schemas import SourcedPriceIn
 from app.schemas.partners import (
     CheckedVenueIn,
     ClaimDecisionIn,
@@ -389,3 +390,32 @@ async def place_type_coverage(request: Request, db: AsyncSession = Depends(get_a
     """Per destination: how many places the planner may use, by kind, and how many have no kind yet."""
     admin = await _admin_id(request, db)
     return await fetch_json(db, "SELECT app.admin_place_type_coverage(CAST(:admin AS uuid))", {"admin": admin})
+
+
+@router.put("/prices/listings/{experience_id}", dependencies=[access.ADMIN])
+async def set_sourced_price(
+    experience_id: UUID,
+    payload: SourcedPriceIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Record a price the place or an authority published, with the link and the day it was checked."""
+    admin = await _admin_id(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.admin_set_sourced_price(CAST(:admin AS uuid), CAST(:id AS uuid), CAST(:body AS jsonb))",
+        {"admin": admin, "id": str(experience_id), "body": payload.model_dump_json(exclude_none=True)},
+    )
+
+
+@router.get("/prices/due", dependencies=[access.ADMIN])
+async def sourced_prices_due(
+    request: Request,
+    days: int = Query(default=30, ge=1, le=365),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Sourced prices to check again: lapsing within ``days``, or lapsed in the last 30."""
+    admin = await _admin_id(request, db)
+    return await fetch_json(
+        db, "SELECT app.admin_sourced_prices_due(CAST(:admin AS uuid), :days)", {"admin": admin, "days": days}
+    )

@@ -206,7 +206,8 @@ export type PlannerKey =
   | "driverBody"
   | "driverPickup"
   | "driverSend"
-  | "driverSent";
+  | "driverSent"
+  | "priceSource";
 
 export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
   en: {
@@ -417,6 +418,7 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     driverPickup: "Where should the driver pick you up?",
     driverSend: "Ask drivers for prices",
     driverSent: "Sent. Fixed prices from verified drivers will appear in Rides.",
+    priceSource: "Published by {source} · checked {date}",
   },
   ar: {
     startTitle: "من أين تبدأ هذه الخطة؟",
@@ -626,6 +628,7 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     driverPickup: "من أين يقلّك السائق؟",
     driverSend: "اطلب أسعارًا من السائقين",
     driverSent: "تم الإرسال. ستظهر أسعار السائقين الموثّقين الثابتة في قسم الرحلات.",
+    priceSource: "منشور من {source} · جرى التحقّق في {date}",
   },
   fr: {
     startTitle: "D’où part ce plan ?",
@@ -842,6 +845,7 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     driverPickup: "Où le chauffeur doit-il vous prendre ?",
     driverSend: "Demander des prix aux chauffeurs",
     driverSent: "Envoyé. Les prix fixes des chauffeurs vérifiés apparaîtront dans Trajets.",
+    priceSource: "Publié par {source} · vérifié le {date}",
   },
 };
 

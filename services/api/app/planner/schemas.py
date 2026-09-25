@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, time
+from datetime import date, datetime, time
 from typing import Any
 from uuid import UUID
 
@@ -408,6 +408,23 @@ class DayDriverRequest(BaseModel):
     pickup_lng: float | None = Field(default=None, ge=35.0, le=36.7)
     luggage: int = Field(default=0, ge=0, le=20)
     notes: str = Field(default="", max_length=300)
+
+
+class SourcedPriceIn(BaseModel):
+    """A price a place or an authority published, recorded by staff with its proof (migration 047)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    price_type: str = Field(pattern="^(fixed|from|range)$")
+    amount_minor: int = Field(ge=0, le=100_000_000)
+    max_amount_minor: int | None = Field(default=None, ge=0, le=100_000_000)
+    currency: str = Field(default="USD", pattern="^[A-Z]{3}$")
+    unit: str = Field(default="person", pattern="^(person|group)$")
+    source_url: str = Field(min_length=10, max_length=500, pattern=r"^https://[^/\s]+")
+    source_name: str = Field(min_length=2, max_length=120)
+    checked_on: date
+    review_by: date | None = None
+    note: str = Field(default="", max_length=500)
 
 
 class LockRequest(BaseModel):
