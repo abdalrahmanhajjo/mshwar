@@ -17,22 +17,28 @@ fill - is saved with the version (``constraints.day``) and returned as
 
 from __future__ import annotations
 
+import json
+import math
 import time
+from datetime import datetime
 from typing import Any
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.sql import fetch_json
 from app.planner.defaults import apply_defaults
 from app.planner.explanations import explain_plan
 from app.planner.intent.catalogue import destination_terms, resolve_anchors
-from app.planner.persist import get_session, persist_plan, rag_chunks, upsert_session
-from app.planner.schemas import AssumedDefault, CandidateRecord, DayScript, ExtractedConstraints
+from app.planner.persist import get_session, get_version, persist_plan, rag_chunks, upsert_session
+from app.planner.schemas import AssumedDefault, CandidateRecord, DayDriverRequest, DayScript, ExtractedConstraints
 from app.planner.script import parse_day_script, read_day_script, script_questions
 from app.planner.script.day import DayPlan
 from app.planner.script.extract import DAY_SCRIPT_PROMPT_VERSION
 from app.planner.script.fill import build_day
 
+BEIRUT = ZoneInfo("Asia/Beirut")
 #: A request is a "day" when it names at least this many steps.
 MIN_DAY_STEPS = 2
 DAY_OPTIMIZER_VERSION = "day-beam-v1"
@@ -163,6 +169,7 @@ async def plan_day_session(
         "day": day.outcomes_json(),
         "day_script": script.model_dump(mode="json", exclude={"constraints"}),
         "driver_request": _driver_request(script, day),
+        "pricing": day.pricing.model_dump(mode="json"),
         "injection_logged": bool(injection),
     }
     status = "degraded" if degraded else "planned"
@@ -205,7 +212,7 @@ async def plan_day_session(
         ranked=_run_candidates(day),
         latency_ms=int((time.monotonic() - started) * 1000),
         run_status="infeasible" if day.plan.needs_budget_approval else ("fallback" if degraded else "succeeded"),
-        extra_constraints={"day": extra["day"], "day_script": extra["day_script"]},
+        extra_constraints={"day": extra["day"], "day_script": extra["day_script"], "pricing": extra["pricing"]},
         run_versions={"prompt_version": DAY_SCRIPT_PROMPT_VERSION, "optimizer_version": DAY_OPTIMIZER_VERSION},
     )
     for stop in day.plan.stops:
@@ -242,4 +249,93 @@ async def plan_day_session(
     )
 
 
-__all__ = ["MIN_DAY_STEPS", "catalogue_terms", "plan_day_session", "reads_as_day"]
+# ---- Phase 4: a driver for the planned day ----
+
+MIN_DRIVER_HOURS, MAX_DRIVER_HOURS = 2, 14
+NOTES_LIMIT = 1000
+
+
+def _clock(value: Any) -> str:
+    try:
+        return datetime.fromisoformat(str(value)).astimezone(BEIRUT).strftime("%H:%M")
+    except ValueError:
+        return ""
+
+
+def _itinerary(day: list[dict[str, Any]]) -> list[str]:
+    lines = []
+    for step in day:
+        if step.get("status") not in {"filled", "office"}:
+            continue
+        name = step.get("title") or (step.get("office") or {}).get("branch_name") or step.get("role")
+        lines.append(f"{_clock(step.get('starts_at'))} {name}".strip())
+    return lines
+
+
+def ride_request_for(version: dict[str, Any], pickup: DayDriverRequest) -> dict[str, Any]:
+    """The ``traveller_request_ride`` payload for a sealed day: where, when, how long, for whom, and the stops.
+
+    Only what the day already holds; drivers still quote their own fixed price.
+    """
+    constraints = version.get("constraints") or {}
+    day = [step for step in constraints.get("day") or [] if isinstance(step, dict)]
+    visited = [step for step in day if step.get("status") in {"filled", "office"} and step.get("starts_at")]
+    if not visited:
+        raise ValueError("this plan has no stops for a driver yet")
+    destination = next((step.get("destination_slug") for step in visited if step.get("destination_slug")), None)
+    destination = destination or next(iter(constraints.get("destination_slugs") or []), None)
+    if not destination:
+        raise ValueError("choose where the day is spent")
+    starts = datetime.fromisoformat(str(version.get("window_start") or visited[0]["starts_at"]))
+    last = max(datetime.fromisoformat(str(step.get("ends_at") or step["starts_at"])) for step in visited)
+    hours = math.ceil((last - starts).total_seconds() / 3600)
+    lines = _itinerary(day)
+    if hours > MAX_DRIVER_HOURS:
+        lines.append(f"The plan runs {hours} hours: agree the rest of the day with the driver.")
+    notes = "Mshwar day plan:\n" + "\n".join(lines)
+    if pickup.notes.strip():
+        notes += "\n" + pickup.notes.strip()
+    body: dict[str, Any] = {
+        "kind": "day",
+        "destination": destination,
+        "starts_at": starts.isoformat(),
+        "hours": max(MIN_DRIVER_HOURS, min(MAX_DRIVER_HOURS, hours)),
+        "party_size": int(version.get("party_size") or 1),
+        "pickup_name": pickup.pickup_name.strip(),
+        "luggage": pickup.luggage,
+        "notes": notes[:NOTES_LIMIT],
+        "trip_id": version.get("trip_id"),
+    }
+    if pickup.pickup_lat is not None and pickup.pickup_lng is not None:
+        body["pickup_lat"], body["pickup_lng"] = pickup.pickup_lat, pickup.pickup_lng
+    return body
+
+
+async def request_day_driver(
+    db: AsyncSession, user_id: UUID, session_id: UUID, pickup: DayDriverRequest
+) -> dict[str, Any]:
+    """Send the traveller's planned day to the verified drivers covering it (041 rules apply)."""
+    stored = await get_session(db, user_id, session_id)
+    version_id = stored.get("current_version_id")
+    if not version_id:
+        raise ValueError("plan the day before asking for a driver")
+    version = await get_version(db, user_id, UUID(str(version_id)), False)
+    body = ride_request_for(version, pickup)
+    created = await fetch_json(
+        db,
+        "SELECT app.traveller_request_ride(CAST(:uid AS uuid), CAST(:body AS jsonb))",
+        {"uid": str(user_id), "body": json.dumps(body, default=str)},
+    )
+    if not isinstance(created, dict):
+        raise TypeError("the ride request was not created")
+    return created
+
+
+__all__ = [
+    "MIN_DAY_STEPS",
+    "catalogue_terms",
+    "plan_day_session",
+    "reads_as_day",
+    "request_day_driver",
+    "ride_request_for",
+]

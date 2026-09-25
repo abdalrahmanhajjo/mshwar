@@ -290,6 +290,8 @@ class StepCandidate(CandidateRecord):
     needs_schedule: bool = False
     distance_m: int | None = None
     trust: dict[str, Any] = Field(default_factory=dict)
+    #: The listing's own details: typical spend, price per night, how to reserve or book (046).
+    details: dict[str, Any] = Field(default_factory=dict)
 
 
 class EligibilityResult(BaseModel):
@@ -394,6 +396,18 @@ class ManualPreviewRequest(BaseModel):
     start_lat: float | None = None
     start_lng: float | None = None
     locale: str = "en"
+
+
+class DayDriverRequest(BaseModel):
+    """Send the planned day to verified drivers (trip builder v2, phase 4). Nothing else is booked."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    pickup_name: str = Field(min_length=3, max_length=160)
+    pickup_lat: float | None = Field(default=None, ge=33.0, le=34.8)
+    pickup_lng: float | None = Field(default=None, ge=35.0, le=36.7)
+    luggage: int = Field(default=0, ge=0, le=20)
+    notes: str = Field(default="", max_length=300)
 
 
 class LockRequest(BaseModel):
