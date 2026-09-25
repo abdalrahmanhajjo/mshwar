@@ -6,7 +6,7 @@ The policy model is described in [authorization.md](authorization.md).
 | Policy | Routes |
 |---|---|
 | `actor` | 15 |
-| `admin` | 100 |
+| `admin` | 105 |
 | `dev` | 1 |
 | `job` | 7 |
 | `public` | 43 |
@@ -14,7 +14,7 @@ The policy model is described in [authorization.md](authorization.md).
 | `signature` | 1 |
 | `token` | 6 |
 | `verified` | 7 |
-| **Total** | **363** |
+| **Total** | **368** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -78,6 +78,9 @@ The policy model is described in [authorization.md](authorization.md).
 | PUT | `/api/v1/admin/place-facts/listings/{experience_id}` | `admin` |
 | GET | `/api/v1/admin/place-types/coverage` | `admin` |
 | PUT | `/api/v1/admin/place-types/listings/{experience_id}` | `admin` |
+| GET | `/api/v1/admin/planner/candidates` | `admin` |
+| GET | `/api/v1/admin/planner/candidates/batches` | `admin` |
+| POST | `/api/v1/admin/planner/candidates/review` | `admin` |
 | GET | `/api/v1/admin/planner/concepts` | `admin` |
 | GET | `/api/v1/admin/planner/gaps` | `admin` |
 | GET | `/api/v1/admin/planner/misses` | `admin` |
@@ -85,6 +88,8 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/admin/planner/phrases` | `admin` |
 | POST | `/api/v1/admin/planner/phrases` | `admin` |
 | POST | `/api/v1/admin/planner/phrases/{phrase_id}/retire` | `admin` |
+| GET | `/api/v1/admin/planner/releases` | `admin` |
+| POST | `/api/v1/admin/planner/releases` | `admin` |
 | GET | `/api/v1/admin/prices/due` | `admin` |
 | PUT | `/api/v1/admin/prices/listings/{experience_id}` | `admin` |
 | GET | `/api/v1/admin/proposals` | `admin` |

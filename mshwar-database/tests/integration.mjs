@@ -13,6 +13,7 @@ import { testDayPricing } from "./day-pricing.mjs";
 import { testSourcedPrices } from "./sourced-prices.mjs";
 import { testPlannerData } from "./planner-data.mjs";
 import { testLeadsAndFacts } from "./leads-and-facts.mjs";
+import { testPhraseCandidates } from "./phrase-candidates.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const db = new PGlite({ extensions: { postgis, vector, btree_gist, pg_trgm } });
 const report = [];
@@ -74,6 +75,9 @@ try {
   );
   await good("place facts filter and rank; leads deduplicated, queued by demand, published only after a check", () =>
     testLeadsAndFacts(db),
+  );
+  await good("phrase candidates never go live until approved; batches, rejections kept, versioned releases", () =>
+    testPhraseCandidates(db),
   );
   await sql("SELECT set_config('app.user_id',$1,false)", [alice]);
   await good("all app tables have forced RLS", async () =>

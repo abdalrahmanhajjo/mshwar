@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime, time
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -443,6 +443,21 @@ class MissDecisionIn(BaseModel):
     phrase: str | None = Field(default=None, max_length=80)
     concept: str | None = Field(default=None, pattern=r"^[a-z0-9]+(-[a-z0-9]+)*$")
     locale: str | None = Field(default=None, pattern="^(en|ar|ar-LB|arabizi|fr|mixed)$")
+
+
+class CandidateReviewIn(BaseModel):
+    """Approve or reject candidate phrases in one go (migration 050)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    ids: list[UUID] = Field(min_length=1, max_length=1000)
+    decision: Literal["approve", "reject"]
+
+
+class ReleaseIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    note: str = Field(default="", max_length=500)
 
 
 class UnderstandRequest(BaseModel):

@@ -95,10 +95,70 @@ export type AdminCatalogueKey =
   | "coverageTitle"
   | "coverageBody"
   | "untyped"
-  | "kindsCount";
+  | "kindsCount"
+  | "reviewTitle"
+  | "reviewBody"
+  | "batchLabel"
+  | "anyBatch"
+  | "anyConcept"
+  | "anyLocale"
+  | "batchCounts"
+  | "candidatesTotal"
+  | "selectAll"
+  | "selected"
+  | "approveSelected"
+  | "rejectSelected"
+  | "reviewDone"
+  | "spellingOf"
+  | "clash"
+  | "noCandidates"
+  | "previous"
+  | "next"
+  | "releasesTitle"
+  | "releasesBody"
+  | "releaseNote"
+  | "release"
+  | "releasing"
+  | "releaseRefused"
+  | "unreleased"
+  | "upToDate"
+  | "releaseMetrics"
+  | "set_hand_written"
+  | "set_generated";
 
 export const adminCatalogueCopy: Record<Locale, Record<AdminCatalogueKey, string>> = {
   en: {
+    reviewTitle: "Phrases to review",
+    reviewBody:
+      "Written or generated in bulk for native speakers to check. The planner reads none of them until you approve them; a rejected phrase is never imported again.",
+    batchLabel: "Batch",
+    anyBatch: "Every batch",
+    anyConcept: "Every concept",
+    anyLocale: "Every language",
+    batchCounts: "{candidate} to review · {approved} approved · {rejected} rejected",
+    candidatesTotal: "{shown} of {total}",
+    selectAll: "Select all on this page",
+    selected: "{count} selected",
+    approveSelected: "Approve selected",
+    rejectSelected: "Reject selected",
+    reviewDone: "{approved} approved, {rejected} rejected, {duplicates} already live.",
+    spellingOf: "spelling of {phrase}",
+    clash: "Also reads as another concept: check it",
+    noCandidates: "Nothing to review here.",
+    previous: "Previous",
+    next: "Next",
+    releasesTitle: "Releases",
+    releasesBody:
+      "A release records exactly which phrases are live, with the eval results measured with them. It is refused if the planner would understand people worse.",
+    releaseNote: "What changed",
+    release: "Measure and release",
+    releasing: "Measuring both eval sets…",
+    releaseRefused: "Refused: the eval sets fall below the release gate with these phrases.",
+    unreleased: "{count} approved phrases; changes since the last release are not released yet.",
+    upToDate: "{count} approved phrases, all in the latest release.",
+    releaseMetrics: "{name}: {cases} prompts, {accuracy} read right",
+    set_hand_written: "Hand-written set",
+    set_generated: "Generated set",
     loadError: "We could not load this. Try again.",
     period: "Period",
     lastDays: "Last {days} days",
@@ -200,6 +260,37 @@ export const adminCatalogueCopy: Record<Locale, Record<AdminCatalogueKey, string
     kindsCount: "{count} kinds",
   },
   ar: {
+    reviewTitle: "عبارات للمراجعة",
+    reviewBody:
+      "كُتبت أو وُلّدت بالجملة ليراجعها متحدثون أصليون. لا يقرأ المخطِّط أيًا منها قبل موافقتك، والعبارة المرفوضة لا تُستورد مجددًا.",
+    batchLabel: "الدفعة",
+    anyBatch: "كل الدفعات",
+    anyConcept: "كل المفاهيم",
+    anyLocale: "كل اللغات",
+    batchCounts: "{candidate} للمراجعة · {approved} معتمدة · {rejected} مرفوضة",
+    candidatesTotal: "{shown} من {total}",
+    selectAll: "اختر كل ما في هذه الصفحة",
+    selected: "{count} مختارة",
+    approveSelected: "اعتمد المختار",
+    rejectSelected: "ارفض المختار",
+    reviewDone: "{approved} معتمدة، {rejected} مرفوضة، {duplicates} موجودة أصلًا.",
+    spellingOf: "كتابة أخرى لـ {phrase}",
+    clash: "تُقرأ أيضًا كمفهوم آخر: تحقّق منها",
+    noCandidates: "لا شيء للمراجعة هنا.",
+    previous: "السابق",
+    next: "التالي",
+    releasesTitle: "الإصدارات",
+    releasesBody:
+      "يسجّل الإصدار العبارات المفعّلة بالضبط، مع نتائج التقييم المقيسة بها. يُرفض إذا كان المخطِّط سيفهم الناس بشكل أسوأ.",
+    releaseNote: "ما الذي تغيّر",
+    release: "قِس وأصدِر",
+    releasing: "نقيس مجموعتي التقييم…",
+    releaseRefused: "رُفض: تنخفض مجموعات التقييم تحت الحد المطلوب بهذه العبارات.",
+    unreleased: "{count} عبارة معتمدة؛ التغييرات منذ آخر إصدار لم تُصدر بعد.",
+    upToDate: "{count} عبارة معتمدة، كلها في آخر إصدار.",
+    releaseMetrics: "{name}: {cases} طلبًا، {accuracy} مقروءة صحيحًا",
+    set_hand_written: "المجموعة المكتوبة يدويًا",
+    set_generated: "المجموعة المولّدة",
     loadError: "تعذّر التحميل. حاول مجددًا.",
     period: "الفترة",
     lastDays: "آخر {days} يومًا",
@@ -302,6 +393,37 @@ export const adminCatalogueCopy: Record<Locale, Record<AdminCatalogueKey, string
     kindsCount: "{count} أنواع",
   },
   fr: {
+    reviewTitle: "Expressions à examiner",
+    reviewBody:
+      "Écrites ou générées en masse pour être vérifiées par des locuteurs natifs. Le planificateur n’en lit aucune avant votre approbation ; une expression refusée n’est jamais réimportée.",
+    batchLabel: "Lot",
+    anyBatch: "Tous les lots",
+    anyConcept: "Tous les concepts",
+    anyLocale: "Toutes les langues",
+    batchCounts: "{candidate} à examiner · {approved} approuvées · {rejected} refusées",
+    candidatesTotal: "{shown} sur {total}",
+    selectAll: "Tout sélectionner sur cette page",
+    selected: "{count} sélectionnées",
+    approveSelected: "Approuver la sélection",
+    rejectSelected: "Refuser la sélection",
+    reviewDone: "{approved} approuvées, {rejected} refusées, {duplicates} déjà actives.",
+    spellingOf: "autre graphie de {phrase}",
+    clash: "Se lit aussi comme un autre concept : à vérifier",
+    noCandidates: "Rien à examiner ici.",
+    previous: "Précédent",
+    next: "Suivant",
+    releasesTitle: "Versions",
+    releasesBody:
+      "Une version enregistre exactement les expressions actives, avec les résultats d’évaluation mesurés. Elle est refusée si le planificateur comprendrait moins bien.",
+    releaseNote: "Ce qui a changé",
+    release: "Mesurer et publier",
+    releasing: "Mesure des deux jeux d’évaluation…",
+    releaseRefused: "Refusée : les jeux d’évaluation passent sous le seuil avec ces expressions.",
+    unreleased: "{count} expressions approuvées ; les changements depuis la dernière version ne sont pas publiés.",
+    upToDate: "{count} expressions approuvées, toutes dans la dernière version.",
+    releaseMetrics: "{name} : {cases} demandes, {accuracy} bien lues",
+    set_hand_written: "Jeu écrit à la main",
+    set_generated: "Jeu généré",
     loadError: "Chargement impossible. Réessayez.",
     period: "Période",
     lastDays: "{days} derniers jours",

@@ -161,3 +161,78 @@ export const recordSourcedPrice = (experienceId: string, body: SourcedPriceInput
   apiRequest<SourcedPrice>(`/api/v1/admin/prices/listings/${experienceId}`, json("PUT", body));
 
 export const fetchPlaceTypeCoverage = () => apiRequest<PlaceTypeCoverage>("/api/v1/admin/place-types/coverage");
+
+// ---- Candidate phrases and releases (migration 050) ----
+
+export type PhraseBatch = {
+  batch: string;
+  candidate: number;
+  approved: number;
+  rejected: number;
+  locales: Record<string, boolean>;
+  first_added: string;
+};
+
+export type PhraseCandidate = {
+  id: string;
+  phrase: string;
+  concept: string;
+  locale: PhraseLocale;
+  source: string;
+  batch: string;
+  variant_of: string;
+  /** How it was generated, and "also reads as …" when it clashes with another concept. */
+  note: string;
+  status: "candidate" | "approved" | "rejected";
+};
+
+export type EvalMetrics = {
+  cases: number;
+  case_accuracy: number;
+  step_accuracy: number;
+  order_accuracy: number;
+  passes: boolean;
+  failures: string[];
+};
+
+export type IntentRelease = {
+  id: string;
+  name: string;
+  version: number;
+  approved_phrases: number;
+  checksum: string;
+  metrics: Record<string, EvalMetrics>;
+  note: string;
+  released_at: string;
+};
+
+export type ReleaseState = { current_checksum: string; approved_phrases: number; releases: IntentRelease[] };
+
+export const fetchPhraseBatches = () => apiRequest<PhraseBatch[]>("/api/v1/admin/planner/candidates/batches");
+
+export function fetchPhraseCandidates(filter: {
+  batch?: string;
+  concept?: string;
+  locale?: string;
+  status?: PhraseCandidate["status"];
+  limit?: number;
+  offset?: number;
+}) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(filter))
+    if (value !== undefined && value !== "") query.set(key, String(value));
+  return apiRequest<{ total: number; items: PhraseCandidate[] }>(
+    `/api/v1/admin/planner/candidates?${query.toString()}`,
+  );
+}
+
+export const reviewPhraseCandidates = (ids: string[], decision: "approve" | "reject") =>
+  apiRequest<{ approved: number; rejected: number; duplicates: number }>(
+    "/api/v1/admin/planner/candidates/review",
+    json("POST", { ids, decision }),
+  );
+
+export const fetchReleases = () => apiRequest<ReleaseState>("/api/v1/admin/planner/releases");
+
+export const releaseIntentData = (note: string) =>
+  apiRequest<IntentRelease>("/api/v1/admin/planner/releases", json("POST", { note }));
