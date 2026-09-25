@@ -467,7 +467,8 @@ def _add_clause(day: _Day, clause: _Clause, is_first_clause: bool) -> None:
 _STEP_KINDS = frozenset({"meal", "food", "place", "exchange", "stay"})
 _PARTY_RE = re.compile(
     r"(?:family|group|party|famille|groupe)\s+(?:of|de)\s+(\d{1,2})|(\d{1,2})\s*(?:of us|people|persons|adults|pax|"
-    r"personnes|أشخاص|اشخاص|شخص)",
+    r"personnes|أشخاص|اشخاص|شخص)"
+    r"|(?:we are|we're|there are|nous sommes|on est|نحنا|نحن|ne7na|ni7na|na7na)\s+(\d{1,2})\b",
     re.IGNORECASE,
 )
 
@@ -534,7 +535,7 @@ def day_constraints(text: str, locale: str, destinations: list[str]) -> Extracte
     if constraints.party_size is None:
         match = _PARTY_RE.search(text)
         if match:
-            size = int(match.group(1) or match.group(2))
+            size = int(next(group for group in match.groups() if group))
             constraints.party_size = size if 1 <= size <= 20 else None
     merged = list(dict.fromkeys([*destinations, *constraints.destination_slugs]))
     constraints.destination_slugs = merged[:4]

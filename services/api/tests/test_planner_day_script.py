@@ -16,6 +16,7 @@ from app.planner.llm import build_client
 from app.planner.schemas import DayScript, StepSpec
 from app.planner.script import parse_day_script, read_day_script, script_questions
 from app.planner.script.evaluation import evaluate
+from app.planner.script.generated_eval import FIXTURE_PATH as GENERATED_FIXTURE, build as build_generated
 from app.planner.script.text import split_clauses, token_forms, words
 from app.planner.script.vocabulary import ALL_CONCEPTS, STEP_TAGS, arabizi_variants
 
@@ -48,6 +49,36 @@ def test_eval_set_meets_the_release_gate() -> None:
     assert report.case_accuracy >= threshold, "\n".join(report.failures)
     assert report.step_accuracy >= 0.92, "\n".join(report.failures)
     assert report.order_accuracy >= 0.95, "\n".join(report.failures)
+
+
+def test_the_generated_eval_set_meets_the_release_gate() -> None:
+    """1,200 template-built prompts (en, ar-LB, Arabizi, fr, mixed): lists, arrows, typos, drivers, parties."""
+    report, threshold = evaluate(lambda prompt, locale: parse_day_script(prompt, locale), GENERATED_FIXTURE)
+    assert report.cases >= 1000
+    assert report.case_accuracy >= threshold, "\n".join(report.failures[:20])
+    assert report.step_accuracy >= 0.92 and report.order_accuracy >= 0.95, "\n".join(report.failures[:20])
+
+
+def test_the_generated_fixture_matches_its_generator() -> None:
+    assert json.loads(GENERATED_FIXTURE.read_text(encoding="utf-8")) == build_generated(), (
+        "run: python scripts/build_generated_eval.py"
+    )
+
+
+def test_typos_are_read_but_other_words_are_not() -> None:
+    assert _roles(parse_day_script("musuem then dinnre")) == ["sight", "meal"]
+    assert parse_day_script("an ecsape room then wine tsating").steps[1].tags == ["winery"]
+    assert _roles(parse_day_script("a bench then dinner")) == ["meal"], "a different letter is not a typo"
+
+
+def test_party_size_and_arabizi_negation() -> None:
+    for prompt in ("we are 4, museum then dinner", "nous sommes 4 : musee puis diner", "نحنا 4 متحف بعدين عشا"):
+        assert parse_day_script(prompt).constraints.party_size == 4, prompt
+    script = parse_day_script("bade 3asha w ma bade samak")
+    assert script.avoid_tags == ["seafood"] and script.steps[0].tags == []
+    assert parse_day_script("avec ma famille diner").avoid_tags == [], "French 'ma' is not a no"
+    next_to = parse_day_script("a cafe next to the beach")
+    assert _roles(next_to) == ["meal"] and "sea-view" in next_to.steps[0].tags, '"next to" is not "then"'
 
 
 def test_the_batroun_day_reads_in_order() -> None:
