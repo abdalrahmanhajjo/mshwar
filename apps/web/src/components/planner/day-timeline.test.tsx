@@ -126,7 +126,7 @@ describe("day timeline", () => {
         <DayTimeline steps={STEPS} plan={PLAN} copy={copy} />
       </LocaleProvider>,
     );
-    const items = within(screen.getByRole("list", { name: "Your day, step by step" })).getAllByRole("listitem");
+    const items = within(screen.getByRole("list", { name: "Day 1" })).getAllByRole("listitem");
     expect(items).toHaveLength(5);
 
     expect(items[0]).toHaveTextContent("Batroun branch");
@@ -180,11 +180,95 @@ describe("day timeline", () => {
         <DayTimeline steps={STEPS} plan={PLAN} copy={copy} sessionId="s1" onLock={onLock} />
       </LocaleProvider>,
     );
-    const buttons = screen.getAllByRole("button");
+    const buttons = screen.getAllByRole("button").filter((button) => button.hasAttribute("aria-pressed"));
     expect(buttons.map((button) => button.getAttribute("aria-pressed"))).toEqual(["false", "true", "false"]);
     fireEvent.click(buttons[0]);
     await waitFor(() => expect(calls).toEqual(["/api/v1/planner/sessions/s1/lock"]));
     expect(onLock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("day timeline, step options and trips", () => {
+  const json = (body: unknown) =>
+    new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json" } });
+
+  it("offers other trusted places for a step, with their prices, and uses the one chosen", async () => {
+    const calls: { url: string; body?: string }[] = [];
+    globalThis.fetch = vi.fn(async (url: string, init?: RequestInit) => {
+      calls.push({ url: String(url), body: init?.body as string | undefined });
+      if (String(url).includes("/alternatives")) {
+        return json([
+          {
+            experience_id: "exp-knefeh",
+            slug: "knefeh-house",
+            title: "Knefeh House",
+            destination_slug: "batroun",
+            place_types: ["sweets"],
+            trust: { level: "checked_by_mshwar" },
+            distance_m: 0,
+            outside_destination: false,
+            needs_schedule: false,
+            price: price({}),
+          },
+          {
+            experience_id: "exp-sweets",
+            slug: "old-sweets",
+            title: "Old Sweets",
+            destination_slug: "batroun",
+            place_types: ["sweets"],
+            trust: { level: "verified_organisation" },
+            distance_m: 1200,
+            outside_destination: false,
+            needs_schedule: false,
+            price: price({ basis: "on_request", low_minor: null, high_minor: null }),
+          },
+        ]);
+      }
+      return json({ session_id: "s1", status: "planned" });
+    }) as unknown as typeof fetch;
+    const onLock = vi.fn(async (task: () => Promise<unknown>) => {
+      await task();
+    });
+    const { container } = render(
+      <LocaleProvider>
+        <DayTimeline steps={STEPS} plan={PLAN} copy={copy} sessionId="s1" onLock={onLock} />
+      </LocaleProvider>,
+    );
+    const knefeh = within(screen.getByRole("list", { name: "Day 1" })).getAllByRole("listitem")[1];
+    fireEvent.click(within(knefeh).getByRole("button", { name: "Other options" }));
+    const option = await within(knefeh).findByText("Old Sweets");
+    expect(within(knefeh).queryAllByText("Knefeh House")).toHaveLength(1); // the current place is not offered again
+    const row = option.closest("li") as HTMLElement;
+    expect(row).toHaveTextContent("Verified business");
+    expect(row).toHaveTextContent("1.2 km from the step before");
+    expect(row).toHaveTextContent("Price on request");
+    expect(await axe(container)).toHaveNoViolations();
+    fireEvent.click(within(row).getByRole("button", { name: "Use this place" }));
+    await waitFor(() =>
+      expect(calls.map((call) => call.url)).toEqual([
+        "/api/v1/planner/sessions/s1/steps/2/alternatives?day=1",
+        "/api/v1/planner/sessions/s1/steps/2/choose?day=1",
+      ]),
+    );
+    expect(JSON.parse(calls[1].body ?? "{}")).toEqual({ experience_id: "exp-sweets" });
+  });
+
+  it("groups a trip of several days under day headings and flags unconfirmed needs", () => {
+    const trip = [
+      step({ order: 1, day: 1, title: "Byblos Castle", role: "sight", experience_id: "a" }),
+      step({ order: 2, day: 1, title: "Harbour Hotel", role: "stay", experience_id: "b" }),
+      step({ order: 1, day: 2, title: "Cedars", role: "sight", experience_id: "c", flags: ["needs_unconfirmed"] }),
+    ];
+    render(
+      <LocaleProvider>
+        <DayTimeline steps={trip} plan={{ stops: [] } as unknown as PlanDocument} copy={copy} />
+      </LocaleProvider>,
+    );
+    expect(screen.getByRole("heading", { name: "Day 1" })).toBeInTheDocument();
+    expect(within(screen.getByRole("list", { name: "Day 1" })).getAllByRole("listitem")).toHaveLength(2);
+    const second = within(screen.getByRole("list", { name: "Day 2" })).getAllByRole("listitem");
+    expect(second[0]).toHaveTextContent("Cedars");
+    expect(second[0]).toHaveTextContent("Your needs not confirmed here");
   });
 });
 

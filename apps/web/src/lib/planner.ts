@@ -344,6 +344,8 @@ export type PriceLine = {
   source_name?: string | null;
   source_url?: string | null;
   checked_on?: string | null;
+  /** The trip day this line belongs to (trips of several days). */
+  day?: number | null;
 };
 
 export type DayPrice = {
@@ -364,6 +366,8 @@ export type DayPrice = {
 
 export type DayStepOutcome = {
   order: number;
+  /** The trip day (1 for a single day). */
+  day?: number;
   role: "meal" | "sight" | "activity" | "stay" | "service" | "exchange";
   tags: string[];
   meal: string | null;
@@ -417,6 +421,43 @@ export function understandRequest(text: string, locale: string) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text, locale }),
   });
+}
+
+/** A trusted option for one step of a day, with its published price. */
+export type StepOption = {
+  experience_id: string;
+  slug: string;
+  title: string;
+  destination_slug: string | null;
+  place_types: string[];
+  trust: { level?: string; checked_on?: string | null };
+  distance_m: number | null;
+  outside_destination: boolean;
+  needs_schedule: boolean;
+  price: PriceLine;
+};
+
+export function fetchStepOptions(sessionId: string, order: number, day = 1) {
+  return readJson<StepOption[]>(`/api/v1/planner/sessions/${sessionId}/steps/${order}/alternatives?day=${day}`);
+}
+
+/** Use one of a step's trusted options; every other step keeps its place. */
+export function chooseStepOption(sessionId: string, order: number, day: number, experienceId: string) {
+  return readJson<PlannerSession>(`/api/v1/planner/sessions/${sessionId}/steps/${order}/choose?day=${day}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ experience_id: experienceId }),
+  });
+}
+
+/** Group a trip's steps (or price lines) by day, in order. One group for a single day. */
+export function byDay<T extends { day?: number | null }>(items: T[]): [number, T[]][] {
+  const groups = new Map<number, T[]>();
+  for (const item of items) {
+    const day = item.day ?? 1;
+    groups.set(day, [...(groups.get(day) ?? []), item]);
+  }
+  return [...groups.entries()].sort(([a], [b]) => a - b);
 }
 
 export function requestDayDriver(
@@ -602,14 +643,20 @@ export function cancelReplacement(sessionId: string) {
 }
 
 export function refinePlannerSession(sessionId: string, text: string, apply: boolean) {
-  return readJson<PlannerSession & { understood?: boolean; summary?: string; clarification?: string }>(
-    `/api/v1/planner/sessions/${sessionId}/refine`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, apply }),
-    },
-  );
+  return readJson<
+    PlannerSession & {
+      understood?: boolean;
+      summary?: string;
+      clarification?: string;
+      /** "day_patch": a step-by-step day edited in words; ``steps`` is the day as it would become. */
+      kind?: string;
+      steps?: UnderstoodDay["steps"];
+    }
+  >(`/api/v1/planner/sessions/${sessionId}/refine`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, apply }),
+  });
 }
 
 export function fetchTripVersions(tripId: string) {
