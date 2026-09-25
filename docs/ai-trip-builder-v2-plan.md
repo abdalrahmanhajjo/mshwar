@@ -410,51 +410,72 @@ authority) and helps in an emergency.
   and reason only (no words, no user), kept a year. `/admin/planner/language` lists what travellers
   asked for most and could not get; `/admin/catalogue` orders leads by that demand.
 
-### Phase 1b status (software shipped; the dataset is still small)
+### Phase 1b status (built; waiting for native-speaker review)
 
-- Shipped:
-  - approved phrases (`app.intent_phrases`, migration 048) extend the reader at run time (L2), with
-    a short cache;
-  - fuzzy matching with a blocklist and Arabizi variants (L3) in the reader itself;
-  - "what I understood" chips (`/planner/understand`);
-  - one question per unclear step (L6);
-  - the misses loop: words the reader could not use are stored only with the traveller's consent,
-    redacted (names, numbers, contacts removed), without a user id, for 90 days, and reviewed at
-    `/admin/planner/language`, where staff teach them as a phrase for a concept or dismiss them.
-    A phrase maps to a concept, never to a business.
-- Today: 86 concepts, 593 cues (664 with Arabizi variants), and a 57-prompt eval set that the
-  deterministic reader passes at 100% of steps and order.
-- Not done, and why:
-  - The 8,000 seed / 40,000 generated phrases and the 1,000-prompt eval set need native speakers
-    to write and review them (`docs/i18n-translator-guide.md`). Generating them without review
-    would break the rule that nothing goes live unreviewed.
-  - Semantic matching (L4, pgvector embeddings) and few-shot retrieval for the LLM (L1) wait for
-    that reviewed data and an embedding provider decision.
+- **Reading, measured.** Two eval sets gate every change and every data release:
+  - 57 hand-written requests;
+  - 1,200 requests built from templates (`generated_eval.py`) in English, Lebanese Arabic, Arabizi,
+    French and mixed. They include lists, arrows, typos, drivers, pickups, party sizes, "no
+    seafood" and optional steps, and each label is right by construction.
 
-### Phase 2b status (software shipped; the places still have to be collected and checked)
+  Both pass at 100%, and 9,000 further prompts drawn with other seeds pass too. Building the
+  generated set found and fixed real gaps: "next" and "to end the day" as "then", swapped-letter
+  typos (also inside two-word cues), "we are 4", and Arabizi "ma bade" as a no.
 
-- **Place facts** (`app.place_facts`, migration 049): halal, vegetarian, vegan, gluten-free,
-  alcohol, wheelchair access, step-free, accessible toilet, parking, children, pushchairs, outdoor
-  seating, cards, dollars or lira cash, minimum age, views, languages and dress code.
-  - Owners set them in the portal and staff through the API (`PUT /admin/place-facts/listings/{id}`). Every answer can
-    stay unknown.
-  - The planner drops a place only when a fact says no. An unknown need is kept and flagged "your
-    needs not confirmed here", and a view asked for ranks the places that have it.
-  - Facts older than a year are not used, and the portal asks the owner to confirm them again.
-- **Leads** (`app.place_leads`): an OpenStreetMap Overpass or GeoJSON (Wikidata, official list)
-  file is imported with `python scripts/import_leads.py`.
-  - The import keeps only named places inside Lebanon and maps OSM tags to place types.
-  - Duplicates (a similar name within 75 m of a lead or a listing) are merged, and a rejected lead
-    is never imported again.
-  - Staff check, reject or publish leads at `/admin/catalogue`, ordered by unmet demand.
-  - A published lead becomes a listing under the Mshwar catalogue organisation, a restaurant or
-    stay marked as checked, with its price on request until a published price is recorded.
-  - Leads are never shown to travellers or planned.
-- Not done, and why:
-  - The OSM/Wikidata extracts must be downloaded by staff: this build environment cannot reach
-    them.
-  - Legal must review ODbL share-alike before facts copied from OpenStreetMap are published.
-  - "First 500 places checked with rich facts" means visits and calls by people.
+- **Candidate phrases** (migration 050). `intent_seed_v1.json` holds 1,252 phrases across all 86
+  concepts in five locales. The generator adds the spellings people type: Arabizi digits and
+  vowels, sh/ch, Lebanese sounds in Arabic script, plurals.
+  - Only phrases the reader does not already understand are kept, and clashes with another concept
+    are flagged.
+  - Little words, rude words and anything that breaks an eval prompt are dropped.
+  - 1,708 candidates remain, in `intent_candidates_v1.jsonl`, loaded with
+    `scripts/import_phrase_candidates.py`.
+  - The planner reads none of them until staff approve them, in batches, at
+    `/admin/planner/language`.
+- **Releases** (`intent-data-vN`) record exactly which phrases are live, by checksum, with their
+  eval results. A release is refused if either eval set falls below its gate. Approving every
+  candidate keeps both at 100%. Approving the dropped "the" (French thé) would have dropped the
+  hand-written set to 67%.
+- **Meaning suggestions (L4)**, without an outside provider. For words the reader cannot read ("knock
+  down some pins"), association lists rank what they point at. The traveller taps what they meant,
+  and the reader still never guesses. On 57 wordings written after the lists were frozen:
+  - right first: 93%;
+  - within the top three: 98%;
+  - no suggestion for fragments that mean nothing to do.
+
+  `MeaningMatcher` is the seam for embeddings later.
+
+- **Still needs people:** native speakers review the 1,708 candidates, in batches of any size, and
+  write more for dialects we cover thinly (Gulf, Egyptian, Syrian). The plan's 8,000/40,000 were raw
+  row counts. Every candidate here was screened to add coverage.
+
+### Phase 2b status (built; the places still have to be collected and checked)
+
+- **Place facts** (`app.place_facts`, migration 049): diet, access, parking, children, payment, views,
+  languages and dress code.
+  - Owners set them in the portal. Staff set them when they publish a lead, from what they saw
+    there.
+  - The planner drops a place only when a fact says no, and flags unconfirmed needs.
+  - Facts older than a year are not used.
+- **Leads** from OpenStreetMap, Wikidata or official lists: deduplicated, queued by unmet demand,
+  never shown to travellers.
+  - The download queries are generated from the importer's maps (`app/seed/queries`).
+  - The whole route (download, import, field sheet, visit, publish) is in `docs/places-import.md`.
+- **ODbL:** `docs/legal/odbl-review.md` is ready for counsel. The recommended option is built:
+  staff publish with the name on the sign and the point taken on site, so nothing is copied. A
+  listing that does copy OpenStreetMap or Wikidata data credits it on its page (migration 051).
+- **Still needs people:**
+  - download the extracts (this build environment cannot reach them) and record the import counts;
+  - counsel's decision on the ODbL questions;
+  - visits and calls for the first 500 places.
+
+### Prices (phase 4, continued)
+
+`/admin/catalogue` lists the places the planner offers with "price on request", most planned first,
+and opens the form to record each one's published price with its link (migration 051,
+`docs/sourced-prices.md`). No price is ever estimated. The official price pages could not be reached
+from the build environment, and search results only showed resellers' old prices, so none were
+recorded.
 
 ### Phase 5 status (shipped): the day on screen
 
