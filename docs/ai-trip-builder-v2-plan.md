@@ -261,10 +261,9 @@ Understanding any request only helps if there are trusted places for every kind 
 - **Coverage targets per destination and tag.** Extend the `/admin/venues` targets (5 restaurants and
   3 stays today) to every activity tag. Examples: at least 2 breakfast places, 1 sweets place,
   1 viewpoint, and cinema or bowling where they exist. Also: 3 verified drivers and 1 changer per region.
-- **Lead sources, never shown directly.** Open data (OpenStreetMap, official ministry lists, Google
-  Places when a key exists) is imported as **leads** into a staff queue with its source recorded. A lead
-  becomes a listing only after the existing check (a visit or a call), so nothing unverified reaches
-  a traveller.
+- **Lead sources, never shown directly.** Open data and official lists are imported as **leads** into
+  a staff queue with their source recorded (see 3.11). A lead becomes a listing only after the
+  existing check (a visit or a call), so nothing unverified reaches a traveller.
 - **Demand-driven.** The empty-slot log ("bowling in Bsharri × 37 this month") ranks which leads to
   check first, and which partners to recruit (drivers in Tyre, changers in Zahle).
 - **Freshness.** Hours, meal services and tags are re-confirmed with the yearly venue check. Travellers
@@ -272,18 +271,122 @@ Understanding any request only helps if there are trusted places for every kind 
 - **Import.** Extend `services/api/app/seed/catalogue_import.py` so it carries activity tags and meal
   services, and can bulk-load reviewed places in batches.
 
+### 3.11 A rich place database: every kind of place a traveller can ask for
+
+The planner can only plan what the database can describe. Today a place is one of 4 `listing_kind`
+values plus 5 categories. v2 adds a **place-type catalogue** that covers everything a traveller in
+Lebanon might ask for, and **rich facts** for each place, so any request maps to a type and every type
+can be filled.
+
+#### Place types (migration `047_place_types.sql`)
+
+`app.place_types` holds about 250 types in a two-level tree (group → type). Each type records:
+
+- its planner role (`meal`, `sight`, `activity`, `stay`, `service`, `transport_hub`);
+- a default visit length and usual hours, used when a place has none of its own;
+- whether it can be a stop, a service stop, or the overnight end;
+- the meal slots it serves;
+- its season, if any;
+- names in `en`/`ar`/`fr`, which also seed `app.intent_concepts` (3.9).
+
+A place can have several types through `app.experience_place_types`, for example a café that is also
+a bakery and has a view. The new types extend the existing `listing_kind` and categories; nothing is
+replaced.
+
+| Group                     | Types (examples; the full list lives in the migration)                                                                                                                                                                                                                                                                                                   |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Food & drink**          | breakfast, manakish bakery, bakery, sweets / knefeh, patisserie, chocolatier, ice cream, juice bar, café, roastery, falafel, shawarma, grill, mezze / Lebanese, seafood, fish market, international, pizza, burger, sushi, vegetarian / vegan, fine dining, rooftop, bar, pub, cocktail bar, winery, brewery, arak producer, food truck, late-night food |
+| **Stay**                  | hotel, boutique hotel, resort, guesthouse, B&B, hostel, apartment, chalet, eco-lodge, farm stay, monastery stay, campsite, glamping                                                                                                                                                                                                                      |
+| **Nature**                | mountain peak, viewpoint, cedar forest, forest, valley, gorge, waterfall, river, spring, lake, cave / grotto, natural bridge, nature reserve, hiking trail, picnic area, public beach, sandy beach, rocky beach, island, sunset spot                                                                                                                     |
+| **Heritage & culture**    | archaeological site, Roman / Phoenician ruins, castle / citadel, old town, souk, palace, mosque, church, monastery, shrine, museum, art gallery, cultural centre, theatre, opera / concert hall, library, memorial, street-art area                                                                                                                      |
+| **Entertainment**         | cinema, bowling, escape room, arcade, billiards, karting, trampoline park, paintball, laser tag, VR arcade, amusement park, water park, zoo, aquarium, casino, nightclub, live-music venue, comedy club, karaoke                                                                                                                                         |
+| **Sport & adventure**     | ski resort, paragliding, zipline, climbing, via ferrata, diving, snorkelling, kayaking, rafting, sailing, jet ski, horse riding, cycling / bike rental, quad / ATV, golf, tennis / padel, football pitch, gym, public pool, beach club                                                                                                                   |
+| **Wellness**              | spa, hammam, massage, yoga studio, hot spring                                                                                                                                                                                                                                                                                                            |
+| **Shopping**              | mall, souk, market, farmers' market, flea market, souvenirs / crafts, soap maker, bookshop, fashion, supermarket, convenience store, duty free                                                                                                                                                                                                           |
+| **Family & kids**         | playground, kids' play centre, park, petting farm, family restaurant                                                                                                                                                                                                                                                                                     |
+| **Events (seasonal)**     | festival venue (Baalbeck, Byblos, Beiteddine, Ehden), Christmas market, food festival. Stored with dates, never assumed to be on                                                                                                                                                                                                                         |
+| **Essentials & services** | money changer, ATM, bank, pharmacy, hospital / emergency, clinic, dentist, police, tourist information, embassy, post office, SIM / mobile shop, laundry, tailor, barber / salon, petrol station, EV charger, parking, public toilets, car rental, luggage storage                                                                                       |
+| **Transport hubs**        | airport (BEY), port / ferry, bus and van station, taxi stand, bike share                                                                                                                                                                                                                                                                                 |
+
+Anything asked for that has no type is logged as a miss (3.9). Staff can then add a type in a new
+migration, so the list grows with demand.
+
+#### Rich facts per place (`app.place_facts`, one row per experience)
+
+| Facts           | Fields                                                                                                       | Used for                                   |
+| --------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------ |
+| Time            | weekly hours, seasonal hours, holiday closures, last entry, typical visit length, best time of day, season   | Fitting the step into the day              |
+| Money           | price level 1–4, price range per person, entry fee, accepts card, USD cash, LBP cash                         | Budget fit; "bring cash" notes             |
+| Food            | cuisines, dishes known for, halal, vegetarian, vegan, gluten-free, serves alcohol, meal services             | "Sweets breakfast", "halal dinner"         |
+| People          | kids-friendly, stroller, min age, groups, couples, solo-friendly, languages spoken                           | Party fit                                  |
+| Access          | wheelchair access, step-free, accessible toilet, parking, drop-off point, walk from parking                  | Accessibility needs                        |
+| Setting         | indoor/outdoor, view (sea, mountain, city), outdoor seating, dress code, noise level, crowd level by hour    | "Quiet", "with a view", rainy-day switches |
+| Booking         | reservation needed, phone, WhatsApp, booking URL, walk-in OK                                                 | The per-step action                        |
+| Media & sources | photos with provenance (existing `027_media_provenance`), website, social, source of each fact, date checked | Trust chip and freshness                   |
+
+Every fact carries its source and the date it was checked. The planner uses a fact only when it is
+still inside its freshness window, and otherwise shows it as "not confirmed".
+
+#### Where the places come from
+
+| Source                                | Used as                                               | Notes                                                                                                                                                                                                                                                                                                   |
+| ------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **OpenStreetMap** Lebanon extract     | Leads                                                 | A mapping table turns OSM tags into types (`amenity=cinema` → cinema, `leisure=bowling_alley` → bowling, `shop=pastry` → sweets, `natural=peak` → mountain peak, `tourism=viewpoint` → viewpoint). ODbL: attribution is required, and legal must review share-alike before OSM-derived facts are stored |
+| **Wikidata / Wikipedia**              | Leads for heritage and nature, with names in en/ar/fr | CC0 data; good for ruins, museums, reserves                                                                                                                                                                                                                                                             |
+| **Official lists**                    | Leads with a higher prior; some are the proof itself  | BDL changers (already used); Ministry of Public Health for hospitals; Ministry of Tourism licences where published                                                                                                                                                                                      |
+| **Owners** (business portal, claims)  | Listings, after the existing check                    | Owners fill the rich facts themselves                                                                                                                                                                                                                                                                   |
+| **Guides** (`036_place_proposals`)    | Proposals                                             | Guides know hidden spots                                                                                                                                                                                                                                                                                |
+| **Staff field checks**                | The check that makes a lead trusted                   | Call script plus visit, photos, facts                                                                                                                                                                                                                                                                   |
+| **Google Places** (when a key exists) | Live lookup only                                      | Its terms don't allow storing its content, so it helps staff verify but is never copied into the database                                                                                                                                                                                               |
+
+**Lead pipeline (`app.place_leads`).** Each lead stores the source, external id, raw tags, location,
+mapped type and a dedupe key. Duplicates are merged when the folded name is similar (`pg_trgm`) and
+the two points are within 75 m (PostGIS). The staff queue at `/admin/leads` is ordered by demand from
+empty slots (3.10). Staff can check a lead by phone or visit, fill the facts, and publish. Rejected
+leads remember why, so they are never re-imported.
+
+**Trust level per place** is derived, like `partner_is_live`: `lead` (never shown), `listed` (checked
+by Mshwar), `owner_verified` (claimed and checked), `official` (on an authoritative register). The
+planner fills steps only from `listed` and above. One open decision is below.
+
+#### Scale targets
+
+Real counts will be measured from the OSM and Wikidata extracts in phase 2b before targets are fixed.
+Starting targets per region (8 regions):
+
+| Year-one target      | Per region                                                                  | Country         |
+| -------------------- | --------------------------------------------------------------------------- | --------------- |
+| Place types in use   | 150+                                                                        | 250             |
+| Leads imported       | 2,000–6,000                                                                 | 25,000+         |
+| Checked places       | 150–300                                                                     | 1,500–2,500     |
+| Essentials (checked) | Every pharmacy and hospital on an official list                             | All             |
+| Re-check cadence     | Food 12 months, entertainment 6, essentials 12, changers monthly (BDL list) | Automated sweep |
+
+#### Open decision: what to do with essentials that are not checked yet
+
+"Nearest pharmacy open now" and "a hospital" matter for safety, but checking every pharmacy takes
+time. There are two options:
+
+- **(a) Strict** (current rule): show only checked places, even for essentials.
+- **(b) Official-register exception**: pharmacies and hospitals on a government list may be shown
+  with the label "From the official Ministry list, not checked by Mshwar". Everything else stays strict.
+
+The recommendation is (b), because it keeps the "never invent" rule (the place comes from an
+authority) and helps in an emergency.
+
 ## 4. Delivery phases
 
-| Phase  | Scope                                                                                                                             | Done when                                                                                           |
-| ------ | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| **1**  | `DayScript`/`StepSpec` schemas, deterministic `intent/sequence.py` (en/ar/Arabizi/fr), `intent-v2` prompt, eval set               | 40 multi-step scenario prompts parse to the expected roles, in order, at ≥ 90%                      |
-| **1b** | Migration 046 language dataset, layers L2–L6, variant generator, seed vocabulary, review queue, "what I understood" step          | 8,000 seed and 40,000 generated phrases loaded; eval set at 1,000 prompts, ≥ 90% without the LLM    |
-| **2**  | Migration 045 (activity taxonomy, meal services, schedule note, `planner_retrieve_step`), portal and admin tag editing            | Owners and staff can tag cinemas, bowling and sweets; PGlite suite passes                           |
-| **3**  | `planner/steps.py` slot fill + beam search + optimiser precedence and meal windows; evening/overnight day window                  | The Batroun example yields 7 stops in order with a hotel end, or honest empty slots                 |
-| **4**  | Service steps: changer stops, hotel end anchor, "request a driver for this day" (ride request with the itinerary)                 | The ride request shows the full day to drivers; changer stops show rate and time                    |
-| **5**  | Web timeline, step pills, per-step swap, lock and actions, trust chips, i18n and RTL                                              | e2e: type the example, then see, edit and save the day                                              |
-| **6**  | Step refinement (`StepPatch`), multi-day scripts ("day 2: …"), analytics on empty slots to guide coverage                         | "Move cinema before dinner" re-plans correctly; the admin coverage page lists missing tags          |
-| **7**  | Dataset at full size: reviewed synthetic paraphrases, real-traffic misses loop, few-shot retrieval for L1, lead import for places | Eval set of 5,000 prompts at ≥ 92% step and ≥ 95% order accuracy; coverage targets met in 8 regions |
+| Phase  | Scope                                                                                                                                                            | Done when                                                                                           |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| **1**  | `DayScript`/`StepSpec` schemas, deterministic `intent/sequence.py` (en/ar/Arabizi/fr), `intent-v2` prompt, eval set                                              | 40 multi-step scenario prompts parse to the expected roles, in order, at ≥ 90%                      |
+| **1b** | Migration 046 language dataset, layers L2–L6, variant generator, seed vocabulary, review queue, "what I understood" step                                         | 8,000 seed and 40,000 generated phrases loaded; eval set at 1,000 prompts, ≥ 90% without the LLM    |
+| **2**  | Migration 045 (activity taxonomy, meal services, schedule note, `planner_retrieve_step`), portal and admin tag editing                                           | Owners and staff can tag cinemas, bowling and sweets; PGlite suite passes                           |
+| **2b** | Migration 047 place types (≈250) and `place_facts`, `place_leads` with dedupe, OSM/Wikidata/official-list importers, `/admin/leads` queue, trust level per place | Every type has en/ar/fr names; leads loaded and measured; first 500 places checked with rich facts  |
+| **3**  | `planner/steps.py` slot fill + beam search + optimiser precedence and meal windows; evening/overnight day window                                                 | The Batroun example yields 7 stops in order with a hotel end, or honest empty slots                 |
+| **4**  | Service steps: changer stops, hotel end anchor, "request a driver for this day" (ride request with the itinerary)                                                | The ride request shows the full day to drivers; changer stops show rate and time                    |
+| **5**  | Web timeline, step pills, per-step swap, lock and actions, trust chips, i18n and RTL                                                                             | e2e: type the example, then see, edit and save the day                                              |
+| **6**  | Step refinement (`StepPatch`), multi-day scripts ("day 2: …"), analytics on empty slots to guide coverage                                                        | "Move cinema before dinner" re-plans correctly; the admin coverage page lists missing tags          |
+| **7**  | Dataset at full size: reviewed synthetic paraphrases, real-traffic misses loop, few-shot retrieval for L1, lead import for places                                | Eval set of 5,000 prompts at ≥ 92% step and ≥ 95% order accuracy; coverage targets met in 8 regions |
 
 Each phase ships on its own and keeps today's flat flow working. A prompt without sequence cues still
 goes through the current pipeline.
@@ -305,6 +408,10 @@ goes through the current pipeline.
 13. Implied steps: "We land at 10, driver from the airport to Batroun, lunch and a hotel", which gives an airport pickup, a 10:00+ start and an overnight end.
 14. A vague wish: "something fun at night with friends", which must offer 3 trusted options and not guess.
 15. A long free story of 150 or more words with personal details, which must extract the steps and store no PII in `intent_misses`.
+
+16. Essentials: "nearest pharmacy open now", which must follow the decision in 3.11.
+17. A rare type: "I want to do via ferrata then a winery", which must match both types or report an empty slot.
+18. A fact filter: "halal dinner with a sea view, wheelchair accessible", which must match on `place_facts`.
 
 These are templates. The dataset (3.9) expands each one into hundreds of variants across locales,
 spellings and phrasings for the eval set.
