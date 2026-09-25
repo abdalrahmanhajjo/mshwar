@@ -376,17 +376,85 @@ authority) and helps in an emergency.
 
 ## 4. Delivery phases
 
-| Phase    | Scope                                                                                                                                                        | Done when                                                                                           |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| **1** ✅ | `DayScript`/`StepSpec` schemas, deterministic parser `app/planner/script/` (en/ar/Arabizi/fr), `dayscript-v1` prompt, eval set                               | 40 multi-step scenario prompts parse to the expected roles, in order, at ≥ 90%                      |
-| **1b**   | Migration 046 language dataset, layers L2–L6, variant generator, seed vocabulary, review queue, "what I understood" step                                     | 8,000 seed and 40,000 generated phrases loaded; eval set at 1,000 prompts, ≥ 90% without the LLM    |
-| **2** ✅ | Migration 045 (place types, meal services, schedule note, `planner_retrieve_step`), portal and admin tag editing                                             | Owners and staff can tag cinemas, bowling and sweets; PGlite suite passes                           |
-| **2b**   | Migration 047: more place types, `place_facts`, `place_leads` with dedupe, OSM/Wikidata/official-list importers, `/admin/leads` queue, trust level per place | Every type has en/ar/fr names; leads loaded and measured; first 500 places checked with rich facts  |
-| **3** ✅ | `planner/script/day.py` slot fill + beam search + optimiser precedence and meal windows; evening/overnight day window                                        | The Batroun example yields 7 stops in order with a hotel end, or honest empty slots                 |
-| **4** ✅ | Service steps: changer stops, hotel end anchor, "request a driver for this day" (ride request with the itinerary)                                            | The ride request shows the full day to drivers; changer stops show rate and time                    |
-| **5** ✅ | Web timeline, step pills, per-step swap, lock and actions, trust chips, i18n and RTL                                                                         | e2e: type the example, then see, edit and save the day                                              |
-| **6**    | Step refinement (`StepPatch`), multi-day scripts ("day 2: …"), analytics on empty slots to guide coverage                                                    | "Move cinema before dinner" re-plans correctly; the admin coverage page lists missing tags          |
-| **7**    | Dataset at full size: reviewed synthetic paraphrases, real-traffic misses loop, few-shot retrieval for L1, lead import for places                            | Eval set of 5,000 prompts at ≥ 92% step and ≥ 95% order accuracy; coverage targets met in 8 regions |
+| Phase    | Scope                                                                                                                                                                         | Done when                                                                                           |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| **1** ✅ | `DayScript`/`StepSpec` schemas, deterministic parser `app/planner/script/` (en/ar/Arabizi/fr), `dayscript-v1` prompt, eval set                                                | 40 multi-step scenario prompts parse to the expected roles, in order, at ≥ 90%                      |
+| **1b** ◐ | Migration 048 language data (planned as 046), layers L2–L6, variant generator, seed vocabulary, review queue, "what I understood" step                                        | 8,000 seed and 40,000 generated phrases loaded; eval set at 1,000 prompts, ≥ 90% without the LLM    |
+| **2** ✅ | Migration 045 (place types, meal services, schedule note, `planner_retrieve_step`), portal and admin tag editing                                                              | Owners and staff can tag cinemas, bowling and sweets; PGlite suite passes                           |
+| **2b** ◐ | Migration 049 (planned as 047): more place types, `place_facts`, `place_leads` with dedupe, OSM/Wikidata/official-list importers, `/admin/leads` queue, trust level per place | Every type has en/ar/fr names; leads loaded and measured; first 500 places checked with rich facts  |
+| **3** ✅ | `planner/script/day.py` slot fill + beam search + optimiser precedence and meal windows; evening/overnight day window                                                         | The Batroun example yields 7 stops in order with a hotel end, or honest empty slots                 |
+| **4** ✅ | Service steps: changer stops, hotel end anchor, "request a driver for this day" (ride request with the itinerary)                                                             | The ride request shows the full day to drivers; changer stops show rate and time                    |
+| **5** ✅ | Web timeline, step pills, per-step swap, lock and actions, trust chips, i18n and RTL                                                                                          | e2e: type the example, then see, edit and save the day                                              |
+| **6** ✅ | Step refinement (`StepPatch`), multi-day scripts ("day 2: …"), analytics on empty slots to guide coverage                                                                     | "Move cinema before dinner" re-plans correctly; the admin coverage page lists missing tags          |
+| **7**    | Dataset at full size: reviewed synthetic paraphrases, real-traffic misses loop, few-shot retrieval for L1, lead import for places                                             | Eval set of 5,000 prompts at ≥ 92% step and ≥ 95% order accuracy; coverage targets met in 8 regions |
+
+◐ = the software is shipped; the "done when" needs data that people must collect or review (below).
+
+### Phase 6 status (shipped): edit a day step by step, trips of several days, demand
+
+- **Edit a day in words** (`script/patch.py`): swap ("karting instead of bowling", "بدل البولينغ
+  بكارتينغ", "remplace le bowling par du karting"), remove ("shil el cinema"), add ("add lunch after
+  the mountain") and move ("move the cinema before dinner"), several edits at once. An edit that
+  matches no step changes nothing and says which part it did not understand; a day never grows past 12
+  steps and a night away stays last. Refine shows the day as it would become before it is applied.
+- **Other options per step**: `GET /planner/sessions/{id}/steps/{order}/alternatives?day=` lists
+  trusted places for that step near the step before it, each with its published price; `…/choose`
+  re-plans around the one picked, and every other step keeps its place. Only a listed option can be
+  chosen.
+- **Trips of several days** (`script/trip.py`): "day 1 … day 2 …", "the next day", "اليوم التاني",
+  "nhar el tene", "le lendemain". Each day is planned like a single day and starts at the previous
+  night's hotel; the trip is one saved version with its stops numbered across days, one price with
+  every line tagged by day, and a strict budget checked against the trip total. The timeline and the
+  price are grouped by day; a driver can be requested for any one day.
+- **Demand** (migration 048): each step no trusted place could fill is counted by kind, destination
+  and reason only (no words, no user), kept a year. `/admin/planner/language` lists what travellers
+  asked for most and could not get; `/admin/catalogue` orders leads by that demand.
+
+### Phase 1b status (software shipped; the dataset is still small)
+
+- Shipped:
+  - approved phrases (`app.intent_phrases`, migration 048) extend the reader at run time (L2), with
+    a short cache;
+  - fuzzy matching with a blocklist and Arabizi variants (L3) in the reader itself;
+  - "what I understood" chips (`/planner/understand`);
+  - one question per unclear step (L6);
+  - the misses loop: words the reader could not use are stored only with the traveller's consent,
+    redacted (names, numbers, contacts removed), without a user id, for 90 days, and reviewed at
+    `/admin/planner/language`, where staff teach them as a phrase for a concept or dismiss them.
+    A phrase maps to a concept, never to a business.
+- Today: 86 concepts, 593 cues (664 with Arabizi variants), and a 57-prompt eval set that the
+  deterministic reader passes at 100% of steps and order.
+- Not done, and why:
+  - The 8,000 seed / 40,000 generated phrases and the 1,000-prompt eval set need native speakers
+    to write and review them (`docs/i18n-translator-guide.md`). Generating them without review
+    would break the rule that nothing goes live unreviewed.
+  - Semantic matching (L4, pgvector embeddings) and few-shot retrieval for the LLM (L1) wait for
+    that reviewed data and an embedding provider decision.
+
+### Phase 2b status (software shipped; the places still have to be collected and checked)
+
+- **Place facts** (`app.place_facts`, migration 049): halal, vegetarian, vegan, gluten-free,
+  alcohol, wheelchair access, step-free, accessible toilet, parking, children, pushchairs, outdoor
+  seating, cards, dollars or lira cash, minimum age, views, languages and dress code.
+  - Owners set them in the portal and staff through the API (`PUT /admin/place-facts/listings/{id}`). Every answer can
+    stay unknown.
+  - The planner drops a place only when a fact says no. An unknown need is kept and flagged "your
+    needs not confirmed here", and a view asked for ranks the places that have it.
+  - Facts older than a year are not used, and the portal asks the owner to confirm them again.
+- **Leads** (`app.place_leads`): an OpenStreetMap Overpass or GeoJSON (Wikidata, official list)
+  file is imported with `python scripts/import_leads.py`.
+  - The import keeps only named places inside Lebanon and maps OSM tags to place types.
+  - Duplicates (a similar name within 75 m of a lead or a listing) are merged, and a rejected lead
+    is never imported again.
+  - Staff check, reject or publish leads at `/admin/catalogue`, ordered by unmet demand.
+  - A published lead becomes a listing under the Mshwar catalogue organisation, a restaurant or
+    stay marked as checked, with its price on request until a published price is recorded.
+  - Leads are never shown to travellers or planned.
+- Not done, and why:
+  - The OSM/Wikidata extracts must be downloaded by staff: this build environment cannot reach
+    them.
+  - Legal must review ODbL share-alike before facts copied from OpenStreetMap are published.
+  - "First 500 places checked with rich facts" means visits and calls by people.
 
 ### Phase 5 status (shipped): the day on screen
 
@@ -406,7 +474,7 @@ authority) and helps in an emergency.
   deterministic reader only (no model, no quota, nothing stored), and the plan page shows the steps
   as chips while you type.
 - Real prices only (migration 047): see `docs/sourced-prices.md`.
-- Still to come (phase 6): swapping, removing or adding a single step, and step-aware alternatives.
+- Swapping, removing or adding a single step, and step-aware alternatives: shipped in phase 6.
 
 ### Phase 4 status (shipped): real prices for the whole day, and a driver
 
