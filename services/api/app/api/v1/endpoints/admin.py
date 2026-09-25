@@ -11,10 +11,13 @@ from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core import access
-from app.core.admin_auth import require_admin
+from app.core import access, totp
+from app.core.admin_auth import admin_mfa_state, require_admin
+from app.core.config import settings
 from app.core.data_quality import run_checks, scheduler_status
+from app.core.http_status import HTTP_422_UNPROCESSABLE
 from app.core.notifications import service as notification_service
+from app.core.rate_limit import limit
 from app.core.search_reindex import reindex_provider
 from app.core.sql import fetch_json
 from app.core.storage import media_url, sign_object_url
@@ -79,6 +82,63 @@ async def admin_me(
         "tier": session.get("admin_tier"),
         "elevated": session.get("admin_tier") == "elevated",
     }
+
+
+# ---- Two-step sign-in (SR-14, migration 052) ----
+
+
+class AdminCodeIn(BaseModel):
+    code: str = Field(min_length=6, max_length=12)
+
+
+class MfaResetIn(BaseModel):
+    reason: str = Field(min_length=10, max_length=500)
+
+
+@router.get("/mfa", dependencies=[access.ADMIN_SIGNIN])
+async def admin_mfa(request: Request, db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    """Whether this session still needs the authenticator code, and whether one is set up."""
+    session = await require_admin(request, db, second_step=False)
+    state = await admin_mfa_state(db, session)
+    return {**state, "required": settings.admin_mfa_required}
+
+
+@router.post("/mfa/verify", dependencies=[access.ADMIN_SIGNIN, limit("partner-security")])
+async def admin_mfa_verify(
+    payload: AdminCodeIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """A code from the admin's authenticator verifies this session for 12 hours. A code counts once."""
+    session = await require_admin(request, db, second_step=False)
+    uid = _uid(session)
+    secret = await fetch_json(db, "SELECT to_jsonb(app.security_totp_secret(CAST(:uid AS uuid), false))", {"uid": uid})
+    step = totp.matching_step(secret, payload.code) if isinstance(secret, str) else None
+    if step is None:
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="That code is not right")
+    state = await fetch_json(
+        db,
+        "SELECT app.admin_mfa_verify(CAST(:uid AS uuid), CAST(:sid AS uuid), :step)",
+        {"uid": uid, "sid": str(session["session_id"]) if session.get("session_id") else None, "step": step},
+    )
+    request.state.admin_session = {**session, "admin_mfa_verified": True}
+    return {**(state if isinstance(state, dict) else {}), "required": settings.admin_mfa_required}
+
+
+@router.post("/users/{user_id}/mfa/reset", dependencies=[access.ADMIN])
+async def reset_admin_mfa(
+    user_id: UUID,
+    payload: MfaResetIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Lost phone: an elevated admin turns another admin's authenticator off (audited; their sessions end)."""
+    session = await _admin(request, db, elevated=True)
+    return await fetch_json(
+        db,
+        "SELECT app.admin_reset_mfa(CAST(:admin AS uuid), CAST(:uid AS uuid), :reason)",
+        {"admin": _uid(session), "uid": str(user_id), "reason": payload.reason},
+    )
 
 
 @router.get("/users", response_model=list[AdminUserOut], dependencies=[access.ADMIN])

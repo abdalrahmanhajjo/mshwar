@@ -7,8 +7,6 @@ video call or visit, and decide. Every step lands in app.trust_events.
 from __future__ import annotations
 
 import asyncio
-import csv
-import io
 import json
 import re
 from typing import Any
@@ -45,6 +43,7 @@ from app.schemas.partners import (
     TransportRouteIn,
     VenueCheckIn,
 )
+from app.seed.field_sheet import field_sheet_csv
 
 router = APIRouter()
 
@@ -702,13 +701,6 @@ async def publish_lead(
     return published
 
 
-FIELD_SHEET_COLUMNS = (
-    "lead_id", "name", "name_ar", "place_type", "destination", "lat", "lng", "map", "source", "source_id",
-    "asked_for", "visited_on", "name_on_sign", "site_lat", "site_lng", "open_now", "phone", "hours", "halal", "wheelchair_access", "parking",
-    "kids_friendly", "accepts_card", "published_price", "price_source_url", "notes",
-)  # fmt: skip
-
-
 @router.get("/leads/field-sheet", dependencies=[access.ADMIN])
 async def lead_field_sheet(
     request: Request,
@@ -723,22 +715,10 @@ async def lead_field_sheet(
         "SELECT app.admin_list_leads(CAST(:admin AS uuid), CAST(:filter AS jsonb))",
         {"admin": admin, "filter": json.dumps({"status": status, "destination": destination, "limit": 200})},
     )
-    buffer = io.StringIO()
-    writer = csv.writer(buffer)
-    writer.writerow(FIELD_SHEET_COLUMNS)
-    for lead in leads if isinstance(leads, list) else []:
-        writer.writerow(
-            [
-                lead["id"], lead["name"], lead.get("name_ar", ""), lead.get("place_type") or "",
-                lead.get("destination_slug") or "", lead["lat"], lead["lng"],
-                f"https://www.openstreetmap.org/?mlat={lead['lat']}&mlon={lead['lng']}#map=18/{lead['lat']}/{lead['lng']}",
-                lead["source"], lead["external_id"], lead.get("demand", 0),
-                *([""] * (len(FIELD_SHEET_COLUMNS) - 11)),
-            ]
-        )  # fmt: skip
-    name = f"mshwar-field-sheet-{destination or 'all'}-{status}.csv"
+    place = re.sub(r"[^a-z0-9-]", "", destination.lower()) or "all"
+    name = f"mshwar-field-sheet-{place}-{status}.csv"
     return Response(
-        content="\ufeff" + buffer.getvalue(),  # a BOM so spreadsheet apps read Arabic names right
+        content=field_sheet_csv(leads if isinstance(leads, list) else []),
         media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": f'attachment; filename="{name}"'},
     )

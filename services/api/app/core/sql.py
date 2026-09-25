@@ -40,6 +40,7 @@ AUTHZ_DENIAL_PREFIXES = (
     "not a member",
     "admin role required",
     "elevated admin permission required",
+    "another elevated admin",
     "group permission denied",
     "not authenticated",
     "permission denied",
