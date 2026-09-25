@@ -15,6 +15,7 @@ from app.planner.circuit import circuit_open, guard_provider, record_failure, re
 from app.planner.fixtures import data_prompt
 from app.planner.llm import ProviderError, SchemaRetryExhausted, ValidatingLLM, build_client
 from app.planner.schemas import STEP_ROLES, ClarificationQuestion, DayScript
+from app.planner.script.meaning import suggest
 from app.planner.script.parser import parse_day_script, prefer_locale_hint
 from app.planner.script.vocabulary import STEP_TAGS
 
@@ -77,17 +78,22 @@ def read_day_script(
     return script, False
 
 
+def _either(options: list[str]) -> str:
+    names = [option.replace("meal-", "").replace("-", " ") for option in options]
+    return names[0] if len(names) == 1 else f"{', '.join(names[:-1])} or {names[-1]}"
+
+
 def script_questions(script: DayScript) -> list[ClarificationQuestion]:
     """At most two short questions: what we could not read, or where to go at all."""
     questions: list[ClarificationQuestion] = []
     for fragment in script.unparsed[:MAX_QUESTIONS]:
-        questions.append(
-            ClarificationQuestion(
-                field="unparsed",
-                prompt=f"What would you like to do for “{fragment}”? For example a place to eat, a sight or an activity.",
-                required=False,
-            )
+        options = [item.concept for item in suggest(fragment)]
+        prompt = (
+            f"By “{fragment}”, did you mean {_either(options)}?"
+            if options
+            else f"What would you like to do for “{fragment}”? For example a place to eat, a sight or an activity."
         )
+        questions.append(ClarificationQuestion(field="unparsed", prompt=prompt, required=False, options=options))
     if not script.steps and not script.constraints.destination_slugs and len(questions) < MAX_QUESTIONS:
         questions.append(
             ClarificationQuestion(

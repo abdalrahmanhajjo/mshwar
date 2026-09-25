@@ -324,6 +324,41 @@ describe("what I understood", () => {
     expect(screen.getByText("Not sure what you meant by: something fun")).toBeInTheDocument();
   });
 
+  it("offers what an unread fragment may mean, and rewrites the request when tapped", async () => {
+    mockApi({
+      steps: [
+        { order: 1, role: "meal", tags: [], meal: "breakfast", optional: false },
+        { order: 2, role: "stay", tags: ["hotel"], meal: null, optional: false },
+      ],
+      transport: null,
+      pickup_requested: false,
+      ends_overnight: true,
+      avoid_tags: [],
+      unparsed: ["knock down some pins"],
+      destination_slugs: [],
+      plans_as_day: true,
+      suggestions: [
+        {
+          fragment: "knock down some pins",
+          options: [
+            { concept: "bowling", word: "bowling", because: ["pins"] },
+            { concept: "meal-dinner", word: "dinner", because: ["x"] },
+          ],
+        },
+      ],
+    });
+    const onRewrite = vi.fn();
+    render(
+      <LocaleProvider>
+        <UnderstoodSteps text="breakfast, then knock down some pins, then a hotel" copy={copy} onRewrite={onRewrite} />
+      </LocaleProvider>,
+    );
+    expect(await screen.findByText("Did you mean:", {}, { timeout: 2000 })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Dinner" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "bowling" }));
+    expect(onRewrite).toHaveBeenCalledWith("breakfast, then bowling, then a hotel");
+  });
+
   it("stays quiet for a single wish or text too short to read", async () => {
     const reads = mockApi({
       steps: [{ order: 1, role: "sight", tags: [], meal: null, optional: false }],
