@@ -22,6 +22,8 @@ from app.planner.script.retrieval import Near, step_query, without_avoided
 #: How far to look for a step the destination cannot fill.
 FALLBACK_RADIUS_M = 60_000
 POOL_SIZE = 8
+#: How many trusted options a traveller can pick from for one step.
+MAX_ALTERNATIVES = 24
 
 
 def _destinations(step: StepSpec, script: DayScript) -> list[str]:
@@ -50,15 +52,38 @@ async def _changers(db: AsyncSession, step: StepSpec, script: DayScript) -> list
     return []
 
 
+async def _pin(db: AsyncSession, pools: DayPools, step: StepSpec, scoped: DayScript, wanted: UUID) -> None:
+    """Keep only the place the traveller chose for this step - if it is still a trusted candidate for it."""
+    entries = [entry for entry in pools.places.get(step.order, []) if entry.candidate.id == wanted]
+    if not entries:
+        found = await retrieve_step(db, step_query(step, scoped, limit=MAX_ALTERNATIVES))
+        entries = [PoolEntry(candidate) for candidate in found if candidate.id == wanted]
+        if not entries:
+            wider = step.model_copy(update={"destination_slug": None})
+            unscoped = scoped.model_copy(
+                update={"constraints": scoped.constraints.model_copy(update={"destination_slugs": []})}
+            )
+            found = await retrieve_step(db, step_query(wider, unscoped, limit=MAX_ALTERNATIVES))
+            entries = [PoolEntry(candidate, outside=True) for candidate in found if candidate.id == wanted]
+    if entries:
+        pools.places[step.order] = entries
+
+
 async def gather_pools(
     db: AsyncSession,
     script: DayScript,
     constraints: ExtractedConstraints,
     *,
     exclude_ids: Iterable[UUID] = (),
+    pins: dict[int, UUID] | None = None,
 ) -> DayPools:
-    """Trusted candidates per step: the destination first, then nearby places marked ``outside``."""
-    excluded = list(exclude_ids)
+    """Trusted candidates per step: the destination first, then nearby places marked ``outside``.
+
+    ``pins`` keeps a chosen place for a step (the traveller picked an alternative, or kept the rest
+    of the day as it was); a pinned place that is no longer a trusted candidate is simply not kept.
+    """
+    pinned = pins or {}
+    excluded = [item for item in exclude_ids if item not in set(pinned.values())]
     pools = DayPools()
     scoped = script.model_copy(update={"constraints": constraints})
     for step in script.steps:
@@ -81,6 +106,9 @@ async def gather_pools(
         pools.places[step.order] = [
             PoolEntry(candidate, outside=True) for candidate in without_avoided(found, script.avoid_tags)
         ]
+    for step in script.steps:
+        if step.order in pinned and step.role != "exchange":
+            await _pin(db, pools, step, scoped, pinned[step.order])
     return pools
 
 
@@ -91,11 +119,37 @@ async def build_day(
     *,
     start_at_first_stop: bool = False,
     exclude_ids: Iterable[UUID] = (),
+    pins: dict[int, UUID] | None = None,
 ) -> tuple[DayPlan, list[StepCandidate]]:
     """The assembled day, and every candidate considered (the entity-id contract for persistence)."""
-    pools = await gather_pools(db, script, constraints, exclude_ids=exclude_ids)
+    pools = await gather_pools(db, script, constraints, exclude_ids=exclude_ids, pins=pins)
     day = assemble_day(script, constraints, pools, start_at_first_stop=start_at_first_stop)
     return day, pools.candidates()
 
 
-__all__ = ["FALLBACK_RADIUS_M", "build_day", "gather_pools"]
+async def step_alternatives(
+    db: AsyncSession,
+    script: DayScript,
+    step: StepSpec,
+    *,
+    near: Near | None = None,
+    exclude_ids: Iterable[UUID] = (),
+) -> list[PoolEntry]:
+    """Trusted options for one step: in the destination, else nearby (marked ``outside``)."""
+    found = await retrieve_step(
+        db, step_query(step, script, near=near, exclude_ids=exclude_ids, limit=MAX_ALTERNATIVES)
+    )
+    entries = [PoolEntry(candidate) for candidate in without_avoided(found, script.avoid_tags)]
+    if entries or not _destinations(step, script) or near is None:
+        return entries
+    wider = step.model_copy(update={"destination_slug": None})
+    unscoped = script.model_copy(
+        update={"constraints": script.constraints.model_copy(update={"destination_slugs": []})}
+    )
+    found = await retrieve_step(
+        db, step_query(wider, unscoped, near=Near(near.lat, near.lng, FALLBACK_RADIUS_M), exclude_ids=exclude_ids)
+    )
+    return [PoolEntry(candidate, outside=True) for candidate in without_avoided(found, script.avoid_tags)]
+
+
+__all__ = ["FALLBACK_RADIUS_M", "MAX_ALTERNATIVES", "build_day", "gather_pools", "step_alternatives"]

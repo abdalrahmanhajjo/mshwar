@@ -45,6 +45,7 @@ from app.planner.routing import (
     time_bucket,
 )
 from app.planner.schemas import (
+    ChooseStepRequest,
     DayDriverRequest,
     IntentRequest,
     LinkBookingRequest,
@@ -536,13 +537,53 @@ async def understand(
     """
     from app.planner.day_session import MIN_DAY_STEPS, catalogue_terms
     from app.planner.script import parse_day_script
+    from app.planner.script.learning import refresh_phrases
 
     await require_session(request, db)
+    await refresh_phrases(db)
     script = parse_day_script(payload.text, payload.locale, terms=await catalogue_terms(db))
     body = script.model_dump(mode="json", exclude={"constraints"})
     body["destination_slugs"] = script.constraints.destination_slugs
     body["plans_as_day"] = len(script.steps) >= MIN_DAY_STEPS
     return body
+
+
+@router.get("/sessions/{session_id}/steps/{order}/alternatives", dependencies=[access.SESSION, limit("search")])
+async def day_step_alternatives(
+    session_id: UUID,
+    order: int,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> list[dict[str, Any]]:
+    """Trusted options for one step of a day, near the step before it, with published prices."""
+    from app.planner.day_session import alternatives_for_step
+
+    session = await require_session(request, db)
+    try:
+        return await alternatives_for_step(db, session["user_id"], session_id, order)
+    except (ValueError, TypeError) as exc:
+        raise _http(exc) from exc
+
+
+@router.post("/sessions/{session_id}/steps/{order}/choose", dependencies=[access.SESSION, limit("ai-generate")])
+async def day_step_choose(
+    session_id: UUID,
+    order: int,
+    payload: ChooseStepRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    """Use one of the step's trusted alternatives; the other steps keep their places."""
+    from app.planner.day_session import choose_for_step
+
+    session = await require_session(request, db)
+    try:
+        return await choose_for_step(db, session["user_id"], session_id, order, payload.experience_id)
+    except DBAPIError as exc:
+        raise_from_db(exc)
+        raise
+    except (ValueError, TypeError) as exc:
+        raise _http(exc) from exc
 
 
 @router.post("/sessions/{session_id}/driver-request", dependencies=[access.SESSION, limit("ride-request")])

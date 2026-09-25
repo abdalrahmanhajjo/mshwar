@@ -11,16 +11,18 @@ import re
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.endpoints.partners import present_partner
 from app.core import access
 from app.core.admin_auth import require_admin
+from app.core.http_status import HTTP_422_UNPROCESSABLE
 from app.core.sql import fetch_json
 from app.core.storage import media_url, sign_object_url
 from app.dependencies import get_auth_db
-from app.planner.schemas import SourcedPriceIn
+from app.planner.schemas import IntentPhraseIn, MissDecisionIn, SourcedPriceIn
+from app.planner.script.learning import CONCEPT_SLUGS, concept_catalogue, reset_phrases
 from app.schemas.partners import (
     CheckedVenueIn,
     ClaimDecisionIn,
@@ -419,3 +421,103 @@ async def sourced_prices_due(
     return await fetch_json(
         db, "SELECT app.admin_sourced_prices_due(CAST(:admin AS uuid), :days)", {"admin": admin, "days": days}
     )
+
+
+# ---- The planner's demand and language (migration 048) ----
+
+
+def _known_concept(concept: str | None) -> str:
+    if concept not in CONCEPT_SLUGS:
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="choose one of the planner's concepts")
+    return concept
+
+
+@router.get("/planner/gaps", dependencies=[access.ADMIN])
+async def planner_gaps(
+    request: Request,
+    days: int = Query(default=30, ge=1, le=365),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """What travellers asked for most that no trusted place could fill: what to check or recruit next."""
+    admin = await _admin_id(request, db)
+    return await fetch_json(
+        db, "SELECT app.admin_step_gaps(CAST(:admin AS uuid), :days)", {"admin": admin, "days": days}
+    )
+
+
+@router.get("/planner/concepts", dependencies=[access.ADMIN])
+async def planner_concepts(request: Request, db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    await _admin_id(request, db)
+    return concept_catalogue()
+
+
+@router.get("/planner/misses", dependencies=[access.ADMIN])
+async def planner_misses(
+    request: Request,
+    status: str = Query(default="open", pattern="^(open|resolved|dismissed)$"),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """What the planner could not read (redacted, consented, anonymous), most frequent first."""
+    admin = await _admin_id(request, db)
+    return await fetch_json(
+        db, "SELECT app.admin_intent_misses(CAST(:admin AS uuid), :status)", {"admin": admin, "status": status}
+    )
+
+
+@router.post("/planner/misses/{miss_id}", dependencies=[access.ADMIN])
+async def review_planner_miss(
+    miss_id: UUID,
+    payload: MissDecisionIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    admin = await _admin_id(request, db)
+    if payload.decision == "phrase":
+        _known_concept(payload.concept)
+    result = await fetch_json(
+        db,
+        "SELECT app.admin_review_intent_miss(CAST(:admin AS uuid), CAST(:id AS uuid), CAST(:body AS jsonb))",
+        {"admin": admin, "id": str(miss_id), "body": payload.model_dump_json(exclude_none=True)},
+    )
+    reset_phrases()
+    return result
+
+
+@router.get("/planner/phrases", dependencies=[access.ADMIN])
+async def planner_phrases(request: Request, db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    admin = await _admin_id(request, db)
+    return await fetch_json(db, "SELECT app.admin_list_intent_phrases(CAST(:admin AS uuid))", {"admin": admin})
+
+
+@router.post("/planner/phrases", dependencies=[access.ADMIN])
+async def add_planner_phrase(
+    payload: IntentPhraseIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Teach the planner a phrase for one of its concepts ("7elwe" means sweets)."""
+    admin = await _admin_id(request, db)
+    _known_concept(payload.concept)
+    result = await fetch_json(
+        db,
+        "SELECT app.admin_add_intent_phrase(CAST(:admin AS uuid), CAST(:body AS jsonb))",
+        {"admin": admin, "body": payload.model_dump_json()},
+    )
+    reset_phrases()
+    return result
+
+
+@router.post("/planner/phrases/{phrase_id}/retire", dependencies=[access.ADMIN])
+async def retire_planner_phrase(
+    phrase_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    admin = await _admin_id(request, db)
+    result = await fetch_json(
+        db,
+        "SELECT app.admin_retire_intent_phrase(CAST(:admin AS uuid), CAST(:id AS uuid))",
+        {"admin": admin, "id": str(phrase_id)},
+    )
+    reset_phrases()
+    return result
