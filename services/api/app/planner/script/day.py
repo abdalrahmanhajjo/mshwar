@@ -91,6 +91,8 @@ OVERNIGHT_END = time(2, 0)
 class StepOutcome(BaseModel):
     """One step of the day as planned: filled, served by an office, skipped, or empty with a reason."""
 
+    #: Which day of a trip the step is on (1 for a single day).
+    day: int = 1
     order: int
     role: str
     tags: list[str] = Field(default_factory=list)

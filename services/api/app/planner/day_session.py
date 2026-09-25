@@ -1,27 +1,30 @@
-"""The planner session for a day told step by step (trip builder v2, phase 3).
+"""The planner session for a trip told step by step (trip builder v2, phases 3-6).
 
 ``pipeline.start_or_continue`` hands a request here when it reads as two or
-more steps ("a changer, then breakfast at a sweets place, then ... a hotel").
+more steps ("a changer, then breakfast at a sweets place, then ... a hotel"),
+or as several days ("day 1: ... day 2: ..."). A single day is a trip of one day.
 Everything the classic path guarantees still holds:
 
 * the language model only reads the text; places, prices and totals come from
   the database, and every saved stop is one of the retrieved candidates;
-* defaults are applied and shown (``assumed_defaults``), with the day's window
+* defaults are applied and shown (``assumed_defaults``), with each day's window
   widened for breakfasts, dinners, nights out and nights away;
 * the version is sealed by ``app.planner_persist_version``.
 
-The full day - including money-changer stops and steps no trusted place could
-fill - is saved with the version (``constraints.day``) and returned as
-``day``, so the traveller sees every step they asked for, never a shorter day.
+The full trip - every step of every day, including money-changer stops and
+steps no trusted place could fill - is saved with the version
+(``constraints.day``, each step with its ``day``) and returned as ``day``, so
+the traveller sees every step they asked for, never a shorter trip.
 """
 
 from __future__ import annotations
 
 import json
 import math
+import re
 import time
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID
 from zoneinfo import ZoneInfo
@@ -35,18 +38,21 @@ from app.planner.intent.catalogue import destination_terms, resolve_anchors
 from app.planner.persist import get_session, get_version, persist_plan, rag_chunks, record_step_gaps, upsert_session
 from app.planner.schemas import AssumedDefault, CandidateRecord, DayDriverRequest, DayScript, ExtractedConstraints
 from app.planner.script import parse_day_script, read_day_script, script_questions
-from app.planner.script.day import DayPlan
 from app.planner.script.extract import DAY_SCRIPT_PROMPT_VERSION
-from app.planner.script.fill import build_day, step_alternatives
+from app.planner.script.fill import build_trip, step_alternatives
 from app.planner.script.learning import record_misses, refresh_phrases
-from app.planner.script.patch import patch_day
+from app.planner.script.patch import PatchResult, patch_day
 from app.planner.script.pricing import stop_price
 from app.planner.script.retrieval import Near
+from app.planner.script.trip import TripPlan, split_days
 
 BEIRUT = ZoneInfo("Asia/Beirut")
-#: A request is a "day" when it names at least this many steps.
+#: A request is a "day" when it names at least this many steps (or several days).
 MIN_DAY_STEPS = 2
 DAY_OPTIMIZER_VERSION = "day-beam-v1"
+
+#: Where a step is: (day, order) - day 1 for a single day.
+StepKey = tuple[int, int]
 
 
 async def catalogue_terms(db: AsyncSession) -> list[tuple[str, str, int]]:
@@ -54,23 +60,27 @@ async def catalogue_terms(db: AsyncSession) -> list[tuple[str, str, int]]:
 
 
 def reads_as_day(raw: str, locale: str, terms: list[tuple[str, str, int]]) -> bool:
-    """Cheap, model-free check: does the request describe several steps?"""
+    """Cheap, model-free check: does the request describe several steps, or several days?"""
+    if len(split_days(raw)) > 1:
+        return True
     return len(parse_day_script(raw, locale, terms=terms).steps) >= MIN_DAY_STEPS
 
 
-def _driver_request(script: DayScript, day: DayPlan) -> dict[str, Any] | None:
+def _driver_request(scripts: list[DayScript], trip: TripPlan) -> dict[str, Any] | None:
     """A ride request the traveller can send to verified drivers. Never sent by the planner."""
-    if script.transport != "driver":
+    if not any(script.transport == "driver" for script in scripts):
         return None
-    visited = [outcome for outcome in day.outcomes if outcome.status in {"filled", "office"}]
+    visited = [outcome for outcome in trip.outcomes if outcome.status in {"filled", "office"}]
     return {
         "kind": "day",
-        "destination_slug": next(iter(script.constraints.destination_slugs), None),
-        "pickup": script.pickup_place or "first_stop",
-        "starts_at": day.window_start.isoformat(),
-        "ends_at": day.return_by.isoformat(),
+        "days": len(trip.days),
+        "destination_slug": next(iter(scripts[0].constraints.destination_slugs), None),
+        "pickup": scripts[0].pickup_place or "first_stop",
+        "starts_at": trip.window_start.isoformat(),
+        "ends_at": trip.return_by.isoformat(),
         "stops": [
             {
+                "day": outcome.day,
                 "order": outcome.order,
                 "title": outcome.title or (outcome.office or {}).get("branch_name"),
                 "at": outcome.starts_at.isoformat() if outcome.starts_at else None,
@@ -80,21 +90,22 @@ def _driver_request(script: DayScript, day: DayPlan) -> dict[str, Any] | None:
     }
 
 
-def _retime_defaults(assumed: list[AssumedDefault], day: DayPlan, start_at_first_stop: bool) -> list[AssumedDefault]:
-    """Show the window the day actually uses, not the generic default it replaced."""
+def _retime_defaults(assumed: list[AssumedDefault], trip: TripPlan, start_at_first_stop: bool) -> list[AssumedDefault]:
+    """Show the window the trip actually uses, not the generic default it replaced."""
     kept = [item for item in assumed if item.field not in {"window_start", "return_by"}]
     kept.append(
         AssumedDefault(
             field="window_start",
-            value=day.window_start.isoformat(),
-            label=f"Starts {day.window_start.strftime('%a %H:%M')} Beirut",
+            value=trip.window_start.isoformat(),
+            label=f"Starts {trip.window_start.strftime('%a %H:%M')} Beirut",
         )
     )
+    ends = "Trip ends" if len(trip.days) > 1 else "Day ends"
     kept.append(
         AssumedDefault(
             field="return_by",
-            value=day.return_by.isoformat(),
-            label=f"Day ends by {day.return_by.strftime('%a %H:%M')} Beirut",
+            value=trip.return_by.isoformat(),
+            label=f"{ends} by {trip.return_by.strftime('%a %H:%M')} Beirut",
         )
     )
     if start_at_first_stop:
@@ -107,38 +118,42 @@ def _retime_defaults(assumed: list[AssumedDefault], day: DayPlan, start_at_first
     return kept
 
 
-async def _explain(db: AsyncSession, day: DayPlan, constraints: ExtractedConstraints) -> None:
+async def _explain(db: AsyncSession, trip: TripPlan, constraints: ExtractedConstraints) -> None:
     """One sentence per stop, built only from that place's own facts."""
-    by_id: dict[UUID, CandidateRecord] = dict(day.by_id)
-    chunks = {stop.experience_id: await rag_chunks(db, stop.experience_id) for stop in day.plan.stops}
-    explain_plan(day.plan.stops, by_id, constraints, chunks)
+    by_id: dict[UUID, CandidateRecord] = dict(trip.by_id)
+    chunks = {stop.experience_id: await rag_chunks(db, stop.experience_id) for stop in trip.plan.stops}
+    explain_plan(trip.plan.stops, by_id, constraints, chunks)
 
 
-async def record_gaps(db: AsyncSession, script: DayScript, day: DayPlan) -> None:
+async def record_gaps(db: AsyncSession, scripts: list[DayScript] | DayScript, trip: Any) -> None:
     """What travellers asked for that no trusted place could fill: guides what staff check next.
 
     Only the kind of place, where and why - never the traveller's own words.
     """
-    fallback = next(iter(script.constraints.destination_slugs), None)
-    destination = {step.order: step.destination_slug for step in script.steps}
+    days = scripts if isinstance(scripts, list) else [scripts]
+    destination: dict[StepKey, str | None] = {}
+    for number, script in enumerate(days, start=1):
+        fallback = next(iter(script.constraints.destination_slugs), None)
+        for step in script.steps:
+            destination[(number, step.order)] = step.destination_slug or fallback
     gaps = [
         {
-            "destination_slug": destination.get(outcome.order) or fallback,
+            "destination_slug": destination.get((outcome.day, outcome.order)),
             "role": outcome.role,
             "tags": outcome.tags,
             "meal": outcome.meal,
             "reason": outcome.reason or "no_trusted_match",
         }
-        for outcome in day.outcomes
+        for outcome in trip.outcomes
         if outcome.status == "empty"
     ]
     await record_step_gaps(db, gaps)
 
 
-def _run_candidates(day: DayPlan) -> list[dict[str, Any]]:
-    chosen = {stop.experience_id for stop in day.plan.stops}
+def _run_candidates(trip: TripPlan) -> list[dict[str, Any]]:
+    chosen = {stop.experience_id for stop in trip.plan.stops}
     rows: list[dict[str, Any]] = []
-    for rank, candidate in enumerate(day.by_id.values(), start=1):
+    for rank, candidate in enumerate(trip.by_id.values(), start=1):
         rows.append(
             {
                 "experience_id": str(candidate.id),
@@ -154,10 +169,10 @@ def _run_candidates(day: DayPlan) -> list[dict[str, Any]]:
 
 @dataclass
 class _DayRun:
-    """Everything a day is planned from; the same for a new request and for a re-plan."""
+    """Everything a trip is planned from; the same for a new request and for a re-plan."""
 
     raw: str
-    script: DayScript
+    scripts: list[DayScript]
     constraints: ExtractedConstraints
     assumed: list[AssumedDefault]
     degraded: bool
@@ -165,6 +180,33 @@ class _DayRun:
     trip_id: UUID | None
     start_at_first_stop: bool
     injection: str | None = None
+
+
+def _for_day(script: DayScript, trip_constraints: ExtractedConstraints) -> DayScript:
+    """A day's steps with the trip's constraints, keeping the day's own destination if it named one."""
+    own = [slug for slug in script.constraints.destination_slugs if slug]
+    constraints = trip_constraints.model_copy(update={"destination_slugs": own or trip_constraints.destination_slugs})
+    return script.model_copy(update={"constraints": constraints})
+
+
+async def _read_trip(
+    db: AsyncSession, user_id: UUID, raw: str, locale: str, terms: list[tuple[str, str, int]]
+) -> tuple[list[DayScript], ExtractedConstraints, bool]:
+    """Each day's steps (the model reads each day), and the trip-wide constraints from the whole text."""
+    segments = split_days(raw)
+    scripts: list[DayScript] = []
+    degraded = False
+    for segment in segments:
+        script, day_degraded = read_day_script(segment, locale, terms=terms)
+        scripts.append(script)
+        degraded = degraded or day_degraded
+        await record_misses(db, user_id, script.unparsed, locale)
+    if len(scripts) == 1:
+        return scripts, scripts[0].constraints, degraded
+    whole = parse_day_script(raw, locale, terms=terms)
+    transport = next((script.transport for script in scripts if script.transport), whole.transport)
+    scripts = [script.model_copy(update={"transport": script.transport or transport}) for script in scripts]
+    return scripts, whole.constraints, degraded
 
 
 async def plan_day_session(
@@ -181,12 +223,11 @@ async def plan_day_session(
     terms: list[tuple[str, str, int]],
     exclude_ids: set[UUID] | None = None,
 ) -> dict[str, Any]:
-    """Plan a new day from the traveller's words."""
+    """Plan a new day - or several - from the traveller's words."""
     started = time.monotonic()
     await refresh_phrases(db)
-    script, degraded = read_day_script(raw, locale, terms=terms)
-    await record_misses(db, user_id, script.unparsed, locale)
-    constraints = await resolve_anchors(db, raw, script.constraints)
+    scripts, trip_constraints, degraded = await _read_trip(db, user_id, raw, locale, terms)
+    constraints = await resolve_anchors(db, raw, trip_constraints)
     round_number = 0
     if session_id:
         stored = await get_session(db, user_id, session_id)
@@ -198,17 +239,18 @@ async def plan_day_session(
         assumed.append(
             AssumedDefault(field="strict_budget", value=False, label="You approved exceeding the strict budget")
         )
-    script = script.model_copy(update={"constraints": merged})
+    scripts = [_for_day(script, merged) for script in scripts]
+    first = scripts[0]
     start_assumed = any(item.field == "start_location" for item in assumed)
     run = _DayRun(
         raw=raw,
-        script=script,
+        scripts=scripts,
         constraints=merged,
         assumed=assumed,
         degraded=degraded,
         round_number=round_number,
         trip_id=UUID(str(trip_id)) if trip_id else None,
-        start_at_first_stop=start_assumed and (script.transport == "driver" or script.pickup_requested),
+        start_at_first_stop=start_assumed and (first.transport == "driver" or first.pickup_requested),
         injection=injection,
     )
     return await _plan_and_seal(db, user_id, session_id, run, started, exclude_ids=exclude_ids or set())
@@ -216,23 +258,31 @@ async def plan_day_session(
 
 async def saved_day(
     db: AsyncSession, user_id: UUID, session_id: UUID
-) -> tuple[dict[str, Any], dict[str, Any] | None, DayScript | None]:
-    """The session, its current version, and the day's steps as saved (None if not a day session)."""
+) -> tuple[dict[str, Any], dict[str, Any] | None, list[DayScript] | None]:
+    """The session, its current version, and each day's steps as saved (None if not a step-by-step trip)."""
     stored = await get_session(db, user_id, session_id)
     version_id = stored.get("current_version_id")
     version = await get_version(db, user_id, UUID(str(version_id)), False) if version_id else None
-    kept = ((version or {}).get("constraints") or {}).get("day_script")
-    if not isinstance(kept, dict):
+    kept_constraints = (version or {}).get("constraints") or {}
+    kept = kept_constraints.get("day_scripts") or (
+        [kept_constraints["day_script"]] if isinstance(kept_constraints.get("day_script"), dict) else None
+    )
+    if not kept:
         return stored, version, None
     constraints = ExtractedConstraints.model_validate(stored.get("constraints") or {})
-    return stored, version, DayScript.model_validate({**kept, "constraints": constraints.model_dump()})
+    scripts = [
+        DayScript.model_validate({**item, "constraints": constraints.model_dump()})
+        for item in kept
+        if isinstance(item, dict)
+    ]
+    return stored, version, scripts or None
 
 
-def current_places(version: dict[str, Any] | None) -> dict[int, UUID]:
-    """Which listing fills each step of the saved day, by step order."""
+def current_places(version: dict[str, Any] | None) -> dict[StepKey, UUID]:
+    """Which listing fills each step of the saved trip, by (day, order)."""
     day = ((version or {}).get("constraints") or {}).get("day") or []
     return {
-        int(step["order"]): UUID(str(step["experience_id"]))
+        (int(step.get("day") or 1), int(step["order"])): UUID(str(step["experience_id"]))
         for step in day
         if isinstance(step, dict) and step.get("status") == "filled" and step.get("experience_id")
     }
@@ -243,24 +293,27 @@ async def replan_day_session(
     user_id: UUID,
     session_id: UUID,
     *,
-    script: DayScript | None = None,
+    scripts: list[DayScript] | None = None,
     exclude_ids: set[UUID] | None = None,
-    pins: dict[int, UUID] | None = None,
+    pins: dict[StepKey, UUID] | None = None,
     note: str | None = None,
 ) -> dict[str, Any]:
-    """Plan a saved day again: after an edit, a choice of place for one step, or a regenerate."""
+    """Plan a saved trip again: after an edit, a choice of place for one step, or a regenerate."""
     started = time.monotonic()
     stored, _version, saved = await saved_day(db, user_id, session_id)
-    day_script = script or saved
-    if day_script is None:
+    days = scripts or saved
+    if not days:
         raise ValueError("this plan was not made step by step")
     assumed = [AssumedDefault.model_validate(item) for item in (stored.get("assumed_defaults") or [])]
     if note:
         assumed.append(AssumedDefault(field="edit", value=note, label=note))
+    constraints = ExtractedConstraints.model_validate(stored.get("constraints") or {})
+    if scripts:
+        constraints = scripts[0].constraints
     run = _DayRun(
         raw=str(stored.get("raw_text") or ""),
-        script=day_script,
-        constraints=day_script.constraints,
+        scripts=days,
+        constraints=constraints,
         assumed=assumed,
         degraded=bool(stored.get("degraded")),
         round_number=int(stored.get("clarification_round") or 0),
@@ -278,27 +331,30 @@ async def _plan_and_seal(
     started: float,
     *,
     exclude_ids: set[UUID],
-    pins: dict[int, UUID] | None = None,
+    pins: dict[StepKey, UUID] | None = None,
 ) -> dict[str, Any]:
     from app.planner.pipeline import _session_payload
 
-    merged, script = run.constraints, run.script
-    day, candidates = await build_day(
-        db, script, merged, start_at_first_stop=run.start_at_first_stop, exclude_ids=exclude_ids, pins=pins
+    merged, scripts = run.constraints, run.scripts
+    trip, candidates = await build_trip(
+        db, scripts, merged, start_at_first_stop=run.start_at_first_stop, exclude_ids=exclude_ids, pins=pins
     )
-    await record_gaps(db, script, day)
-    merged.window_start, merged.return_by = day.window_start, day.return_by
-    assumed = _retime_defaults(run.assumed, day, run.start_at_first_stop)
-    questions = script_questions(script)
+    await record_gaps(db, scripts, trip)
+    merged.window_start, merged.return_by = trip.window_start, trip.return_by
+    assumed = _retime_defaults(run.assumed, trip, run.start_at_first_stop)
+    questions = [question for script in scripts for question in script_questions(script)][:2]
+    kept_scripts = [script.model_dump(mode="json", exclude={"constraints"}) for script in scripts]
     extra: dict[str, Any] = {
-        "day": day.outcomes_json(),
-        "day_script": script.model_dump(mode="json", exclude={"constraints"}),
-        "driver_request": _driver_request(script, day),
-        "pricing": day.pricing.model_dump(mode="json"),
+        "day": trip.outcomes_json(),
+        "days": len(scripts),
+        "day_script": kept_scripts[0],
+        "day_scripts": kept_scripts,
+        "driver_request": _driver_request(scripts, trip),
+        "pricing": trip.pricing.model_dump(mode="json"),
         "injection_logged": bool(run.injection),
     }
     status = "degraded" if run.degraded else "planned"
-    if day.plan.infeasible:
+    if trip.plan.infeasible:
         session_uuid = await upsert_session(
             db,
             user_id,
@@ -319,28 +375,28 @@ async def _plan_and_seal(
             constraints=merged,
             assumed=assumed,
             questions=questions,
-            extra={**extra, "reason": day.plan.infeasible_reason},
+            extra={**extra, "reason": trip.plan.infeasible_reason},
         )
-    await _explain(db, day, merged)
+    await _explain(db, trip, merged)
     retrieved = [str(candidate.id) for candidate in candidates]
     doc = await persist_plan(
         db,
         user_id,
         merged,
-        day.plan,
+        trip.plan,
         trip_id=run.trip_id,
         title=run.raw.strip()[:80] or "My day",
         origin="ai",
         retrieved_ids=retrieved,
         assumed=assumed,
         degraded=run.degraded,
-        ranked=_run_candidates(day),
+        ranked=_run_candidates(trip),
         latency_ms=int((time.monotonic() - started) * 1000),
-        run_status="infeasible" if day.plan.needs_budget_approval else ("fallback" if run.degraded else "succeeded"),
-        extra_constraints={"day": extra["day"], "day_script": extra["day_script"], "pricing": extra["pricing"]},
+        run_status="infeasible" if trip.plan.needs_budget_approval else ("fallback" if run.degraded else "succeeded"),
+        extra_constraints={key: extra[key] for key in ("day", "days", "day_script", "day_scripts", "pricing")},
         run_versions={"prompt_version": DAY_SCRIPT_PROMPT_VERSION, "optimizer_version": DAY_OPTIMIZER_VERSION},
     )
-    for stop in day.plan.stops:
+    for stop in trip.plan.stops:
         if str(stop.experience_id) not in retrieved:
             raise RuntimeError("entity-id contract violated")
     session_uuid = await upsert_session(
@@ -367,36 +423,59 @@ async def _plan_and_seal(
         plan_doc=doc,
         extra={
             **extra,
-            "budget_warning": day.plan.budget_warning,
-            "needs_budget_approval": day.plan.needs_budget_approval,
-            "explanations": [stop.explanation for stop in day.plan.stops],
+            "budget_warning": trip.plan.budget_warning,
+            "needs_budget_approval": trip.plan.needs_budget_approval,
+            "explanations": [stop.explanation for stop in trip.plan.stops],
         },
     )
 
 
-# ---- Phase 6: editing a day step by step ----
+# ---- Phase 6: editing a trip step by step ----
+
+_DAY_PREFIX = re.compile(
+    r"^\s*(?:on\s+)?(?:day|jour|اليوم|يوم|nhar)\s*(?P<n>\d)\s*[:,\-–]?\s*(?P<rest>.+)$", re.IGNORECASE | re.DOTALL
+)
+
+
+def patch_trip(scripts: list[DayScript], text_value: str) -> tuple[int, PatchResult] | None:
+    """Apply step edits to one day: the day named ("day 2: ..."), else the first day they all fit."""
+    prefix = _DAY_PREFIX.match(text_value or "")
+    if prefix:
+        number = int(prefix.group("n"))
+        if not 1 <= number <= len(scripts):
+            return None
+        result = patch_day(scripts[number - 1], prefix.group("rest"))
+        return (number, result) if result.understood else None
+    for number, script in enumerate(scripts, start=1):
+        result = patch_day(script, text_value)
+        if result.understood:
+            return number, result
+    return None
 
 
 async def day_refine_preview(
     db: AsyncSession, user_id: UUID, session_id: UUID, text_value: str
 ) -> tuple[dict[str, Any], dict[str, Any]] | None:
-    """Step edits for a day session: (preview, pending) - or None to fall back to preference refine."""
-    stored, _version, saved = await saved_day(db, user_id, session_id)
-    if saved is None:
+    """Step edits for a step-by-step trip: (preview, pending) - or None to fall back to preference refine."""
+    _stored, _version, saved = await saved_day(db, user_id, session_id)
+    if not saved:
         return None
-    result = patch_day(saved, text_value)
-    if not result.understood:
+    edited = patch_trip(saved, text_value)
+    if edited is None:
         return None
+    number, result = edited
     preview = {
         "understood": True,
-        "summary": result.summary,
+        "summary": result.summary if len(saved) == 1 else f"Day {number}: {result.summary}",
         "clarification": None,
         "kind": "day_patch",
+        "day": number,
         "steps": [step.model_dump(mode="json") for step in result.script.steps],
     }
     pending = {
         "kind": "day_patch",
-        "summary": result.summary,
+        "day": number,
+        "summary": preview["summary"],
         "script": result.script.model_dump(mode="json", exclude={"constraints"}),
     }
     return preview, pending
@@ -405,63 +484,76 @@ async def day_refine_preview(
 async def day_refine_apply(
     db: AsyncSession, user_id: UUID, session_id: UUID, pending: dict[str, Any]
 ) -> dict[str, Any]:
-    """Re-plan the day with the edited steps the traveller previewed."""
-    stored, _version, saved = await saved_day(db, user_id, session_id)
-    if saved is None:
+    """Re-plan the trip with the edited day the traveller previewed."""
+    _stored, _version, saved = await saved_day(db, user_id, session_id)
+    if not saved:
         raise ValueError("this plan was not made step by step")
-    edited = DayScript.model_validate({**(pending.get("script") or {}), "constraints": saved.constraints.model_dump()})
-    return await replan_day_session(db, user_id, session_id, script=edited, note=str(pending.get("summary") or ""))
+    number = int(pending.get("day") or 1)
+    if not 1 <= number <= len(saved):
+        raise ValueError("that day is not in this plan")
+    edited = DayScript.model_validate(
+        {**(pending.get("script") or {}), "constraints": saved[number - 1].constraints.model_dump()}
+    )
+    scripts = [edited if index == number else script for index, script in enumerate(saved, start=1)]
+    return await replan_day_session(db, user_id, session_id, scripts=scripts, note=str(pending.get("summary") or ""))
 
 
 async def day_constraints_refine(
     db: AsyncSession, user_id: UUID, session_id: UUID, constraints: ExtractedConstraints, note: str
 ) -> dict[str, Any] | None:
-    """A preference change ("cheaper", "less driving") on a day session keeps its steps."""
+    """A preference change ("cheaper", "less driving") on a step-by-step trip keeps its steps."""
     _stored, _version, saved = await saved_day(db, user_id, session_id)
-    if saved is None:
+    if not saved:
         return None
-    return await replan_day_session(
-        db, user_id, session_id, script=saved.model_copy(update={"constraints": constraints}), note=note
-    )
+    scripts = [_for_day(script, constraints) for script in saved]
+    return await replan_day_session(db, user_id, session_id, scripts=scripts, note=note)
 
 
 async def regenerate_day(
     db: AsyncSession, user_id: UUID, session_id: UUID, *, exclude_unlocked: bool
 ) -> dict[str, Any] | None:
-    """Fresh places for every step that is not locked. None if this is not a day session."""
+    """Fresh places for every step that is not locked. None if this is not a step-by-step trip."""
     _stored, version, saved = await saved_day(db, user_id, session_id)
-    if saved is None:
+    if not saved:
         return None
     locked = {UUID(str(stop["experience_id"])) for stop in (version or {}).get("stops") or [] if stop.get("locked")}
     places = current_places(version)
-    pins = {order: place for order, place in places.items() if place in locked}
+    pins = {key: place for key, place in places.items() if place in locked}
     exclude = {place for place in places.values() if place not in locked} if exclude_unlocked else set()
     return await replan_day_session(db, user_id, session_id, exclude_ids=exclude, pins=pins)
 
 
-def _previous_point(day: list[dict[str, Any]], order: int) -> Near | None:
-    for step in reversed([step for step in day if isinstance(step, dict) and int(step.get("order", 0)) < order]):
-        office = step.get("office") or {}
-        lat, lng = step.get("lat") or office.get("lat"), step.get("lng") or office.get("lng")
-        if lat is not None and lng is not None:
-            return Near(float(lat), float(lng))
+def _previous_point(outcomes: list[dict[str, Any]], day: int, order: int) -> Near | None:
+    earlier = [
+        step
+        for step in outcomes
+        if isinstance(step, dict) and int(step.get("day") or 1) == day and int(step.get("order", 0)) < order
+    ]
+    for step in reversed(earlier):
+        if step.get("lat") is not None and step.get("lng") is not None:
+            return Near(float(step["lat"]), float(step["lng"]))
     return None
 
 
-async def alternatives_for_step(db: AsyncSession, user_id: UUID, session_id: UUID, order: int) -> list[dict[str, Any]]:
-    """Trusted options for one step of a saved day, near the step before it, with their published prices."""
+async def alternatives_for_step(
+    db: AsyncSession, user_id: UUID, session_id: UUID, order: int, day: int = 1
+) -> list[dict[str, Any]]:
+    """Trusted options for one step of a saved trip, near the step before it, with their published prices."""
     _stored, version, saved = await saved_day(db, user_id, session_id)
-    if saved is None:
+    if not saved:
         raise ValueError("this plan was not made step by step")
-    step = next((item for item in saved.steps if item.order == order), None)
+    if not 1 <= day <= len(saved):
+        raise ValueError("step not found")
+    script = saved[day - 1]
+    step = next((item for item in script.steps if item.order == order), None)
     if step is None or step.role == "exchange":
         raise ValueError("step not found")
-    day = ((version or {}).get("constraints") or {}).get("day") or []
-    current = current_places(version).get(order)
+    outcomes = ((version or {}).get("constraints") or {}).get("day") or []
+    current = current_places(version).get((day, order))
     entries = await step_alternatives(
-        db, saved, step, near=_previous_point(day, order), exclude_ids=[current] if current else []
+        db, script, step, near=_previous_point(outcomes, day, order), exclude_ids=[current] if current else []
     )
-    party = saved.constraints.party_size or 1
+    party = script.constraints.party_size or 1
     return [
         {
             "experience_id": str(entry.candidate.id),
@@ -480,14 +572,14 @@ async def alternatives_for_step(db: AsyncSession, user_id: UUID, session_id: UUI
 
 
 async def choose_for_step(
-    db: AsyncSession, user_id: UUID, session_id: UUID, order: int, experience_id: UUID
+    db: AsyncSession, user_id: UUID, session_id: UUID, order: int, experience_id: UUID, day: int = 1
 ) -> dict[str, Any]:
-    """The traveller picks one of a step's alternatives; the other steps keep their places."""
-    options = await alternatives_for_step(db, user_id, session_id, order)
+    """The traveller picks one of a step's alternatives; every other step keeps its place."""
+    options = await alternatives_for_step(db, user_id, session_id, order, day)
     if str(experience_id) not in {option["experience_id"] for option in options}:
         raise ValueError("that place is not a trusted option for this step")
     _stored, version, _saved = await saved_day(db, user_id, session_id)
-    pins = {**current_places(version), order: experience_id}
+    pins = {**current_places(version), (day, order): experience_id}
     return await replan_day_session(db, user_id, session_id, pins=pins, note=f"You chose a place for step {order}")
 
 
@@ -520,7 +612,10 @@ def ride_request_for(version: dict[str, Any], pickup: DayDriverRequest) -> dict[
     Only what the day already holds; drivers still quote their own fixed price.
     """
     constraints = version.get("constraints") or {}
-    day = [step for step in constraints.get("day") or [] if isinstance(step, dict)]
+    number = pickup.day
+    day = [
+        step for step in constraints.get("day") or [] if isinstance(step, dict) and int(step.get("day") or 1) == number
+    ]
     visited = [step for step in day if step.get("status") in {"filled", "office"} and step.get("starts_at")]
     if not visited:
         raise ValueError("this plan has no stops for a driver yet")
@@ -528,7 +623,12 @@ def ride_request_for(version: dict[str, Any], pickup: DayDriverRequest) -> dict[
     destination = destination or next(iter(constraints.get("destination_slugs") or []), None)
     if not destination:
         raise ValueError("choose where the day is spent")
-    starts = datetime.fromisoformat(str(version.get("window_start") or visited[0]["starts_at"]))
+    trip_start = datetime.fromisoformat(str(version.get("window_start") or visited[0]["starts_at"]))
+    # Day N of a trip starts at the same time of day, N-1 days later - or at its first stop if that is earlier.
+    starts = min(
+        trip_start + timedelta(days=number - 1),
+        min(datetime.fromisoformat(str(step["starts_at"])) for step in visited),
+    )
     last = max(datetime.fromisoformat(str(step.get("ends_at") or step["starts_at"])) for step in visited)
     hours = math.ceil((last - starts).total_seconds() / 3600)
     lines = _itinerary(day)

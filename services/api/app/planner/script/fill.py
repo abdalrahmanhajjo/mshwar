@@ -18,6 +18,7 @@ from app.planner.persist import retrieve_changers, retrieve_driver_rates, retrie
 from app.planner.schemas import DayScript, ExtractedConstraints, StepCandidate, StepSpec
 from app.planner.script.day import DayPlan, DayPools, PoolEntry, assemble_day
 from app.planner.script.retrieval import Near, step_query, without_avoided
+from app.planner.script.trip import TripPlan, assemble_trip
 
 #: How far to look for a step the destination cannot fill.
 FALLBACK_RADIUS_M = 60_000
@@ -152,4 +153,27 @@ async def step_alternatives(
     return [PoolEntry(candidate, outside=True) for candidate in without_avoided(found, script.avoid_tags)]
 
 
-__all__ = ["FALLBACK_RADIUS_M", "MAX_ALTERNATIVES", "build_day", "gather_pools", "step_alternatives"]
+async def build_trip(
+    db: AsyncSession,
+    scripts: list[DayScript],
+    constraints: ExtractedConstraints,
+    *,
+    start_at_first_stop: bool = False,
+    exclude_ids: Iterable[UUID] = (),
+    pins: dict[tuple[int, int], UUID] | None = None,
+) -> tuple[TripPlan, list[StepCandidate]]:
+    """Every day's pools, the assembled trip, and every candidate considered (the entity-id contract)."""
+    excluded = list(exclude_ids)
+    pools: list[DayPools] = []
+    seen: dict[UUID, StepCandidate] = {}
+    for number, script in enumerate(scripts, start=1):
+        day_pins = {order: place for (day, order), place in (pins or {}).items() if day == number}
+        day_pools = await gather_pools(db, script, script.constraints, exclude_ids=excluded, pins=day_pins)
+        pools.append(day_pools)
+        for candidate in day_pools.candidates():
+            seen.setdefault(candidate.id, candidate)
+    trip = assemble_trip(scripts, constraints, pools, start_at_first_stop=start_at_first_stop)
+    return trip, list(seen.values())
+
+
+__all__ = ["FALLBACK_RADIUS_M", "MAX_ALTERNATIVES", "build_day", "build_trip", "gather_pools", "step_alternatives"]

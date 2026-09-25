@@ -164,7 +164,7 @@ def test_current_places_reads_the_saved_day() -> None:
             ]
         }
     }
-    assert list(current_places(version)) == [2]
+    assert list(current_places(version)) == [(1, 2)]
     assert current_places(None) == {}
 
 
