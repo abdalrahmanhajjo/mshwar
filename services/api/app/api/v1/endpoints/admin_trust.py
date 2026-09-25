@@ -7,12 +7,14 @@ video call or visit, and decide. Every step lands in app.trust_events.
 from __future__ import annotations
 
 import asyncio
+import csv
+import io
 import json
 import re
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.endpoints.partners import present_partner
@@ -679,10 +681,80 @@ async def publish_lead(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
-    """After a visit or a call: the lead becomes a catalogue listing (a restaurant or stay as checked)."""
+    """After a visit or a call: the lead becomes a catalogue listing (a restaurant or stay as checked),
+    with the facts staff confirmed there. Both are saved together or not at all."""
+    admin = await _admin_id(request, db)
+    published = await fetch_json(
+        db,
+        "SELECT app.admin_publish_lead(CAST(:admin AS uuid), CAST(:id AS uuid), CAST(:body AS jsonb))",
+        {"admin": admin, "id": str(lead_id), "body": payload.model_dump_json(exclude_none=True, exclude={"facts"})},
+    )
+    if payload.facts is not None and isinstance(published, dict):
+        published["place_facts"] = await fetch_json(
+            db,
+            "SELECT app.admin_set_place_facts(CAST(:admin AS uuid), CAST(:id AS uuid), CAST(:body AS jsonb))",
+            {
+                "admin": admin,
+                "id": str(published["experience_id"]),
+                "body": payload.facts.model_dump_json(exclude_none=True),
+            },
+        )
+    return published
+
+
+FIELD_SHEET_COLUMNS = (
+    "lead_id", "name", "name_ar", "place_type", "destination", "lat", "lng", "map", "source", "source_id",
+    "asked_for", "visited_on", "name_on_sign", "site_lat", "site_lng", "open_now", "phone", "hours", "halal", "wheelchair_access", "parking",
+    "kids_friendly", "accepts_card", "published_price", "price_source_url", "notes",
+)  # fmt: skip
+
+
+@router.get("/leads/field-sheet", dependencies=[access.ADMIN])
+async def lead_field_sheet(
+    request: Request,
+    status: str = Query(default="checking", pattern="^(new|checking)$"),
+    destination: str = Query(default="", max_length=80),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Response:
+    """A CSV to take on visits: one lead per row, most asked-for first, with empty columns to fill in."""
+    admin = await _admin_id(request, db)
+    leads = await fetch_json(
+        db,
+        "SELECT app.admin_list_leads(CAST(:admin AS uuid), CAST(:filter AS jsonb))",
+        {"admin": admin, "filter": json.dumps({"status": status, "destination": destination, "limit": 200})},
+    )
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(FIELD_SHEET_COLUMNS)
+    for lead in leads if isinstance(leads, list) else []:
+        writer.writerow(
+            [
+                lead["id"], lead["name"], lead.get("name_ar", ""), lead.get("place_type") or "",
+                lead.get("destination_slug") or "", lead["lat"], lead["lng"],
+                f"https://www.openstreetmap.org/?mlat={lead['lat']}&mlon={lead['lng']}#map=18/{lead['lat']}/{lead['lng']}",
+                lead["source"], lead["external_id"], lead.get("demand", 0),
+                *([""] * (len(FIELD_SHEET_COLUMNS) - 11)),
+            ]
+        )  # fmt: skip
+    name = f"mshwar-field-sheet-{destination or 'all'}-{status}.csv"
+    return Response(
+        content="\ufeff" + buffer.getvalue(),  # a BOM so spreadsheet apps read Arabic names right
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{name}"'},
+    )
+
+
+@router.get("/prices/worklist", dependencies=[access.ADMIN])
+async def price_worklist(
+    request: Request,
+    destination: str = Query(default="", max_length=80),
+    kind: str = Query(default="", pattern="^(|restaurant|hotel|attraction|experience)$"),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Listings the planner offers with no published price today, most planned first."""
     admin = await _admin_id(request, db)
     return await fetch_json(
         db,
-        "SELECT app.admin_publish_lead(CAST(:admin AS uuid), CAST(:id AS uuid), CAST(:body AS jsonb))",
-        {"admin": admin, "id": str(lead_id), "body": payload.model_dump_json(exclude_none=True)},
+        "SELECT app.admin_price_worklist(CAST(:admin AS uuid), CAST(:filter AS jsonb))",
+        {"admin": admin, "filter": json.dumps({"destination": destination, "kind": kind})},
     )

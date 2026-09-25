@@ -50,6 +50,7 @@ type ApiListing = {
   image?: string | null;
   image_alt?: string | null;
   gallery?: string[];
+  attributions?: Experience["attributions"];
   price: ApiPrice;
 };
 
@@ -125,6 +126,7 @@ export function listingFromApi(item: ApiListing): Experience {
     groupMax: item.group_max,
     available: item.available,
     gallery: item.gallery,
+    attributions: item.attributions ?? [],
   };
 }
 

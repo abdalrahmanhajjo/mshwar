@@ -124,10 +124,51 @@ export type AdminCatalogueKey =
   | "upToDate"
   | "releaseMetrics"
   | "set_hand_written"
-  | "set_generated";
+  | "set_generated"
+  | "fieldSheet"
+  | "factsAtVisit"
+  | "factUnknown"
+  | "factYes"
+  | "factNo"
+  | "f_halal"
+  | "f_wheelchair_access"
+  | "f_parking"
+  | "f_kids_friendly"
+  | "f_accepts_card"
+  | "worklistTitle"
+  | "worklistBody"
+  | "worklistEmpty"
+  | "worklistPlanned"
+  | "lastSource"
+  | "recordPrice"
+  | "onSite"
+  | "onSiteName"
+  | "onSiteNameAr"
+  | "onSitePoint";
 
 export const adminCatalogueCopy: Record<Locale, Record<AdminCatalogueKey, string>> = {
   en: {
+    onSite: "I took the name and location on site (nothing copied from the lead)",
+    onSiteName: "Name on the sign",
+    onSiteNameAr: "Arabic name on the sign",
+    onSitePoint: "Latitude, longitude taken there",
+    fieldSheet: "Download the field sheet (CSV)",
+    factsAtVisit: "What you confirmed there",
+    factUnknown: "Not checked",
+    factYes: "Yes",
+    factNo: "No",
+    f_halal: "Halal",
+    f_wheelchair_access: "Wheelchair access",
+    f_parking: "Parking",
+    f_kids_friendly: "Good for children",
+    f_accepts_card: "Cards accepted",
+    worklistTitle: "Places with no published price",
+    worklistBody:
+      "The planner offers these with “price on request”. Find each one's price on its own website, menu or an official list, and record it with the link. Most planned first.",
+    worklistEmpty: "Every place the planner offers has a published price.",
+    worklistPlanned: "Planned {count}× in 90 days",
+    lastSource: "Last source: {source} (lapsed {date})",
+    recordPrice: "Record its price",
     reviewTitle: "Phrases to review",
     reviewBody:
       "Written or generated in bulk for native speakers to check. The planner reads none of them until you approve them; a rejected phrase is never imported again.",
@@ -260,6 +301,27 @@ export const adminCatalogueCopy: Record<Locale, Record<AdminCatalogueKey, string
     kindsCount: "{count} kinds",
   },
   ar: {
+    onSite: "أخذت الاسم والموقع من المكان نفسه (لا شيء منسوخ من المصدر)",
+    onSiteName: "الاسم على اللافتة",
+    onSiteNameAr: "الاسم العربي على اللافتة",
+    onSitePoint: "خط العرض، خط الطول من المكان",
+    fieldSheet: "نزّل ورقة الزيارات (CSV)",
+    factsAtVisit: "ما الذي تأكدت منه هناك",
+    factUnknown: "لم يُتحقق",
+    factYes: "نعم",
+    factNo: "لا",
+    f_halal: "حلال",
+    f_wheelchair_access: "مناسب للكراسي المتحركة",
+    f_parking: "موقف سيارات",
+    f_kids_friendly: "مناسب للأطفال",
+    f_accepts_card: "يقبل البطاقات",
+    worklistTitle: "أماكن بلا سعر منشور",
+    worklistBody:
+      "يعرضها المخطِّط بعبارة «السعر عند الطلب». ابحث عن سعر كل منها على موقعه أو قائمته أو لائحة رسمية، وسجّله مع الرابط. الأكثر تخطيطًا أولًا.",
+    worklistEmpty: "كل مكان يعرضه المخطِّط له سعر منشور.",
+    worklistPlanned: "خُطط له {count} مرة خلال 90 يومًا",
+    lastSource: "آخر مصدر: {source} (انتهى {date})",
+    recordPrice: "سجّل سعره",
     reviewTitle: "عبارات للمراجعة",
     reviewBody:
       "كُتبت أو وُلّدت بالجملة ليراجعها متحدثون أصليون. لا يقرأ المخطِّط أيًا منها قبل موافقتك، والعبارة المرفوضة لا تُستورد مجددًا.",
@@ -393,6 +455,27 @@ export const adminCatalogueCopy: Record<Locale, Record<AdminCatalogueKey, string
     kindsCount: "{count} أنواع",
   },
   fr: {
+    onSite: "J’ai relevé le nom et l’emplacement sur place (rien de copié de la piste)",
+    onSiteName: "Nom sur l’enseigne",
+    onSiteNameAr: "Nom arabe sur l’enseigne",
+    onSitePoint: "Latitude, longitude relevées sur place",
+    fieldSheet: "Télécharger la fiche terrain (CSV)",
+    factsAtVisit: "Ce que vous avez confirmé sur place",
+    factUnknown: "Non vérifié",
+    factYes: "Oui",
+    factNo: "Non",
+    f_halal: "Halal",
+    f_wheelchair_access: "Accès fauteuil roulant",
+    f_parking: "Parking",
+    f_kids_friendly: "Adapté aux enfants",
+    f_accepts_card: "Cartes acceptées",
+    worklistTitle: "Lieux sans prix publié",
+    worklistBody:
+      "Le planificateur les propose « prix sur demande ». Trouvez le prix de chacun sur son site, son menu ou une liste officielle, et enregistrez-le avec le lien. Les plus planifiés d’abord.",
+    worklistEmpty: "Chaque lieu proposé a un prix publié.",
+    worklistPlanned: "Planifié {count} fois en 90 jours",
+    lastSource: "Dernière source : {source} (expirée le {date})",
+    recordPrice: "Enregistrer son prix",
     reviewTitle: "Expressions à examiner",
     reviewBody:
       "Écrites ou générées en masse pour être vérifiées par des locuteurs natifs. Le planificateur n’en lit aucune avant votre approbation ; une expression refusée n’est jamais réimportée.",

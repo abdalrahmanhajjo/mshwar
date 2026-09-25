@@ -73,8 +73,16 @@ export type PlaceLead = {
   demand?: number;
 };
 
+export type LeadFactsInput = Partial<
+  Record<"halal" | "wheelchair_access" | "parking" | "kids_friendly" | "accepts_card", boolean>
+>;
+
 export type LeadPublishInput = {
   description: string;
+  /** What staff confirmed on the visit or call; unknowns left out. */
+  facts?: LeadFactsInput;
+  /** The name on the sign and the point taken there: nothing else is copied from the lead. */
+  on_site?: { name: string; name_ar?: string; lat: number; lng: number };
   notes: string;
   destination?: string;
   place_type?: string;
@@ -236,3 +244,31 @@ export const fetchReleases = () => apiRequest<ReleaseState>("/api/v1/admin/plann
 
 export const releaseIntentData = (note: string) =>
   apiRequest<IntentRelease>("/api/v1/admin/planner/releases", json("POST", { note }));
+
+/** A listing the planner offers with no published price today (migration 051). */
+export type PriceWorkItem = {
+  experience_id: string;
+  slug: string;
+  title: string;
+  listing_kind: string;
+  destination_slug: string;
+  place_types: string[];
+  current_price_type: string | null;
+  /** How often the planner put it in a trip, priced on request, in the last 90 days. */
+  planned: number;
+  last_source: { source_name: string; source_url: string; checked_on: string; review_by: string } | null;
+};
+
+export function fetchPriceWorklist(filter: { destination?: string; kind?: string } = {}) {
+  const query = new URLSearchParams();
+  if (filter.destination) query.set("destination", filter.destination);
+  if (filter.kind) query.set("kind", filter.kind);
+  return apiRequest<PriceWorkItem[]>(`/api/v1/admin/prices/worklist?${query.toString()}`);
+}
+
+/** The CSV staff take on visits: the leads of one status and destination, most asked-for first. */
+export function fieldSheetUrl(status: "new" | "checking", destination = "") {
+  const query = new URLSearchParams({ status });
+  if (destination) query.set("destination", destination);
+  return `/api/v1/admin/leads/field-sheet?${query.toString()}`;
+}

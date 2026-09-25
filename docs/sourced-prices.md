@@ -49,6 +49,14 @@ There are two ways to record a price:
 Each price line in "What the day costs" names its source and the date it was checked, and links to
 the page where it was published.
 
+## Places with no published price
+
+At `/admin/catalogue`, **Places with no published price** lists the listings the planner offers with
+"price on request" today, most planned first (`GET /api/v1/admin/prices/worklist`). It shows how
+often the planner put each one in a trip in the last 90 days, and the last source that lapsed, if
+any. **Record its price** opens the form for that listing. Record a price only after you have
+found it at its source; if it has no published price, leave it on request.
+
 ## Keeping prices true
 
 - **After the review date,** a price stops applying and the place is "Price on request" again. An

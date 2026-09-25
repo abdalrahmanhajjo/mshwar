@@ -358,8 +358,22 @@ class LeadDecisionIn(_Strict):
     reason: str = Field(default="", max_length=500)
 
 
+class OnSiteIn(_Strict):
+    """What staff saw at the place: the name on the sign and the point where it is (docs/legal/odbl-review.md)."""
+
+    name: str = Field(min_length=2, max_length=140)
+    name_ar: str | None = Field(default=None, max_length=140)
+    name_fr: str | None = Field(default=None, max_length=140)
+    lat: float = Field(ge=33.0, le=34.8)
+    lng: float = Field(ge=35.0, le=36.7)
+
+
 class LeadPublishIn(_Strict):
     description: str = Field(min_length=20, max_length=4000)
+    #: What staff saw on the visit or call, recorded with the listing (migration 049). Unknowns left out.
+    facts: PlaceFactsIn | None = None
+    #: Taken on site: with it, nothing but the kind of place is copied from the lead.
+    on_site: OnSiteIn | None = None
     notes: str = Field(min_length=10, max_length=2000)
     destination: str | None = Field(default=None, max_length=80)
     place_type: str | None = Field(default=None, pattern=r"^[a-z0-9]+(-[a-z0-9]+)*$")
