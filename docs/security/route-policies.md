@@ -9,12 +9,12 @@ The policy model is described in [authorization.md](authorization.md).
 | `admin` | 84 |
 | `dev` | 1 |
 | `job` | 7 |
-| `public` | 41 |
+| `public` | 42 |
 | `session` | 175 |
 | `signature` | 1 |
 | `token` | 6 |
 | `verified` | 7 |
-| **Total** | **337** |
+| **Total** | **338** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -117,6 +117,7 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/catalogue/collections/{slug}` | `public` |
 | POST | `/api/v1/catalogue/collections/{slug}/open-as-trip` | `session` |
 | GET | `/api/v1/catalogue/destinations` | `public` |
+| GET | `/api/v1/catalogue/destinations/{slug}/services` | `public` |
 | GET | `/api/v1/catalogue/experiences` | `public` |
 | GET | `/api/v1/catalogue/experiences/{slug}` | `public` |
 | POST | `/api/v1/catalogue/experiences/{slug}/publish` | `session` |

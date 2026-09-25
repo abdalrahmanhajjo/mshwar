@@ -2,6 +2,12 @@
 
 import * as React from "react";
 import { ArrowUpRight, Car, Loader2 } from "lucide-react";
+import { SourceList } from "@/components/local/source-list";
+import {
+  fetchDestinationServiceSources,
+  type DestinationServiceSource,
+  type ServiceCategory,
+} from "@/lib/destination-service-sources";
 import { ChangerList } from "@/components/local/changer-list";
 import { DriverCardView } from "@/components/local/driver-card";
 import { TransportCardView } from "@/components/local/transport-card";
@@ -90,12 +96,18 @@ function Section({ id, title, children }: { id: string; title: string; children:
 }
 
 /**
- * The practical half of a destination page: how to get there, a verified driver,
- * where to change money, and checked places to eat and stay. Each part loads on
+ * The practical half of a destination page: sourced referrals alongside partners
+ * with field/document checks. Each part loads on
  * its own so one slow service never blanks the others.
  */
 export function DestinationServices({ slug, name }: { slug: string; name: string }) {
   const copy = useLocalCopy();
+  const sources = usePart<DestinationServiceSource[]>(() => fetchDestinationServiceSources(slug), `s:${slug}`);
+  const sourced = (category: ServiceCategory) =>
+    sources.state === "ready" ? sources.data.filter((entry) => entry.category === category) : [];
+  const sourceSection = (category: ServiceCategory) => (
+    <PartBody part={sources}>{() => <SourceList entries={sourced(category)} />}</PartBody>
+  );
   const transport = usePart<DestinationTransport>(() => fetchDestinationTransport(slug), `t:${slug}`);
   const drivers = usePart<DriverCard[]>(() => fetchDrivers(slug), `d:${slug}`);
   const changers = usePart<Branch[]>(() => fetchDestinationChangers(slug), `c:${slug}`);
@@ -130,10 +142,15 @@ export function DestinationServices({ slug, name }: { slug: string; name: string
       </div>
 
       <Section id="getting-there" title={copy.transportTitle}>
+        {sourceSection("transport")}
         <PartBody part={transport}>
           {(data) =>
             data.from_airport.length + data.from_beirut.length + data.between.length + data.around.length === 0 ? (
-              <p className="rounded-card bg-surface-sunken p-4 text-sm">{interpolate(copy.transportEmpty, { name })}</p>
+              sourced("transport").length ? null : (
+                <p className="rounded-card bg-surface-sunken p-4 text-sm">
+                  {interpolate(copy.transportEmpty, { name })}
+                </p>
+              )
             ) : (
               <div className="grid gap-8">
                 <CardGroup title={copy.fromAirport} cards={data.from_airport} />
@@ -146,18 +163,25 @@ export function DestinationServices({ slug, name }: { slug: string; name: string
         </PartBody>
       </Section>
 
-      <Section id="drivers" title={copy.driversTitle}>
-        <p className="max-w-2xl text-sm text-text-muted">{copy.driversBody}</p>
+      <Section id="drivers" title={copy.sourceDriversTitle}>
+        {sourceSection("drivers")}
         <PartBody part={drivers}>
           {(data) => (
             <div className="grid gap-4">
               {data.length === 0 ? (
-                <p className="rounded-card bg-surface-sunken p-4 text-sm">{interpolate(copy.driversEmpty, { name })}</p>
+                sourced("drivers").length ? null : (
+                  <p className="rounded-card bg-surface-sunken p-4 text-sm">
+                    {interpolate(copy.driversEmpty, { name })}
+                  </p>
+                )
               ) : (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {data.slice(0, 6).map((driver) => (
-                    <DriverCardView key={driver.id} driver={driver} />
-                  ))}
+                <div className="grid gap-4">
+                  <p className="text-sm text-text-muted">{copy.driversBody}</p>
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {data.slice(0, 6).map((driver) => (
+                      <DriverCardView key={driver.id} driver={driver} />
+                    ))}
+                  </div>
                 </div>
               )}
               <div className="flex flex-wrap gap-3">
@@ -181,15 +205,21 @@ export function DestinationServices({ slug, name }: { slug: string; name: string
         </PartBody>
       </Section>
 
-      <Section id="money" title={copy.changersTitle}>
-        <PartBody part={changers}>{(data) => <ChangerList branches={data} name={name} />}</PartBody>
+      <Section id="money" title={copy.sourceMoneyTitle}>
+        {sourceSection("money")}
+        <PartBody part={changers}>
+          {(data) => (data.length || !sourced("money").length ? <ChangerList branches={data} name={name} /> : null)}
+        </PartBody>
       </Section>
 
       <Section id="eat" title={copy.eatTitle}>
+        {sourceSection("eat")}
         <PartBody part={venues}>
           {(data) =>
             data.restaurants.length === 0 ? (
-              <p className="rounded-card bg-surface-sunken p-4 text-sm">{interpolate(copy.eatEmpty, { name })}</p>
+              sourced("eat").length ? null : (
+                <p className="rounded-card bg-surface-sunken p-4 text-sm">{interpolate(copy.eatEmpty, { name })}</p>
+              )
             ) : (
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {data.restaurants.map((venue) => (
@@ -202,10 +232,13 @@ export function DestinationServices({ slug, name }: { slug: string; name: string
       </Section>
 
       <Section id="stay" title={copy.stayTitle}>
+        {sourceSection("stay")}
         <PartBody part={venues}>
           {(data) =>
             data.stays.length === 0 ? (
-              <p className="rounded-card bg-surface-sunken p-4 text-sm">{interpolate(copy.stayEmpty, { name })}</p>
+              sourced("stay").length ? null : (
+                <p className="rounded-card bg-surface-sunken p-4 text-sm">{interpolate(copy.stayEmpty, { name })}</p>
+              )
             ) : (
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {data.stays.map((venue) => (

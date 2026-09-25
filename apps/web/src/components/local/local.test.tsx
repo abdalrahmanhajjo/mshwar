@@ -8,6 +8,7 @@ import { crossings } from "@/components/plan/leg-transport";
 import { AuthProvider } from "@/components/shell/auth-provider";
 import { LocaleProvider } from "@/components/shell/locale-provider";
 import type { Experience } from "@/lib/catalog";
+import type { DestinationServiceSource, ServiceCategory } from "@/lib/destination-service-sources";
 import type { Branch } from "@/lib/exchange";
 import { localCopy } from "@/lib/local-copy";
 import type { DriverCard } from "@/lib/rides";
@@ -33,6 +34,7 @@ function route(handlers: [string, unknown, number?][]) {
     vi.fn(async (url: string, init?: RequestInit) => {
       calls.push({ url, init });
       const hit = handlers.find(([prefix]) => url.startsWith(prefix));
+      if (!hit && /\/catalogue\/destinations\/[^/]+\/services$/.test(url)) return jsonResponse([]);
       return hit ? jsonResponse(hit[1], hit[2]) : jsonResponse({ detail: "not found" }, 404);
     }),
   );
@@ -171,14 +173,14 @@ describe("destination services", () => {
     expect(within(transport).getByText("No Sunday service")).toBeInTheDocument();
     expect(within(transport).getByText(/Checked/)).toBeInTheDocument();
 
-    const drivers = screen.getByRole("region", { name: localCopy.en.driversTitle });
+    const drivers = screen.getByRole("region", { name: localCopy.en.sourceDriversTitle });
     expect(await within(drivers).findByText("Georges")).toBeInTheDocument();
     expect(within(drivers).getByRole("link", { name: localCopy.en.askPrice })).toHaveAttribute(
       "href",
       "/rides/new?destination=byblos",
     );
 
-    const money = screen.getByRole("region", { name: localCopy.en.changersTitle });
+    const money = screen.getByRole("region", { name: localCopy.en.sourceMoneyTitle });
     expect(await within(money).findByText("Jbeil Exchange")).toBeInTheDocument();
     expect(within(money).getByText("89,500 LBP")).toBeInTheDocument();
     expect(within(money).getByText(/Posted by the changer/)).toBeInTheDocument();
@@ -253,6 +255,61 @@ describe("destination services", () => {
     render(wrap(<DestinationServices slug="byblos" name="Byblos" />));
     expect(await screen.findByText(localCopy.en.loadError)).toBeInTheDocument();
     expect(await screen.findByText("Georges")).toBeInTheDocument();
+  });
+});
+
+describe("source-checked referrals", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("fills all five sections without inventing partner badges or booking links", async () => {
+    const categories: ServiceCategory[] = ["transport", "drivers", "money", "eat", "stay"];
+    const types = {
+      transport: "car_rental",
+      drivers: "driver_service",
+      money: "bank",
+      eat: "eat",
+      stay: "stay",
+    } as const;
+    const entries: DestinationServiceSource[] = categories.flatMap((category) =>
+      [1, 2].map((n) => ({
+        id: `${category}-${n}`,
+        destination_slug: "akkar",
+        category,
+        name: `${category} provider ${n}`,
+        locality: "Akkar",
+        service_type: types[category],
+        coverage: "local" as const,
+        source_url: `https://example.com/${category}/${n}`,
+        source_name: "Test operator",
+        source_kind: "operator" as const,
+        checked_on: "2026-09-25",
+        review_by: "2026-12-24",
+      })),
+    );
+    route([
+      ["/api/v1/catalogue/destinations/akkar/services", entries],
+      ["/api/v1/transport/destinations/akkar", { from_airport: [], from_beirut: [], between: [], around: [] }],
+      ["/api/v1/rides/drivers", []],
+      ["/api/v1/exchange/destinations/akkar", []],
+      ["/api/v1/venues/destinations/akkar", { restaurants: [], stays: [], targets: { restaurants: 5, stays: 3 } }],
+    ]);
+    render(wrap(<DestinationServices slug="akkar" name="Akkar" />));
+    await screen.findByText("eat provider 1");
+    const ids = { transport: "getting-there", drivers: "drivers", money: "money", eat: "eat", stay: "stay" };
+    for (const category of categories) {
+      const section = document.getElementById(ids[category]);
+      if (!section) throw new Error(`Missing ${category} section`);
+      expect(within(section).getAllByRole("article")).toHaveLength(2);
+      const links = within(section).getAllByRole("link", { name: localCopy.en.sourceLink });
+      expect(links).toHaveLength(2);
+      expect(links[0]).toHaveAttribute("href", `https://example.com/${category}/1`);
+      expect(within(section).getByText(localCopy.en.sourceScope)).toBeInTheDocument();
+    }
+    expect(screen.queryByText(localCopy.en.venue_checked_by_mshwar)).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: localCopy.en.askPrice })).not.toBeInTheDocument();
+    expect(screen.queryByText(/No verified driver covers Akkar/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/haven't checked places to stay in Akkar/)).not.toBeInTheDocument();
+    expect(screen.getAllByText(localCopy.en.sourceType_bank)).toHaveLength(2);
   });
 });
 
