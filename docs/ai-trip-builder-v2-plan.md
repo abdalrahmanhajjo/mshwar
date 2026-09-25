@@ -382,11 +382,40 @@ authority) and helps in an emergency.
 | **1b**   | Migration 046 language dataset, layers L2–L6, variant generator, seed vocabulary, review queue, "what I understood" step                                     | 8,000 seed and 40,000 generated phrases loaded; eval set at 1,000 prompts, ≥ 90% without the LLM    |
 | **2** ✅ | Migration 045 (place types, meal services, schedule note, `planner_retrieve_step`), portal and admin tag editing                                             | Owners and staff can tag cinemas, bowling and sweets; PGlite suite passes                           |
 | **2b**   | Migration 047: more place types, `place_facts`, `place_leads` with dedupe, OSM/Wikidata/official-list importers, `/admin/leads` queue, trust level per place | Every type has en/ar/fr names; leads loaded and measured; first 500 places checked with rich facts  |
-| **3**    | `planner/steps.py` slot fill + beam search + optimiser precedence and meal windows; evening/overnight day window                                             | The Batroun example yields 7 stops in order with a hotel end, or honest empty slots                 |
+| **3** ✅ | `planner/script/day.py` slot fill + beam search + optimiser precedence and meal windows; evening/overnight day window                                        | The Batroun example yields 7 stops in order with a hotel end, or honest empty slots                 |
 | **4**    | Service steps: changer stops, hotel end anchor, "request a driver for this day" (ride request with the itinerary)                                            | The ride request shows the full day to drivers; changer stops show rate and time                    |
 | **5**    | Web timeline, step pills, per-step swap, lock and actions, trust chips, i18n and RTL                                                                         | e2e: type the example, then see, edit and save the day                                              |
 | **6**    | Step refinement (`StepPatch`), multi-day scripts ("day 2: …"), analytics on empty slots to guide coverage                                                    | "Move cinema before dinner" re-plans correctly; the admin coverage page lists missing tags          |
 | **7**    | Dataset at full size: reviewed synthetic paraphrases, real-traffic misses loop, few-shot retrieval for L1, lead import for places                            | Eval set of 5,000 prompts at ≥ 92% step and ≥ 95% order accuracy; coverage targets met in 8 regions |
+
+### Phase 3 status (shipped)
+
+- A request with two or more steps now goes to `app/planner/day_session.py`. Other requests keep the
+  classic path, and none of the existing test prompts changes path.
+- `app/planner/script/fill.py` gathers trusted candidates per step. When the destination has none of
+  a kind, it looks within 60 km of the rest of the day and flags the result `outside_destination`.
+  Money-changer steps read registered offices.
+- `app/planner/script/day.py` builds the day:
+  - Window: breakfast starts the day at 08:00; dinners and evenings run to 23:30; nights out and
+    nights away run to 02:00; the traveller's own "land at 10" or "back by 7" always wins.
+  - Step times: meal hours and times of day, a stated time kept (45 minutes' tolerance), opening
+    hours including past midnight, closed days.
+  - The day ends at the hotel, or the drive home must fit.
+  - Budget: a strict budget is respected.
+  - Start: the traveller leaves just in time for the first step. With a driver and an assumed start,
+    the day starts at the first stop, where the driver picks them up.
+  - Choice: a beam search (width 6) scores each place's match, driving time, waiting time and
+    whether it had to go outside the destination. Steps joined by "and" may swap; nothing else is
+    reordered.
+  - Deterministic: the same request always gives the same day.
+- What the traveller sees:
+  - Every step comes back as `filled`, `office`, `empty` (with a reason) or `skipped` (optional).
+  - Only listings become saved stops; the full day is kept in the version's `constraints.day`.
+  - A `driver_request` draft is returned for phase 4. Nothing is sent to drivers.
+- Regenerating a day session re-plans it with fresh places for every step that isn't locked.
+- Known gap: stop alternatives, replace and refine still use the classic single-list retrieval for
+  day sessions; making them step-aware is phase 6.
+- Tests: 17 assembler and pool tests without a database, plus one API test for CI.
 
 ### Phase 2 status (shipped)
 
