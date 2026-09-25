@@ -150,6 +150,69 @@ export function saveListingDetails(orgId: string, experienceId: string, input: L
   );
 }
 
+// ---- Kinds of place (trip builder v2, migration 045) ------------------------------------------
+
+export type PlaceRole = "meal" | "sight" | "activity" | "stay" | "service";
+export type MealService = "breakfast" | "brunch" | "lunch" | "dinner" | "late";
+export type PlaceGroup =
+  | "food"
+  | "stay"
+  | "nature"
+  | "heritage"
+  | "entertainment"
+  | "sport"
+  | "wellness"
+  | "shopping"
+  | "family"
+  | "events"
+  | "essentials";
+
+export type PlaceType = {
+  slug: string;
+  group: PlaceGroup;
+  role: PlaceRole;
+  names: Record<"en" | "ar" | "fr", string>;
+  default_minutes: number;
+  meal_services: MealService[];
+  season_months: number[] | null;
+  needs_schedule: boolean;
+};
+
+export type ListingPlaceTypes = {
+  place_types: string[];
+  roles: PlaceRole[];
+  meal_services: MealService[];
+  schedule_note: string;
+};
+
+export type PlaceTypesInput = {
+  place_types: string[];
+  meal_services?: MealService[];
+  schedule_note?: string;
+};
+
+/** Which roles a listing of this kind may take: a meal or a night is always a checked restaurant or stay. */
+export function rolesForKind(kind: ListingKind): PlaceRole[] {
+  if (kind === "restaurant") return ["meal"];
+  if (kind === "hotel") return ["stay"];
+  return ["sight", "activity", "service"];
+}
+
+export function fetchPlaceTypes() {
+  return apiRequest<PlaceType[]>("/api/v1/venues/place-types");
+}
+
+export function fetchListingPlaceTypes(orgId: string, experienceId: string) {
+  return apiRequest<ListingPlaceTypes>(`/api/v1/venues/portal/${orgId}/listings/${experienceId}/place-types`);
+}
+
+export function saveListingPlaceTypes(orgId: string, experienceId: string, input: PlaceTypesInput) {
+  return apiRequest<ListingPlaceTypes>(
+    `/api/v1/venues/portal/${orgId}/listings/${experienceId}/place-types`,
+    json("PUT", input),
+  );
+}
+
 export function fetchClaims(orgId: string) {
   return apiRequest<
     {
