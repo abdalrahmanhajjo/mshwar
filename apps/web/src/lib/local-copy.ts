@@ -3,6 +3,22 @@ import { useLocale } from "@/components/shell/locale-provider";
 
 /** Copy for the traveller side of transport, drivers, money changers, food and stays. */
 export type LocalKey =
+  | "sourceDriversTitle"
+  | "sourceScope"
+  | "sourceOperator"
+  | "sourceDirectory"
+  | "sourceLink"
+  | "sourceMoneyTitle"
+  | "sourceMoneyNote"
+  | "sourceType_car_rental"
+  | "sourceType_driver_service"
+  | "sourceType_money_transfer"
+  | "sourceType_bank"
+  | "sourceType_atm"
+  | "sourceType_eat"
+  | "sourceType_stay"
+  | "sourceCoverage_airport"
+  | "sourceCoverage_national"
   | "localKicker"
   | "localTitle"
   | "localBody"
@@ -215,10 +231,30 @@ export type LocalKey =
 
 export const localCopy: Record<Locale, Record<LocalKey, string>> = {
   en: {
+    sourceDriversTitle: "Drivers & taxi services",
+    sourceScope:
+      "Public sources checked for the listed name, location and service. Contact the provider to confirm availability; these listings have not received Mshwar’s field or licence checks.",
+    sourceOperator: "Operator source checked",
+    sourceDirectory: "Directory source checked",
+    sourceLink: "View source & contact",
+    sourceMoneyTitle: "Money services & ATMs",
+    sourceMoneyNote: "Confirm the service, fees and cash or card availability directly with this location.",
+    sourceType_car_rental: "Car rental",
+    sourceType_driver_service: "Driver service",
+    sourceType_money_transfer: "Money transfer office",
+    sourceType_bank: "Bank branch",
+    sourceType_atm: "ATM",
+    sourceType_eat: "Restaurant / food",
+    sourceType_stay: "Place to stay",
+    sourceCoverage_airport:
+      "Airport collection for onward travel. Confirm rental terms and permitted routes with the operator.",
+    sourceCoverage_national:
+      "Operator advertises coverage across Lebanon. Request a quote and confirm pickup in this destination.",
+
     localKicker: "Local essentials",
     localTitle: "Getting around {name}",
     localBody:
-      "Transport, drivers, money changers, food and places to stay, each checked by our team with the date we checked it.",
+      "Transport, driver services, money, food and places to stay, with dated sources and clearly identified verification checks.",
     navTransport: "Transport",
     navDrivers: "Drivers",
     navMoney: "Money",
@@ -432,9 +468,27 @@ export const localCopy: Record<Locale, Record<LocalKey, string>> = {
     nearbyNone: "Nothing checked within 15 km yet.",
   },
   ar: {
+    sourceDriversTitle: "سائقون وخدمات تاكسي",
+    sourceScope:
+      "راجعنا المصادر العامة للاسم والموقع والخدمة المذكورة. تواصل مع مقدّم الخدمة لتأكيد التوافر؛ لم تخضع هذه القوائم لتحقّق مشوار الميداني أو للتحقّق من الترخيص.",
+    sourceOperator: "تمّت مراجعة مصدر المشغّل",
+    sourceDirectory: "تمّت مراجعة مصدر الدليل",
+    sourceLink: "المصدر والتواصل",
+    sourceMoneyTitle: "خدمات مالية وصرافات آلية",
+    sourceMoneyNote: "أكّد الخدمة والرسوم وتوافر النقد أو قبول بطاقتك مباشرةً مع هذا الموقع.",
+    sourceType_car_rental: "تأجير سيارات",
+    sourceType_driver_service: "خدمة سائق",
+    sourceType_money_transfer: "مكتب تحويل أموال",
+    sourceType_bank: "فرع مصرف",
+    sourceType_atm: "صراف آلي",
+    sourceType_eat: "مطعم / مأكولات",
+    sourceType_stay: "مكان إقامة",
+    sourceCoverage_airport: "استلام السيارة من المطار لمتابعة رحلتك. أكّد شروط التأجير والمسارات المسموحة مع المشغّل.",
+    sourceCoverage_national: "يعلن المشغّل عن تغطية لبنان. اطلب عرض سعر وأكّد إمكان الاستلام في هذه الوجهة.",
+
     localKicker: "أساسيات محلية",
     localTitle: "التنقّل في {name}",
-    localBody: "المواصلات والسائقون والصرّافون والمطاعم وأماكن الإقامة، وكلّها تحقّق منها فريقنا مع تاريخ التحقّق.",
+    localBody: "مواصلات وخدمات سائقين وخدمات مالية ومطاعم وأماكن إقامة، مع مصادر مؤرّخة وتوضيح نوع التحقّق.",
     navTransport: "المواصلات",
     navDrivers: "السائقون",
     navMoney: "الصرافة",
@@ -646,10 +700,31 @@ export const localCopy: Record<Locale, Record<LocalKey, string>> = {
     nearbyNone: "لا شيء موثّقًا ضمن 15 كم بعد.",
   },
   fr: {
+    sourceDriversTitle: "Chauffeurs et taxis",
+    sourceScope:
+      "Sources publiques consultées pour le nom, le lieu et le service indiqués. Confirmez la disponibilité auprès du prestataire ; ces adresses n’ont pas fait l’objet des contrôles de terrain ou de licence de Mshwar.",
+    sourceOperator: "Source du prestataire consultée",
+    sourceDirectory: "Source d’annuaire consultée",
+    sourceLink: "Source et contact",
+    sourceMoneyTitle: "Services financiers et distributeurs",
+    sourceMoneyNote:
+      "Confirmez directement les services, frais, espèces disponibles et cartes acceptées auprès de cet établissement.",
+    sourceType_car_rental: "Location de voiture",
+    sourceType_driver_service: "Service avec chauffeur",
+    sourceType_money_transfer: "Bureau de transfert d’argent",
+    sourceType_bank: "Agence bancaire",
+    sourceType_atm: "Distributeur automatique",
+    sourceType_eat: "Restaurant / restauration",
+    sourceType_stay: "Hébergement",
+    sourceCoverage_airport:
+      "Prise en charge du véhicule à l’aéroport pour poursuivre votre trajet. Confirmez les conditions et les itinéraires autorisés.",
+    sourceCoverage_national:
+      "Le prestataire annonce une couverture au Liban. Demandez un devis et confirmez la prise en charge dans cette destination.",
+
     localKicker: "L’essentiel sur place",
     localTitle: "Se déplacer à {name}",
     localBody:
-      "Transports, chauffeurs, changeurs, restaurants et hébergements, chacun vérifié par notre équipe, avec la date de vérification.",
+      "Transports, chauffeurs, argent, restaurants et hébergements, avec des sources datées et des vérifications clairement identifiées.",
     navTransport: "Transports",
     navDrivers: "Chauffeurs",
     navMoney: "Change",

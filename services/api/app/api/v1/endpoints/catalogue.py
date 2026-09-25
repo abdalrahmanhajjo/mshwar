@@ -15,7 +15,7 @@ from app.core import access
 from app.core.admin_auth import require_admin
 from app.core.auth_session import require_session
 from app.core.rate_limit import limit
-from app.core.sql import raise_from_db
+from app.core.sql import fetch_json, raise_from_db
 from app.dependencies import get_auth_db
 from app.schemas.catalogue import (
     CatalogueCollection,
@@ -29,6 +29,12 @@ from app.schemas.catalogue import (
 from app.schemas.preferences import PreferenceValues, TripOut, merge_plan_defaults
 
 router = APIRouter()
+
+
+@router.get("/destinations/{slug}/services", dependencies=[access.PUBLIC, limit("search")])
+async def destination_service_sources(slug: str, db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    """Dated external referrals, distinct from document/field-verified partners."""
+    return await fetch_json(db, "SELECT app.public_destination_service_sources(:slug)", {"slug": slug})
 
 
 def _listing(payload: Any) -> CatalogueListing:
