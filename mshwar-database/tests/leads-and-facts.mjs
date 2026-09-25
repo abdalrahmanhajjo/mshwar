@@ -33,6 +33,9 @@ export async function testLeadsAndFacts(db) {
   ).j;
   assert.deepEqual([saved.halal, saved.vegan, saved.source, saved.views], [true, false, "owner", ["sea"]]);
   assert.equal(saved.wheelchair_access, undefined, "unknown stays unknown");
+  const read = (await one(db, "SELECT app.portal_get_place_facts($1, $2, $3) AS j", [bob, org, sweets])).j;
+  assert.deepEqual([read.halal, read.vegan, read.stale], [true, false, false]);
+  await rejects(db, "SELECT app.portal_get_place_facts($1, $2, $3)", [alice, org, sweets], /capability denied/);
   const halal = await step(db, { role: "meal", tags: ["sweets"], needs: { halal: true } });
   assert.deepEqual(
     halal.map((c) => [c.slug, c.unconfirmed_needs]),

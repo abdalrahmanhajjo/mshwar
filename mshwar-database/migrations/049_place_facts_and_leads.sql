@@ -133,6 +133,31 @@ BEGIN
 END;
 $$;
 
+-- What the owner last said, even when it is over a year old ('stale': the planner no longer uses it).
+CREATE FUNCTION app.portal_get_place_facts(p_user uuid, p_org uuid, p_experience uuid)
+RETURNS jsonb
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = app, public
+AS $$
+BEGIN
+    PERFORM app.require_capability(p_user, p_org, 'listings');
+    IF NOT EXISTS (SELECT 1 FROM app.experiences WHERE id = p_experience AND organization_id = p_org) THEN
+        RAISE EXCEPTION 'listing not found' USING ERRCODE = 'P0002';
+    END IF;
+    RETURN coalesce((
+        SELECT jsonb_strip_nulls(to_jsonb(f) - 'experience_id' - 'checked_by' - 'updated_at')
+               || jsonb_build_object(
+                   'views', to_jsonb(f.views), 'languages', to_jsonb(f.languages),
+                   'stale', f.checked_on < app.beirut_today() - 365
+               )
+        FROM app.place_facts f
+        WHERE f.experience_id = p_experience
+    ), '{}'::jsonb);
+END;
+$$;
+
 CREATE FUNCTION app.admin_set_place_facts(p_admin uuid, p_experience uuid, p_payload jsonb)
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -581,6 +606,7 @@ REVOKE ALL ON FUNCTION app.set_place_facts_unchecked(uuid, uuid, text, jsonb) FR
 GRANT EXECUTE ON FUNCTION
     app.place_facts_json(uuid),
     app.portal_set_place_facts(uuid, uuid, uuid, jsonb),
+    app.portal_get_place_facts(uuid, uuid, uuid),
     app.admin_set_place_facts(uuid, uuid, jsonb),
     app.lead_json(uuid),
     app.admin_import_leads(uuid, jsonb),

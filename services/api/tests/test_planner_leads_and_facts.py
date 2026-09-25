@@ -105,6 +105,8 @@ async def test_facts_and_leads_through_the_api(api: AsyncClient) -> None:
         f"/api/v1/venues/portal/{org_id}/listings/{listing_id}/facts", json={"wheelchair_access": True}
     )
     assert owner.status_code == 200, owner.text
+    read = await api.get(f"/api/v1/venues/portal/{org_id}/listings/{listing_id}/facts")
+    assert read.json()["wheelchair_access"] is True and read.json()["stale"] is False
     staff = await api.put(f"/api/v1/admin/place-facts/listings/{listing_id}", json={"parking": False})
     assert staff.status_code == 200, staff.text
     assert (await api.put(f"/api/v1/admin/place-facts/listings/{listing_id}", json={"sauna": True})).status_code == 422

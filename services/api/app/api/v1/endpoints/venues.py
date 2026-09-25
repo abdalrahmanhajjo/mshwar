@@ -93,6 +93,22 @@ async def set_listing_place_types(
     )
 
 
+@router.get("/portal/{org_id}/listings/{experience_id}/facts", dependencies=[access.SESSION])
+async def get_listing_facts(
+    org_id: UUID,
+    experience_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """What the owner last said about the place; ``stale`` when it is over a year old and no longer used."""
+    session = await require_session(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.portal_get_place_facts(CAST(:uid AS uuid), CAST(:org AS uuid), CAST(:exp AS uuid))",
+        {"uid": str(session["user_id"]), "org": str(org_id), "exp": str(experience_id)},
+    )
+
+
 @router.put("/portal/{org_id}/listings/{experience_id}/facts", dependencies=[access.SESSION, limit("partner-write")])
 async def set_listing_facts(
     org_id: UUID,

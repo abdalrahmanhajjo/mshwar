@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { BadgeCheck, Loader2, Save } from "lucide-react";
+import { PlaceFactsEditor } from "@/components/business/place-facts-editor";
 import { PlaceTypesEditor } from "@/components/business/place-types-editor";
 import { errorText } from "@/components/partners/step";
 import { useLocale } from "@/components/shell/locale-provider";
@@ -281,6 +282,12 @@ export function ListingDetailsEditor({ orgId, experienceId }: { orgId: string; e
       {/* Keyed by the saved kind: a restaurant and an attraction offer different kinds of place. */}
       <PlaceTypesEditor
         key={data.listing_kind}
+        orgId={orgId}
+        experienceId={experienceId}
+        listingKind={data.listing_kind}
+      />
+      <PlaceFactsEditor
+        key={`facts-${data.listing_kind}`}
         orgId={orgId}
         experienceId={experienceId}
         listingKind={data.listing_kind}
