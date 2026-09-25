@@ -278,6 +278,20 @@ class CandidateRecord(BaseModel):
     facts: list[Any] = Field(default_factory=list)
 
 
+class StepCandidate(CandidateRecord):
+    """A listing that can fill one step of a day (``app.planner_retrieve_step``, migration 045)."""
+
+    place_types: list[str] = Field(default_factory=list)
+    meal_services: list[str] = Field(default_factory=list)
+    #: The meal was asked for but the place has not said which meals it serves.
+    meal_unconfirmed: bool = False
+    schedule_note: str = ""
+    #: Times vary (films, concerts): the plan must say "check times", never show one.
+    needs_schedule: bool = False
+    distance_m: int | None = None
+    trust: dict[str, Any] = Field(default_factory=dict)
+
+
 class EligibilityResult(BaseModel):
     candidate: CandidateRecord
     eligible: bool

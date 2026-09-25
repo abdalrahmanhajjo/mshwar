@@ -9,7 +9,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.planner.ranking import weights_from_payload
-from app.planner.schemas import AssembledPlan, AssumedDefault, CandidateRecord, ExtractedConstraints
+from app.planner.schemas import AssembledPlan, AssumedDefault, CandidateRecord, ExtractedConstraints, StepCandidate
 
 
 def _dump(value: Any) -> str:
@@ -43,6 +43,28 @@ async def retrieve_candidates(
         for item in items
         if not (isinstance(item, dict) and item.get("listing_kind") == "hotel")
     ]
+
+
+def _json_items(row: Any) -> list[Any]:
+    parsed = json.loads(row) if isinstance(row, str) else row
+    return parsed if isinstance(parsed, list) else []
+
+
+async def retrieve_step(db: AsyncSession, query: dict[str, Any]) -> list[StepCandidate]:
+    """Trusted listings that can fill one step of a day (``app.planner_retrieve_step``, migration 045)."""
+    row = (
+        await db.execute(
+            text("SELECT app.planner_retrieve_step(CAST(:step AS jsonb))"),
+            {"step": json.dumps(query, default=str)},
+        )
+    ).scalar()
+    return [StepCandidate.model_validate(item) for item in _json_items(row)]
+
+
+async def retrieve_changers(db: AsyncSession, destination_slug: str) -> list[dict[str, Any]]:
+    """Live, registered money changers in a destination (migration 042). They are offices, not listings."""
+    row = (await db.execute(text("SELECT app.public_destination_changers(:slug)"), {"slug": destination_slug})).scalar()
+    return [item for item in _json_items(row) if isinstance(item, dict)]
 
 
 async def load_weights(db: AsyncSession) -> dict[str, float]:
