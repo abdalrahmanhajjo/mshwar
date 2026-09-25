@@ -308,7 +308,83 @@ export type PlannerSession = {
   needs_budget_approval?: boolean;
   injection_logged?: boolean;
   explanations?: string[];
+  /** A day told step by step (trip builder v2): every step, the day's price, and a driver draft. */
+  day?: DayStepOutcome[];
+  pricing?: DayPrice | null;
+  driver_request?: Record<string, unknown> | null;
 };
+
+export type PriceBasis =
+  | "fixed"
+  | "free"
+  | "from"
+  | "range"
+  | "estimated"
+  | "typical_spend"
+  | "per_night_from"
+  | "driver_day_rate"
+  | "exchange_rate"
+  | "on_request";
+
+export type PriceLine = {
+  order: number | null;
+  kind: "stop" | "stay" | "driver" | "exchange";
+  label: string;
+  basis: PriceBasis;
+  unit: "person" | "group" | "night" | "day" | "visit";
+  quantity: number;
+  unit_low_minor: number | null;
+  unit_high_minor: number | null;
+  low_minor: number | null;
+  high_minor: number | null;
+  currency: string;
+  source: string;
+  note: string;
+};
+
+export type DayPrice = {
+  currency: string;
+  party_size: number;
+  lines: PriceLine[];
+  low_minor: number;
+  /** null: open-ended, the day costs at least low_minor. */
+  high_minor: number | null;
+  per_person_low_minor: number;
+  per_person_high_minor: number | null;
+  priced_lines: number;
+  on_request_lines: number;
+  other_currency_lines: number;
+  budget_minor: number | null;
+  budget_status: "within" | "over" | "may_exceed" | "unknown";
+};
+
+export type DayStepOutcome = {
+  order: number;
+  role: string;
+  status: "filled" | "office" | "empty" | "skipped";
+  reason: string | null;
+  title: string | null;
+  starts_at: string | null;
+  flags: string[];
+  price: PriceLine | null;
+  actions: Record<string, string>;
+};
+
+/** The day's price: from the live session, or from what the sealed version kept. */
+export function dayPriceOf(session: PlannerSession | null, plan: PlanDocument | null): DayPrice | null {
+  const kept = plan?.constraints?.pricing;
+  return session?.pricing ?? (kept && typeof kept === "object" ? (kept as DayPrice) : null);
+}
+
+export function requestDayDriver(
+  sessionId: string,
+  input: { pickup_name: string; pickup_lat?: number; pickup_lng?: number; luggage?: number; notes?: string },
+) {
+  return readJson<{ id: string; kind: string; status: string }>(
+    `/api/v1/planner/sessions/${sessionId}/driver-request`,
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) },
+  );
+}
 
 export function createPlannerSession(input: {
   text: string;

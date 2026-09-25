@@ -31,7 +31,7 @@ import { cn } from "@/lib/utils";
 import { useGroupCopy } from "@/lib/group-copy";
 import { usePlannerCopy } from "@/lib/planner-copy";
 import { useGuideHireCopy } from "@/lib/guide-hire-copy";
-import { formatMinor, type PlanDocument } from "@/lib/planner";
+import { dayPriceOf, formatMinor, type PlanDocument } from "@/lib/planner";
 import {
   GROUP_POLL_MS,
   castVote,
@@ -313,7 +313,7 @@ export function GroupTripView({ tripId }: { tripId: string }) {
                     onLock={async () => undefined}
                     onReplace={() => undefined}
                   />
-                  <CostPanel plan={planDoc} copy={plannerCopy} />
+                  <CostPanel plan={planDoc} copy={plannerCopy} pricing={dayPriceOf(null, planDoc)} />
                 </div>
               ) : (
                 <EmptyState

@@ -183,12 +183,15 @@ export type ListingPlaceTypes = {
   roles: PlaceRole[];
   meal_services: MealService[];
   schedule_note: string;
+  typical_spend_minor?: number | null;
+  currency?: string;
 };
 
 export type PlaceTypesInput = {
   place_types: string[];
   meal_services?: MealService[];
   schedule_note?: string;
+  typical_spend_minor?: number;
 };
 
 /** Which roles a listing of this kind may take: a meal or a night is always a checked restaurant or stay. */

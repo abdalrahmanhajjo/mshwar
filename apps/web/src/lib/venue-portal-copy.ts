@@ -81,7 +81,9 @@ export type VenuePortalKey =
   | "group_family"
   | "group_events"
   | "group_essentials"
-  | "placeTypesRemove";
+  | "placeTypesRemove"
+  | "typicalSpend"
+  | "typicalSpendHint";
 
 export const venuePortalCopy: Record<Locale, Record<VenuePortalKey, string>> = {
   en: {
@@ -168,6 +170,9 @@ export const venuePortalCopy: Record<Locale, Record<VenuePortalKey, string>> = {
     group_events: "Events",
     group_essentials: "Essentials",
     placeTypesRemove: "Remove {name}",
+    typicalSpend: "Typical spend per person (USD)",
+    typicalSpendHint:
+      "What one person usually spends on a meal here. The trip planner prices meals with it; without it a meal shows “price on request”.",
   },
   ar: {
     detailsTitle: "مطعم أو مكان إقامة",
@@ -252,6 +257,9 @@ export const venuePortalCopy: Record<Locale, Record<VenuePortalKey, string>> = {
     group_events: "فعاليات",
     group_essentials: "خدمات أساسية",
     placeTypesRemove: "أزل {name}",
+    typicalSpend: "متوسط إنفاق الشخص (بالدولار)",
+    typicalSpendHint:
+      "ما ينفقه الشخص عادةً على وجبة هنا. يسعّر مخطِّط الرحلات الوجبات به؛ ومن دونه تظهر الوجبة «السعر عند الطلب».",
   },
   fr: {
     detailsTitle: "Restaurant ou hébergement",
@@ -337,6 +345,9 @@ export const venuePortalCopy: Record<Locale, Record<VenuePortalKey, string>> = {
     group_events: "Événements",
     group_essentials: "Services essentiels",
     placeTypesRemove: "Retirer {name}",
+    typicalSpend: "Dépense habituelle par personne (USD)",
+    typicalSpendHint:
+      "Ce qu’une personne dépense habituellement pour un repas ici. Le planificateur s’en sert pour chiffrer les repas ; sans elle, le repas affiche « prix sur demande ».",
   },
 };
 

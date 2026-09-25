@@ -46,6 +46,7 @@ export function PlaceTypesEditor({
   const [chosen, setChosen] = React.useState<string[]>([]);
   const [meals, setMeals] = React.useState<MealService[]>([]);
   const [note, setNote] = React.useState("");
+  const [spend, setSpend] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [message, setMessage] = React.useState<{ tone: "success" | "danger"; text: string } | null>(null);
 
@@ -66,6 +67,7 @@ export function PlaceTypesEditor({
         setChosen(current.place_types.filter((slug) => fits.has(slug)));
         setMeals(current.meal_services);
         setNote(current.schedule_note);
+        setSpend(current.typical_spend_minor ? String(current.typical_spend_minor / 100) : "");
       })
       .catch(() => {
         if (!cancelled) setMessage({ tone: "danger", text: copy.loadError });
@@ -107,9 +109,13 @@ export function PlaceTypesEditor({
     }
     setBusy(true);
     setMessage(null);
+    const spendMinor = spend.trim() === "" ? null : Math.round(Number(spend) * 100);
     const input: PlaceTypesInput = {
       place_types: chosen,
       ...(listingKind === "restaurant" ? { meal_services: meals } : {}),
+      ...(listingKind === "restaurant" && spendMinor && Number.isFinite(spendMinor)
+        ? { typical_spend_minor: spendMinor }
+        : {}),
       ...(needsSchedule ? { schedule_note: note.trim() } : {}),
     };
     try {
@@ -195,6 +201,22 @@ export function PlaceTypesEditor({
                 ))}
               </div>
             </fieldset>
+          ) : null}
+          {listingKind === "restaurant" ? (
+            <div className="grid gap-1.5 sm:max-w-xs">
+              <Label htmlFor="pt-typical-spend">{copy.typicalSpend}</Label>
+              <Input
+                id="pt-typical-spend"
+                inputMode="decimal"
+                dir="ltr"
+                value={spend}
+                aria-describedby="pt-typical-spend-hint"
+                onChange={(event) => setSpend(event.target.value)}
+              />
+              <p id="pt-typical-spend-hint" className="text-xs text-text-muted">
+                {copy.typicalSpendHint}
+              </p>
+            </div>
           ) : null}
           {needsSchedule ? (
             <div className="grid gap-1.5">
