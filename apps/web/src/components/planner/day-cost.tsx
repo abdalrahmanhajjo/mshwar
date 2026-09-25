@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Notice } from "@/components/ui/notice";
+import { useLocale } from "@/components/shell/locale-provider";
 import { interpolate } from "@/i18n/catalogues";
+import { formatDate } from "@/i18n/format";
 import { formatMinor, requestDayDriver, type DayPrice, type PriceLine } from "@/lib/planner";
 import type { PlannerCopy, PlannerKey } from "@/lib/planner-copy";
 
@@ -51,6 +53,7 @@ function lineDetail(line: PriceLine, copy: PlannerCopy): string | null {
 
 /** Every step's price with what it is based on, the day's total as a range, per person, and the budget. */
 export function DayCostPanel({ pricing, copy }: { pricing: DayPrice; copy: PlannerCopy }) {
+  const { locale } = useLocale();
   const budget = pricing.budget_minor ? formatMinor(pricing.budget_minor, pricing.currency) : null;
   const budgetText =
     budget && pricing.budget_status !== "unknown"
@@ -74,6 +77,19 @@ export function DayCostPanel({ pricing, copy }: { pricing: DayPrice; copy: Plann
               <span className="font-medium text-text">{line.label}</span>
               {lineDetail(line, copy) ? <span className="text-text-muted">{lineDetail(line, copy)}</span> : null}
               {line.note ? <span className="text-xs text-text-muted">{line.note}</span> : null}
+              {line.source_name && line.source_url ? (
+                <a
+                  href={line.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-text-muted underline underline-offset-2"
+                >
+                  {interpolate(copy.priceSource, {
+                    source: line.source_name,
+                    date: line.checked_on ? formatDate(locale, `${line.checked_on}T12:00:00Z`) : "",
+                  })}
+                </a>
+              ) : null}
             </dt>
             <dd className="tabular-nums text-end">{lineAmount(line, copy)}</dd>
           </div>

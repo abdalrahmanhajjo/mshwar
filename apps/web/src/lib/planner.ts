@@ -340,6 +340,10 @@ export type PriceLine = {
   currency: string;
   source: string;
   note: string;
+  /** A price staff recorded from the official source: where, and when it was checked. */
+  source_name?: string | null;
+  source_url?: string | null;
+  checked_on?: string | null;
 };
 
 export type DayPrice = {

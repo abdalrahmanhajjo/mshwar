@@ -6,7 +6,9 @@ ticket from a restaurant's own "typical spend" or a stay's "from" price:
 ==================  ===========================================================
 basis               source
 ==================  ===========================================================
-fixed / free        the listing's price rule (a published 0 is really free)
+fixed / free        the listing's price rule (a published 0 is really free): set
+                    by its owner, or recorded by staff from the official source
+                    with its link and check date (047, ``published_source``)
 from                price rule with a floor only: the day total is open-ended
 range               price rule with a floor and a ceiling
 estimated           price rule marked estimated by its owner
@@ -61,6 +63,10 @@ class PriceLine(BaseModel):
     currency: str = "USD"
     source: str = "none"
     note: str = ""
+    #: Where a staff-recorded price was published, and when it was checked (migration 047).
+    source_name: str | None = None
+    source_url: str | None = None
+    checked_on: str | None = None
 
     @property
     def priced(self) -> bool:
@@ -121,7 +127,14 @@ def _from_rule(candidate: StepCandidate, party: int, base: dict[str, Any]) -> Pr
     unit = "person" if price.get("unit", "person") == "person" else "group"
     quantity = party if unit == "person" else 1
     currency = str(price.get("currency") or "USD")
-    common = {"currency": currency, "source": "price_rule"}
+    common: dict[str, Any] = {"currency": currency, "source": "price_rule"}
+    if price.get("source_url"):
+        common.update(
+            source="published_source",
+            source_name=price.get("source_name"),
+            source_url=price.get("source_url"),
+            checked_on=str(price.get("checked_on")) if price.get("checked_on") else None,
+        )
     if kind == "fixed" and amount == 0:
         return _line(base, "free", unit, quantity, 0, 0, **common)
     if kind == "range":

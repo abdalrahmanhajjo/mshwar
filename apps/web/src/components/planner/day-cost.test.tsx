@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { axe } from "vitest-axe";
 import { DayCostPanel, DriverRequestPanel, dayTotal, lineAmount } from "./day-cost";
 import { CostPanel } from "./planner-view";
+import { LocaleProvider } from "@/components/shell/locale-provider";
 import { plannerCopy } from "@/lib/planner-copy";
 import type { DayPrice, PlanDocument, PriceLine } from "@/lib/planner";
 
@@ -52,6 +53,19 @@ const PRICING: DayPrice = {
     }),
     line({ label: "Sea Castle", basis: "on_request", unit: "visit" }),
     line({
+      label: "Jeita Grotto",
+      basis: "fixed",
+      quantity: 2,
+      unit_low_minor: 1800,
+      unit_high_minor: 1800,
+      low_minor: 3600,
+      high_minor: 3600,
+      source: "published_source",
+      source_name: "Jeita Grotto official site",
+      source_url: "https://example.org/jeita",
+      checked_on: "2026-09-20",
+    }),
+    line({
       label: "Harbour Hotel",
       kind: "stay",
       basis: "per_night_from",
@@ -87,7 +101,11 @@ afterEach(() => {
 
 describe("day cost", () => {
   it("prices every line from what was published and never shows unknown as free", async () => {
-    const { container } = render(<DayCostPanel pricing={PRICING} copy={copy} />);
+    const { container } = render(
+      <LocaleProvider>
+        <DayCostPanel pricing={PRICING} copy={copy} />
+      </LocaleProvider>,
+    );
     expect(screen.getByRole("heading", { name: "What the day costs" })).toBeInTheDocument();
     expect(screen.getByText("Price on request")).toBeInTheDocument();
     expect(screen.getByText("Typical spend per person · 2 × $8.00")).toBeInTheDocument();
@@ -97,6 +115,8 @@ describe("day cost", () => {
     expect(screen.getByText(/1 on request/)).toBeInTheDocument();
     expect(screen.getByText("May go over your budget of $200.00")).toBeInTheDocument();
     expect(screen.queryByText("$0.00")).not.toBeInTheDocument();
+    const proof = screen.getByRole("link", { name: /Published by Jeita Grotto official site · checked/ });
+    expect(proof).toHaveAttribute("href", "https://example.org/jeita");
     expect(await axe(container)).toHaveNoViolations();
   });
 

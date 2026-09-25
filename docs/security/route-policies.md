@@ -6,7 +6,7 @@ The policy model is described in [authorization.md](authorization.md).
 | Policy | Routes |
 |---|---|
 | `actor` | 15 |
-| `admin` | 86 |
+| `admin` | 88 |
 | `dev` | 1 |
 | `job` | 7 |
 | `public` | 43 |
@@ -14,7 +14,7 @@ The policy model is described in [authorization.md](authorization.md).
 | `signature` | 1 |
 | `token` | 6 |
 | `verified` | 7 |
-| **Total** | **344** |
+| **Total** | **346** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -73,6 +73,8 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/admin/payments/reconciliation` | `admin` |
 | GET | `/api/v1/admin/place-types/coverage` | `admin` |
 | PUT | `/api/v1/admin/place-types/listings/{experience_id}` | `admin` |
+| GET | `/api/v1/admin/prices/due` | `admin` |
+| PUT | `/api/v1/admin/prices/listings/{experience_id}` | `admin` |
 | GET | `/api/v1/admin/proposals` | `admin` |
 | POST | `/api/v1/admin/proposals/{proposal_id}` | `admin` |
 | GET | `/api/v1/admin/quality` | `admin` |
