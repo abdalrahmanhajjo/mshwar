@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import { testDestinationServiceSources } from "./destination-service-sources.mjs";
 import { testPlaceTypes } from "./place-types.mjs";
+import { testDayPricing } from "./day-pricing.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const db = new PGlite({ extensions: { postgis, vector, btree_gist, pg_trgm } });
 const report = [];
@@ -58,6 +59,9 @@ try {
   );
   await good("place types: every kind of place a step can ask for, filled only from trusted listings", () =>
     testPlaceTypes(db),
+  );
+  await good("day pricing: only published prices, the top of ranges, stays per night, drivers' day rates", () =>
+    testDayPricing(db),
   );
   await sql("SELECT set_config('app.user_id',$1,false)", [alice]);
   await good("all app tables have forced RLS", async () =>
