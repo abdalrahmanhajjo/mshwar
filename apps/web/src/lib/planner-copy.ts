@@ -178,7 +178,35 @@ export type PlannerKey =
   | "stopWaits"
   | "addToDay"
   | "destinationPlaces"
-  | "replacementsTitle";
+  | "replacementsTitle"
+  | "priceOnRequest"
+  | "onRequestCount"
+  | "totalFrom"
+  | "totalRange"
+  | "perPerson"
+  | "perPersonRange"
+  | "dayCostTitle"
+  | "dayCostBody"
+  | "basis_fixed"
+  | "basis_free"
+  | "basis_from"
+  | "basis_range"
+  | "basis_estimated"
+  | "basis_typical_spend"
+  | "basis_per_night_from"
+  | "basis_driver_day_rate"
+  | "basis_exchange_rate"
+  | "basis_on_request"
+  | "unitTimes"
+  | "budget_within"
+  | "budget_over"
+  | "budget_may_exceed"
+  | "otherCurrency"
+  | "driverTitle"
+  | "driverBody"
+  | "driverPickup"
+  | "driverSend"
+  | "driverSent";
 
 export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
   en: {
@@ -360,6 +388,35 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     addToDay: "Add to your day",
     destinationPlaces: "{n} places to plan from",
     replacementsTitle: "Alternatives",
+    priceOnRequest: "Price on request",
+    onRequestCount: "{count} on request – ask the place, not counted",
+    totalFrom: "from {amount}",
+    totalRange: "{low} – {high}",
+    perPerson: "{amount} per person",
+    perPersonRange: "{low} – {high} per person",
+    dayCostTitle: "What the day costs",
+    dayCostBody: "Only prices places and drivers published. Nothing unknown is counted as free.",
+    basis_fixed: "Fixed price",
+    basis_free: "Free",
+    basis_from: "From",
+    basis_range: "Price range",
+    basis_estimated: "Estimated by the place",
+    basis_typical_spend: "Typical spend per person",
+    basis_per_night_from: "From, per room per night",
+    basis_driver_day_rate: "Drivers' published day rates",
+    basis_exchange_rate: "No fee – the changer's rate applies",
+    basis_on_request: "Price on request",
+    unitTimes: "{count} × {amount}",
+    budget_within: "Within your budget of {budget}",
+    budget_over: "Over your budget of {budget}",
+    budget_may_exceed: "May go over your budget of {budget}",
+    otherCurrency: "{count} price in another currency, shown but not added",
+    driverTitle: "A driver for this day",
+    driverBody:
+      "We send your plan to the verified drivers who cover it. Each quotes a fixed price and you choose one in Rides. Nothing is booked until you do.",
+    driverPickup: "Where should the driver pick you up?",
+    driverSend: "Ask drivers for prices",
+    driverSent: "Sent. Fixed prices from verified drivers will appear in Rides.",
   },
   ar: {
     startTitle: "من أين تبدأ هذه الخطة؟",
@@ -540,6 +597,35 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     addToDay: "أضفه إلى يومك",
     destinationPlaces: "{n} مكاناً للتخطيط منها",
     replacementsTitle: "بدائل",
+    priceOnRequest: "السعر عند الطلب",
+    onRequestCount: "{count} عند الطلب – اسأل المكان، غير محسوب",
+    totalFrom: "ابتداءً من {amount}",
+    totalRange: "{low} – {high}",
+    perPerson: "{amount} للشخص",
+    perPersonRange: "{low} – {high} للشخص",
+    dayCostTitle: "كلفة اليوم",
+    dayCostBody: "نعتمد فقط الأسعار التي نشرتها الأماكن والسائقون. لا نحسب أي سعر مجهول كأنه مجاني.",
+    basis_fixed: "سعر ثابت",
+    basis_free: "مجاني",
+    basis_from: "ابتداءً من",
+    basis_range: "نطاق سعري",
+    basis_estimated: "تقدير من المكان",
+    basis_typical_spend: "متوسط إنفاق الشخص",
+    basis_per_night_from: "ابتداءً من، للغرفة في الليلة",
+    basis_driver_day_rate: "الأسعار اليومية المنشورة للسائقين",
+    basis_exchange_rate: "بلا رسوم – يُطبَّق سعر الصرّاف",
+    basis_on_request: "السعر عند الطلب",
+    unitTimes: "{count} × {amount}",
+    budget_within: "ضمن ميزانيتك البالغة {budget}",
+    budget_over: "يتجاوز ميزانيتك البالغة {budget}",
+    budget_may_exceed: "قد يتجاوز ميزانيتك البالغة {budget}",
+    otherCurrency: "{count} سعر بعملة أخرى، معروض وغير مُضاف",
+    driverTitle: "سائق لهذا اليوم",
+    driverBody:
+      "نرسل خطتك إلى السائقين الموثّقين الذين يغطّونها. يقدّم كل منهم سعرًا ثابتًا وتختار واحدًا في قسم الرحلات. لا يُحجز شيء قبل أن تختار.",
+    driverPickup: "من أين يقلّك السائق؟",
+    driverSend: "اطلب أسعارًا من السائقين",
+    driverSent: "تم الإرسال. ستظهر أسعار السائقين الموثّقين الثابتة في قسم الرحلات.",
   },
   fr: {
     startTitle: "D’où part ce plan ?",
@@ -726,6 +812,36 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     addToDay: "Ajouter à votre journée",
     destinationPlaces: "{n} lieux à planifier",
     replacementsTitle: "Alternatives",
+    priceOnRequest: "Prix sur demande",
+    onRequestCount: "{count} sur demande – à demander au lieu, non compté",
+    totalFrom: "à partir de {amount}",
+    totalRange: "{low} – {high}",
+    perPerson: "{amount} par personne",
+    perPersonRange: "{low} – {high} par personne",
+    dayCostTitle: "Le coût de la journée",
+    dayCostBody:
+      "Uniquement les prix publiés par les lieux et les chauffeurs. Rien d'inconnu n'est compté comme gratuit.",
+    basis_fixed: "Prix fixe",
+    basis_free: "Gratuit",
+    basis_from: "À partir de",
+    basis_range: "Fourchette de prix",
+    basis_estimated: "Estimé par le lieu",
+    basis_typical_spend: "Dépense habituelle par personne",
+    basis_per_night_from: "À partir de, par chambre et par nuit",
+    basis_driver_day_rate: "Tarifs journée publiés par les chauffeurs",
+    basis_exchange_rate: "Sans frais – le taux du changeur s'applique",
+    basis_on_request: "Prix sur demande",
+    unitTimes: "{count} × {amount}",
+    budget_within: "Dans votre budget de {budget}",
+    budget_over: "Au-dessus de votre budget de {budget}",
+    budget_may_exceed: "Peut dépasser votre budget de {budget}",
+    otherCurrency: "{count} prix dans une autre devise, affiché mais non ajouté",
+    driverTitle: "Un chauffeur pour la journée",
+    driverBody:
+      "Nous envoyons votre plan aux chauffeurs vérifiés qui couvrent la zone. Chacun propose un prix fixe et vous choisissez dans Trajets. Rien n'est réservé avant votre choix.",
+    driverPickup: "Où le chauffeur doit-il vous prendre ?",
+    driverSend: "Demander des prix aux chauffeurs",
+    driverSent: "Envoyé. Les prix fixes des chauffeurs vérifiés apparaîtront dans Trajets.",
   },
 };
 

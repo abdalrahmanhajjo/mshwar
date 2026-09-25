@@ -31,6 +31,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PlanWorkspace } from "@/components/plan/plan-workspace";
 import { DayBuilder } from "@/components/plan/day-builder";
 import { useDayCheck } from "@/components/plan/day-panel";
+import { DriverRequestPanel } from "@/components/planner/day-cost";
 import { CostPanel, ReplacePanel, Timeline, plannerErrorMessage } from "@/components/planner/planner-view";
 import {
   acceptReplacement,
@@ -41,6 +42,7 @@ import {
   fetchVersion,
   refinePlannerSession,
   regeneratePlannerSession,
+  dayPriceOf,
   type PlannerSession,
 } from "@/lib/planner";
 import { apiRequest } from "@/lib/api/client";
@@ -822,7 +824,8 @@ export function PlanFlow({
           {plan ? (
             <>
               <Timeline plan={plan} copy={copy} sessionId={sessionId} onLock={run} onReplace={setReplaceStopId} />
-              <CostPanel plan={plan} copy={copy} />
+              <CostPanel plan={plan} copy={copy} pricing={dayPriceOf(session, plan)} />
+              {session?.driver_request && sessionId ? <DriverRequestPanel sessionId={sessionId} copy={copy} /> : null}
 
               {sessionId ? (
                 <div className="flex flex-wrap gap-2">

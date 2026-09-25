@@ -41,17 +41,28 @@ import {
   previewReplacement,
   refinePlannerSession,
   regeneratePlannerSession,
+  dayPriceOf,
+  type DayPrice,
   type PlanDocument,
   type PlannerSession,
 } from "@/lib/planner";
 import { useHubCopy } from "@/lib/hub-copy";
 import { ApiError } from "@/lib/api/client";
 import { type PlannerCopy, usePlannerCopy } from "@/lib/planner-copy";
+import { DayCostPanel, DriverRequestPanel, dayTotal } from "@/components/planner/day-cost";
 import { interpolate } from "@/i18n/catalogues";
 import { formatDate } from "@/i18n/format";
 import { DESTINATIONS, getExperience } from "@/lib/catalog";
 import { splitSentence } from "@/lib/text";
 import { cn, focusRing } from "@/lib/utils";
+
+/** A stop's amount. A stop without a published price says so; it is never shown as $0. */
+export function stopAmount(stop: { price_kind: string; estimated_minor: number }, currency: string, copy: PlannerCopy) {
+  if (stop.price_kind === "quote" && !stop.estimated_minor) {
+    return copy.priceOnRequest;
+  }
+  return formatMinor(stop.estimated_minor, currency);
+}
 
 export function priceKindLabel(kind: string, copy: ReturnType<typeof usePlannerCopy>) {
   if (kind === "quote") {
@@ -297,7 +308,10 @@ export function PlannerView({ initialTripId }: { initialTripId?: string }) {
         ) : (
           <EmptyPlan copy={copy} pending={pending} />
         )}
-        {plan ? <CostPanel plan={plan} copy={copy} /> : null}
+        {plan ? <CostPanel plan={plan} copy={copy} pricing={dayPriceOf(session, plan)} /> : null}
+        {plan && session?.driver_request && session.session_id ? (
+          <DriverRequestPanel sessionId={session.session_id} copy={copy} />
+        ) : null}
 
         {plan && session?.session_id ? (
           <div className="flex flex-wrap gap-2">
@@ -442,6 +456,7 @@ export function Timeline({
   onLock: (task: () => Promise<PlannerSession>) => Promise<void>;
   onReplace: (stopId: string) => void;
 }) {
+  const dayPricing = dayPriceOf(null, plan);
   const { locale } = useLocale();
   const hub = useHubCopy();
   const legsByPosition = new Map(plan.legs.map((leg) => [leg.position, leg]));
@@ -470,7 +485,8 @@ export function Timeline({
         </li>
         <li className="inline-flex items-center gap-1.5">
           <Wallet className="size-4" aria-hidden />
-          {formatMinor(plan.total_minor, plan.currency)} {copy.estimated.toLowerCase()}
+          {dayPricing ? dayTotal(dayPricing, copy) : formatMinor(plan.total_minor, plan.currency)}{" "}
+          {copy.estimated.toLowerCase()}
         </li>
       </ul>
       <Notice>{copy.editableNote}</Notice>
@@ -552,7 +568,7 @@ export function Timeline({
                         <Clock className="size-3.5" aria-hidden />
                         {time(stop.starts_at)} – {time(stop.ends_at)}
                       </span>
-                      <span className="font-medium text-text">{formatMinor(stop.estimated_minor, plan.currency)}</span>
+                      <span className="font-medium text-text">{stopAmount(stop, plan.currency, copy)}</span>
                       <span>
                         {copy.booking}: {stop.booking_mode || "request"}
                       </span>
@@ -600,7 +616,19 @@ export function Timeline({
   );
 }
 
-export function CostPanel({ plan, copy }: { plan: PlanDocument; copy: ReturnType<typeof usePlannerCopy> }) {
+export function CostPanel({
+  plan,
+  copy,
+  pricing = null,
+}: {
+  plan: PlanDocument;
+  copy: ReturnType<typeof usePlannerCopy>;
+  pricing?: DayPrice | null;
+}) {
+  if (pricing) {
+    return <DayCostPanel pricing={pricing} copy={copy} />;
+  }
+  const onRequest = plan.stops.filter((stop) => stop.price_kind === "quote" && !stop.estimated_minor).length;
   return (
     <section
       aria-labelledby="cost-heading"
@@ -616,7 +644,7 @@ export function CostPanel({ plan, copy }: { plan: PlanDocument; copy: ReturnType
               {stop.snapshot.title || stop.title} · {priceKindLabel(stop.price_kind, copy)}
               {stop.snapshot.price_source ? ` · ${stop.snapshot.price_source}` : ""}
             </dt>
-            <dd className="tabular-nums">{formatMinor(stop.estimated_minor, plan.currency)}</dd>
+            <dd className="tabular-nums">{stopAmount(stop, plan.currency, copy)}</dd>
           </div>
         ))}
         {plan.cost_items.map((item) => (
@@ -641,6 +669,9 @@ export function CostPanel({ plan, copy }: { plan: PlanDocument; copy: ReturnType
               </span>
             ) : null}
           </p>
+          {onRequest > 0 ? (
+            <p className="text-sm text-text-muted">{interpolate(copy.onRequestCount, { count: onRequest })}</p>
+          ) : null}
         </div>
         <p className="text-sm font-semibold">{copy.total}</p>
       </div>
