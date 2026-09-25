@@ -141,10 +141,36 @@ export type AdminKey =
   | "auditSystem"
   | "auditAnyOption"
   | "auditFailed"
-  | "auditFieldsChanged";
+  | "auditFieldsChanged"
+  | "twoStepTitle"
+  | "twoStepBody"
+  | "twoStepSetupTitle"
+  | "twoStepSetupBody"
+  | "twoStepStart"
+  | "twoStepKey"
+  | "twoStepOpenApp"
+  | "twoStepCode"
+  | "twoStepConfirm"
+  | "twoStepNext"
+  | "twoStepLost"
+  | "twoStepWrong";
 
 export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
   en: {
+    twoStepTitle: "Confirm it's you",
+    twoStepBody:
+      "Enter the 6-digit code from your authenticator app. It keeps this session open to the console for 12 hours.",
+    twoStepSetupTitle: "Set up two-step sign-in",
+    twoStepSetupBody:
+      "The console needs a second step. Add Mshwar to an authenticator app (Google Authenticator, Microsoft Authenticator, 1Password…) with this key, then enter the code it shows.",
+    twoStepStart: "Show my key",
+    twoStepKey: "Key",
+    twoStepOpenApp: "Open in my authenticator app",
+    twoStepCode: "Code",
+    twoStepConfirm: "Confirm",
+    twoStepNext: "Set up. Now enter the next code your app shows (it changes every 30 seconds).",
+    twoStepLost: "Lost your phone? Ask another elevated admin to reset your authenticator.",
+    twoStepWrong: "That code is not right, or was already used. Wait for the next one.",
     queueTitle: "Verification queue",
     slaHours: "SLA age (hours)",
     filterStatus: "Filter by status",
@@ -288,6 +314,19 @@ export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
     auditFieldsChanged: "Fields changed",
   },
   ar: {
+    twoStepTitle: "تأكيد هويتك",
+    twoStepBody: "أدخل الرمز المؤلف من 6 أرقام من تطبيق المصادقة. يبقي هذه الجلسة مفتوحة على وحدة التحكم لمدة 12 ساعة.",
+    twoStepSetupTitle: "إعداد تسجيل الدخول بخطوتين",
+    twoStepSetupBody:
+      "تحتاج وحدة التحكم إلى خطوة ثانية. أضف مشوار إلى تطبيق مصادقة (Google Authenticator أو Microsoft Authenticator أو 1Password…) بهذا المفتاح، ثم أدخل الرمز الذي يظهر.",
+    twoStepStart: "اعرض مفتاحي",
+    twoStepKey: "المفتاح",
+    twoStepOpenApp: "افتح في تطبيق المصادقة",
+    twoStepCode: "الرمز",
+    twoStepConfirm: "تأكيد",
+    twoStepNext: "تم الإعداد. أدخل الآن الرمز التالي الذي يظهره التطبيق (يتغير كل 30 ثانية).",
+    twoStepLost: "فقدت هاتفك؟ اطلب من مسؤول آخر بصلاحيات عليا إعادة ضبط المصادقة.",
+    twoStepWrong: "الرمز غير صحيح أو استُخدم من قبل. انتظر الرمز التالي.",
     queueTitle: "طابور التحقق",
     slaHours: "عمر اتفاقية الخدمة (ساعات)",
     filterStatus: "تصفية حسب الحالة",
@@ -430,6 +469,22 @@ export const adminCopy: Record<Locale, Record<AdminKey, string>> = {
     auditFieldsChanged: "الحقول المعدّلة",
   },
   fr: {
+    twoStepTitle: "Confirmez que c’est vous",
+    twoStepBody:
+      "Saisissez le code à 6 chiffres de votre application d’authentification. Il garde cette session ouverte sur la console pendant 12 heures.",
+    twoStepSetupTitle: "Activer la connexion en deux étapes",
+    twoStepSetupBody:
+      "La console demande une deuxième étape. Ajoutez Mshwar à une application d’authentification (Google Authenticator, Microsoft Authenticator, 1Password…) avec cette clé, puis saisissez le code affiché.",
+    twoStepStart: "Afficher ma clé",
+    twoStepKey: "Clé",
+    twoStepOpenApp: "Ouvrir dans mon application",
+    twoStepCode: "Code",
+    twoStepConfirm: "Confirmer",
+    twoStepNext:
+      "C’est activé. Saisissez maintenant le code suivant affiché par l’application (il change toutes les 30 secondes).",
+    twoStepLost:
+      "Téléphone perdu ? Demandez à un autre administrateur principal de réinitialiser votre authentificateur.",
+    twoStepWrong: "Ce code est faux ou déjà utilisé. Attendez le suivant.",
     queueTitle: "File de vérification",
     slaHours: "Âge SLA (heures)",
     filterStatus: "Filtrer par statut",
