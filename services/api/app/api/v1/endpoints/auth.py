@@ -179,7 +179,7 @@ async def register(
                 "password_hash": password_hash,
             },
         )
-        user_id = result.scalar_one()
+        user_id: UUID = result.scalar_one()
     except (IntegrityError, DBAPIError) as exc:
         detail = str(getattr(exc, "orig", exc))
         if "already registered" in detail or "23505" in detail:

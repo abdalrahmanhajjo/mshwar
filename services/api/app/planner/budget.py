@@ -41,7 +41,7 @@ def _retry_after(resets_at: object) -> int:
 
 async def charge_generation(user_id: str) -> dict[str, Any]:
     async with async_session() as session:
-        result = (
+        result: dict[str, Any] = (
             await session.execute(
                 text("SELECT app.consume_ai_budget(:user_id, :cost, :user_limit, :global_limit)"),
                 {
@@ -83,7 +83,7 @@ AI_BUDGET = Depends(_ai_budget)
 
 
 async def budget_status(db: AsyncSession, user_id: str) -> dict[str, Any]:
-    row = (
+    row: dict[str, Any] = (
         await db.execute(
             text("SELECT app.ai_budget_status(:user_id, :limit)"),
             {"user_id": user_id, "limit": _micros(settings.ai_user_daily_budget_usd)},

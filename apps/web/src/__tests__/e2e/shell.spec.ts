@@ -145,7 +145,9 @@ test.describe("MSHWAR-29 recovery routes", () => {
   test("reset-password shows invalid state without a token and a form with one", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/reset-password");
-    await expect(page.getByText("This reset link is invalid or has expired.")).toBeVisible();
+    // Suspense can briefly keep a hidden streamed copy outside the page landmark.
+    await expect(page.getByRole("main").getByText("This reset link is invalid or has expired.")).toBeVisible();
+    await expect(page.getByRole("main").getByLabel("New password")).toHaveCount(0);
     await assertNoHorizontalScroll(page);
 
     await page.setViewportSize({ width: 1440, height: 900 });
