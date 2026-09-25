@@ -108,6 +108,8 @@ export type MessageKey =
   | "businessSurface"
   | "adminSurface"
   | "plannerHealth"
+  | "plannerLanguage"
+  | "catalogueGrowth"
   | "partnerSurface"
   | "partnerFooter"
   | "driverHome"
@@ -273,6 +275,8 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     businessSurface: "Business",
     adminSurface: "Admin",
     plannerHealth: "Planner health",
+    plannerLanguage: "Planner language",
+    catalogueGrowth: "Catalogue growth",
     partnerSurface: "Partner",
     partnerFooter: "Partner portal — travellers pay you directly, never through Mshwar.",
     driverHome: "My application",
@@ -438,6 +442,8 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     businessSurface: "الأعمال",
     adminSurface: "الإدارة",
     plannerHealth: "صحة المخطِّط",
+    plannerLanguage: "لغة المخطِّط",
+    catalogueGrowth: "توسيع الدليل",
     partnerSurface: "شريك",
     partnerFooter: "بوابة الشركاء — يدفع لك المسافرون مباشرةً، لا عبر مشوار.",
     driverHome: "طلبي",
@@ -604,6 +610,8 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     businessSurface: "Professionnel",
     adminSurface: "Admin",
     plannerHealth: "Santé du planificateur",
+    plannerLanguage: "Langage du planificateur",
+    catalogueGrowth: "Enrichir le catalogue",
     partnerSurface: "Partenaire",
     partnerFooter: "Portail partenaire — les voyageurs vous paient directement, jamais via Mshwar.",
     driverHome: "Ma candidature",
