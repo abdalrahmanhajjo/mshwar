@@ -216,6 +216,40 @@ export function saveListingPlaceTypes(orgId: string, experienceId: string, input
   );
 }
 
+/** Yes/no facts travellers filter a day on. A fact left out is unknown - never assumed. */
+export const FOOD_FACTS = ["halal", "vegetarian", "vegan", "gluten_free", "serves_alcohol", "outdoor_seating"] as const;
+export const ACCESS_FACTS = [
+  "wheelchair_access",
+  "step_free",
+  "accessible_toilet",
+  "parking",
+  "kids_friendly",
+  "stroller_friendly",
+] as const;
+export const PAYMENT_FACTS = ["accepts_card", "accepts_usd_cash", "accepts_lbp_cash"] as const;
+export const VIEWS = ["sea", "mountain", "city", "valley", "sunset"] as const;
+export type FactFlag = (typeof FOOD_FACTS)[number] | (typeof ACCESS_FACTS)[number] | (typeof PAYMENT_FACTS)[number];
+export type PlaceView = (typeof VIEWS)[number];
+
+export type PlaceFacts = Partial<Record<FactFlag, boolean>> & {
+  min_age?: number;
+  views?: PlaceView[];
+  languages?: string[];
+  dress_code?: string;
+  source?: "owner" | "staff";
+  checked_on?: string;
+  /** Over a year old: the planner no longer uses it until it is confirmed again. */
+  stale?: boolean;
+};
+
+export function fetchListingFacts(orgId: string, experienceId: string) {
+  return apiRequest<PlaceFacts>(`/api/v1/venues/portal/${orgId}/listings/${experienceId}/facts`);
+}
+
+export function saveListingFacts(orgId: string, experienceId: string, input: PlaceFacts) {
+  return apiRequest<PlaceFacts>(`/api/v1/venues/portal/${orgId}/listings/${experienceId}/facts`, json("PUT", input));
+}
+
 export function fetchClaims(orgId: string) {
   return apiRequest<
     {

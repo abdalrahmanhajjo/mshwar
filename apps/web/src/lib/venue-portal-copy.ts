@@ -83,7 +83,44 @@ export type VenuePortalKey =
   | "group_essentials"
   | "placeTypesRemove"
   | "typicalSpend"
-  | "typicalSpendHint";
+  | "typicalSpendHint"
+  | "factsTitle"
+  | "factsBody"
+  | "factsStale"
+  | "factsCheckedOn"
+  | "factsUnknown"
+  | "factsYes"
+  | "factsNo"
+  | "factsFood"
+  | "factsAccess"
+  | "factsPayment"
+  | "fact_halal"
+  | "fact_vegetarian"
+  | "fact_vegan"
+  | "fact_gluten_free"
+  | "fact_serves_alcohol"
+  | "fact_outdoor_seating"
+  | "fact_wheelchair_access"
+  | "fact_step_free"
+  | "fact_accessible_toilet"
+  | "fact_parking"
+  | "fact_kids_friendly"
+  | "fact_stroller_friendly"
+  | "fact_accepts_card"
+  | "fact_accepts_usd_cash"
+  | "fact_accepts_lbp_cash"
+  | "factsViews"
+  | "view_sea"
+  | "view_mountain"
+  | "view_city"
+  | "view_valley"
+  | "view_sunset"
+  | "factsMinAge"
+  | "factsLanguages"
+  | "factsLanguagesHint"
+  | "factsDressCode"
+  | "factsSave"
+  | "factsSaved";
 
 export const venuePortalCopy: Record<Locale, Record<VenuePortalKey, string>> = {
   en: {
@@ -173,6 +210,45 @@ export const venuePortalCopy: Record<Locale, Record<VenuePortalKey, string>> = {
     typicalSpend: "Typical spend per person (USD)",
     typicalSpendHint:
       "What one person usually spends on a meal here. The trip planner prices meals with it; without it a meal shows “price on request”.",
+    factsTitle: "What travellers can count on",
+    factsBody:
+      "Travellers filter their day on these. Answer only what you are sure of: “Not sure” is better than a guess, and a “No” keeps the wrong travellers away.",
+    factsStale:
+      "These answers are over a year old, so the planner no longer uses them. Check them and save to confirm.",
+    factsCheckedOn: "Last confirmed {date}",
+    factsUnknown: "Not sure",
+    factsYes: "Yes",
+    factsNo: "No",
+    factsFood: "Food and drink",
+    factsAccess: "Access and families",
+    factsPayment: "Payment",
+    fact_halal: "Halal",
+    fact_vegetarian: "Vegetarian dishes",
+    fact_vegan: "Vegan dishes",
+    fact_gluten_free: "Gluten-free dishes",
+    fact_serves_alcohol: "Serves alcohol",
+    fact_outdoor_seating: "Outdoor seating",
+    fact_wheelchair_access: "Wheelchair access",
+    fact_step_free: "Step-free entrance",
+    fact_accessible_toilet: "Accessible toilet",
+    fact_parking: "Parking",
+    fact_kids_friendly: "Good for children",
+    fact_stroller_friendly: "Pushchair-friendly",
+    fact_accepts_card: "Cards accepted",
+    fact_accepts_usd_cash: "US dollars cash",
+    fact_accepts_lbp_cash: "Lebanese pounds cash",
+    factsViews: "Views",
+    view_sea: "Sea",
+    view_mountain: "Mountain",
+    view_city: "City",
+    view_valley: "Valley",
+    view_sunset: "Sunset",
+    factsMinAge: "Minimum age",
+    factsLanguages: "Languages spoken",
+    factsLanguagesHint: "Separate with commas, e.g. Arabic, English, French.",
+    factsDressCode: "Dress code",
+    factsSave: "Save facts",
+    factsSaved: "Saved. Travellers who need these can now find this place.",
   },
   ar: {
     detailsTitle: "مطعم أو مكان إقامة",
@@ -260,6 +336,44 @@ export const venuePortalCopy: Record<Locale, Record<VenuePortalKey, string>> = {
     typicalSpend: "متوسط إنفاق الشخص (بالدولار)",
     typicalSpendHint:
       "ما ينفقه الشخص عادةً على وجبة هنا. يسعّر مخطِّط الرحلات الوجبات به؛ ومن دونه تظهر الوجبة «السعر عند الطلب».",
+    factsTitle: "ما يمكن للمسافرين الاعتماد عليه",
+    factsBody:
+      "يفلتر المسافرون يومهم على هذه المعلومات. أجب فقط عمّا أنت متأكد منه: «لست متأكدًا» أفضل من التخمين، و«لا» تُبعد من لا يناسبه المكان.",
+    factsStale: "مرّ أكثر من عام على هذه الإجابات، لذا لم يعد المخطِّط يستخدمها. راجعها واحفظها لتأكيدها.",
+    factsCheckedOn: "آخر تأكيد {date}",
+    factsUnknown: "لست متأكدًا",
+    factsYes: "نعم",
+    factsNo: "لا",
+    factsFood: "الطعام والشراب",
+    factsAccess: "سهولة الوصول والعائلات",
+    factsPayment: "الدفع",
+    fact_halal: "حلال",
+    fact_vegetarian: "أطباق نباتية",
+    fact_vegan: "أطباق نباتية صرفة",
+    fact_gluten_free: "أطباق خالية من الغلوتين",
+    fact_serves_alcohol: "يقدّم الكحول",
+    fact_outdoor_seating: "جلسات خارجية",
+    fact_wheelchair_access: "مناسب للكراسي المتحركة",
+    fact_step_free: "مدخل بلا درج",
+    fact_accessible_toilet: "حمّام مجهّز لذوي الإعاقة",
+    fact_parking: "موقف سيارات",
+    fact_kids_friendly: "مناسب للأطفال",
+    fact_stroller_friendly: "مناسب لعربات الأطفال",
+    fact_accepts_card: "يقبل البطاقات",
+    fact_accepts_usd_cash: "نقدًا بالدولار",
+    fact_accepts_lbp_cash: "نقدًا بالليرة اللبنانية",
+    factsViews: "الإطلالات",
+    view_sea: "البحر",
+    view_mountain: "الجبل",
+    view_city: "المدينة",
+    view_valley: "الوادي",
+    view_sunset: "الغروب",
+    factsMinAge: "الحد الأدنى للعمر",
+    factsLanguages: "اللغات المحكية",
+    factsLanguagesHint: "افصل بينها بفواصل، مثل: العربية، الإنجليزية، الفرنسية.",
+    factsDressCode: "قواعد اللباس",
+    factsSave: "حفظ المعلومات",
+    factsSaved: "تم الحفظ. يمكن الآن للمسافرين الذين يحتاجون هذه المعلومات إيجاد هذا المكان.",
   },
   fr: {
     detailsTitle: "Restaurant ou hébergement",
@@ -348,6 +462,45 @@ export const venuePortalCopy: Record<Locale, Record<VenuePortalKey, string>> = {
     typicalSpend: "Dépense habituelle par personne (USD)",
     typicalSpendHint:
       "Ce qu’une personne dépense habituellement pour un repas ici. Le planificateur s’en sert pour chiffrer les repas ; sans elle, le repas affiche « prix sur demande ».",
+    factsTitle: "Ce que les voyageurs peuvent attendre",
+    factsBody:
+      "Les voyageurs filtrent leur journée selon ces informations. Ne répondez que si vous êtes sûr : « Je ne sais pas » vaut mieux qu’une supposition, et un « Non » évite les mauvaises surprises.",
+    factsStale:
+      "Ces réponses datent de plus d’un an : le planificateur ne les utilise plus. Vérifiez-les et enregistrez pour les confirmer.",
+    factsCheckedOn: "Dernière confirmation le {date}",
+    factsUnknown: "Je ne sais pas",
+    factsYes: "Oui",
+    factsNo: "Non",
+    factsFood: "Nourriture et boissons",
+    factsAccess: "Accès et familles",
+    factsPayment: "Paiement",
+    fact_halal: "Halal",
+    fact_vegetarian: "Plats végétariens",
+    fact_vegan: "Plats végans",
+    fact_gluten_free: "Plats sans gluten",
+    fact_serves_alcohol: "Sert de l’alcool",
+    fact_outdoor_seating: "Places en extérieur",
+    fact_wheelchair_access: "Accès fauteuil roulant",
+    fact_step_free: "Entrée sans marche",
+    fact_accessible_toilet: "Toilettes accessibles",
+    fact_parking: "Parking",
+    fact_kids_friendly: "Adapté aux enfants",
+    fact_stroller_friendly: "Accessible en poussette",
+    fact_accepts_card: "Cartes acceptées",
+    fact_accepts_usd_cash: "Espèces en dollars",
+    fact_accepts_lbp_cash: "Espèces en livres libanaises",
+    factsViews: "Vues",
+    view_sea: "Mer",
+    view_mountain: "Montagne",
+    view_city: "Ville",
+    view_valley: "Vallée",
+    view_sunset: "Coucher de soleil",
+    factsMinAge: "Âge minimum",
+    factsLanguages: "Langues parlées",
+    factsLanguagesHint: "Séparez par des virgules, par ex. arabe, anglais, français.",
+    factsDressCode: "Code vestimentaire",
+    factsSave: "Enregistrer",
+    factsSaved: "Enregistré. Les voyageurs qui en ont besoin peuvent désormais trouver ce lieu.",
   },
 };
 

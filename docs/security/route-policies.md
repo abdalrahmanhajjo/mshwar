@@ -10,11 +10,11 @@ The policy model is described in [authorization.md](authorization.md).
 | `dev` | 1 |
 | `job` | 7 |
 | `public` | 43 |
-| `session` | 182 |
+| `session` | 183 |
 | `signature` | 1 |
 | `token` | 6 |
 | `verified` | 7 |
-| **Total** | **362** |
+| **Total** | **363** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -375,6 +375,7 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/venues/portal/{org_id}/claims` | `session` |
 | GET | `/api/v1/venues/portal/{org_id}/listings/{experience_id}` | `session` |
 | PUT | `/api/v1/venues/portal/{org_id}/listings/{experience_id}` | `session` |
+| GET | `/api/v1/venues/portal/{org_id}/listings/{experience_id}/facts` | `session` |
 | PUT | `/api/v1/venues/portal/{org_id}/listings/{experience_id}/facts` | `session` |
 | GET | `/api/v1/venues/portal/{org_id}/listings/{experience_id}/place-types` | `session` |
 | PUT | `/api/v1/venues/portal/{org_id}/listings/{experience_id}/place-types` | `session` |
