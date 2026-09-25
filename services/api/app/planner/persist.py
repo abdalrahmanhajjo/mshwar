@@ -140,8 +140,13 @@ async def persist_plan(
     ranked: list[dict[str, Any]],
     latency_ms: int,
     run_status: str,
+    extra_constraints: dict[str, Any] | None = None,
+    run_versions: dict[str, str] | None = None,
 ) -> dict[str, Any]:
+    """Seal a version. ``extra_constraints`` rides along in the version's constraints (a v2 day's
+    steps, including empty ones); ``run_versions`` overrides the prompt/optimizer labels of the run."""
     payload = constraints.model_dump(mode="json")
+    payload.update(extra_constraints or {})
     payload["retrieved_ids"] = retrieved_ids
     payload["assumed_defaults"] = [item.model_dump(mode="json") for item in assumed]
     payload["degraded"] = degraded
@@ -214,6 +219,7 @@ async def persist_plan(
                         "prompt_version": "intent-v1",
                         "ranker_version": "ranker-v1",
                         "optimizer_version": "greedy-v1",
+                        **(run_versions or {}),
                         "status": run_status,
                         "latency_ms": latency_ms,
                         "candidates": ranked,

@@ -184,6 +184,38 @@ def _session_payload(
     return body
 
 
+async def _plan_as_day(
+    db: AsyncSession,
+    user_id: UUID,
+    raw: str,
+    locale: str,
+    session_id: UUID | None,
+    trip_id: UUID | None,
+    answers: dict[str, Any] | None,
+    approve_budget: bool,
+    injection: str | None,
+) -> dict[str, Any] | None:
+    """A day told step by step ("a changer, then breakfast, then ... a hotel") is planned step by
+    step (trip builder v2). None: the request keeps the classic path."""
+    from app.planner.day_session import catalogue_terms, plan_day_session, reads_as_day
+
+    terms = await catalogue_terms(db)
+    if not reads_as_day(raw, locale, terms):
+        return None
+    return await plan_day_session(
+        db,
+        user_id,
+        raw,
+        locale,
+        session_id,
+        trip_id,
+        answers=answers,
+        approve_budget=approve_budget,
+        injection=injection,
+        terms=terms,
+    )
+
+
 async def start_or_continue(
     db: AsyncSession,
     user_id: UUID,
@@ -196,12 +228,13 @@ async def start_or_continue(
 ) -> dict[str, Any]:
     started = time.monotonic()
     injection = await _scan_input(db, user_id, session_id, raw)
+    day = await _plan_as_day(db, user_id, raw, locale, session_id, trip_id, answers, approve_budget, injection)
+    if day is not None:
+        return day
     extracted, degraded = _extract(raw, locale, degraded=False)
     # The extractor reads the sentence; the catalogue knows the names. A town the
     # extractor never heard of is still answerable if the traveller named it.
     extracted = await resolve_anchors(db, raw, extracted)
-    if injection:
-        degraded = degraded or False
     stored = None
     round_number = 0
     pending: dict[str, Any] = {}
@@ -354,6 +387,30 @@ async def regenerate(
             elif exclude_unlocked:
                 exclude_ids.add(exp)
     degraded = bool(stored.get("degraded"))
+    raw = str(stored.get("raw_text") or "")
+    from app.planner.day_session import catalogue_terms, plan_day_session, reads_as_day
+
+    terms = await catalogue_terms(db)
+    if raw and reads_as_day(raw, constraints.locale, terms):
+        # Fresh places for every step that is not locked; what the traveller already settled stays.
+        kept = {
+            key: getattr(constraints, key)
+            for key in ("party_size", "budget_minor", "strict_budget", "currency")
+            if getattr(constraints, key) is not None
+        }
+        return await plan_day_session(
+            db,
+            user_id,
+            raw,
+            constraints.locale,
+            session_id,
+            None,
+            answers=kept,
+            approve_budget=False,
+            injection=None,
+            terms=terms,
+            exclude_ids=exclude_ids - locked_ids,
+        )
     candidates, ranked, blocked, plan = await _build(db, constraints, locked_ids=locked_ids, exclude_ids=exclude_ids)
     if plan.infeasible:
         return _session_payload(
