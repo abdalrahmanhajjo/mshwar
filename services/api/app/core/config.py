@@ -188,6 +188,8 @@ class Settings(BaseSettings):
     sendgrid_api_key: str = Field(default="", validation_alias=AliasChoices("SENDGRID_API_KEY", "sendgrid_api_key"))
     # Partner phone checks (V1). console logs that a code was sent (never the
     # code); twilio sends a real SMS through Twilio's Messages API.
+    # Two-step sign-in for the operations console (SR-14). Unset: required wherever the app is deployed.
+    admin_mfa: bool | None = Field(default=None, validation_alias=AliasChoices("ADMIN_MFA", "admin_mfa"))
     sms_backend: str = Field(default="console", validation_alias=AliasChoices("SMS_BACKEND", "sms_backend"))
     twilio_account_sid: str = Field(
         default="", validation_alias=AliasChoices("TWILIO_ACCOUNT_SID", "twilio_account_sid")
@@ -234,6 +236,10 @@ class Settings(BaseSettings):
         return self.environment == "development"
 
     @property
+    def admin_mfa_required(self) -> bool:
+        return self.is_deployed if self.admin_mfa is None else self.admin_mfa
+
+    @property
     def is_deployed(self) -> bool:
         """Staging and production: real users, HTTPS, no test shortcuts."""
         return self.environment in DEPLOYED_ENVIRONMENTS
@@ -257,6 +263,8 @@ class Settings(BaseSettings):
             self._validate_deployed()
         if self.is_production:
             self._validate_production()
+        if self.is_deployed and self.admin_mfa is False:
+            raise ValueError(f"ADMIN_MFA cannot be turned off in {self.environment}: admins need two-step sign-in")
 
     def _validate_deployed(self) -> None:
         """Staging and production: no default secrets and no test shortcuts."""

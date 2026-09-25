@@ -6,7 +6,8 @@ The policy model is described in [authorization.md](authorization.md).
 | Policy | Routes |
 |---|---|
 | `actor` | 15 |
-| `admin` | 107 |
+| `admin` | 108 |
+| `admin-signin` | 2 |
 | `dev` | 1 |
 | `job` | 7 |
 | `public` | 43 |
@@ -14,7 +15,7 @@ The policy model is described in [authorization.md](authorization.md).
 | `signature` | 1 |
 | `token` | 6 |
 | `verified` | 7 |
-| **Total** | **370** |
+| **Total** | **373** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -54,6 +55,8 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/admin/leads/{lead_id}/decision` | `admin` |
 | POST | `/api/v1/admin/leads/{lead_id}/publish` | `admin` |
 | GET | `/api/v1/admin/me` | `admin` |
+| GET | `/api/v1/admin/mfa` | `admin-signin` |
+| POST | `/api/v1/admin/mfa/verify` | `admin-signin` |
 | GET | `/api/v1/admin/moderation` | `admin` |
 | POST | `/api/v1/admin/moderation/bulk` | `admin` |
 | GET | `/api/v1/admin/moderation/events` | `admin` |
@@ -113,6 +116,7 @@ The policy model is described in [authorization.md](authorization.md).
 | PUT | `/api/v1/admin/transport/{route_id}` | `admin` |
 | POST | `/api/v1/admin/transport/{route_id}/decision` | `admin` |
 | GET | `/api/v1/admin/users` | `admin` |
+| POST | `/api/v1/admin/users/{user_id}/mfa/reset` | `admin` |
 | GET | `/api/v1/admin/venues` | `admin` |
 | POST | `/api/v1/admin/venues` | `admin` |
 | POST | `/api/v1/admin/venues/claims/{claim_id}` | `admin` |

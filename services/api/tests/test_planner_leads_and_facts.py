@@ -132,6 +132,18 @@ def test_the_download_queries_ask_for_what_the_importer_maps() -> None:
     assert (QUERIES / "lebanon-wikidata.sparql").read_text(encoding="utf-8") == wikidata_query()
 
 
+def test_the_field_sheet_never_runs_a_formula() -> None:
+    from app.seed.field_sheet import COLUMNS, cell, field_sheet_csv
+
+    assert [cell(value) for value in ("=HYPERLINK(1)", "+1", "-2", "@SUM(A1)", "Byblos", None, 34.1)] == [
+        "'=HYPERLINK(1)", "'+1", "'-2", "'@SUM(A1)", "Byblos", "", "34.1",
+    ]  # fmt: skip
+    sheet = field_sheet_csv([{"id": "l1", "name": "=cmd|' /C calc'!A0", "lat": 34.1, "lng": 35.6, "source": "osm"}])
+    header, row = sheet.lstrip("\ufeff").splitlines()
+    assert header.split(",") == list(COLUMNS)
+    assert row.split(",")[1].startswith("'=cmd"), "the injected formula is written as text"
+
+
 # ---- Through the API (needs a migrated database) ----
 
 

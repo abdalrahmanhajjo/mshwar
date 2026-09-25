@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { AdminTwoStep } from "@/components/auth/admin-two-step";
 import { useAuth } from "@/components/shell/auth-provider";
 import { useLocale } from "@/components/shell/locale-provider";
 import { isAdminTier, isElevatedTier } from "@/lib/admin";
@@ -30,5 +31,5 @@ export function RequireAdmin({ children, elevated = false }: { children: React.R
       </p>
     );
   }
-  return children;
+  return <AdminTwoStep>{children}</AdminTwoStep>;
 }
