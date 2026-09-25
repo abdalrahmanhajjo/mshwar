@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { BadgeCheck, Loader2, Save } from "lucide-react";
+import { PlaceTypesEditor } from "@/components/business/place-types-editor";
 import { errorText } from "@/components/partners/step";
 import { useLocale } from "@/components/shell/locale-provider";
 import { Button } from "@/components/ui/button";
@@ -171,110 +172,119 @@ export function ListingDetailsEditor({ orgId, experienceId }: { orgId: string; e
 
   const v = data.verification;
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle as="h2">{copy.detailsTitle}</CardTitle>
-        <CardDescription>{copy.detailsBody}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form className="grid gap-5" onSubmit={(event) => void save(event)}>
-          <div className="grid gap-1.5 sm:max-w-xs">
-            <Label htmlFor="ld-kind">{copy.kindLabel}</Label>
-            <NativeSelect id="ld-kind" value={kind} onChange={(event) => setKind(event.target.value as ListingKind)}>
-              {KINDS.map((value) => (
-                <option key={value} value={value}>
-                  {copy[`kind_${value}` as VenuePortalKey]}
-                </option>
-              ))}
-            </NativeSelect>
-          </div>
-          {kind === "restaurant" || kind === "hotel" ? (
-            <>
-              {data.checked && v.checked_on && v.review_by ? (
-                <Notice tone="success" icon={<BadgeCheck aria-hidden />}>
-                  {interpolate(copy.checkedStatus, { date: day(v.checked_on), due: day(v.review_by) })}
-                </Notice>
-              ) : (
-                <Notice tone="info">{copy.notChecked}</Notice>
-              )}
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle as="h2">{copy.detailsTitle}</CardTitle>
+          <CardDescription>{copy.detailsBody}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form className="grid gap-5" onSubmit={(event) => void save(event)}>
+            <div className="grid gap-1.5 sm:max-w-xs">
+              <Label htmlFor="ld-kind">{copy.kindLabel}</Label>
+              <NativeSelect id="ld-kind" value={kind} onChange={(event) => setKind(event.target.value as ListingKind)}>
+                {KINDS.map((value) => (
+                  <option key={value} value={value}>
+                    {copy[`kind_${value}` as VenuePortalKey]}
+                  </option>
+                ))}
+              </NativeSelect>
+            </div>
+            {kind === "restaurant" || kind === "hotel" ? (
+              <>
+                {data.checked && v.checked_on && v.review_by ? (
+                  <Notice tone="success" icon={<BadgeCheck aria-hidden />}>
+                    {interpolate(copy.checkedStatus, { date: day(v.checked_on), due: day(v.review_by) })}
+                  </Notice>
+                ) : (
+                  <Notice tone="info">{copy.notChecked}</Notice>
+                )}
+                <div className="grid gap-4 sm:grid-cols-3">
+                  {field("licence_number", copy.licenceNumber, { maxLength: 60 })}
+                  {field("licence_authority", copy.licenceAuthority, { maxLength: 120 })}
+                  {field("licence_expires_on", copy.licenceExpires, { type: "date" })}
+                </div>
+                <p className="text-xs text-text-muted">{copy.licenceNote}</p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {field("reservation_phone", copy.reservationPhone, { type: "tel", dir: "ltr", maxLength: 20 })}
+                  {field("reservation_whatsapp", copy.reservationWhatsapp, { type: "tel", dir: "ltr", maxLength: 20 })}
+                </div>
+              </>
+            ) : null}
+            {kind === "restaurant" ? (
               <div className="grid gap-4 sm:grid-cols-3">
-                {field("licence_number", copy.licenceNumber, { maxLength: 60 })}
-                {field("licence_authority", copy.licenceAuthority, { maxLength: 120 })}
-                {field("licence_expires_on", copy.licenceExpires, { type: "date" })}
+                {field("cuisines", copy.cuisines)}
+                <div className="grid gap-1.5">
+                  <Label htmlFor="ld-price_level">{copy.priceLevel}</Label>
+                  <NativeSelect
+                    id="ld-price_level"
+                    value={form.price_level}
+                    onChange={(event) => set("price_level", event.target.value)}
+                  >
+                    <option value="">{copy.priceAny}</option>
+                    {[1, 2, 3, 4].map((level) => (
+                      <option key={level} value={String(level)}>
+                        {"$".repeat(level)}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                </div>
+                {field("reservation_url", copy.reservationUrl, { type: "url", dir: "ltr" })}
               </div>
-              <p className="text-xs text-text-muted">{copy.licenceNote}</p>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {field("reservation_phone", copy.reservationPhone, { type: "tel", dir: "ltr", maxLength: 20 })}
-                {field("reservation_whatsapp", copy.reservationWhatsapp, { type: "tel", dir: "ltr", maxLength: 20 })}
+            ) : null}
+            {kind === "hotel" ? (
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-1.5">
+                  <Label htmlFor="ld-stay_type">{copy.stayType}</Label>
+                  <NativeSelect
+                    id="ld-stay_type"
+                    value={form.stay_type}
+                    onChange={(event) => set("stay_type", event.target.value)}
+                  >
+                    {STAY_TYPES.map((type) => (
+                      <option key={type} value={type}>
+                        {copy[`stay_${type}` as VenuePortalKey]}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                </div>
+                {field("stars", copy.stars, { type: "number", min: 1, max: 5 })}
+                {field("rooms", copy.rooms, { type: "number", min: 1, max: 2000 })}
+                {field("check_in", copy.checkIn, { type: "time" })}
+                {field("check_out", copy.checkOut, { type: "time" })}
+                {field("price_from", copy.priceFrom, { inputMode: "decimal", dir: "ltr" })}
+                {field("booking_url", copy.bookingUrl, { type: "url", dir: "ltr" })}
+                {field("amenities", copy.amenities)}
+                <label className="inline-flex items-center gap-2 self-end pb-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={acceptsRequests}
+                    onChange={(event) => setAcceptsRequests(event.target.checked)}
+                  />
+                  {copy.acceptsRequests}
+                </label>
               </div>
-            </>
-          ) : null}
-          {kind === "restaurant" ? (
-            <div className="grid gap-4 sm:grid-cols-3">
-              {field("cuisines", copy.cuisines)}
-              <div className="grid gap-1.5">
-                <Label htmlFor="ld-price_level">{copy.priceLevel}</Label>
-                <NativeSelect
-                  id="ld-price_level"
-                  value={form.price_level}
-                  onChange={(event) => set("price_level", event.target.value)}
-                >
-                  <option value="">{copy.priceAny}</option>
-                  {[1, 2, 3, 4].map((level) => (
-                    <option key={level} value={String(level)}>
-                      {"$".repeat(level)}
-                    </option>
-                  ))}
-                </NativeSelect>
-              </div>
-              {field("reservation_url", copy.reservationUrl, { type: "url", dir: "ltr" })}
-            </div>
-          ) : null}
-          {kind === "hotel" ? (
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="grid gap-1.5">
-                <Label htmlFor="ld-stay_type">{copy.stayType}</Label>
-                <NativeSelect
-                  id="ld-stay_type"
-                  value={form.stay_type}
-                  onChange={(event) => set("stay_type", event.target.value)}
-                >
-                  {STAY_TYPES.map((type) => (
-                    <option key={type} value={type}>
-                      {copy[`stay_${type}` as VenuePortalKey]}
-                    </option>
-                  ))}
-                </NativeSelect>
-              </div>
-              {field("stars", copy.stars, { type: "number", min: 1, max: 5 })}
-              {field("rooms", copy.rooms, { type: "number", min: 1, max: 2000 })}
-              {field("check_in", copy.checkIn, { type: "time" })}
-              {field("check_out", copy.checkOut, { type: "time" })}
-              {field("price_from", copy.priceFrom, { inputMode: "decimal", dir: "ltr" })}
-              {field("booking_url", copy.bookingUrl, { type: "url", dir: "ltr" })}
-              {field("amenities", copy.amenities)}
-              <label className="inline-flex items-center gap-2 self-end pb-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={acceptsRequests}
-                  onChange={(event) => setAcceptsRequests(event.target.checked)}
-                />
-                {copy.acceptsRequests}
-              </label>
-            </div>
-          ) : null}
-          {field("accessibility", copy.accessibility)}
-          {message ? (
-            <Notice tone={message.tone} role={message.tone === "danger" ? "alert" : "status"}>
-              {message.text}
-            </Notice>
-          ) : null}
-          <Button type="submit" className="w-fit" disabled={busy}>
-            {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Save aria-hidden />}
-            {copy.save}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+            ) : null}
+            {field("accessibility", copy.accessibility)}
+            {message ? (
+              <Notice tone={message.tone} role={message.tone === "danger" ? "alert" : "status"}>
+                {message.text}
+              </Notice>
+            ) : null}
+            <Button type="submit" className="w-fit" disabled={busy}>
+              {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Save aria-hidden />}
+              {copy.save}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+      {/* Keyed by the saved kind: a restaurant and an attraction offer different kinds of place. */}
+      <PlaceTypesEditor
+        key={data.listing_kind}
+        orgId={orgId}
+        experienceId={experienceId}
+        listingKind={data.listing_kind}
+      />
+    </>
   );
 }
