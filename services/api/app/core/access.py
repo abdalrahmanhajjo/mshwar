@@ -40,7 +40,8 @@ class Policy(StrEnum):
     PUBLIC = "public"  # anyone; read-only catalogue and reference data, sign-in flows
     SESSION = "session"  # a signed-in, active account
     VERIFIED = "verified"  # a signed-in account with a verified email (money moves)
-    ADMIN = "admin"  # a platform admin (the handler may demand the elevated tier)
+    ADMIN = "admin"  # a platform admin with a verified second step (the handler may demand the elevated tier)
+    ADMIN_SIGNIN = "admin-signin"  # a platform admin before the second step: only the two-step screen
     ACTOR = "actor"  # a signed-in account or a group-trip guest cookie
     TOKEN = "token"  # noqa: S105 - policy name, not a credential. A secret in the URL (share link, unsubscribe, signed file), rate limited
     JOB = "job"  # an internal scheduler presenting X-Job-Token
@@ -70,6 +71,10 @@ async def _verified(request: Request, db: AsyncSession = Depends(get_auth_db)) -
 
 async def _admin(request: Request, db: AsyncSession = Depends(get_auth_db)) -> dict[str, Any]:  # noqa: B008
     return await require_admin(request, db)
+
+
+async def _admin_signin(request: Request, db: AsyncSession = Depends(get_auth_db)) -> dict[str, Any]:  # noqa: B008
+    return await require_admin(request, db, second_step=False)
 
 
 async def _actor(request: Request, db: AsyncSession = Depends(get_auth_db)) -> tuple[str | None, str | None]:  # noqa: B008
@@ -102,6 +107,7 @@ PUBLIC = _mark(Policy.PUBLIC, _public)
 SESSION = _mark(Policy.SESSION, _session)
 VERIFIED = _mark(Policy.VERIFIED, _verified)
 ADMIN = _mark(Policy.ADMIN, _admin)
+ADMIN_SIGNIN = _mark(Policy.ADMIN_SIGNIN, _admin_signin)
 ACTOR = _mark(Policy.ACTOR, _actor)
 TOKEN = _mark(Policy.TOKEN, _token)
 JOB = _mark(Policy.JOB, _job)
