@@ -6,15 +6,15 @@ The policy model is described in [authorization.md](authorization.md).
 | Policy | Routes |
 |---|---|
 | `actor` | 15 |
-| `admin` | 95 |
+| `admin` | 100 |
 | `dev` | 1 |
 | `job` | 7 |
 | `public` | 43 |
-| `session` | 181 |
+| `session` | 182 |
 | `signature` | 1 |
 | `token` | 6 |
 | `verified` | 7 |
-| **Total** | **356** |
+| **Total** | **362** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -48,6 +48,10 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/admin/guides/{profile_id}` | `admin` |
 | POST | `/api/v1/admin/guides/{profile_id}` | `admin` |
 | GET | `/api/v1/admin/kpis` | `admin` |
+| GET | `/api/v1/admin/leads` | `admin` |
+| POST | `/api/v1/admin/leads/import` | `admin` |
+| POST | `/api/v1/admin/leads/{lead_id}/decision` | `admin` |
+| POST | `/api/v1/admin/leads/{lead_id}/publish` | `admin` |
 | GET | `/api/v1/admin/me` | `admin` |
 | GET | `/api/v1/admin/moderation` | `admin` |
 | POST | `/api/v1/admin/moderation/bulk` | `admin` |
@@ -71,6 +75,7 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/admin/partners/{partner_id}/checks` | `admin` |
 | POST | `/api/v1/admin/payments/reconcile` | `admin` |
 | GET | `/api/v1/admin/payments/reconciliation` | `admin` |
+| PUT | `/api/v1/admin/place-facts/listings/{experience_id}` | `admin` |
 | GET | `/api/v1/admin/place-types/coverage` | `admin` |
 | PUT | `/api/v1/admin/place-types/listings/{experience_id}` | `admin` |
 | GET | `/api/v1/admin/planner/concepts` | `admin` |
@@ -370,6 +375,7 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/venues/portal/{org_id}/claims` | `session` |
 | GET | `/api/v1/venues/portal/{org_id}/listings/{experience_id}` | `session` |
 | PUT | `/api/v1/venues/portal/{org_id}/listings/{experience_id}` | `session` |
+| PUT | `/api/v1/venues/portal/{org_id}/listings/{experience_id}/facts` | `session` |
 | GET | `/api/v1/venues/portal/{org_id}/listings/{experience_id}/place-types` | `session` |
 | PUT | `/api/v1/venues/portal/{org_id}/listings/{experience_id}/place-types` | `session` |
 | POST | `/api/v1/webhooks/payments` | `signature` |

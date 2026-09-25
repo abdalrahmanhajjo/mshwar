@@ -292,6 +292,10 @@ class StepCandidate(CandidateRecord):
     trust: dict[str, Any] = Field(default_factory=dict)
     #: The listing's own details: typical spend, price per night, how to reserve or book (046).
     details: dict[str, Any] = Field(default_factory=dict)
+    #: Checked facts (halal, wheelchair access, views, ...) in date; unknown ones absent (049).
+    place_facts: dict[str, Any] = Field(default_factory=dict)
+    #: Needs the traveller has that this place has not confirmed either way.
+    unconfirmed_needs: list[str] = Field(default_factory=list)
 
 
 class EligibilityResult(BaseModel):

@@ -397,6 +397,7 @@ def _listing_flags(entry: PoolEntry, price: PriceLine, wait: int, hours_known: b
         "meal_unconfirmed": candidate.meal_unconfirmed,
         "outside_destination": entry.outside,
         "long_wait": wait >= LONG_WAIT_MINUTES,
+        "needs_unconfirmed": bool(candidate.unconfirmed_needs),
     }
     return tuple(name for name, on in flags.items() if on)
 

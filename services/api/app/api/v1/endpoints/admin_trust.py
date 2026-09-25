@@ -26,10 +26,14 @@ from app.planner.script.learning import CONCEPT_SLUGS, concept_catalogue, reset_
 from app.schemas.partners import (
     CheckedVenueIn,
     ClaimDecisionIn,
+    LeadDecisionIn,
+    LeadPublishIn,
+    LeadsImportIn,
     OfficeCheckIn,
     PartnerCheckIn,
     PartnerDecisionIn,
     PartnerDocumentDecisionIn,
+    PlaceFactsIn,
     PlaceTypesIn,
     RateDecisionIn,
     RegisterLoadIn,
@@ -521,3 +525,87 @@ async def retire_planner_phrase(
     )
     reset_phrases()
     return result
+
+
+# ---- Place facts and leads (migration 049) ----
+
+
+@router.put("/place-facts/listings/{experience_id}", dependencies=[access.ADMIN])
+async def set_place_facts(
+    experience_id: UUID,
+    payload: PlaceFactsIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    admin = await _admin_id(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.admin_set_place_facts(CAST(:admin AS uuid), CAST(:id AS uuid), CAST(:body AS jsonb))",
+        {"admin": admin, "id": str(experience_id), "body": payload.model_dump_json(exclude_none=True)},
+    )
+
+
+@router.post("/leads/import", dependencies=[access.ADMIN])
+async def import_leads(
+    payload: LeadsImportIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Leads from open data or an official list: checked by staff, never shown to travellers."""
+    admin = await _admin_id(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.admin_import_leads(CAST(:admin AS uuid), CAST(:body AS jsonb))",
+        {"admin": admin, "body": json.dumps(payload.leads, default=str)},
+    )
+
+
+@router.get("/leads", dependencies=[access.ADMIN])
+async def list_leads(
+    request: Request,
+    status: str = Query(default="new", pattern="^(new|checking|published|rejected|duplicate)$"),
+    destination: str = Query(default="", max_length=80),
+    place_type: str = Query(default="", max_length=40),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """The lead queue, what travellers asked for and could not get first."""
+    admin = await _admin_id(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.admin_list_leads(CAST(:admin AS uuid), CAST(:filter AS jsonb))",
+        {
+            "admin": admin,
+            "filter": json.dumps({"status": status, "destination": destination, "place_type": place_type}),
+        },
+    )
+
+
+@router.post("/leads/{lead_id}/decision", dependencies=[access.ADMIN])
+async def decide_lead(
+    lead_id: UUID,
+    payload: LeadDecisionIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    admin = await _admin_id(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.admin_decide_lead(CAST(:admin AS uuid), CAST(:id AS uuid), CAST(:body AS jsonb))",
+        {"admin": admin, "id": str(lead_id), "body": payload.model_dump_json()},
+    )
+
+
+@router.post("/leads/{lead_id}/publish", dependencies=[access.ADMIN])
+async def publish_lead(
+    lead_id: UUID,
+    payload: LeadPublishIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """After a visit or a call: the lead becomes a catalogue listing (a restaurant or stay as checked)."""
+    admin = await _admin_id(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.admin_publish_lead(CAST(:admin AS uuid), CAST(:id AS uuid), CAST(:body AS jsonb))",
+        {"admin": admin, "id": str(lead_id), "body": payload.model_dump_json(exclude_none=True)},
+    )
