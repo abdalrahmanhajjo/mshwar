@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
@@ -14,7 +15,18 @@ from app.main import app
 from app.planner.script import parse_day_script
 from app.planner.script.day import DayPools, PoolEntry, assemble_day
 from app.planner.script.retrieval import step_needs, step_query
-from app.seed.leads_import import in_lebanon, leads_from, osm_place_type
+from app.planner.script.vocabulary import STEP_TAGS
+from app.seed.leads_import import (
+    OSM_TAGS,
+    WIKIDATA_CLASSES,
+    in_lebanon,
+    leads_from,
+    osm_place_type,
+    overpass_query,
+    wikidata_query,
+)
+
+QUERIES = Path(__file__).resolve().parents[1] / "app" / "seed" / "queries"
 from tests.test_planner_day_assembly import constraints_for, place
 
 # ---- Needs: what a place must not contradict ----
@@ -82,6 +94,44 @@ def test_leads_are_named_places_inside_lebanon_only() -> None:
     assert in_lebanon(34.0, 35.8) and not in_lebanon(35.0, 35.8)
 
 
+def test_wikidata_results_become_leads() -> None:
+    sparql = {
+        "head": {"vars": ["item", "class", "coord", "name_en", "name_ar"]},
+        "results": {
+            "bindings": [
+                {
+                    "item": {"value": "http://www.wikidata.org/entity/Q1"},
+                    "class": {"value": "http://www.wikidata.org/entity/Q23413"},
+                    "coord": {"value": "Point(35.6456 34.1206)"},
+                    "name_en": {"value": "Byblos Castle"},
+                    "name_ar": {"value": "قلعة جبيل"},
+                },
+                {  # the same item again, through another class: kept once
+                    "item": {"value": "http://www.wikidata.org/entity/Q1"},
+                    "class": {"value": "http://www.wikidata.org/entity/Q57821"},
+                    "coord": {"value": "Point(35.6456 34.1206)"},
+                    "name_en": {"value": "Byblos Castle"},
+                },
+                {"item": {"value": "http://www.wikidata.org/entity/Q2"}, "coord": {"value": "Point(1 2)"}},
+            ]
+        },
+    }
+    (lead,) = leads_from(sparql, "wikidata")
+    assert (lead["external_id"], lead["place_type"], lead["name_ar"]) == ("Q1", "castle", "قلعة جبيل")
+    assert (lead["lat"], lead["lng"]) == (34.1206, 35.6456)
+
+
+def test_the_download_queries_ask_for_what_the_importer_maps() -> None:
+    query = overpass_query()
+    assert all(f'nwr["{key}"="{value}"]["name"]' in query for key, value, _slug in OSM_TAGS)
+    assert 'area["ISO3166-1"="LB"]' in query and "out center tags;" in query
+    assert all(f"wd:{qid}" in wikidata_query() for qid in WIKIDATA_CLASSES)
+    known = STEP_TAGS | {slug for _key, _value, slug in OSM_TAGS}
+    assert set(WIKIDATA_CLASSES.values()) <= known
+    assert (QUERIES / "lebanon.overpassql").read_text(encoding="utf-8") == query, "run scripts/export_lead_queries.py"
+    assert (QUERIES / "lebanon-wikidata.sparql").read_text(encoding="utf-8") == wikidata_query()
+
+
 # ---- Through the API (needs a migrated database) ----
 
 
@@ -124,5 +174,16 @@ async def test_facts_and_leads_through_the_api(api: AsyncClient) -> None:
     )
     assert rejected.status_code == 200 and rejected.json()["status"] == "rejected"
 
+    sheet = await api.get("/api/v1/admin/leads/field-sheet?status=new")
+    assert sheet.status_code == 200 and sheet.headers["content-type"].startswith("text/csv")
+    assert sheet.text.lstrip("\ufeff").splitlines()[0].startswith("lead_id,name,name_ar,place_type")
+    worklist = await api.get("/api/v1/admin/prices/worklist")
+    assert worklist.status_code == 200 and isinstance(worklist.json(), list)
+    slug = catalog["listing"].get("slug")
+    listing_page = await api.get(f"/api/v1/catalogue/experiences/{slug}") if slug else None
+    if listing_page is not None and listing_page.status_code == 200:
+        assert listing_page.json()["attributions"] == [], "a listing not made from open data credits nobody"
+
     await _register(api, f"stranger-{uuid4().hex[:8]}@example.com", "Stranger")
     assert (await api.get("/api/v1/admin/leads")).status_code == 403
+    assert (await api.get("/api/v1/admin/leads/field-sheet")).status_code == 403

@@ -1,7 +1,10 @@
 """Import place leads from open data (see app/seed/leads_import.py).
 
     python scripts/import_leads.py lebanon-overpass.json --source osm --admin you@mshwar.example
+    python scripts/import_leads.py lebanon-wikidata.json --source wikidata --admin you@mshwar.example
     python scripts/import_leads.py ministry-list.geojson --source official_list --admin you@mshwar.example
+
+The OpenStreetMap and Wikidata files come from the queries in app/seed/queries (docs/places-import.md).
 
 DATABASE_URL must point at the database. Leads are for staff to check; nothing reaches travellers.
 """

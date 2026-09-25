@@ -14,6 +14,7 @@ import { testSourcedPrices } from "./sourced-prices.mjs";
 import { testPlannerData } from "./planner-data.mjs";
 import { testLeadsAndFacts } from "./leads-and-facts.mjs";
 import { testPhraseCandidates } from "./phrase-candidates.mjs";
+import { testAttributionAndWorklist } from "./attribution-and-worklist.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const db = new PGlite({ extensions: { postgis, vector, btree_gist, pg_trgm } });
 const report = [];
@@ -78,6 +79,9 @@ try {
   );
   await good("phrase candidates never go live until approved; batches, rejections kept, versioned releases", () =>
     testPhraseCandidates(db),
+  );
+  await good("listings from open data credit their source; the price worklist lists what has no published price", () =>
+    testAttributionAndWorklist(db),
   );
   await sql("SELECT set_config('app.user_id',$1,false)", [alice]);
   await good("all app tables have forced RLS", async () =>

@@ -6,7 +6,7 @@ The policy model is described in [authorization.md](authorization.md).
 | Policy | Routes |
 |---|---|
 | `actor` | 15 |
-| `admin` | 105 |
+| `admin` | 107 |
 | `dev` | 1 |
 | `job` | 7 |
 | `public` | 43 |
@@ -14,7 +14,7 @@ The policy model is described in [authorization.md](authorization.md).
 | `signature` | 1 |
 | `token` | 6 |
 | `verified` | 7 |
-| **Total** | **368** |
+| **Total** | **370** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -49,6 +49,7 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/admin/guides/{profile_id}` | `admin` |
 | GET | `/api/v1/admin/kpis` | `admin` |
 | GET | `/api/v1/admin/leads` | `admin` |
+| GET | `/api/v1/admin/leads/field-sheet` | `admin` |
 | POST | `/api/v1/admin/leads/import` | `admin` |
 | POST | `/api/v1/admin/leads/{lead_id}/decision` | `admin` |
 | POST | `/api/v1/admin/leads/{lead_id}/publish` | `admin` |
@@ -92,6 +93,7 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/admin/planner/releases` | `admin` |
 | GET | `/api/v1/admin/prices/due` | `admin` |
 | PUT | `/api/v1/admin/prices/listings/{experience_id}` | `admin` |
+| GET | `/api/v1/admin/prices/worklist` | `admin` |
 | GET | `/api/v1/admin/proposals` | `admin` |
 | POST | `/api/v1/admin/proposals/{proposal_id}` | `admin` |
 | GET | `/api/v1/admin/quality` | `admin` |

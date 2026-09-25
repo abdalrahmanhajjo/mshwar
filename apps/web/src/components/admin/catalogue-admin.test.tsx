@@ -169,6 +169,22 @@ describe("catalogue growth", () => {
       ["/api/v1/admin/leads/l1/publish", { ...LEAD, status: "published", slug: "strike-lanes-batroun" }],
       ["/api/v1/admin/leads", [LEAD]],
       ["/api/v1/admin/prices/due", [DUE]],
+      [
+        "/api/v1/admin/prices/worklist",
+        [
+          {
+            experience_id: "e9",
+            slug: "harbour-lanes",
+            title: "Harbour Lanes",
+            listing_kind: "experience",
+            destination_slug: "batroun",
+            place_types: ["bowling"],
+            current_price_type: "quote-required",
+            planned: 4,
+            last_source: null,
+          },
+        ],
+      ],
       ["/api/v1/admin/prices/listings/e1", DUE],
       ["/api/v1/admin/place-types/coverage", { place_types: TYPES, destinations: [] }],
       ["/api/v1/destinations", []],
@@ -188,8 +204,30 @@ describe("catalogue growth", () => {
     fireEvent.change(within(lead).getByLabelText("What you checked, and how (visit or call)"), {
       target: { value: "Visited on 24 September; lanes open." },
     });
+    fireEvent.change(within(lead).getByLabelText("Wheelchair access"), { target: { value: "no" } });
+    fireEvent.change(within(lead).getByLabelText("Parking"), { target: { value: "yes" } });
+    fireEvent.click(within(lead).getByLabelText(/I took the name and location on site/));
+    expect(publish).toBeDisabled(); // the name on the sign and the point are needed
+    fireEvent.change(within(lead).getByLabelText("Name on the sign"), { target: { value: "Strike Lanes Batroun" } });
+    fireEvent.change(within(lead).getByLabelText("Latitude, longitude taken there"), {
+      target: { value: "34.2553, 35.6581" },
+    });
     fireEvent.click(publish);
     expect(await within(lead).findByRole("status")).toHaveTextContent("Published as strike-lanes-batroun");
+    expect(calls.find((call) => call.url.endsWith("/l1/publish"))?.body).toMatchObject({
+      facts: { wheelchair_access: false, parking: true },
+      on_site: { name: "Strike Lanes Batroun", lat: 34.2553, lng: 35.6581 },
+    });
+    expect(screen.getByRole("link", { name: "Download the field sheet (CSV)" })).toHaveAttribute(
+      "href",
+      "/api/v1/admin/leads/field-sheet?status=new",
+    );
+    const work = within(await screen.findByRole("list", { name: "Places with no published price" })).getByRole(
+      "listitem",
+    );
+    expect(work).toHaveTextContent("Planned 4× in 90 days");
+    fireEvent.click(within(work).getByRole("button", { name: "Record its price" }));
+    expect(screen.getByLabelText("Listing ID")).toHaveValue("e9");
 
     const due = (await screen.findByText(/Jeita Grotto/)).closest("li") as HTMLElement;
     expect(due).toHaveTextContent("$18.00");

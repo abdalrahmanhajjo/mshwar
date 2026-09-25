@@ -174,10 +174,121 @@ def _geojson_leads(payload: dict[str, Any], source: str) -> Iterator[dict[str, A
         }
 
 
+#: Wikidata classes (P31) -> Mshwar kinds of place. Only classes with one clear kind.
+WIKIDATA_CLASSES: dict[str, str] = {
+    "Q33506": "museum",
+    "Q23413": "castle",
+    "Q57821": "castle",  # fortification
+    "Q839954": "ruins",  # archaeological site
+    "Q109607": "ruins",  # ruins
+    "Q16970": "church",  # church building
+    "Q2977": "church",  # cathedral
+    "Q32815": "mosque",
+    "Q44613": "monastery",
+    "Q34038": "waterfall",
+    "Q35509": "cave",
+    "Q40080": "beach",
+    "Q179049": "nature-reserve",
+    "Q8502": "mountain",
+    "Q27686": "hotel",
+    "Q130003": "skiing",  # ski resort
+    "Q156362": "winery",
+    "Q43501": "zoo",
+    "Q1007870": "gallery",  # art gallery
+    "Q132510": "souk",  # market
+    "Q22698": "park",
+}
+
+
+def overpass_query() -> str:
+    """The Overpass QL that fetches every mapped kind of place in Lebanon, named, with a centre point.
+
+    Run it at https://overpass-turbo.eu (Export -> raw data) or with
+    ``curl --data-urlencode data@lebanon.overpassql https://overpass-api.de/api/interpreter``.
+    """
+    pairs = sorted({(key, value) for key, value, _slug in OSM_TAGS})
+    lines = [
+        "[out:json][timeout:600];",
+        'area["ISO3166-1"="LB"][admin_level=2]->.lebanon;',
+        "(",
+        *(f'  nwr["{key}"="{value}"]["name"](area.lebanon);' for key, value in pairs),
+        '  nwr["amenity"="restaurant"]["cuisine"]["name"](area.lebanon);',
+        ");",
+        "out center tags;",
+    ]
+    return "\n".join(lines) + "\n"
+
+
+def wikidata_query() -> str:
+    """The SPARQL for https://query.wikidata.org: places in Lebanon of the mapped classes (or their
+    subclasses: a Maronite church is a church), with their English, Arabic and French names."""
+    classes = " ".join(f"wd:{qid}" for qid in sorted(WIKIDATA_CLASSES))
+    return (
+        "SELECT ?item ?class ?coord ?name_en ?name_ar ?name_fr WHERE {\n"
+        f"  VALUES ?class {{ {classes} }}\n"
+        "  ?item wdt:P17 wd:Q822 ;\n"
+        "        wdt:P31/wdt:P279* ?class ;\n"
+        "        wdt:P625 ?coord .\n"
+        '  OPTIONAL { ?item rdfs:label ?name_en FILTER(LANG(?name_en) = "en") }\n'
+        '  OPTIONAL { ?item rdfs:label ?name_ar FILTER(LANG(?name_ar) = "ar") }\n'
+        '  OPTIONAL { ?item rdfs:label ?name_fr FILTER(LANG(?name_fr) = "fr") }\n'
+        "}\n"
+    )
+
+
+def _point(wkt: str) -> tuple[float, float] | None:
+    """``Point(35.64 34.12)`` -> (lat, lng)."""
+    inner = wkt.strip().removeprefix("Point(").removesuffix(")").split()
+    if len(inner) != 2:
+        return None
+    try:
+        return float(inner[1]), float(inner[0])
+    except ValueError:
+        return None
+
+
+def _wikidata_leads(payload: dict[str, Any]) -> Iterator[dict[str, Any]]:
+    seen: set[str] = set()
+    for binding in (payload.get("results") or {}).get("bindings") or []:
+        value = {key: (cell or {}).get("value", "") for key, cell in binding.items()}
+        qid = value.get("item", "").rsplit("/", 1)[-1]
+        point = _point(value.get("coord", ""))
+        name = value.get("name_en") or value.get("name_fr") or value.get("name_ar")
+        if not qid.startswith("Q") or qid in seen or point is None or not name:
+            continue
+        seen.add(qid)
+        yield {
+            "source": "wikidata",
+            "external_id": qid,
+            "name": name,
+            "name_ar": value.get("name_ar", ""),
+            "name_fr": value.get("name_fr", ""),
+            "lat": point[0],
+            "lng": point[1],
+            "place_type": WIKIDATA_CLASSES.get(value.get("class", "").rsplit("/", 1)[-1]),
+            "raw": {"wikidata": qid},
+        }
+
+
 def leads_from(payload: dict[str, Any], source: str) -> list[dict[str, Any]]:
-    """Leads inside Lebanon, from an Overpass export or GeoJSON. Nothing outside the country, nothing unnamed."""
-    rows = _osm_leads(payload) if "elements" in payload else _geojson_leads(payload, source)
+    """Leads inside Lebanon, from an Overpass export, a Wikidata SPARQL result or GeoJSON.
+
+    Nothing outside the country, nothing unnamed."""
+    if "elements" in payload:
+        rows = _osm_leads(payload)
+    elif "results" in payload and "head" in payload:
+        rows = _wikidata_leads(payload)
+    else:
+        rows = _geojson_leads(payload, source)
     return [row for row in rows if in_lebanon(row["lat"], row["lng"])]
 
 
-__all__ = ["OSM_TAGS", "in_lebanon", "leads_from", "osm_place_type"]
+__all__ = [
+    "OSM_TAGS",
+    "WIKIDATA_CLASSES",
+    "in_lebanon",
+    "leads_from",
+    "osm_place_type",
+    "overpass_query",
+    "wikidata_query",
+]

@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { ExternalLink, Loader2, Save } from "lucide-react";
+import { Download, ExternalLink, Loader2, Save } from "lucide-react";
 import { useLoad } from "@/components/admin/use-load";
-import { DestinationSelect } from "@/components/guide/pickers";
+import { DestinationSelect, LocateButton } from "@/components/guide/pickers";
 import { errorText } from "@/components/partners/step";
 import { useLocale } from "@/components/shell/locale-provider";
 import { Badge } from "@/components/ui/badge";
@@ -19,10 +19,13 @@ import { formatDate } from "@/i18n/format";
 import {
   decideLead,
   fetchLeads,
+  fetchPriceWorklist,
+  fieldSheetUrl,
   fetchPlaceTypeCoverage,
   fetchPricesDue,
   publishLead,
   recordSourcedPrice,
+  type LeadFactsInput,
   type LeadStatus,
   type PlaceLead,
   type PlaceTypeCoverage,
@@ -34,7 +37,17 @@ import { beirutToday } from "@/lib/local-time";
 import { formatMinor } from "@/lib/planner";
 
 const LEAD_STATUSES: LeadStatus[] = ["new", "checking", "published", "rejected", "duplicate"];
+const VISIT_FACTS = ["halal", "wheelchair_access", "parking", "kids_friendly", "accepts_card"] as const;
 const toMinor = (value: string) => Math.round(Number(value) * 100);
+
+/** "34.2553, 35.6581" -> a point, or null when it is not two numbers. */
+function parsePoint(value: string): { lat: number; lng: number } | null {
+  const parts = value
+    .split(/[,\s]+/)
+    .filter(Boolean)
+    .map(Number);
+  return parts.length === 2 && parts.every(Number.isFinite) ? { lat: parts[0], lng: parts[1] } : null;
+}
 
 function Loading({ failed, copy }: { failed: boolean; copy: AdminCatalogueCopy }) {
   return failed ? (
@@ -57,6 +70,12 @@ function LeadRow({ lead, names, onDone }: { lead: PlaceLead; names: Map<string, 
   const [publishing, setPublishing] = React.useState(false);
   const [description, setDescription] = React.useState("");
   const [notes, setNotes] = React.useState("");
+  const [facts, setFacts] = React.useState<LeadFactsInput>({});
+  const [onSite, setOnSite] = React.useState(false);
+  const [siteName, setSiteName] = React.useState("");
+  const [siteNameAr, setSiteNameAr] = React.useState("");
+  const [sitePoint, setSitePoint] = React.useState("");
+  const point = parsePoint(sitePoint);
   const [busy, setBusy] = React.useState(false);
   const [message, setMessage] = React.useState<{ tone: "success" | "danger"; text: string } | null>(null);
   const open = lead.status === "new" || lead.status === "checking";
@@ -163,7 +182,21 @@ function LeadRow({ lead, names, onDone }: { lead: PlaceLead; names: Map<string, 
               onSubmit={(event) => {
                 event.preventDefault();
                 void act(
-                  () => publishLead(lead.id, { description: description.trim(), notes: notes.trim() }),
+                  () =>
+                    publishLead(lead.id, {
+                      description: description.trim(),
+                      notes: notes.trim(),
+                      ...(Object.keys(facts).length ? { facts } : {}),
+                      ...(onSite && point
+                        ? {
+                            on_site: {
+                              name: siteName.trim(),
+                              ...(siteNameAr.trim() ? { name_ar: siteNameAr.trim() } : {}),
+                              ...point,
+                            },
+                          }
+                        : {}),
+                    }),
                   (result) => interpolate(copy.publishedAs, { slug: (result as { slug: string }).slug }),
                 );
               }}
@@ -190,11 +223,83 @@ function LeadRow({ lead, names, onDone }: { lead: PlaceLead; names: Map<string, 
                   onChange={(event) => setNotes(event.target.value)}
                 />
               </div>
+              <label className="inline-flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={onSite} onChange={(event) => setOnSite(event.target.checked)} />
+                {copy.onSite}
+              </label>
+              {onSite ? (
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="grid gap-1.5">
+                    <Label htmlFor={`${id}-site-name`}>{copy.onSiteName}</Label>
+                    <Input
+                      id={`${id}-site-name`}
+                      value={siteName}
+                      maxLength={140}
+                      onChange={(event) => setSiteName(event.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-1.5">
+                    <Label htmlFor={`${id}-site-name-ar`}>{copy.onSiteNameAr}</Label>
+                    <Input
+                      id={`${id}-site-name-ar`}
+                      dir="rtl"
+                      lang="ar"
+                      value={siteNameAr}
+                      maxLength={140}
+                      onChange={(event) => setSiteNameAr(event.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-1.5">
+                    <Label htmlFor={`${id}-site-point`}>{copy.onSitePoint}</Label>
+                    <Input
+                      id={`${id}-site-point`}
+                      dir="ltr"
+                      inputMode="decimal"
+                      value={sitePoint}
+                      placeholder="34.2553, 35.6581"
+                      onChange={(event) => setSitePoint(event.target.value)}
+                    />
+                    <LocateButton onLocate={(lat, lng) => setSitePoint(`${lat}, ${lng}`)} />
+                  </div>
+                </div>
+              ) : null}
+              <fieldset className="grid gap-2">
+                <legend className="mb-1 text-sm font-medium">{copy.factsAtVisit}</legend>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {VISIT_FACTS.map((fact) => (
+                    <div key={fact} className="grid gap-1.5">
+                      <Label htmlFor={`${id}-${fact}`}>{copy[`f_${fact}`]}</Label>
+                      <NativeSelect
+                        id={`${id}-${fact}`}
+                        value={facts[fact] === undefined ? "" : facts[fact] ? "yes" : "no"}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          setFacts((current) => {
+                            const next = { ...current };
+                            if (value === "") delete next[fact];
+                            else next[fact] = value === "yes";
+                            return next;
+                          });
+                        }}
+                      >
+                        <option value="">{copy.factUnknown}</option>
+                        <option value="yes">{copy.factYes}</option>
+                        <option value="no">{copy.factNo}</option>
+                      </NativeSelect>
+                    </div>
+                  ))}
+                </div>
+              </fieldset>
               <Button
                 type="submit"
                 size="sm"
                 className="w-fit"
-                disabled={busy || description.trim().length < 20 || notes.trim().length < 10}
+                disabled={
+                  busy ||
+                  description.trim().length < 20 ||
+                  notes.trim().length < 10 ||
+                  (onSite && (!point || siteName.trim().length < 2))
+                }
               >
                 {copy.publishConfirm}
               </Button>
@@ -249,6 +354,16 @@ function LeadsSection({ names }: { names: Map<string, string> }) {
             anyLabel={copy.anyDestination}
           />
         </div>
+        {status === "new" || status === "checking" ? (
+          <a
+            href={fieldSheetUrl(status, destination)}
+            download
+            className="inline-flex items-center gap-1 pb-2 text-sm underline underline-offset-2"
+          >
+            <Download className="size-3.5" aria-hidden />
+            {copy.fieldSheet}
+          </a>
+        ) : null}
       </div>
       {leads.data ? (
         leads.data.length ? (
@@ -267,11 +382,13 @@ function LeadsSection({ names }: { names: Map<string, string> }) {
   );
 }
 
-function RecordPrice({ start, onSaved }: { start: SourcedPrice | null; onSaved: () => void }) {
+type PriceStart = Partial<SourcedPrice> & { experience_id: string };
+
+function RecordPrice({ start, onSaved }: { start: PriceStart | null; onSaved: () => void }) {
   const copy = useAdminCatalogueCopy();
   const [listing, setListing] = React.useState(start?.experience_id ?? "");
   const [priceType, setPriceType] = React.useState<SourcedPriceInput["price_type"]>(start?.price_type ?? "fixed");
-  const [amount, setAmount] = React.useState(start ? String(start.amount_minor / 100) : "");
+  const [amount, setAmount] = React.useState(start?.amount_minor != null ? String(start.amount_minor / 100) : "");
   const [maxAmount, setMaxAmount] = React.useState(
     start?.max_amount_minor != null ? String(start.max_amount_minor / 100) : "",
   );
@@ -452,11 +569,12 @@ function RecordPrice({ start, onSaved }: { start: SourcedPrice | null; onSaved: 
   );
 }
 
-function PricesSection() {
+function PricesSection({ names }: { names: Map<string, string> }) {
   const copy = useAdminCatalogueCopy();
   const day = useDay();
   const due = useLoad(() => fetchPricesDue(30), "prices");
-  const [start, setStart] = React.useState<SourcedPrice | null>(null);
+  const [start, setStart] = React.useState<PriceStart | null>(null);
+  const worklist = useLoad(() => fetchPriceWorklist(), "worklist");
   const amount = (price: SourcedPrice) =>
     price.price_type === "range" && price.max_amount_minor != null
       ? `${formatMinor(price.amount_minor, price.currency)} – ${formatMinor(price.max_amount_minor, price.currency)}`
@@ -468,6 +586,54 @@ function PricesSection() {
           {copy.pricesTitle}
         </h2>
         <p className="text-sm text-text-muted">{copy.pricesBody}</p>
+      </div>
+      <div className="grid gap-2">
+        <h3 className="font-medium">{copy.worklistTitle}</h3>
+        <p className="text-sm text-text-muted">{copy.worklistBody}</p>
+        {worklist.data ? (
+          worklist.data.length ? (
+            <ul className="grid gap-2" aria-label={copy.worklistTitle}>
+              {worklist.data.map((item) => (
+                <li
+                  key={item.experience_id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-control bg-surface-sunken px-3 py-2 text-sm"
+                >
+                  <span className="grid gap-0.5">
+                    <span className="font-medium">{item.title}</span>
+                    <span className="text-text-muted">
+                      {item.destination_slug} · {item.place_types.map((slug) => names.get(slug) ?? slug).join(", ")}
+                    </span>
+                    {item.last_source ? (
+                      <span className="text-xs text-text-muted">
+                        {interpolate(copy.lastSource, {
+                          source: item.last_source.source_name,
+                          date: day(item.last_source.review_by),
+                        })}
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="flex items-center gap-2">
+                    {item.planned ? (
+                      <Badge variant="warning">{interpolate(copy.worklistPlanned, { count: item.planned })}</Badge>
+                    ) : null}
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => setStart({ experience_id: item.experience_id })}
+                    >
+                      {copy.recordPrice}
+                    </Button>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-text-muted">{copy.worklistEmpty}</p>
+          )
+        ) : (
+          <Loading failed={worklist.failed} copy={copy} />
+        )}
       </div>
       {due.data ? (
         due.data.length ? (
@@ -506,7 +672,14 @@ function PricesSection() {
         <Loading failed={due.failed} copy={copy} />
       )}
       {/* Keyed by the price picked, so "record again" starts from it. */}
-      <RecordPrice key={start?.price_rule_id ?? "new"} start={start} onSaved={due.reload} />
+      <RecordPrice
+        key={start?.price_rule_id ?? start?.experience_id ?? "new"}
+        start={start}
+        onSaved={() => {
+          due.reload();
+          worklist.reload();
+        }}
+      />
     </section>
   );
 }
@@ -567,7 +740,7 @@ export function CatalogueGrowthAdmin() {
     <div className="grid gap-8">
       <PageHeader title={copy.cgTitle} description={copy.cgBody} />
       <LeadsSection names={names} />
-      <PricesSection />
+      <PricesSection names={names} />
       {coverage.data ? (
         <CoverageSection coverage={coverage.data} names={names} />
       ) : (

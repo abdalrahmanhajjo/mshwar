@@ -175,10 +175,12 @@ export type BrowseKey =
   | "fewThingsToKnow"
   | "travellerReviews"
   | "peopleLabel"
-  | "personLabel";
+  | "personLabel"
+  | "dataSource";
 
 export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
   en: {
+    dataSource: "Name and location from",
     heroTitle: "Make room for a little mshwar.",
     heroBody: "From the mountain air to the sea, find your next day at your own pace.",
     where: "Where",
@@ -358,6 +360,7 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     personLabel: "person",
   },
   ar: {
+    dataSource: "الاسم والموقع من",
     heroTitle: "اترك مساحة لمشوار صغير.",
     heroBody: "من هواء الجبل إلى البحر، ابحث عن يومك القادم على مهلك.",
     where: "أين",
@@ -535,6 +538,7 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     personLabel: "شخص",
   },
   fr: {
+    dataSource: "Nom et emplacement :",
     heroTitle: "Faites une place à un petit mshwar.",
     heroBody: "De l’air de la montagne à la mer, trouvez votre prochaine journée à votre rythme.",
     where: "Où",

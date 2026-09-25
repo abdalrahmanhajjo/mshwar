@@ -113,7 +113,12 @@ async def get_experience(
     ).scalar()
     if row is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
-    return _listing(row)
+    listing = _listing(row)
+    # OpenStreetMap data is ODbL: a listing that came from it says so (docs/legal/odbl-review.md).
+    credits = (
+        await db.execute(text("SELECT app.listing_attributions(CAST(:id AS uuid))"), {"id": str(listing.id)})
+    ).scalar()
+    return listing.model_copy(update={"attributions": credits if isinstance(credits, list) else []})
 
 
 @router.get(

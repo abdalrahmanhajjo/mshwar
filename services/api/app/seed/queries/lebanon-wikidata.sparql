@@ -1,0 +1,9 @@
+SELECT ?item ?class ?coord ?name_en ?name_ar ?name_fr WHERE {
+  VALUES ?class { wd:Q1007870 wd:Q109607 wd:Q130003 wd:Q132510 wd:Q156362 wd:Q16970 wd:Q179049 wd:Q22698 wd:Q23413 wd:Q27686 wd:Q2977 wd:Q32815 wd:Q33506 wd:Q34038 wd:Q35509 wd:Q40080 wd:Q43501 wd:Q44613 wd:Q57821 wd:Q839954 wd:Q8502 }
+  ?item wdt:P17 wd:Q822 ;
+        wdt:P31/wdt:P279* ?class ;
+        wdt:P625 ?coord .
+  OPTIONAL { ?item rdfs:label ?name_en FILTER(LANG(?name_en) = "en") }
+  OPTIONAL { ?item rdfs:label ?name_ar FILTER(LANG(?name_ar) = "ar") }
+  OPTIONAL { ?item rdfs:label ?name_fr FILTER(LANG(?name_fr) = "fr") }
+}
