@@ -208,14 +208,14 @@ export function DayTimeline({
   onLock,
 }: {
   steps: DayStepOutcome[];
-  plan: PlanDocument;
+  plan: PlanDocument | null;
   copy: PlannerCopy;
   sessionId?: string;
   onLock?: (task: () => Promise<PlannerSession>) => Promise<void>;
 }) {
   const { locale } = useLocale();
   const days = byDay(steps);
-  const stopFor = (step: DayStepOutcome) => plan.stops.find((stop) => stop.experience_id === step.experience_id);
+  const stopFor = (step: DayStepOutcome) => plan?.stops.find((stop) => stop.experience_id === step.experience_id);
 
   return (
     <section aria-labelledby="day-timeline-heading" className="grid gap-4">

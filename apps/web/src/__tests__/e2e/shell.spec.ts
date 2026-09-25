@@ -89,7 +89,7 @@ test.describe("MSHWAR-26 responsive app shell", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/guide");
     await expect(page.locator("[data-shell='guide']").first()).toBeVisible();
-    await expect(page.locator("aside")).toBeVisible();
+    await expect(page.getByRole("complementary")).toBeVisible();
     await expect(page.getByRole("link", { name: "Tours" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Discover" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Moderation" })).toHaveCount(0);
@@ -97,7 +97,7 @@ test.describe("MSHWAR-26 responsive app shell", () => {
 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.reload();
-    await expect(page.locator("aside")).toBeHidden();
+    await expect(page.getByRole("complementary")).toHaveCount(0);
     await page.getByRole("button", { name: "Open menu" }).click();
     await expect(page.getByRole("dialog").getByRole("link", { name: "Tours" })).toBeVisible();
     await page.keyboard.press("Escape");
@@ -111,6 +111,79 @@ test.describe("MSHWAR-26 responsive app shell", () => {
     await expect(page.getByRole("link", { name: "Discover" })).toHaveCount(0);
     await assertNoHorizontalScroll(page);
   });
+});
+
+test("planner shows all unmatched steps when the API returns a day without a saved plan", async ({
+  page,
+}, testInfo) => {
+  await signInForShell(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const requested = [
+    ["exchange", "change currency"],
+    ["meal", "breakfast at a sweets place"],
+    ["sight", "see a mountain"],
+    ["meal", "eat dinner"],
+    ["activity", "play bowling"],
+    ["activity", "watch a film at the cinema"],
+    ["stay", "stay the night at a hotel"],
+  ];
+  await page.route("**/api/v1/planner/sessions", async (route) => {
+    await route.fulfill({
+      json: {
+        session_id: "session-no-match",
+        status: "infeasible",
+        degraded: false,
+        degraded_message: null,
+        constraints: {},
+        assumed_defaults: [],
+        clarifications: [],
+        plan: null,
+        day: requested.map(([role, text], index) => ({
+          order: index + 1,
+          role,
+          text,
+          tags: [],
+          meal: null,
+          status: "empty",
+          reason: "no_trusted_match",
+          starts_at: null,
+          ends_at: null,
+          travel_minutes: null,
+          wait_minutes: 0,
+          experience_id: null,
+          slug: null,
+          title: null,
+          destination_slug: null,
+          office: null,
+          trust: {},
+          flags: [],
+          named_place: null,
+          price: null,
+          actions: {},
+        })),
+      },
+    });
+  });
+  await page.goto("/plan");
+  await page.getByRole("button", { name: "Beirut", exact: true }).click();
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
+  await page.getByLabel("Budget (USD)").fill("300");
+  const request = requested.map(([, text]) => text).join(" then ");
+  await page.getByLabel("Anything specific? (optional)").fill(request);
+  await page.getByRole("button", { name: "Generate itinerary" }).click();
+  const main = page.getByRole("main");
+  const steps = main.getByRole("list", { name: "Day 1" }).getByRole("listitem");
+  await expect(steps).toHaveCount(7);
+  for (const [index, [, text]] of requested.entries()) {
+    await expect(steps.nth(index)).toContainText(text);
+    await expect(steps.nth(index)).toContainText("No trusted place of this kind here yet.");
+  }
+  await expect(main.getByText(/Saved to My Trips automatically/)).toHaveCount(0);
+  await assertNoHorizontalScroll(page);
+  await page.screenshot({ path: testInfo.outputPath("planner-no-match.png"), fullPage: true });
+  await page.getByRole("button", { name: "Edit trip details" }).click();
+  await expect(page.getByLabel("Budget (USD)")).toHaveValue("300");
+  await expect(page.getByLabel("Anything specific? (optional)")).toHaveValue(request);
 });
 
 test.describe("MSHWAR-29 recovery routes", () => {
