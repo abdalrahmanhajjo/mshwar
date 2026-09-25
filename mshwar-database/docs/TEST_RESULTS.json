@@ -1,7 +1,7 @@
 {
   "engine": "PostgreSQL 18.3 (PGlite 0.5.8) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.74 (1092ec30a3fb1d46b1782ff1b4db5094d3d06ae5), 32-bit",
-  "migrations": 48,
-  "passed": 67,
+  "migrations": 49,
+  "passed": 68,
   "tests": [
     {
       "name": "all eight destinations have two sourced services per category; public reads enforce scope, review dates and RLS",
@@ -21,6 +21,10 @@
     },
     {
       "name": "planner data: demand gaps by kind, consented and redacted misses, reviewed phrases, retention",
+      "status": "PASS"
+    },
+    {
+      "name": "place facts filter and rank; leads deduplicated, queued by demand, published only after a check",
       "status": "PASS"
     },
     {
