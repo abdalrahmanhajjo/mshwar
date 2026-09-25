@@ -97,7 +97,7 @@ async def put_profile(
                 "prefs": payload.preferences.model_dump_json(),
             },
         )
-        stored = result.scalar_one()
+        stored: dict[str, Any] = result.scalar_one()
     except DBAPIError as exc:
         raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="Invalid preferences") from exc
     prefs = _prefs_from_row(stored)

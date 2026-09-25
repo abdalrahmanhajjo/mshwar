@@ -84,7 +84,7 @@ async def save_start_location(
             "label": payload.label,
             "source": payload.source,
         }
-        stored = (
+        stored: dict[str, Any] = (
             await db.execute(
                 text("SELECT app.upsert_profile(:user_id, :display_name, :locale, CAST(:prefs AS jsonb))"),
                 {

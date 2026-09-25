@@ -37,7 +37,7 @@ def problems_with(privileges: dict[str, Any]) -> list[str]:
 
 async def check_database_role(engine: AsyncEngine) -> dict[str, Any]:
     async with engine.connect() as connection:
-        privileges = (await connection.execute(text("SELECT app.connection_privileges()"))).scalar_one()
+        privileges: dict[str, Any] = (await connection.execute(text("SELECT app.connection_privileges()"))).scalar_one()
     problems = problems_with(privileges)
     if problems:
         message = f"database role {privileges.get('role')!r} " + " and ".join(problems)
