@@ -384,9 +384,29 @@ authority) and helps in an emergency.
 | **2b**   | Migration 047: more place types, `place_facts`, `place_leads` with dedupe, OSM/Wikidata/official-list importers, `/admin/leads` queue, trust level per place | Every type has en/ar/fr names; leads loaded and measured; first 500 places checked with rich facts  |
 | **3** ✅ | `planner/script/day.py` slot fill + beam search + optimiser precedence and meal windows; evening/overnight day window                                        | The Batroun example yields 7 stops in order with a hotel end, or honest empty slots                 |
 | **4** ✅ | Service steps: changer stops, hotel end anchor, "request a driver for this day" (ride request with the itinerary)                                            | The ride request shows the full day to drivers; changer stops show rate and time                    |
-| **5**    | Web timeline, step pills, per-step swap, lock and actions, trust chips, i18n and RTL                                                                         | e2e: type the example, then see, edit and save the day                                              |
+| **5** ✅ | Web timeline, step pills, per-step swap, lock and actions, trust chips, i18n and RTL                                                                         | e2e: type the example, then see, edit and save the day                                              |
 | **6**    | Step refinement (`StepPatch`), multi-day scripts ("day 2: …"), analytics on empty slots to guide coverage                                                    | "Move cinema before dinner" re-plans correctly; the admin coverage page lists missing tags          |
 | **7**    | Dataset at full size: reviewed synthetic paraphrases, real-traffic misses loop, few-shot retrieval for L1, lead import for places                            | Eval set of 5,000 prompts at ≥ 92% step and ≥ 95% order accuracy; coverage targets met in 8 regions |
+
+### Phase 5 status (shipped): the day on screen
+
+- `DayTimeline` shows every step you asked for, in order: filled, served by a money changer, skipped
+  (optional), or not filled with the reason and what you asked for. It appears on the plan page, in
+  the saved plan and, read-only, in group trips.
+- Each step shows:
+  - the time, the drive to it, and any free time before it;
+  - a trust badge: visited by Mshwar, licence checked, verified business, or registered money
+    changer;
+  - warnings: check showtimes, outside your destination, hours not confirmed, meals served not
+    confirmed;
+  - its published price;
+  - the actions its place published (call, WhatsApp, reserve online, book the stay, check-in time);
+  - a lock control.
+- "Here's your day as I understood it": `POST /planner/understand` reads the request with the
+  deterministic reader only (no model, no quota, nothing stored), and the plan page shows the steps
+  as chips while you type.
+- Real prices only (migration 047): see `docs/sourced-prices.md`.
+- Still to come (phase 6): swapping, removing or adding a single step, and step-aware alternatives.
 
 ### Phase 4 status (shipped): real prices for the whole day, and a driver
 

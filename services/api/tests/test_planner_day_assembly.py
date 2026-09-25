@@ -391,3 +391,22 @@ async def test_a_day_told_step_by_step_through_the_api(api: AsyncClient) -> None
         assert ride.status_code == 200, ride.text
         assert ride.json()["kind"] == "day"
     assert datetime.fromisoformat(body["constraints"]["return_by"]).astimezone(BEIRUT).time() >= time(23, 0)
+
+
+@pytest.mark.asyncio
+async def test_understand_reads_steps_without_planning(api: AsyncClient) -> None:
+    from tests.test_booking_payments import _traveller
+
+    await _traveller(api)
+    response = await api.post(
+        "/api/v1/planner/understand",
+        json={"text": "a driver in Batroun: money changer, then breakfast at a sweets place, then a hotel"},
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["plans_as_day"] is True
+    assert [step["role"] for step in body["steps"]] == ["exchange", "meal", "stay"]
+    assert body["transport"] == "driver" and "constraints" not in body
+    anonymous = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
+    async with anonymous:
+        assert (await anonymous.post("/api/v1/planner/understand", json={"text": "museum"})).status_code == 401

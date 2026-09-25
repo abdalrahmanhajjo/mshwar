@@ -10,11 +10,11 @@ The policy model is described in [authorization.md](authorization.md).
 | `dev` | 1 |
 | `job` | 7 |
 | `public` | 43 |
-| `session` | 178 |
+| `session` | 179 |
 | `signature` | 1 |
 | `token` | 6 |
 | `verified` | 7 |
-| **Total** | **346** |
+| **Total** | **347** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -266,6 +266,7 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/planner/sessions/{session_id}/stops/{stop_id}/alternatives` | `session` |
 | GET | `/api/v1/planner/thresholds` | `session` |
 | GET | `/api/v1/planner/trips/{trip_id}/versions` | `session` |
+| POST | `/api/v1/planner/understand` | `session` |
 | GET | `/api/v1/planner/versions/{version_id}` | `session` |
 | POST | `/api/v1/planner/versions/{version_id}/link-booking` | `session` |
 | POST | `/api/v1/planner/warnings` | `session` |
