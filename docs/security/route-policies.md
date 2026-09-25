@@ -10,11 +10,11 @@ The policy model is described in [authorization.md](authorization.md).
 | `dev` | 1 |
 | `job` | 7 |
 | `public` | 43 |
-| `session` | 177 |
+| `session` | 178 |
 | `signature` | 1 |
 | `token` | 6 |
 | `verified` | 7 |
-| **Total** | **343** |
+| **Total** | **344** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -254,6 +254,7 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/planner/sessions` | `session` |
 | GET | `/api/v1/planner/sessions/{session_id}` | `session` |
 | POST | `/api/v1/planner/sessions/{session_id}/clarify` | `session` |
+| POST | `/api/v1/planner/sessions/{session_id}/driver-request` | `session` |
 | POST | `/api/v1/planner/sessions/{session_id}/lock` | `session` |
 | POST | `/api/v1/planner/sessions/{session_id}/refine` | `session` |
 | POST | `/api/v1/planner/sessions/{session_id}/regenerate` | `session` |

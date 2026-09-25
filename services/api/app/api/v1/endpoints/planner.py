@@ -45,6 +45,7 @@ from app.planner.routing import (
     time_bucket,
 )
 from app.planner.schemas import (
+    DayDriverRequest,
     IntentRequest,
     LinkBookingRequest,
     LockRequest,
@@ -520,6 +521,26 @@ async def read_session(
     if stored.get("current_version_id"):
         plan = await get_version(db, session["user_id"], UUID(str(stored["current_version_id"])), False)
     return {"session": stored, "plan": plan}
+
+
+@router.post("/sessions/{session_id}/driver-request", dependencies=[access.SESSION, limit("ride-request")])
+async def day_driver_request(
+    session_id: UUID,
+    payload: DayDriverRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    """Ask the verified drivers covering a planned day for fixed prices. The traveller then picks one."""
+    from app.planner.day_session import request_day_driver
+
+    session = await require_session(request, db)
+    try:
+        return await request_day_driver(db, session["user_id"], session_id, payload)
+    except DBAPIError as exc:
+        raise_from_db(exc)
+        raise
+    except (ValueError, TypeError) as exc:
+        raise _http(exc) from exc
 
 
 @router.post("/sessions/{session_id}/lock", dependencies=[access.SESSION])

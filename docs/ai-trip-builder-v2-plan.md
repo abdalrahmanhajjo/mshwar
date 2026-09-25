@@ -383,10 +383,36 @@ authority) and helps in an emergency.
 | **2** ✅ | Migration 045 (place types, meal services, schedule note, `planner_retrieve_step`), portal and admin tag editing                                             | Owners and staff can tag cinemas, bowling and sweets; PGlite suite passes                           |
 | **2b**   | Migration 047: more place types, `place_facts`, `place_leads` with dedupe, OSM/Wikidata/official-list importers, `/admin/leads` queue, trust level per place | Every type has en/ar/fr names; leads loaded and measured; first 500 places checked with rich facts  |
 | **3** ✅ | `planner/script/day.py` slot fill + beam search + optimiser precedence and meal windows; evening/overnight day window                                        | The Batroun example yields 7 stops in order with a hotel end, or honest empty slots                 |
-| **4**    | Service steps: changer stops, hotel end anchor, "request a driver for this day" (ride request with the itinerary)                                            | The ride request shows the full day to drivers; changer stops show rate and time                    |
+| **4** ✅ | Service steps: changer stops, hotel end anchor, "request a driver for this day" (ride request with the itinerary)                                            | The ride request shows the full day to drivers; changer stops show rate and time                    |
 | **5**    | Web timeline, step pills, per-step swap, lock and actions, trust chips, i18n and RTL                                                                         | e2e: type the example, then see, edit and save the day                                              |
 | **6**    | Step refinement (`StepPatch`), multi-day scripts ("day 2: …"), analytics on empty slots to guide coverage                                                    | "Move cinema before dinner" re-plans correctly; the admin coverage page lists missing tags          |
 | **7**    | Dataset at full size: reviewed synthetic paraphrases, real-traffic misses loop, few-shot retrieval for L1, lead import for places                            | Eval set of 5,000 prompts at ≥ 92% step and ≥ 95% order accuracy; coverage targets met in 8 regions |
+
+### Phase 4 status (shipped): real prices for the whole day, and a driver
+
+- Migration `046_day_pricing.sql`:
+  - a restaurant's own typical spend per person;
+  - planner candidates carry the full price rule (including the top of a range) and the listing's
+    booking details (reservation phone, WhatsApp and link; a stay's booking link and check-in times);
+  - `app.planner_driver_day_rates`: the published day rates of the verified drivers a day request
+    would reach.
+- `app/planner/script/pricing.py`: one line per step, each with its basis and source. The bases are
+  fixed, free (only when a price of 0 is published), from, range, estimated, typical spend, from per
+  room per night, drivers' day rates, "no fee: the changer's rate applies", and on request.
+- The day total is a low–high range, or "from" when any line has no published ceiling. It comes with
+  a per-person figure and a budget status: within, over, may exceed, or unknown.
+- Lines in another currency are shown but not added. A price on request is never counted as $0.
+  The sealed total uses the published floors, plus the driver's lowest day rate as a transport
+  cost item.
+- `POST /planner/sessions/{id}/driver-request` sends the sealed day, with its itinerary, to verified
+  drivers through `app.traveller_request_ride`. All the 041 rules apply, and the traveller still
+  chooses a driver's fixed quote in Rides.
+- Web:
+  - a "What the day costs" breakdown;
+  - "Price on request" instead of $0.00, in the classic plan too;
+  - a driver-request panel;
+  - owners enter their typical spend in the business portal.
+- Tests: PGlite 65/65; API 109 without a database, plus CI API tests; web 320/320.
 
 ### Phase 3 status (shipped)
 

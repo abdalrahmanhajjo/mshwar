@@ -14,7 +14,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.planner.persist import retrieve_changers, retrieve_step
+from app.planner.persist import retrieve_changers, retrieve_driver_rates, retrieve_step
 from app.planner.schemas import DayScript, ExtractedConstraints, StepCandidate, StepSpec
 from app.planner.script.day import DayPlan, DayPools, PoolEntry, assemble_day
 from app.planner.script.retrieval import Near, step_query, without_avoided
@@ -67,6 +67,10 @@ async def gather_pools(
             continue
         found = await retrieve_step(db, step_query(step, scoped, exclude_ids=excluded, limit=POOL_SIZE))
         pools.places[step.order] = [PoolEntry(candidate) for candidate in without_avoided(found, script.avoid_tags)]
+    if script.transport == "driver" and constraints.destination_slugs:
+        pools.driver_rates = await retrieve_driver_rates(
+            db, constraints.destination_slugs[0], constraints.party_size or 1
+        )
     anchor = _anchor(pools, constraints)
     for step in script.steps:
         if step.role == "exchange" or pools.places.get(step.order) or not _destinations(step, scoped) or anchor is None:

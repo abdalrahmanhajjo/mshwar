@@ -38,17 +38,19 @@ from zoneinfo import ZoneInfo
 from pydantic import BaseModel, Field
 
 from app.core.config import settings
-from app.planner.eligibility import opening_hours_for, travel_leg, unit_price_minor
+from app.planner.eligibility import opening_hours_for, travel_leg
 from app.planner.routing import RouteLeg
 from app.planner.schemas import (
     AssembledLeg,
     AssembledPlan,
     AssembledStop,
+    CostItem,
     DayScript,
     ExtractedConstraints,
     StepCandidate,
     StepSpec,
 )
+from app.planner.script.pricing import DayPrice, PriceLine, driver_price, exchange_line, price_day, stop_price
 
 BEIRUT = ZoneInfo("Asia/Beirut")
 BEAM_WIDTH = 6
@@ -111,6 +113,9 @@ class StepOutcome(BaseModel):
     trust: dict[str, Any] = Field(default_factory=dict)
     flags: list[str] = Field(default_factory=list)
     named_place: str | None = None
+    price: PriceLine | None = None
+    #: How to act on the step: reserve a table, book the stay (from the listing's own details).
+    actions: dict[str, Any] = Field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -125,6 +130,8 @@ class PoolEntry:
 class DayPools:
     places: dict[int, list[PoolEntry]] = field(default_factory=dict)
     offices: dict[int, list[dict[str, Any]]] = field(default_factory=dict)
+    #: Published day rates of the drivers a day request would reach (``planner_driver_day_rates``).
+    driver_rates: list[dict[str, Any]] = field(default_factory=list)
 
     def candidates(self) -> list[StepCandidate]:
         seen: dict[UUID, StepCandidate] = {}
@@ -141,6 +148,7 @@ class DayPlan:
     window_start: datetime
     return_by: datetime
     by_id: dict[UUID, StepCandidate]
+    pricing: DayPrice
 
     def outcomes_json(self) -> list[dict[str, Any]]:
         return [outcome.model_dump(mode="json") for outcome in self.outcomes]
@@ -213,6 +221,7 @@ class _Visit:
     point: _Point
     amount_minor: int = 0
     price_kind: str | None = None
+    price: PriceLine | None = None
     entry: PoolEntry | None = None
     office: dict[str, Any] | None = None
     flags: tuple[str, ...] = ()
@@ -373,12 +382,12 @@ def _within_hours(
     return arrive, extra_wait, True
 
 
-def _listing_flags(entry: PoolEntry, price_kind: str, wait: int, hours_known: bool) -> tuple[str, ...]:
+def _listing_flags(entry: PoolEntry, price: PriceLine, wait: int, hours_known: bool) -> tuple[str, ...]:
     candidate = entry.candidate
     flags = {
         "hours_unknown": not hours_known,
-        "quote_required": price_kind == "quote",
-        "estimated_price": price_kind == "estimate",
+        "quote_required": price.basis == "on_request",
+        "estimated_price": price.price_kind == "estimate",
         "check_times": candidate.needs_schedule,
         "meal_unconfirmed": candidate.meal_unconfirmed,
         "outside_destination": entry.outside,
@@ -407,7 +416,8 @@ def _place_listing(ctx: _Context, state: _State, step: StepSpec, entry: PoolEntr
     leave = arrive + timedelta(minutes=stay_minutes)
     if not _fits_end(ctx, step, leave, point):
         return "does_not_fit_the_day"
-    amount, price_kind = unit_price_minor(candidate, ctx.party)
+    price = stop_price(candidate, ctx.party, order=step.order, role=step.role)
+    amount = price.low_minor or 0  # the published floor; "on request" adds nothing, and says so
     if ctx.strict_budget and amount > state.remaining_minor:
         return "over_the_budget"
     return _Visit(
@@ -420,9 +430,10 @@ def _place_listing(ctx: _Context, state: _State, step: StepSpec, entry: PoolEntr
         wait_minutes=wait,
         point=point,
         amount_minor=amount,
-        price_kind=price_kind,
+        price_kind=price.price_kind,
+        price=price,
         entry=entry,
-        flags=_listing_flags(entry, price_kind, wait, hours_known),
+        flags=_listing_flags(entry, price, wait, hours_known),
     )
 
 
@@ -570,7 +581,13 @@ def _outcome(item: _Visit | _Gap) -> StepOutcome:
     if item.office is not None:
         destination = item.office.get("destination") or {}
         return StepOutcome(
-            **base, **common, status="office", office=item.office, destination_slug=destination.get("slug")
+            **base,
+            **common,
+            status="office",
+            office=item.office,
+            destination_slug=destination.get("slug"),
+            price=exchange_line(step.order, item.office),
+            actions={key: item.office[key] for key in ("phone", "address") if item.office.get(key)},
         )
     assert item.entry is not None
     candidate = item.entry.candidate
@@ -585,7 +602,17 @@ def _outcome(item: _Visit | _Gap) -> StepOutcome:
         estimated_minor=item.amount_minor,
         price_kind=item.price_kind,
         trust=candidate.trust,
+        price=item.price,
+        actions=_actions(candidate),
     )
+
+
+_ACTION_KEYS = ("reservation_phone", "reservation_whatsapp", "reservation_url", "booking_url", "check_in", "check_out")
+
+
+def _actions(candidate: StepCandidate) -> dict[str, Any]:
+    """Only what the listing itself published: never a made-up number or link."""
+    return {key: candidate.details[key] for key in _ACTION_KEYS if candidate.details.get(key)}
 
 
 def _snapshot(visit: _Visit, party: int) -> dict[str, Any]:
@@ -616,7 +643,7 @@ def _snapshot(visit: _Visit, party: int) -> dict[str, Any]:
     }
 
 
-def _assembled(best: _State, ctx: _Context) -> AssembledPlan:
+def _assembled(best: _State, ctx: _Context, driver: PriceLine | None) -> AssembledPlan:
     stops: list[AssembledStop] = []
     legs: list[AssembledLeg] = []
     for item in best.items:
@@ -645,12 +672,26 @@ def _assembled(best: _State, ctx: _Context) -> AssembledPlan:
                 flags=list(item.flags),
             )
         )
-    total = sum(stop.estimated_minor for stop in stops)
+    # A priced driver is part of the day's cost: its lowest published day rate, labelled as such.
+    costs = (
+        [
+            CostItem(
+                kind="transport",
+                label="Driver for the day (lowest published day rate)",
+                amount_minor=driver.low_minor,
+                price_label="estimate",
+            )
+        ]
+        if driver is not None and driver.low_minor is not None and driver.currency == ctx.constraints.currency
+        else []
+    )
+    total = sum(stop.estimated_minor for stop in stops) + sum(item.amount_minor for item in costs)
     budget = ctx.constraints.budget_minor or 0
     needs_approval = bool(ctx.strict_budget and total > budget)
     return AssembledPlan(
         stops=stops,
         legs=legs,
+        cost_items=costs,
         total_minor=total,
         currency=ctx.constraints.currency,
         budget_warning=(
@@ -720,9 +761,18 @@ def assemble_day(
     best = sorted(finals, key=_state_key)[0]
     first = next((item for item in best.items if isinstance(item, _Visit)), None)
     set_off = first.arrive - timedelta(minutes=first.travel_minutes + first.wait_minutes) if first else start
+    outcomes = [_outcome(item) for item in best.items]
+    driver = driver_price(pools.driver_rates, constraints.currency) if script.transport == "driver" else None
+    lines = [outcome.price for outcome in outcomes if outcome.price is not None]
     return DayPlan(
-        outcomes=[_outcome(item) for item in best.items],
-        plan=_assembled(best, ctx),
+        outcomes=outcomes,
+        plan=_assembled(best, ctx, driver),
+        pricing=price_day(
+            [*lines, *([driver] if driver else [])],
+            currency=constraints.currency,
+            party=ctx.party,
+            budget=constraints.budget_minor,
+        ),
         window_start=min(start, set_off) if first and first.step.at is not None else max(start, set_off),
         return_by=end,
         by_id={candidate.id: candidate for candidate in pools.candidates()},

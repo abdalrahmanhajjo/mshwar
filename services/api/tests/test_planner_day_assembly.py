@@ -381,4 +381,13 @@ async def test_a_day_told_step_by_step_through_the_api(api: AsyncClient) -> None
         assert {str(stop["experience_id"]) for stop in stops} == {step["experience_id"] for step in filled}
         assert all(UUID(step["experience_id"]) for step in filled)
     assert body["llm_never_sets_totals"] is True
+    pricing = body["pricing"]
+    assert {"low_minor", "high_minor", "lines", "on_request_lines", "budget_status"} <= set(pricing)
+    assert all(line["basis"] != "on_request" or line["low_minor"] is None for line in pricing["lines"])
+    if body["status"] == "planned":
+        ride = await api.post(
+            f"/api/v1/planner/sessions/{body['session_id']}/driver-request", json={"pickup_name": "Hotel lobby"}
+        )
+        assert ride.status_code == 200, ride.text
+        assert ride.json()["kind"] == "day"
     assert datetime.fromisoformat(body["constraints"]["return_by"]).astimezone(BEIRUT).time() >= time(23, 0)

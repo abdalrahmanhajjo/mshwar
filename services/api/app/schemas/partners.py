@@ -325,6 +325,8 @@ class PlaceTypesIn(_Strict):
         default=None, max_length=5
     )
     schedule_note: str | None = Field(default=None, max_length=280)
+    #: A restaurant's own typical spend per person, in cents: what the planner prices a meal with.
+    typical_spend_minor: int | None = Field(default=None, ge=100, le=100_000_000)
 
 
 class ClaimIn(_Strict):

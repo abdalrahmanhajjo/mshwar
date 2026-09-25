@@ -67,6 +67,17 @@ async def retrieve_changers(db: AsyncSession, destination_slug: str) -> list[dic
     return [item for item in _json_items(row) if isinstance(item, dict)]
 
 
+async def retrieve_driver_rates(db: AsyncSession, destination_slug: str, party_size: int) -> list[dict[str, Any]]:
+    """Published day rates of the verified drivers a day request would reach (migration 046)."""
+    row = (
+        await db.execute(
+            text("SELECT app.planner_driver_day_rates(:slug, :party)"),
+            {"slug": destination_slug, "party": party_size},
+        )
+    ).scalar()
+    return [item for item in _json_items(row) if isinstance(item, dict)]
+
+
 async def load_weights(db: AsyncSession) -> dict[str, float]:
     row = (await db.execute(text("SELECT app.planner_active_weights()"))).scalar()
     return weights_from_payload(row)
