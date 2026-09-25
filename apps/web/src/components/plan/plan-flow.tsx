@@ -756,7 +756,7 @@ export function PlanFlow({
                   placeholder={copy.flowVibePlaceholder}
                   onChange={(event) => setVibe(event.target.value)}
                 />
-                <UnderstoodSteps text={vibe} copy={copy} />
+                <UnderstoodSteps text={vibe} copy={copy} onRewrite={setVibe} />
               </div>
             ) : null}
           </div>

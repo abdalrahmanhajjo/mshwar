@@ -412,6 +412,8 @@ export type UnderstoodDay = {
   unparsed: string[];
   destination_slugs: string[];
   plans_as_day: boolean;
+  /** For each fragment it could not read, what it may mean - offered to tap, never added on its own. */
+  suggestions?: { fragment: string; options: { concept: string; word: string; because: string[] }[] }[];
 };
 
 /** How the planner reads a request, step by step - before planning anything. */

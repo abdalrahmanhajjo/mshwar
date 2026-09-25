@@ -203,6 +203,8 @@ class ClarificationQuestion(BaseModel):
     field: str
     prompt: str
     required: bool = True
+    #: Concepts the traveller can tap to answer ("bowling"), best first. Never applied without a tap.
+    options: list[str] = Field(default_factory=list, max_length=3)
 
 
 class AssumedDefault(BaseModel):

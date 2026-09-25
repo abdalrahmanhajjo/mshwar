@@ -267,10 +267,12 @@ export type PlannerKey =
   | "meal_brunch"
   | "meal_lunch"
   | "meal_dinner"
-  | "meal_snack";
+  | "meal_snack"
+  | "understoodMaybe";
 
 export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
   en: {
+    understoodMaybe: "Did you mean:",
     startTitle: "Where should this plan start?",
     startHint: "Search, drop a pin, or type a place. Device location is optional and never the only way in.",
     searchPlace: "Search a place",
@@ -542,6 +544,7 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     meal_snack: "A bite",
   },
   ar: {
+    understoodMaybe: "هل تقصد:",
     startTitle: "من أين تبدأ هذه الخطة؟",
     startHint: "ابحث أو أسقط دبوساً أو اكتب مكاناً. موقع الجهاز اختياري وليس الطريق الوحيد.",
     searchPlace: "ابحث عن مكان",
@@ -812,6 +815,7 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     meal_snack: "لقمة سريعة",
   },
   fr: {
+    understoodMaybe: "Vouliez-vous dire :",
     startTitle: "D’où part ce plan ?",
     startHint: "Recherchez, déposez une épingle ou saisissez un lieu. La géolocalisation est facultative.",
     searchPlace: "Rechercher un lieu",

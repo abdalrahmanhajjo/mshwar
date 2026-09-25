@@ -538,6 +538,7 @@ async def understand(
     from app.planner.day_session import MIN_DAY_STEPS, catalogue_terms
     from app.planner.script import parse_day_script
     from app.planner.script.learning import refresh_phrases
+    from app.planner.script.meaning import suggest, word_for
 
     await require_session(request, db)
     await refresh_phrases(db)
@@ -545,6 +546,17 @@ async def understand(
     body = script.model_dump(mode="json", exclude={"constraints"})
     body["destination_slugs"] = script.constraints.destination_slugs
     body["plans_as_day"] = len(script.steps) >= MIN_DAY_STEPS
+    # What the words we could not read may mean: offered to tap, never added on their own.
+    body["suggestions"] = [
+        {
+            "fragment": fragment,
+            "options": [
+                {"concept": item.concept, "word": word_for(item.concept), "because": list(item.because)}
+                for item in suggest(fragment)
+            ],
+        }
+        for fragment in script.unparsed
+    ]
     return body
 
 

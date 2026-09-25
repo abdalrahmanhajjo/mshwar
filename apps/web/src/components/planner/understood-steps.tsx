@@ -4,6 +4,7 @@ import * as React from "react";
 import { Car, Moon } from "lucide-react";
 import { useLocale } from "@/components/shell/locale-provider";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { interpolate } from "@/i18n/catalogues";
 import { understandRequest, type UnderstoodDay } from "@/lib/planner";
 import type { PlannerCopy, PlannerKey } from "@/lib/planner-copy";
@@ -17,7 +18,16 @@ const MIN_LENGTH = 8;
  * shown before anything is planned so they can fix the wording. Only for requests with several steps;
  * an aid, so a failed read shows nothing rather than an error.
  */
-export function UnderstoodSteps({ text, copy }: { text: string; copy: PlannerCopy }) {
+export function UnderstoodSteps({
+  text,
+  copy,
+  onRewrite,
+}: {
+  text: string;
+  copy: PlannerCopy;
+  /** Called with the request rewritten when the traveller taps what they meant. */
+  onRewrite?: (next: string) => void;
+}) {
   const { locale } = useLocale();
   const [day, setDay] = React.useState<UnderstoodDay | null>(null);
   const [types, setTypes] = React.useState<PlaceType[]>([]);
@@ -56,6 +66,10 @@ export function UnderstoodSteps({ text, copy }: { text: string; copy: PlannerCop
   // Too short to read: show nothing, whatever an earlier read found.
   if (text.trim().length < MIN_LENGTH || !day?.plans_as_day) return null;
   const names = new Map(types.map((type) => [type.slug, type.names[locale]]));
+  const conceptName = (concept: string) =>
+    concept.startsWith("meal-")
+      ? copy[`${concept.replace("-", "_")}` as PlannerKey]
+      : (names.get(concept) ?? concept.replace(/-/g, " "));
   const label = (step: UnderstoodDay["steps"][number]) => {
     const kinds = step.tags.map((tag) => names.get(tag)).filter(Boolean);
     const head = step.meal ? copy[`meal_${step.meal}` as PlannerKey] : copy[`role_${step.role}` as PlannerKey];
@@ -96,11 +110,36 @@ export function UnderstoodSteps({ text, copy }: { text: string; copy: PlannerCop
           </span>
         ) : null}
       </div>
-      {day.unparsed.map((fragment) => (
-        <p key={fragment} className="text-sm text-text-muted">
-          {interpolate(copy.understoodUnclear, { text: fragment })}
-        </p>
-      ))}
+      {day.unparsed.map((fragment) => {
+        const options = day.suggestions?.find((item) => item.fragment === fragment)?.options ?? [];
+        return (
+          <div key={fragment} className="grid gap-1.5 text-sm text-text-muted">
+            <p>{interpolate(copy.understoodUnclear, { text: fragment })}</p>
+            {options.length ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <span>{copy.understoodMaybe}</span>
+                {options.map((option) =>
+                  onRewrite ? (
+                    <Button
+                      key={option.concept}
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onRewrite(text.replace(fragment, option.word))}
+                    >
+                      {conceptName(option.concept)}
+                    </Button>
+                  ) : (
+                    <Badge key={option.concept} variant="outline">
+                      {conceptName(option.concept)}
+                    </Badge>
+                  ),
+                )}
+              </div>
+            ) : null}
+          </div>
+        );
+      })}
     </div>
   );
 }
