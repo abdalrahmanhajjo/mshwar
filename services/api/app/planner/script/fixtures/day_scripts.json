@@ -1,0 +1,1283 @@
+{
+  "version": "dayscript-eval-v1",
+  "threshold": 0.9,
+  "cases": [
+    {
+      "id": "en-batroun-full-day",
+      "locale": "en",
+      "prompt": "I want to get driver in batroun to go trip start currency changer then pass me at place do breakfast at sweat place then go see a mountain then after that eat dinner and after it play bowling then  watch film at cinema and finally stay night at hotel",
+      "expected": {
+        "steps": [
+          {
+            "role": "exchange"
+          },
+          {
+            "role": "meal",
+            "meal": "breakfast",
+            "tags": ["sweets"]
+          },
+          {
+            "role": "sight",
+            "tags": ["mountain"]
+          },
+          {
+            "role": "meal",
+            "meal": "dinner"
+          },
+          {
+            "role": "activity",
+            "tags": ["bowling"]
+          },
+          {
+            "role": "activity",
+            "tags": ["cinema"]
+          },
+          {
+            "role": "stay",
+            "tags": ["hotel"]
+          }
+        ],
+        "transport": "driver",
+        "pickup_requested": true,
+        "ends_overnight": true,
+        "destinations": ["batroun"]
+      }
+    },
+    {
+      "id": "en-simple-then",
+      "locale": "en",
+      "prompt": "Breakfast in Byblos, then the old souk, then lunch by the sea",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "meal": "breakfast"
+          },
+          {
+            "role": "sight",
+            "tags": ["souk"]
+          },
+          {
+            "role": "meal",
+            "meal": "lunch",
+            "tags": ["sea-view"]
+          }
+        ],
+        "destinations": ["byblos"]
+      }
+    },
+    {
+      "id": "en-numbered-list",
+      "locale": "en",
+      "prompt": "1) coffee 2) museum 3) shawarma for lunch 4) sunset",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "tags": ["cafe"]
+          },
+          {
+            "role": "sight",
+            "tags": ["museum"]
+          },
+          {
+            "role": "meal",
+            "meal": "lunch",
+            "tags": ["shawarma"]
+          },
+          {
+            "role": "sight",
+            "tags": ["sunset"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-arrows",
+      "locale": "en",
+      "prompt": "manakish -> cedars -> fish lunch -> hotel in Bsharri",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "tags": ["manakish"]
+          },
+          {
+            "role": "sight",
+            "tags": ["cedars"]
+          },
+          {
+            "role": "meal",
+            "meal": "lunch",
+            "tags": ["seafood"]
+          },
+          {
+            "role": "stay",
+            "tags": ["hotel"]
+          }
+        ],
+        "ends_overnight": true
+      }
+    },
+    {
+      "id": "en-typos-slang",
+      "locale": "en",
+      "prompt": "wanna grab sum knefe early then go up the mountin, at night bowlling and a movie, crash at a hotle",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "tags": ["sweets"]
+          },
+          {
+            "role": "sight",
+            "tags": ["mountain"]
+          },
+          {
+            "role": "activity",
+            "tags": ["bowling"]
+          },
+          {
+            "role": "activity",
+            "tags": ["cinema"]
+          },
+          {
+            "role": "stay"
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-before-reorder",
+      "locale": "en",
+      "prompt": "Before the cinema I want dinner, and before all of that a sarraf",
+      "expected": {
+        "steps": [
+          {
+            "role": "exchange"
+          },
+          {
+            "role": "meal",
+            "meal": "dinner"
+          },
+          {
+            "role": "activity",
+            "tags": ["cinema"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-after-reorder",
+      "locale": "en",
+      "prompt": "Museum in the morning. Lunch after the museum, and a spa after lunch",
+      "expected": {
+        "steps": [
+          {
+            "role": "sight",
+            "tags": ["museum"]
+          },
+          {
+            "role": "meal",
+            "meal": "lunch"
+          },
+          {
+            "role": "activity",
+            "tags": ["spa"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-airport-driver",
+      "locale": "en",
+      "prompt": "We land at 10, driver from the airport to Batroun, lunch and a hotel",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "meal": "lunch"
+          },
+          {
+            "role": "stay"
+          }
+        ],
+        "transport": "driver",
+        "pickup_place": "airport",
+        "start_time": "10:00:00",
+        "ends_overnight": true
+      }
+    },
+    {
+      "id": "en-no-hotel-return",
+      "locale": "en",
+      "prompt": "Hike in the Qadisha valley, lunch, then no hotel - bring me back to Beirut by 7",
+      "expected": {
+        "steps": [
+          {
+            "role": "activity",
+            "tags": ["hiking"]
+          },
+          {
+            "role": "meal",
+            "meal": "lunch"
+          }
+        ],
+        "ends_overnight": false,
+        "return_destination": "beirut",
+        "end_time": "19:00:00",
+        "avoid_tags": ["hotel"]
+      }
+    },
+    {
+      "id": "en-family-flexible",
+      "locale": "en",
+      "prompt": "Family of 5, cheap, the kids like a water park and pizza, back by 6",
+      "expected": {
+        "steps": [
+          {
+            "role": "activity",
+            "tags": ["water-park"]
+          },
+          {
+            "role": "meal",
+            "tags": ["pizza"]
+          }
+        ],
+        "end_time": "18:00:00",
+        "party_size": 5
+      }
+    },
+    {
+      "id": "en-times",
+      "locale": "en",
+      "prompt": "breakfast at 8:30, then the castle at 11, then dinner at 8",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "meal": "breakfast",
+            "at": "08:30:00"
+          },
+          {
+            "role": "sight",
+            "tags": ["castle"],
+            "at": "11:00:00"
+          },
+          {
+            "role": "meal",
+            "meal": "dinner",
+            "at": "20:00:00"
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-optional",
+      "locale": "en",
+      "prompt": "Jeita cave, then lunch, then maybe a winery if there is time",
+      "expected": {
+        "steps": [
+          {
+            "role": "sight",
+            "tags": ["cave"]
+          },
+          {
+            "role": "meal",
+            "meal": "lunch"
+          },
+          {
+            "role": "activity",
+            "tags": ["winery"],
+            "optional": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-dietary",
+      "locale": "en",
+      "prompt": "halal dinner with a sea view, wheelchair accessible, then a walk in the souk",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "meal": "dinner",
+            "tags": ["sea-view"]
+          },
+          {
+            "role": "sight",
+            "tags": ["souk"]
+          }
+        ],
+        "dietary": ["halal"],
+        "accessibility": ["wheelchair"]
+      }
+    },
+    {
+      "id": "en-essentials",
+      "locale": "en",
+      "prompt": "first a pharmacy and an ATM, then a sim card, then lunch in Beirut",
+      "expected": {
+        "steps": [
+          {
+            "role": "service",
+            "tags": ["pharmacy"]
+          },
+          {
+            "role": "service",
+            "tags": ["atm"]
+          },
+          {
+            "role": "service",
+            "tags": ["sim-card"]
+          },
+          {
+            "role": "meal",
+            "meal": "lunch"
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-adventure",
+      "locale": "en",
+      "prompt": "Paragliding in Jounieh in the morning, then a beach club, then sushi and cocktails at night",
+      "expected": {
+        "steps": [
+          {
+            "role": "activity",
+            "tags": ["paragliding"]
+          },
+          {
+            "role": "activity",
+            "tags": ["beach-club"]
+          },
+          {
+            "role": "meal",
+            "tags": ["sushi"]
+          },
+          {
+            "role": "activity",
+            "tags": ["bar"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-long-story",
+      "locale": "en",
+      "prompt": "So me and my wife are visiting for our anniversary. We would love to start the day slowly with a nice breakfast, after that we want to see some Roman ruins in Baalbek, then have lunch somewhere with Lebanese food. In the evening a winery, and at the end a quiet guesthouse.",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "meal": "breakfast"
+          },
+          {
+            "role": "sight",
+            "tags": ["ruins"]
+          },
+          {
+            "role": "meal",
+            "meal": "lunch",
+            "tags": ["mezze"]
+          },
+          {
+            "role": "activity",
+            "tags": ["winery"]
+          },
+          {
+            "role": "stay",
+            "tags": ["guesthouse"]
+          }
+        ],
+        "destinations": ["baalbek"]
+      }
+    },
+    {
+      "id": "en-skip-negation",
+      "locale": "en",
+      "prompt": "Beach in the morning, then lunch but no seafood, then shopping",
+      "expected": {
+        "steps": [
+          {
+            "role": "sight",
+            "tags": ["beach"]
+          },
+          {
+            "role": "meal",
+            "meal": "lunch"
+          },
+          {
+            "role": "activity",
+            "tags": ["shopping"]
+          }
+        ],
+        "avoid_tags": ["seafood"]
+      }
+    },
+    {
+      "id": "en-winter",
+      "locale": "en",
+      "prompt": "skiing all morning, then a spa, then dinner and a hotel",
+      "expected": {
+        "steps": [
+          {
+            "role": "activity",
+            "tags": ["skiing"]
+          },
+          {
+            "role": "activity",
+            "tags": ["spa"]
+          },
+          {
+            "role": "meal",
+            "meal": "dinner"
+          },
+          {
+            "role": "stay"
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-single-step",
+      "locale": "en",
+      "prompt": "a bowling alley tonight",
+      "expected": {
+        "steps": [
+          {
+            "role": "activity",
+            "tags": ["bowling"],
+            "time_of_day": "night"
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-nightlife",
+      "locale": "en",
+      "prompt": "dinner in Beirut then live music then a club",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "meal": "dinner"
+          },
+          {
+            "role": "activity",
+            "tags": ["live-music"]
+          },
+          {
+            "role": "activity",
+            "tags": ["nightclub"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ar-lb-round-trip",
+      "locale": "ar-LB",
+      "prompt": "بدي روح عجبيل الصبح ترويقة، بعدين القلعة، غدا عالبحر وبعدين رجعني عبيروت",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "meal": "breakfast"
+          },
+          {
+            "role": "sight",
+            "tags": ["castle"]
+          },
+          {
+            "role": "meal",
+            "meal": "lunch",
+            "tags": ["sea-view"]
+          }
+        ],
+        "return_destination": "beirut",
+        "ends_overnight": false
+      }
+    },
+    {
+      "id": "ar-lb-driver-changer",
+      "locale": "ar-LB",
+      "prompt": "بدي شوفير بالبترون، أول شي صراف، بعدين ترويقة حلويات، وبعدين الجبل، وبالآخر فندق",
+      "expected": {
+        "steps": [
+          {
+            "role": "exchange"
+          },
+          {
+            "role": "meal",
+            "meal": "breakfast",
+            "tags": ["sweets"]
+          },
+          {
+            "role": "sight",
+            "tags": ["mountain"]
+          },
+          {
+            "role": "stay"
+          }
+        ],
+        "transport": "driver",
+        "destinations": ["batroun"]
+      }
+    },
+    {
+      "id": "ar-lb-night-out",
+      "locale": "ar-LB",
+      "prompt": "عشا بعدين بولينغ وبعدها سينما",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "meal": "dinner"
+          },
+          {
+            "role": "activity",
+            "tags": ["bowling"]
+          },
+          {
+            "role": "activity",
+            "tags": ["cinema"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ar-lb-cedars",
+      "locale": "ar-LB",
+      "prompt": "بدنا نروح عالأرز ونتغدى ببشري وبعدين ننام بفندق",
+      "expected": {
+        "steps": [
+          {
+            "role": "sight",
+            "tags": ["cedars"]
+          },
+          {
+            "role": "meal",
+            "meal": "lunch"
+          },
+          {
+            "role": "stay"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ar-msa-museum",
+      "locale": "ar",
+      "prompt": "أريد زيارة المتحف ثم الغداء ثم التسوق في المول",
+      "expected": {
+        "steps": [
+          {
+            "role": "sight",
+            "tags": ["museum"]
+          },
+          {
+            "role": "meal",
+            "meal": "lunch"
+          },
+          {
+            "role": "activity",
+            "tags": ["shopping"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ar-lb-no-hotel",
+      "locale": "ar-LB",
+      "prompt": "مغارة وبعدين غدا بس بلا فندق",
+      "expected": {
+        "steps": [
+          {
+            "role": "sight",
+            "tags": ["cave"]
+          },
+          {
+            "role": "meal",
+            "meal": "lunch"
+          }
+        ],
+        "ends_overnight": false,
+        "avoid_tags": ["hotel"]
+      }
+    },
+    {
+      "id": "ar-lb-before",
+      "locale": "ar-LB",
+      "prompt": "قبل السينما بدي عشا",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "meal": "dinner"
+          },
+          {
+            "role": "activity",
+            "tags": ["cinema"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ar-lb-waterfall",
+      "locale": "ar-LB",
+      "prompt": "شلال بالصبح وبعدها مشاوي وبالليل حفلة",
+      "expected": {
+        "steps": [
+          {
+            "role": "sight",
+            "tags": ["waterfall"]
+          },
+          {
+            "role": "meal",
+            "tags": ["grill"]
+          },
+          {
+            "role": "activity",
+            "tags": ["live-music"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "arabizi-after-lunch",
+      "locale": "ar-LB",
+      "prompt": "ba3d el ghada badde sarraf w ba3den cinema",
+      "expected": {
+        "steps": [
+          {
+            "role": "exchange"
+          },
+          {
+            "role": "activity",
+            "tags": ["cinema"]
+          }
+        ],
+        "start_time": "14:00:00"
+      }
+    },
+    {
+      "id": "arabizi-full-day",
+      "locale": "ar-LB",
+      "prompt": "badde shofeur bi jbeil, awal shi terwi2a, ba3den el 2al3a, ba3den 8ada 3al ba7r w bel a5er otel",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "meal": "breakfast"
+          },
+          {
+            "role": "sight",
+            "tags": ["castle"]
+          },
+          {
+            "role": "meal",
+            "meal": "lunch"
+          },
+          {
+            "role": "stay"
+          }
+        ],
+        "transport": "driver",
+        "destinations": ["byblos"]
+      }
+    },
+    {
+      "id": "arabizi-no-digits",
+      "locale": "ar-LB",
+      "prompt": "terwia bi batroun ba3den bahr ba3den 3asha",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "meal": "breakfast"
+          },
+          {
+            "role": "sight",
+            "tags": ["beach"]
+          },
+          {
+            "role": "meal",
+            "meal": "dinner"
+          }
+        ]
+      }
+    },
+    {
+      "id": "arabizi-sweets",
+      "locale": "ar-LB",
+      "prompt": "bade 7elweyet w ahwe ba3den mat7af",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "tags": ["sweets", "cafe"]
+          },
+          {
+            "role": "sight",
+            "tags": ["museum"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "mixed-languages",
+      "locale": "mixed",
+      "prompt": "bade breakfast bi Batroun w ba3den cinema, then فندق",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "meal": "breakfast"
+          },
+          {
+            "role": "activity",
+            "tags": ["cinema"]
+          },
+          {
+            "role": "stay"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fr-byblos",
+      "locale": "fr",
+      "prompt": "Journée à Byblos : musée, puis déjeuner, ensuite plage, et enfin un hôtel",
+      "expected": {
+        "steps": [
+          {
+            "role": "sight",
+            "tags": ["museum"]
+          },
+          {
+            "role": "meal",
+            "meal": "lunch"
+          },
+          {
+            "role": "sight",
+            "tags": ["beach"]
+          },
+          {
+            "role": "stay"
+          }
+        ],
+        "destinations": ["byblos"]
+      }
+    },
+    {
+      "id": "fr-chauffeur",
+      "locale": "fr",
+      "prompt": "Je veux un chauffeur. D'abord un bureau de change, puis petit déjeuner, ensuite la montagne et le soir un dîner",
+      "expected": {
+        "steps": [
+          {
+            "role": "exchange"
+          },
+          {
+            "role": "meal",
+            "meal": "breakfast"
+          },
+          {
+            "role": "sight",
+            "tags": ["mountain"]
+          },
+          {
+            "role": "meal",
+            "meal": "dinner"
+          }
+        ],
+        "transport": "driver"
+      }
+    },
+    {
+      "id": "fr-soiree",
+      "locale": "fr",
+      "prompt": "dîner à 20h puis cinéma et bowling",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "meal": "dinner",
+            "at": "20:00:00"
+          },
+          {
+            "role": "activity",
+            "tags": ["cinema"],
+            "sequence": "flexible"
+          },
+          {
+            "role": "activity",
+            "tags": ["bowling"],
+            "sequence": "flexible"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fr-nature",
+      "locale": "fr",
+      "prompt": "randonnée dans la vallée, puis une cascade, enfin dormir en chalet",
+      "expected": {
+        "steps": [
+          {
+            "role": "activity",
+            "tags": ["hiking"]
+          },
+          {
+            "role": "sight",
+            "tags": ["waterfall"]
+          },
+          {
+            "role": "stay"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fr-avant",
+      "locale": "fr",
+      "prompt": "Avant le musée, un café. Après le musée, déjeuner",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "tags": ["cafe"]
+          },
+          {
+            "role": "sight",
+            "tags": ["museum"]
+          },
+          {
+            "role": "meal",
+            "meal": "lunch"
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-flexible-and",
+      "locale": "en",
+      "prompt": "in the afternoon bowling and karting, then dinner",
+      "expected": {
+        "steps": [
+          {
+            "role": "activity",
+            "tags": ["bowling"],
+            "sequence": "flexible"
+          },
+          {
+            "role": "activity",
+            "tags": ["karting"],
+            "sequence": "flexible"
+          },
+          {
+            "role": "meal",
+            "meal": "dinner"
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-duration",
+      "locale": "en",
+      "prompt": "a quick coffee, then the souk for 2 hours, then lunch",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "tags": ["cafe"],
+            "duration_minutes": 30
+          },
+          {
+            "role": "sight",
+            "tags": ["souk"],
+            "duration_minutes": 120
+          },
+          {
+            "role": "meal",
+            "meal": "lunch"
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-named-place",
+      "locale": "en",
+      "prompt": "breakfast at Al Soussi, then the Corniche, then dinner",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "meal": "breakfast",
+            "named_place": "Al Soussi"
+          },
+          {
+            "role": "sight",
+            "named_place": "Corniche"
+          },
+          {
+            "role": "meal",
+            "meal": "dinner"
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-bed-and-breakfast",
+      "locale": "en",
+      "prompt": "horse riding, then a zipline, then a bed and breakfast",
+      "expected": {
+        "steps": [
+          {
+            "role": "activity",
+            "tags": ["horse-riding"]
+          },
+          {
+            "role": "activity",
+            "tags": ["zipline"]
+          },
+          {
+            "role": "stay",
+            "tags": ["guesthouse"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ar-atm-vs-changer",
+      "locale": "ar-LB",
+      "prompt": "بدي صراف آلي وبعدين صيدلية",
+      "expected": {
+        "steps": [
+          {
+            "role": "service",
+            "tags": ["atm"]
+          },
+          {
+            "role": "service",
+            "tags": ["pharmacy"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-stay-moves-last",
+      "locale": "en",
+      "prompt": "hotel in Batroun, and during the day a boat, sorry a kayak, and a fish dinner",
+      "expected": {
+        "steps": [
+          {
+            "role": "activity",
+            "tags": ["kayaking"]
+          },
+          {
+            "role": "meal",
+            "meal": "dinner",
+            "tags": ["seafood"]
+          },
+          {
+            "role": "stay"
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-diving-lunch",
+      "locale": "en",
+      "prompt": "diving in the morning then burgers then ice cream",
+      "expected": {
+        "steps": [
+          {
+            "role": "activity",
+            "tags": ["diving"],
+            "time_of_day": "morning"
+          },
+          {
+            "role": "meal",
+            "tags": ["burger"]
+          },
+          {
+            "role": "meal",
+            "tags": ["ice-cream"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-vague",
+      "locale": "en",
+      "prompt": "something fun with friends",
+      "expected": {
+        "steps": [],
+        "unparsed_count": 1
+      }
+    },
+    {
+      "id": "en-church-monastery",
+      "locale": "en",
+      "prompt": "visit a monastery, then a church, then lunch in Harissa",
+      "expected": {
+        "steps": [
+          {
+            "role": "sight",
+            "tags": ["monastery"]
+          },
+          {
+            "role": "sight",
+            "tags": ["church"]
+          },
+          {
+            "role": "meal",
+            "meal": "lunch"
+          }
+        ]
+      }
+    },
+    {
+      "id": "holdout-en-ehden",
+      "locale": "en",
+      "prompt": "Can you plan: morning hike in Ehden, lunch with a view of the mountains, then an escape room and pizza for dinner?",
+      "expected": {
+        "steps": [
+          {
+            "role": "activity",
+            "tags": ["hiking"],
+            "time_of_day": "morning"
+          },
+          {
+            "role": "meal",
+            "meal": "lunch",
+            "tags": ["mountain-view"]
+          },
+          {
+            "role": "activity",
+            "tags": ["escape-room"]
+          },
+          {
+            "role": "meal",
+            "meal": "dinner",
+            "tags": ["pizza"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "holdout-en-honeymoon",
+      "locale": "en",
+      "prompt": "honeymoon day in batroun - brunch, beach club all afternoon, sunset drinks, seafood dinner, boutique hotel",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "meal": "brunch"
+          },
+          {
+            "role": "activity",
+            "tags": ["beach-club"]
+          },
+          {
+            "role": "activity",
+            "tags": ["sunset", "bar"]
+          },
+          {
+            "role": "meal",
+            "meal": "dinner",
+            "tags": ["seafood"]
+          },
+          {
+            "role": "stay",
+            "tags": ["hotel"]
+          }
+        ],
+        "destinations": ["batroun"]
+      }
+    },
+    {
+      "id": "holdout-ar-friends",
+      "locale": "ar-LB",
+      "prompt": "بدي ضهرة مع رفقاتي: فطور مناقيش، بعدين كارتينغ، بعدين غدا مشاوي، وبالليل سهرة ببار",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "meal": "breakfast",
+            "tags": ["manakish"]
+          },
+          {
+            "role": "activity",
+            "tags": ["karting"]
+          },
+          {
+            "role": "meal",
+            "meal": "lunch",
+            "tags": ["grill"]
+          },
+          {
+            "role": "activity",
+            "tags": ["bar"],
+            "time_of_day": "night"
+          }
+        ]
+      }
+    },
+    {
+      "id": "holdout-arabizi-ski",
+      "locale": "ar-LB",
+      "prompt": "badna nrou7 3al arz, na3mel ski, ba3den nekol bi bsharri w nnam bi chalet",
+      "expected": {
+        "steps": [
+          {
+            "role": "sight",
+            "tags": ["cedars"]
+          },
+          {
+            "role": "activity",
+            "tags": ["skiing"]
+          },
+          {
+            "role": "meal"
+          },
+          {
+            "role": "stay",
+            "tags": ["chalet"]
+          }
+        ],
+        "ends_overnight": true
+      }
+    },
+    {
+      "id": "holdout-fr-airport",
+      "locale": "fr",
+      "prompt": "On arrive à l'aéroport à 9h, on veut un chauffeur, déjeuner à Byblos puis visite du château, et retour à Beyrouth",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "meal": "lunch"
+          },
+          {
+            "role": "sight",
+            "tags": ["castle"]
+          }
+        ],
+        "transport": "driver",
+        "pickup_place": "airport",
+        "start_time": "09:00:00",
+        "return_destination": "beirut",
+        "unparsed_count": 0
+      }
+    },
+    {
+      "id": "holdout-en-no-driving",
+      "locale": "en",
+      "prompt": "no driving please, just walk around the souks of Tripoli then knefeh",
+      "expected": {
+        "steps": [
+          {
+            "role": "sight",
+            "tags": ["souk"]
+          },
+          {
+            "role": "meal",
+            "tags": ["sweets"]
+          }
+        ],
+        "avoid_tags": []
+      }
+    },
+    {
+      "id": "holdout-en-museum-gallery",
+      "locale": "en",
+      "prompt": "museum and gallery then dinner then maybe a concert",
+      "expected": {
+        "steps": [
+          {
+            "role": "sight",
+            "tags": ["museum"],
+            "sequence": "flexible"
+          },
+          {
+            "role": "sight",
+            "tags": ["gallery"],
+            "sequence": "flexible"
+          },
+          {
+            "role": "meal",
+            "meal": "dinner"
+          },
+          {
+            "role": "activity",
+            "tags": ["live-music"],
+            "optional": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "holdout-en-pharmacy",
+      "locale": "en",
+      "prompt": "I need a pharmacy first because my son is sick, then a quiet cafe",
+      "expected": {
+        "steps": [
+          {
+            "role": "service",
+            "tags": ["pharmacy"]
+          },
+          {
+            "role": "meal",
+            "tags": ["cafe"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "holdout-en-baalbek",
+      "locale": "en",
+      "prompt": "Take us to Baalbek temples, lunch, then back to Beirut by 8",
+      "expected": {
+        "steps": [
+          {
+            "role": "sight",
+            "tags": ["ruins"]
+          },
+          {
+            "role": "meal",
+            "meal": "lunch"
+          }
+        ],
+        "return_destination": "beirut",
+        "end_time": "20:00:00",
+        "ends_overnight": false
+      }
+    },
+    {
+      "id": "holdout-en-hotel-first",
+      "locale": "en",
+      "prompt": "after the hotel check in we want dinner and cinema",
+      "expected": {
+        "steps": [
+          {
+            "role": "meal",
+            "meal": "dinner"
+          },
+          {
+            "role": "activity",
+            "tags": ["cinema"]
+          },
+          {
+            "role": "stay",
+            "tags": ["hotel"]
+          }
+        ],
+        "ends_overnight": true
+      }
+    }
+  ]
+}

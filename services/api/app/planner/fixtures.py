@@ -82,6 +82,12 @@ def stub_response(prompt: str, schema_name: str) -> str:
         return json.dumps(_refine_payload(blob), ensure_ascii=False)
     if schema_name == "explain":
         return json.dumps(_explain_payload(user_text or prompt), ensure_ascii=False)
+    if schema_name == "day_script":
+        # The stub reads a day the way the deterministic parser does, so CI exercises
+        # the same validation path a real provider goes through.
+        from app.planner.script.parser import parse_day_script
+
+        return parse_day_script(user_text).model_dump_json()
     return "{}"
 
 

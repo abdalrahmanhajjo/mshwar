@@ -376,17 +376,29 @@ authority) and helps in an emergency.
 
 ## 4. Delivery phases
 
-| Phase  | Scope                                                                                                                                                            | Done when                                                                                           |
-| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| **1**  | `DayScript`/`StepSpec` schemas, deterministic `intent/sequence.py` (en/ar/Arabizi/fr), `intent-v2` prompt, eval set                                              | 40 multi-step scenario prompts parse to the expected roles, in order, at ≥ 90%                      |
-| **1b** | Migration 046 language dataset, layers L2–L6, variant generator, seed vocabulary, review queue, "what I understood" step                                         | 8,000 seed and 40,000 generated phrases loaded; eval set at 1,000 prompts, ≥ 90% without the LLM    |
-| **2**  | Migration 045 (activity taxonomy, meal services, schedule note, `planner_retrieve_step`), portal and admin tag editing                                           | Owners and staff can tag cinemas, bowling and sweets; PGlite suite passes                           |
-| **2b** | Migration 047 place types (≈250) and `place_facts`, `place_leads` with dedupe, OSM/Wikidata/official-list importers, `/admin/leads` queue, trust level per place | Every type has en/ar/fr names; leads loaded and measured; first 500 places checked with rich facts  |
-| **3**  | `planner/steps.py` slot fill + beam search + optimiser precedence and meal windows; evening/overnight day window                                                 | The Batroun example yields 7 stops in order with a hotel end, or honest empty slots                 |
-| **4**  | Service steps: changer stops, hotel end anchor, "request a driver for this day" (ride request with the itinerary)                                                | The ride request shows the full day to drivers; changer stops show rate and time                    |
-| **5**  | Web timeline, step pills, per-step swap, lock and actions, trust chips, i18n and RTL                                                                             | e2e: type the example, then see, edit and save the day                                              |
-| **6**  | Step refinement (`StepPatch`), multi-day scripts ("day 2: …"), analytics on empty slots to guide coverage                                                        | "Move cinema before dinner" re-plans correctly; the admin coverage page lists missing tags          |
-| **7**  | Dataset at full size: reviewed synthetic paraphrases, real-traffic misses loop, few-shot retrieval for L1, lead import for places                                | Eval set of 5,000 prompts at ≥ 92% step and ≥ 95% order accuracy; coverage targets met in 8 regions |
+| Phase    | Scope                                                                                                                                                            | Done when                                                                                           |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| **1** ✅ | `DayScript`/`StepSpec` schemas, deterministic parser `app/planner/script/` (en/ar/Arabizi/fr), `dayscript-v1` prompt, eval set                                   | 40 multi-step scenario prompts parse to the expected roles, in order, at ≥ 90%                      |
+| **1b**   | Migration 046 language dataset, layers L2–L6, variant generator, seed vocabulary, review queue, "what I understood" step                                         | 8,000 seed and 40,000 generated phrases loaded; eval set at 1,000 prompts, ≥ 90% without the LLM    |
+| **2**    | Migration 045 (activity taxonomy, meal services, schedule note, `planner_retrieve_step`), portal and admin tag editing                                           | Owners and staff can tag cinemas, bowling and sweets; PGlite suite passes                           |
+| **2b**   | Migration 047 place types (≈250) and `place_facts`, `place_leads` with dedupe, OSM/Wikidata/official-list importers, `/admin/leads` queue, trust level per place | Every type has en/ar/fr names; leads loaded and measured; first 500 places checked with rich facts  |
+| **3**    | `planner/steps.py` slot fill + beam search + optimiser precedence and meal windows; evening/overnight day window                                                 | The Batroun example yields 7 stops in order with a hotel end, or honest empty slots                 |
+| **4**    | Service steps: changer stops, hotel end anchor, "request a driver for this day" (ride request with the itinerary)                                                | The ride request shows the full day to drivers; changer stops show rate and time                    |
+| **5**    | Web timeline, step pills, per-step swap, lock and actions, trust chips, i18n and RTL                                                                             | e2e: type the example, then see, edit and save the day                                              |
+| **6**    | Step refinement (`StepPatch`), multi-day scripts ("day 2: …"), analytics on empty slots to guide coverage                                                        | "Move cinema before dinner" re-plans correctly; the admin coverage page lists missing tags          |
+| **7**    | Dataset at full size: reviewed synthetic paraphrases, real-traffic misses loop, few-shot retrieval for L1, lead import for places                                | Eval set of 5,000 prompts at ≥ 92% step and ≥ 95% order accuracy; coverage targets met in 8 regions |
+
+### Phase 1 status (shipped)
+
+- Code: `services/api/app/planner/script/`. `vocabulary.py` holds the seed concepts and generated Arabizi
+  variants. `text.py` handles splitting and matching. `parser.py` is the deterministic reader.
+  `extract.py` runs the model first and falls back to the parser. `evaluation.py` scores readers.
+  The schemas are `StepSpec` and `DayScript` in `app/planner/schemas.py`.
+- Eval set: `app/planner/script/fixtures/day_scripts.json` has 57 cases in 4 languages. 10 of them
+  were held-out prompts written after the rules; 6 of those 10 passed on first sight, and the fixes
+  were general rules, not per-case patches. The deterministic reader now scores 100% on cases,
+  steps and order.
+- Not wired into `/planner/sessions` yet. That is phase 3, when steps can be filled from the catalogue.
 
 Each phase ships on its own and keeps today's flat flow working. A prompt without sequence cues still
 goes through the current pipeline.

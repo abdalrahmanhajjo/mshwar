@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, time
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 LOCALES = frozenset({"ar", "ar-LB", "en", "fr", "mixed"})
 INTENSITY = frozenset({"relaxed", "moderate", "active", "strenuous"})
@@ -74,6 +74,129 @@ class ExtractedConstraints(BaseModel):
         if len(code) != 3 or not code.isalpha():
             return "USD"
         return code
+
+
+STEP_ROLES = frozenset({"exchange", "meal", "sight", "activity", "stay", "service"})
+MEALS = frozenset({"breakfast", "brunch", "lunch", "dinner", "snack"})
+TIMES_OF_DAY = frozenset({"morning", "midday", "afternoon", "evening", "night"})
+TRANSPORT_MODES = frozenset({"own", "driver", "public", "walk"})
+SEQUENCES = frozenset({"fixed", "flexible"})
+MAX_SCRIPT_STEPS = 12
+
+
+def _controlled(value: str | None, allowed: frozenset[str], label: str) -> str | None:
+    if value is None or value == "":
+        return None
+    if value not in allowed:
+        raise ValueError(f"invalid {label}")
+    return value
+
+
+class StepSpec(BaseModel):
+    """One thing the traveller asked to do, in the order they asked for it.
+
+    A step names a *kind* of place (role + tags), never a business: the planner
+    fills it from trusted catalogue rows later. ``named_place`` keeps a name the
+    traveller wrote so it can be looked up - it is never trusted on its own.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    order: int = Field(ge=1, le=MAX_SCRIPT_STEPS)
+    role: str
+    tags: list[str] = Field(default_factory=list, max_length=8)
+    meal: str | None = None
+    named_place: str | None = Field(default=None, max_length=120)
+    destination_slug: str | None = Field(default=None, max_length=80)
+    at: time | None = None
+    time_of_day: str | None = None
+    duration_minutes: int | None = Field(default=None, ge=10, le=720)
+    sequence: str = "fixed"
+    optional: bool = False
+    text: str = Field(default="", max_length=300)
+
+    @field_validator("role")
+    @classmethod
+    def role_controlled(cls, value: str) -> str:
+        if value not in STEP_ROLES:
+            raise ValueError("invalid step role")
+        return value
+
+    @field_validator("tags")
+    @classmethod
+    def tags_known(cls, value: list[str]) -> list[str]:
+        # Unknown tags are dropped, not guessed: a tag only narrows a search.
+        from app.planner.script.vocabulary import STEP_TAGS
+
+        seen: list[str] = []
+        for tag in value:
+            if tag in STEP_TAGS and tag not in seen:
+                seen.append(tag)
+        return seen
+
+    @field_validator("meal")
+    @classmethod
+    def meal_controlled(cls, value: str | None) -> str | None:
+        return _controlled(value, MEALS, "meal")
+
+    @field_validator("time_of_day")
+    @classmethod
+    def time_of_day_controlled(cls, value: str | None) -> str | None:
+        return _controlled(value, TIMES_OF_DAY, "time of day")
+
+    @field_validator("sequence")
+    @classmethod
+    def sequence_controlled(cls, value: str) -> str:
+        if value not in SEQUENCES:
+            raise ValueError("invalid sequence")
+        return value
+
+
+class DayScript(BaseModel):
+    """A whole day as the traveller described it: day-wide constraints plus ordered steps.
+
+    LLM-facing like ``ExtractedConstraints``: extra keys are rejected, so a model
+    cannot smuggle in an id, a price or a booking.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    constraints: ExtractedConstraints = Field(default_factory=ExtractedConstraints)
+    steps: list[StepSpec] = Field(default_factory=list, max_length=MAX_SCRIPT_STEPS)
+    transport: str | None = None
+    pickup_requested: bool = False
+    pickup_place: str | None = Field(default=None, max_length=120)
+    start_time: time | None = None
+    end_time: time | None = None
+    return_destination: str | None = Field(default=None, max_length=80)
+    ends_overnight: bool = False
+    avoid_tags: list[str] = Field(default_factory=list, max_length=16)
+    unparsed: list[str] = Field(default_factory=list, max_length=8)
+
+    @field_validator("transport")
+    @classmethod
+    def transport_controlled(cls, value: str | None) -> str | None:
+        return _controlled(value, TRANSPORT_MODES, "transport")
+
+    @field_validator("avoid_tags")
+    @classmethod
+    def avoid_tags_known(cls, value: list[str]) -> list[str]:
+        from app.planner.script.vocabulary import STEP_TAGS
+
+        return [tag for tag in dict.fromkeys(value) if tag in STEP_TAGS]
+
+    @model_validator(mode="after")
+    def normalise_steps(self) -> DayScript:
+        """Order is 1..n with no gaps, and a stay is where the day ends."""
+        stays = [step for step in self.steps if step.role == "stay"]
+        others = sorted((step for step in self.steps if step.role != "stay"), key=lambda step: step.order)
+        ordered = others + stays[-1:]
+        for position, step in enumerate(ordered, start=1):
+            step.order = position
+        self.steps = ordered
+        if stays:
+            self.ends_overnight = True
+        return self
 
 
 class ClarificationQuestion(BaseModel):
