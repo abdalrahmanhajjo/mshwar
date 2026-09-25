@@ -73,13 +73,30 @@ def token_forms(token: str) -> frozenset[str]:
     return frozenset(forms)
 
 
+#: Staff-approved phrases (migration 048) as (phrase, concept slug): extend the seed vocabulary.
+_extra_phrases: tuple[tuple[str, str], ...] = ()
+
+
+def use_extra_phrases(pairs: tuple[tuple[str, str], ...]) -> None:
+    """Read with these approved phrases too. Unknown concepts are ignored."""
+    global _extra_phrases
+    if pairs != _extra_phrases:
+        _extra_phrases = pairs
+        _cue_index.cache_clear()
+
+
+def _phrases_of(concept: Concept) -> list[str]:
+    extra = [phrase for phrase, slug in _extra_phrases if slug == concept.slug]
+    return [*cue_phrases(concept), *extra]
+
+
 @lru_cache(maxsize=1)
 def _cue_index() -> tuple[dict[str, tuple[tuple[tuple[str, ...], Concept], ...]], tuple[tuple[str, Concept], ...]]:
     """First word -> (all words, concept); plus single Latin words eligible for typo matching."""
     by_first: dict[str, list[tuple[tuple[str, ...], Concept]]] = {}
     fuzzy: dict[str, Concept] = {}
     for concept in ALL_CONCEPTS:
-        for phrase in cue_phrases(concept):
+        for phrase in _phrases_of(concept):
             parts = tuple(words(phrase))
             if not parts:
                 continue
@@ -210,4 +227,14 @@ def split_clauses(text: str) -> list[str]:
     return clauses
 
 
-__all__ = ["Hit", "find_hits", "find_phrase", "is_joiner", "match_at", "split_clauses", "token_forms", "words"]
+__all__ = [
+    "Hit",
+    "find_hits",
+    "find_phrase",
+    "is_joiner",
+    "match_at",
+    "split_clauses",
+    "token_forms",
+    "use_extra_phrases",
+    "words",
+]

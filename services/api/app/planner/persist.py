@@ -78,6 +78,12 @@ async def retrieve_driver_rates(db: AsyncSession, destination_slug: str, party_s
     return [item for item in _json_items(row) if isinstance(item, dict)]
 
 
+async def record_step_gaps(db: AsyncSession, gaps: list[dict[str, Any]]) -> None:
+    """Count steps no trusted place could fill (migration 048): kinds only, never the traveller's words."""
+    if gaps:
+        await db.execute(text("SELECT app.planner_record_step_gaps(CAST(:gaps AS jsonb))"), {"gaps": json.dumps(gaps)})
+
+
 async def load_weights(db: AsyncSession) -> dict[str, float]:
     row = (await db.execute(text("SELECT app.planner_active_weights()"))).scalar()
     return weights_from_payload(row)

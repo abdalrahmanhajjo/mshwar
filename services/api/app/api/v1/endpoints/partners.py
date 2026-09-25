@@ -331,5 +331,12 @@ async def submit_application(kind: str, request: Request, db: AsyncSession = Dep
 
 @router.post("/ops/sweep", dependencies=[access.JOB])
 async def trust_sweep(db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
-    """Expiry warnings (30 and 7 days), lapses, stale transport cards and venue checks. Run daily."""
-    return await fetch_json(db, "SELECT app.trust_sweep()", {})
+    """Expiry warnings (30 and 7 days), lapses, stale transport cards and venue checks. Run daily.
+
+    Also the planner's data retention (048): unclear fragments after 90 days, demand counts after a year.
+    """
+    result = await fetch_json(db, "SELECT app.trust_sweep()", {})
+    planner = await fetch_json(db, "SELECT app.planner_data_sweep()", {})
+    if isinstance(result, dict):
+        result["planner_data"] = planner
+    return result

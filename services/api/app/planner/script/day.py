@@ -114,6 +114,9 @@ class StepOutcome(BaseModel):
     flags: list[str] = Field(default_factory=list)
     named_place: str | None = None
     price: PriceLine | None = None
+    #: Where the step happens (for the next step's "near here" alternatives and the map).
+    lat: float | None = None
+    lng: float | None = None
     #: How to act on the step: reserve a table, book the stay (from the listing's own details).
     actions: dict[str, Any] = Field(default_factory=dict)
 
@@ -577,6 +580,8 @@ def _outcome(item: _Visit | _Gap) -> StepOutcome:
         "distance_m": item.distance_m,
         "wait_minutes": item.wait_minutes,
         "flags": list(item.flags),
+        "lat": item.point.lat,
+        "lng": item.point.lng,
     }
     if item.office is not None:
         destination = item.office.get("destination") or {}

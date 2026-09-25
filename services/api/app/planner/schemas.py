@@ -410,6 +410,35 @@ class DayDriverRequest(BaseModel):
     notes: str = Field(default="", max_length=300)
 
 
+class ChooseStepRequest(BaseModel):
+    """Pick one of a step's trusted alternatives; the rest of the day keeps its places."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    experience_id: UUID
+
+
+class IntentPhraseIn(BaseModel):
+    """A phrase staff approve for one of the planner's concepts (migration 048)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    phrase: str = Field(min_length=1, max_length=80)
+    concept: str = Field(pattern=r"^[a-z0-9]+(-[a-z0-9]+)*$")
+    locale: str = Field(default="mixed", pattern="^(en|ar|ar-LB|arabizi|fr|mixed)$")
+
+
+class MissDecisionIn(BaseModel):
+    """Turn something the planner could not read into a phrase, or dismiss it."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    decision: str = Field(pattern="^(phrase|dismiss)$")
+    phrase: str | None = Field(default=None, max_length=80)
+    concept: str | None = Field(default=None, pattern=r"^[a-z0-9]+(-[a-z0-9]+)*$")
+    locale: str | None = Field(default=None, pattern="^(en|ar|ar-LB|arabizi|fr|mixed)$")
+
+
 class UnderstandRequest(BaseModel):
     """Read a request into steps for the "here is what I understood" chips. Never plans or stores."""
 

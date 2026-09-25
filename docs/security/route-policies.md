@@ -6,15 +6,15 @@ The policy model is described in [authorization.md](authorization.md).
 | Policy | Routes |
 |---|---|
 | `actor` | 15 |
-| `admin` | 88 |
+| `admin` | 95 |
 | `dev` | 1 |
 | `job` | 7 |
 | `public` | 43 |
-| `session` | 179 |
+| `session` | 181 |
 | `signature` | 1 |
 | `token` | 6 |
 | `verified` | 7 |
-| **Total** | **347** |
+| **Total** | **356** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -73,6 +73,13 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/admin/payments/reconciliation` | `admin` |
 | GET | `/api/v1/admin/place-types/coverage` | `admin` |
 | PUT | `/api/v1/admin/place-types/listings/{experience_id}` | `admin` |
+| GET | `/api/v1/admin/planner/concepts` | `admin` |
+| GET | `/api/v1/admin/planner/gaps` | `admin` |
+| GET | `/api/v1/admin/planner/misses` | `admin` |
+| POST | `/api/v1/admin/planner/misses/{miss_id}` | `admin` |
+| GET | `/api/v1/admin/planner/phrases` | `admin` |
+| POST | `/api/v1/admin/planner/phrases` | `admin` |
+| POST | `/api/v1/admin/planner/phrases/{phrase_id}/retire` | `admin` |
 | GET | `/api/v1/admin/prices/due` | `admin` |
 | PUT | `/api/v1/admin/prices/listings/{experience_id}` | `admin` |
 | GET | `/api/v1/admin/proposals` | `admin` |
@@ -263,6 +270,8 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/planner/sessions/{session_id}/replace/accept` | `session` |
 | POST | `/api/v1/planner/sessions/{session_id}/replace/cancel` | `session` |
 | POST | `/api/v1/planner/sessions/{session_id}/replace/preview` | `session` |
+| GET | `/api/v1/planner/sessions/{session_id}/steps/{order}/alternatives` | `session` |
+| POST | `/api/v1/planner/sessions/{session_id}/steps/{order}/choose` | `session` |
 | GET | `/api/v1/planner/sessions/{session_id}/stops/{stop_id}/alternatives` | `session` |
 | GET | `/api/v1/planner/thresholds` | `session` |
 | GET | `/api/v1/planner/trips/{trip_id}/versions` | `session` |
