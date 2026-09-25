@@ -40,6 +40,8 @@ class CatalogueListing(BaseModel):
     gallery: list[str] = Field(default_factory=list)
     price: PriceModel
     score: float | None = None
+    #: Where a listing's name and location came from, when it is open data (migration 051).
+    attributions: list[dict[str, str]] = Field(default_factory=list)
 
     @classmethod
     def from_json(cls, payload: dict[str, Any]) -> CatalogueListing:

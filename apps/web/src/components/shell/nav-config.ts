@@ -8,6 +8,8 @@ import {
   Car,
   UtensilsCrossed,
   Bot,
+  Languages,
+  Sprout,
   CalendarDays,
   ClipboardCheck,
   Compass,
@@ -81,7 +83,9 @@ export const ADMIN_NAV: ShellNavItem[] = [
   { href: "/admin/audit", labelKey: "auditLog", icon: ScrollText },
   { href: "/admin/settings", labelKey: "settings", icon: Settings },
   { href: "/admin/collections", labelKey: "collections", icon: Sparkles },
-  { href: "/admin/planner", labelKey: "plannerHealth", icon: Bot },
+  { href: "/admin/planner", labelKey: "plannerHealth", icon: Bot, exact: true },
+  { href: "/admin/planner/language", labelKey: "plannerLanguage", icon: Languages },
+  { href: "/admin/catalogue", labelKey: "catalogueGrowth", icon: Sprout },
 ];
 
 // Verified drivers and money changers each get their own portal (V1-V4).

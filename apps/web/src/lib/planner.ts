@@ -308,7 +308,169 @@ export type PlannerSession = {
   needs_budget_approval?: boolean;
   injection_logged?: boolean;
   explanations?: string[];
+  /** A day told step by step (trip builder v2): every step, the day's price, and a driver draft. */
+  day?: DayStepOutcome[];
+  pricing?: DayPrice | null;
+  driver_request?: Record<string, unknown> | null;
 };
+
+export type PriceBasis =
+  | "fixed"
+  | "free"
+  | "from"
+  | "range"
+  | "estimated"
+  | "typical_spend"
+  | "per_night_from"
+  | "driver_day_rate"
+  | "exchange_rate"
+  | "on_request";
+
+export type PriceLine = {
+  order: number | null;
+  kind: "stop" | "stay" | "driver" | "exchange";
+  label: string;
+  basis: PriceBasis;
+  unit: "person" | "group" | "night" | "day" | "visit";
+  quantity: number;
+  unit_low_minor: number | null;
+  unit_high_minor: number | null;
+  low_minor: number | null;
+  high_minor: number | null;
+  currency: string;
+  source: string;
+  note: string;
+  /** A price staff recorded from the official source: where, and when it was checked. */
+  source_name?: string | null;
+  source_url?: string | null;
+  checked_on?: string | null;
+  /** The trip day this line belongs to (trips of several days). */
+  day?: number | null;
+};
+
+export type DayPrice = {
+  currency: string;
+  party_size: number;
+  lines: PriceLine[];
+  low_minor: number;
+  /** null: open-ended, the day costs at least low_minor. */
+  high_minor: number | null;
+  per_person_low_minor: number;
+  per_person_high_minor: number | null;
+  priced_lines: number;
+  on_request_lines: number;
+  other_currency_lines: number;
+  budget_minor: number | null;
+  budget_status: "within" | "over" | "may_exceed" | "unknown";
+};
+
+export type DayStepOutcome = {
+  order: number;
+  /** The trip day (1 for a single day). */
+  day?: number;
+  role: "meal" | "sight" | "activity" | "stay" | "service" | "exchange";
+  tags: string[];
+  meal: string | null;
+  text: string;
+  status: "filled" | "office" | "empty" | "skipped";
+  reason: string | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  travel_minutes: number | null;
+  wait_minutes: number;
+  experience_id: string | null;
+  slug: string | null;
+  title: string | null;
+  destination_slug: string | null;
+  office: { branch_name?: string; address?: string; phone?: string; changer?: { bdl_number?: string } } | null;
+  trust: { level?: string; checked_on?: string | null };
+  flags: string[];
+  named_place: string | null;
+  price: PriceLine | null;
+  actions: Record<string, string>;
+};
+
+/** Every step of a day told step by step: from the live session, or from what the sealed version kept. */
+export function dayOf(session: PlannerSession | null, plan: PlanDocument | null): DayStepOutcome[] {
+  const kept = plan?.constraints?.day;
+  if (session?.day?.length) return session.day;
+  return Array.isArray(kept) ? (kept as DayStepOutcome[]) : [];
+}
+
+/** The day's price: from the live session, or from what the sealed version kept. */
+export function dayPriceOf(session: PlannerSession | null, plan: PlanDocument | null): DayPrice | null {
+  const kept = plan?.constraints?.pricing;
+  return session?.pricing ?? (kept && typeof kept === "object" ? (kept as DayPrice) : null);
+}
+
+export type UnderstoodDay = {
+  steps: { order: number; role: DayStepOutcome["role"]; tags: string[]; meal: string | null; optional: boolean }[];
+  transport: string | null;
+  pickup_requested: boolean;
+  ends_overnight: boolean;
+  avoid_tags: string[];
+  unparsed: string[];
+  destination_slugs: string[];
+  plans_as_day: boolean;
+  /** For each fragment it could not read, what it may mean - offered to tap, never added on its own. */
+  suggestions?: { fragment: string; options: { concept: string; word: string; because: string[] }[] }[];
+};
+
+/** How the planner reads a request, step by step - before planning anything. */
+export function understandRequest(text: string, locale: string) {
+  return readJson<UnderstoodDay>("/api/v1/planner/understand", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, locale }),
+  });
+}
+
+/** A trusted option for one step of a day, with its published price. */
+export type StepOption = {
+  experience_id: string;
+  slug: string;
+  title: string;
+  destination_slug: string | null;
+  place_types: string[];
+  trust: { level?: string; checked_on?: string | null };
+  distance_m: number | null;
+  outside_destination: boolean;
+  needs_schedule: boolean;
+  price: PriceLine;
+};
+
+export function fetchStepOptions(sessionId: string, order: number, day = 1) {
+  return readJson<StepOption[]>(`/api/v1/planner/sessions/${sessionId}/steps/${order}/alternatives?day=${day}`);
+}
+
+/** Use one of a step's trusted options; every other step keeps its place. */
+export function chooseStepOption(sessionId: string, order: number, day: number, experienceId: string) {
+  return readJson<PlannerSession>(`/api/v1/planner/sessions/${sessionId}/steps/${order}/choose?day=${day}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ experience_id: experienceId }),
+  });
+}
+
+/** Group a trip's steps (or price lines) by day, in order. One group for a single day. */
+export function byDay<T extends { day?: number | null }>(items: T[]): [number, T[]][] {
+  const groups = new Map<number, T[]>();
+  for (const item of items) {
+    const day = item.day ?? 1;
+    groups.set(day, [...(groups.get(day) ?? []), item]);
+  }
+  return [...groups.entries()].sort(([a], [b]) => a - b);
+}
+
+export function requestDayDriver(
+  sessionId: string,
+  input: { pickup_name: string; pickup_lat?: number; pickup_lng?: number; luggage?: number; notes?: string },
+) {
+  return readJson<{ id: string; kind: string; status: string }>(
+    `/api/v1/planner/sessions/${sessionId}/driver-request`,
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) },
+  );
+}
 
 export function createPlannerSession(input: {
   text: string;
@@ -483,14 +645,20 @@ export function cancelReplacement(sessionId: string) {
 }
 
 export function refinePlannerSession(sessionId: string, text: string, apply: boolean) {
-  return readJson<PlannerSession & { understood?: boolean; summary?: string; clarification?: string }>(
-    `/api/v1/planner/sessions/${sessionId}/refine`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, apply }),
-    },
-  );
+  return readJson<
+    PlannerSession & {
+      understood?: boolean;
+      summary?: string;
+      clarification?: string;
+      /** "day_patch": a step-by-step day edited in words; ``steps`` is the day as it would become. */
+      kind?: string;
+      steps?: UnderstoodDay["steps"];
+    }
+  >(`/api/v1/planner/sessions/${sessionId}/refine`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, apply }),
+  });
 }
 
 export function fetchTripVersions(tripId: string) {

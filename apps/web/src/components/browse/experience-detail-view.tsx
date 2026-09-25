@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { PlaceCredit } from "@/components/guide/place-credit";
 import type { PlaceContributor } from "@/lib/guide-contribute";
 import {
@@ -222,6 +223,24 @@ export function ExperienceDetailView({
           </section>
 
           <PlaceCredit contributors={contributors} />
+          {experience.attributions?.length ? (
+            <p className="text-xs text-text-muted">
+              {copy.dataSource}{" "}
+              {experience.attributions.map((credit, index) => (
+                <React.Fragment key={credit.source}>
+                  {index > 0 ? ", " : null}
+                  <a href={credit.record_url} target="_blank" rel="noopener noreferrer" className="underline">
+                    © {credit.name}
+                  </a>{" "}
+                  (
+                  <a href={credit.licence_url} target="_blank" rel="noopener noreferrer" className="underline">
+                    {credit.licence}
+                  </a>
+                  )
+                </React.Fragment>
+              ))}
+            </p>
+          ) : null}
 
           <section className="grid gap-3 rounded-card border border-border-subtle bg-surface-sunken/60 p-6">
             <h2 className="font-semibold">{copy.availabilityStatus}</h2>

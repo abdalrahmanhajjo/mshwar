@@ -184,6 +184,40 @@ def _session_payload(
     return body
 
 
+async def _plan_as_day(
+    db: AsyncSession,
+    user_id: UUID,
+    raw: str,
+    locale: str,
+    session_id: UUID | None,
+    trip_id: UUID | None,
+    answers: dict[str, Any] | None,
+    approve_budget: bool,
+    injection: str | None,
+) -> dict[str, Any] | None:
+    """A day told step by step ("a changer, then breakfast, then ... a hotel") is planned step by
+    step (trip builder v2). None: the request keeps the classic path."""
+    from app.planner.day_session import catalogue_terms, plan_day_session, reads_as_day
+    from app.planner.script.learning import refresh_phrases
+
+    terms = await catalogue_terms(db)
+    await refresh_phrases(db)
+    if not reads_as_day(raw, locale, terms):
+        return None
+    return await plan_day_session(
+        db,
+        user_id,
+        raw,
+        locale,
+        session_id,
+        trip_id,
+        answers=answers,
+        approve_budget=approve_budget,
+        injection=injection,
+        terms=terms,
+    )
+
+
 async def start_or_continue(
     db: AsyncSession,
     user_id: UUID,
@@ -196,12 +230,13 @@ async def start_or_continue(
 ) -> dict[str, Any]:
     started = time.monotonic()
     injection = await _scan_input(db, user_id, session_id, raw)
+    day = await _plan_as_day(db, user_id, raw, locale, session_id, trip_id, answers, approve_budget, injection)
+    if day is not None:
+        return day
     extracted, degraded = _extract(raw, locale, degraded=False)
     # The extractor reads the sentence; the catalogue knows the names. A town the
     # extractor never heard of is still answerable if the traveller named it.
     extracted = await resolve_anchors(db, raw, extracted)
-    if injection:
-        degraded = degraded or False
     stored = None
     round_number = 0
     pending: dict[str, Any] = {}
@@ -354,6 +389,12 @@ async def regenerate(
             elif exclude_unlocked:
                 exclude_ids.add(exp)
     degraded = bool(stored.get("degraded"))
+    from app.planner.day_session import regenerate_day
+
+    # A day planned step by step is re-planned from its saved steps, keeping locked places.
+    day = await regenerate_day(db, user_id, session_id, exclude_unlocked=exclude_unlocked)
+    if day is not None:
+        return day
     candidates, ranked, blocked, plan = await _build(db, constraints, locked_ids=locked_ids, exclude_ids=exclude_ids)
     if plan.infeasible:
         return _session_payload(
@@ -711,10 +752,18 @@ async def alternatives(db: AsyncSession, user_id: UUID, session_id: UUID, stop_i
 
 
 async def refine_preview(db: AsyncSession, user_id: UUID, session_id: UUID, text_value: str) -> dict[str, Any]:
+    from app.planner.day_session import day_refine_preview
+
     injection = await _scan_input(db, user_id, session_id, text_value)
     stored = await get_session(db, user_id, session_id)
-    intent = parse_refinement(text_value)
-    pending = {"kind": "refine", "intent": intent.model_dump(mode="json")} if intent.understood else {}
+    # A day planned step by step can be edited step by step ("swap bowling for karting").
+    day_edit = await day_refine_preview(db, user_id, session_id, text_value)
+    intent = parse_refinement(text_value) if day_edit is None else None
+    if day_edit is not None:
+        preview, pending = day_edit
+    else:
+        assert intent is not None
+        pending = {"kind": "refine", "intent": intent.model_dump(mode="json")} if intent.understood else {}
     constraints = ExtractedConstraints.model_validate(stored.get("constraints") or {})
     assumed = [AssumedDefault.model_validate(item) for item in (stored.get("assumed_defaults") or [])]
     await upsert_session(
@@ -732,6 +781,9 @@ async def refine_preview(db: AsyncSession, user_id: UUID, session_id: UUID, text
         version_id=UUID(str(stored["current_version_id"])) if stored.get("current_version_id") else None,
         pending=pending,
     )
+    if day_edit is not None:
+        return {**preview, "injection_logged": bool(injection)}
+    assert intent is not None
     return {
         "understood": intent.understood,
         "summary": intent.summary,
@@ -742,8 +794,12 @@ async def refine_preview(db: AsyncSession, user_id: UUID, session_id: UUID, text
 
 
 async def refine_apply(db: AsyncSession, user_id: UUID, session_id: UUID) -> dict[str, Any]:
+    from app.planner.day_session import day_constraints_refine, day_refine_apply
+
     stored = await get_session(db, user_id, session_id)
     pending = _pending_dict(stored)
+    if pending.get("kind") == "day_patch":
+        return await day_refine_apply(db, user_id, session_id, pending)
     if pending.get("kind") != "refine":
         raise ValueError("no refinement to apply")
     from app.planner.schemas import RefinementIntent
@@ -752,6 +808,9 @@ async def refine_apply(db: AsyncSession, user_id: UUID, session_id: UUID) -> dic
     if not intent.understood:
         raise ValueError("refinement was not understood")
     constraints = apply_refinement(ExtractedConstraints.model_validate(stored.get("constraints") or {}), intent)
+    day = await day_constraints_refine(db, user_id, session_id, constraints, intent.summary)
+    if day is not None:
+        return day
     assumed = [AssumedDefault.model_validate(item) for item in (stored.get("assumed_defaults") or [])]
     assumed.append(AssumedDefault(field="refinement", value=intent.summary, label=intent.summary))
     candidates, ranked, blocked, plan = await _build(db, constraints)

@@ -150,6 +150,106 @@ export function saveListingDetails(orgId: string, experienceId: string, input: L
   );
 }
 
+// ---- Kinds of place (trip builder v2, migration 045) ------------------------------------------
+
+export type PlaceRole = "meal" | "sight" | "activity" | "stay" | "service";
+export type MealService = "breakfast" | "brunch" | "lunch" | "dinner" | "late";
+export type PlaceGroup =
+  | "food"
+  | "stay"
+  | "nature"
+  | "heritage"
+  | "entertainment"
+  | "sport"
+  | "wellness"
+  | "shopping"
+  | "family"
+  | "events"
+  | "essentials";
+
+export type PlaceType = {
+  slug: string;
+  group: PlaceGroup;
+  role: PlaceRole;
+  names: Record<"en" | "ar" | "fr", string>;
+  default_minutes: number;
+  meal_services: MealService[];
+  season_months: number[] | null;
+  needs_schedule: boolean;
+};
+
+export type ListingPlaceTypes = {
+  place_types: string[];
+  roles: PlaceRole[];
+  meal_services: MealService[];
+  schedule_note: string;
+  typical_spend_minor?: number | null;
+  currency?: string;
+};
+
+export type PlaceTypesInput = {
+  place_types: string[];
+  meal_services?: MealService[];
+  schedule_note?: string;
+  typical_spend_minor?: number;
+};
+
+/** Which roles a listing of this kind may take: a meal or a night is always a checked restaurant or stay. */
+export function rolesForKind(kind: ListingKind): PlaceRole[] {
+  if (kind === "restaurant") return ["meal"];
+  if (kind === "hotel") return ["stay"];
+  return ["sight", "activity", "service"];
+}
+
+export function fetchPlaceTypes() {
+  return apiRequest<PlaceType[]>("/api/v1/venues/place-types");
+}
+
+export function fetchListingPlaceTypes(orgId: string, experienceId: string) {
+  return apiRequest<ListingPlaceTypes>(`/api/v1/venues/portal/${orgId}/listings/${experienceId}/place-types`);
+}
+
+export function saveListingPlaceTypes(orgId: string, experienceId: string, input: PlaceTypesInput) {
+  return apiRequest<ListingPlaceTypes>(
+    `/api/v1/venues/portal/${orgId}/listings/${experienceId}/place-types`,
+    json("PUT", input),
+  );
+}
+
+/** Yes/no facts travellers filter a day on. A fact left out is unknown - never assumed. */
+export const FOOD_FACTS = ["halal", "vegetarian", "vegan", "gluten_free", "serves_alcohol", "outdoor_seating"] as const;
+export const ACCESS_FACTS = [
+  "wheelchair_access",
+  "step_free",
+  "accessible_toilet",
+  "parking",
+  "kids_friendly",
+  "stroller_friendly",
+] as const;
+export const PAYMENT_FACTS = ["accepts_card", "accepts_usd_cash", "accepts_lbp_cash"] as const;
+export const VIEWS = ["sea", "mountain", "city", "valley", "sunset"] as const;
+export type FactFlag = (typeof FOOD_FACTS)[number] | (typeof ACCESS_FACTS)[number] | (typeof PAYMENT_FACTS)[number];
+export type PlaceView = (typeof VIEWS)[number];
+
+export type PlaceFacts = Partial<Record<FactFlag, boolean>> & {
+  min_age?: number;
+  views?: PlaceView[];
+  languages?: string[];
+  dress_code?: string;
+  source?: "owner" | "staff";
+  checked_on?: string;
+  /** Over a year old: the planner no longer uses it until it is confirmed again. */
+  stale?: boolean;
+};
+
+export function fetchListingFacts(orgId: string, experienceId: string) {
+  return apiRequest<PlaceFacts>(`/api/v1/venues/portal/${orgId}/listings/${experienceId}/facts`);
+}
+
+export function saveListingFacts(orgId: string, experienceId: string, input: PlaceFacts) {
+  return apiRequest<PlaceFacts>(`/api/v1/venues/portal/${orgId}/listings/${experienceId}/facts`, json("PUT", input));
+}
+
 export function fetchClaims(orgId: string) {
   return apiRequest<
     {

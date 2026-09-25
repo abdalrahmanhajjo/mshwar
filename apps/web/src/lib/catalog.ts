@@ -67,6 +67,8 @@ export type Experience = {
   lng?: number;
   policies?: { title: string; body: string }[];
   availabilityNote?: string;
+  /** Where the name and location came from when it is open data (OpenStreetMap is ODbL: credit required). */
+  attributions?: { source: string; name: string; licence: string; licence_url: string; record_url: string }[];
 };
 
 export type Idea = {

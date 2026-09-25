@@ -54,3 +54,31 @@ describe("MSHWAR-32 locale snapshots", () => {
     expect(screen.getByRole("link", { name: "Byblos" })).toHaveAttribute("href", "/ar/destinations/byblos");
   });
 });
+
+describe("open data credit", () => {
+  it("credits OpenStreetMap on a listing made from it, and nothing on others", () => {
+    const experience = {
+      ...EXPERIENCES[0],
+      attributions: [
+        {
+          source: "osm",
+          name: "OpenStreetMap contributors",
+          licence: "ODbL-1.0",
+          licence_url: "https://www.openstreetmap.org/copyright",
+          record_url: "https://www.openstreetmap.org/node/42",
+        },
+      ],
+    };
+    const { rerender } = render(wrap("en", <ExperienceDetailView experience={experience} related={[]} />));
+    expect(screen.getByRole("link", { name: "© OpenStreetMap contributors" })).toHaveAttribute(
+      "href",
+      "https://www.openstreetmap.org/node/42",
+    );
+    expect(screen.getByRole("link", { name: "ODbL-1.0" })).toHaveAttribute(
+      "href",
+      "https://www.openstreetmap.org/copyright",
+    );
+    rerender(wrap("en", <ExperienceDetailView experience={EXPERIENCES[0]} related={[]} />));
+    expect(screen.queryByText(/OpenStreetMap/)).not.toBeInTheDocument();
+  });
+});
