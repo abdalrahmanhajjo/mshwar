@@ -19,6 +19,9 @@ from uuid import UUID
 
 from app.planner.schemas import DayScript, StepCandidate, StepSpec
 
+#: The traveller's needs (``constraints.dietary`` / ``accessibility``) as place facts (migration 049).
+DIETARY_NEEDS = {"halal": "halal", "vegetarian": "vegetarian", "vegan": "vegan", "gluten-free": "gluten_free"}
+ACCESS_NEEDS = {"wheelchair": "wheelchair_access", "step-free": "step_free"}
 DEFAULT_RADIUS_M = 25_000
 DEFAULT_LIMIT = 8
 
@@ -55,9 +58,20 @@ def step_query(
         "exclude_ids": [str(item) for item in exclude_ids],
         "limit": limit,
     }
+    needs = step_needs(step, script)
+    if needs:
+        query["needs"] = dict.fromkeys(needs, True)
     if near is not None:
         query["near"] = {"lat": near.lat, "lng": near.lng, "radius_m": near.radius_m}
     return query
+
+
+def step_needs(step: StepSpec, script: DayScript) -> list[str]:
+    """Facts a place must not contradict: diet for meals, access for every step."""
+    needs = [ACCESS_NEEDS[item] for item in script.constraints.accessibility if item in ACCESS_NEEDS]
+    if step.role == "meal":
+        needs += [DIETARY_NEEDS[item] for item in script.constraints.dietary if item in DIETARY_NEEDS]
+    return list(dict.fromkeys(needs))
 
 
 def without_avoided(candidates: list[StepCandidate], avoid_tags: Iterable[str]) -> list[StepCandidate]:
@@ -68,4 +82,4 @@ def without_avoided(candidates: list[StepCandidate], avoid_tags: Iterable[str]) 
     return [candidate for candidate in candidates if not avoided & set(candidate.place_types)]
 
 
-__all__ = ["DEFAULT_LIMIT", "DEFAULT_RADIUS_M", "Near", "step_query", "without_avoided"]
+__all__ = ["DEFAULT_LIMIT", "DEFAULT_RADIUS_M", "Near", "step_needs", "step_query", "without_avoided"]

@@ -19,7 +19,7 @@ from app.core.auth_session import require_session
 from app.core.rate_limit import limit
 from app.core.sql import fetch_json
 from app.dependencies import get_auth_db
-from app.schemas.partners import ClaimIn, ListingDetailsIn, PlaceTypesIn
+from app.schemas.partners import ClaimIn, ListingDetailsIn, PlaceFactsIn, PlaceTypesIn
 
 router = APIRouter()
 
@@ -83,6 +83,29 @@ async def set_listing_place_types(
     return await fetch_json(
         db,
         "SELECT app.portal_set_place_types(CAST(:uid AS uuid), CAST(:org AS uuid), CAST(:exp AS uuid), "
+        "CAST(:body AS jsonb))",
+        {
+            "uid": str(session["user_id"]),
+            "org": str(org_id),
+            "exp": str(experience_id),
+            "body": payload.model_dump_json(exclude_none=True),
+        },
+    )
+
+
+@router.put("/portal/{org_id}/listings/{experience_id}/facts", dependencies=[access.SESSION, limit("partner-write")])
+async def set_listing_facts(
+    org_id: UUID,
+    experience_id: UUID,
+    payload: PlaceFactsIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Halal, vegetarian, wheelchair access, views, cards...: what travellers filter a day on."""
+    session = await require_session(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.portal_set_place_facts(CAST(:uid AS uuid), CAST(:org AS uuid), CAST(:exp AS uuid), "
         "CAST(:body AS jsonb))",
         {
             "uid": str(session["user_id"]),
