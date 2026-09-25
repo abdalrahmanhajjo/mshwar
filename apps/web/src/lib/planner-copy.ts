@@ -96,6 +96,9 @@ export type PlannerKey =
   | "flowStartOver"
   | "flowReviewTitle"
   | "flowReviewHint"
+  | "flowNoPlanTitle"
+  | "flowNoPlanHint"
+  | "flowEditDetails"
   | "flowAdvancedTitle"
   | "flowAdvancedHint"
   | "flowOpenGroup"
@@ -366,6 +369,10 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flowGenerating: "Building your day…",
     flowStartOver: "Start over",
     flowReviewTitle: "Your itinerary",
+    flowNoPlanTitle: "No itinerary yet",
+    flowNoPlanHint:
+      "We couldn’t build an itinerary from the available places with these details. Nothing has been saved. Try another destination, date or budget, or choose places yourself.",
+    flowEditDetails: "Edit trip details",
     flowReviewHint: "Saved to My Trips automatically. Refine it, swap stops or fine-tune the route below.",
     flowAdvancedTitle: "Advanced tools",
     flowAdvancedHint: "Optimise the route, check the weather and plan with a group.",
@@ -638,6 +645,10 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flowGenerating: "نجهّز يومك…",
     flowStartOver: "ابدأ من جديد",
     flowReviewTitle: "برنامجك",
+    flowNoPlanTitle: "لا يوجد برنامج بعد",
+    flowNoPlanHint:
+      "لم نتمكّن من إعداد برنامج من الأماكن المتاحة بهذه التفاصيل. لم يتم حفظ أي رحلة. جرّب وجهة أو تاريخاً أو ميزانية أخرى، أو اختر الأماكن بنفسك.",
+    flowEditDetails: "تعديل تفاصيل الرحلة",
     flowReviewHint: "يُحفظ في رحلاتي تلقائياً. حسّنه أو بدّل المحطات أو اضبط المسار بالأسفل.",
     flowAdvancedTitle: "أدوات متقدمة",
     flowAdvancedHint: "حسّن المسار، تحقق من الطقس، وخطّط مع مجموعة.",
@@ -912,6 +923,10 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flowGenerating: "Création de votre journée…",
     flowStartOver: "Recommencer",
     flowReviewTitle: "Votre itinéraire",
+    flowNoPlanTitle: "Pas encore d’itinéraire",
+    flowNoPlanHint:
+      "Nous n’avons pas pu créer d’itinéraire avec les lieux disponibles et ces détails. Rien n’a été enregistré. Essayez une autre destination, date ou un autre budget, ou choisissez vous-même les lieux.",
+    flowEditDetails: "Modifier les détails du voyage",
     flowReviewHint:
       "Enregistré dans Mes voyages automatiquement. Affinez-le, changez des étapes ou ajustez l'itinéraire ci-dessous.",
     flowAdvancedTitle: "Outils avancés",

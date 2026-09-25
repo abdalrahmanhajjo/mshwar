@@ -38,6 +38,7 @@ import { CostPanel, ReplacePanel, Timeline, plannerErrorMessage } from "@/compon
 import {
   acceptReplacement,
   cancelReplacement,
+  clarifyPlannerSession,
   createManualPlan,
   createPlannerSession,
   fetchTripVersions,
@@ -113,6 +114,7 @@ export function PlanFlow({
   const [pending, setPending] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [refine, setRefine] = React.useState("");
+  const [answers, setAnswers] = React.useState<Record<string, string>>({});
   const [replaceStopId, setReplaceStopId] = React.useState<string | null>(null);
   const [alts, setAlts] = React.useState<
     { experience_id: string; title: string; why_fit: string[]; sponsored: boolean }[]
@@ -126,6 +128,7 @@ export function PlanFlow({
   } | null>(null);
 
   const plan = session?.plan ?? null;
+  const daySteps = dayOf(session, plan);
   const sessionId = session?.session_id || undefined;
   const selectedDestination = destinations.find((item) => item.slug === destSlugs[0]) ?? null;
   const windowStart = `${date}T09:00:00`;
@@ -253,6 +256,8 @@ export function PlanFlow({
       strict_budget: strict,
     };
     const text = vibe.trim() || `A day in ${selectedDestination.name}`;
+    setSession(null);
+    setAnswers({});
     setStep("review");
     await run(() => createPlannerSession({ text, locale, answers }));
   }
@@ -262,6 +267,7 @@ export function PlanFlow({
       return;
     }
     const destinationSlugs = Array.from(new Set(picks.map((item) => item.destinationSlug)));
+    setSession(null);
     setStep("review");
     await run(() =>
       createManualPlan({
@@ -425,6 +431,7 @@ export function PlanFlow({
     setPreview(null);
     setAlts([]);
     setRefine("");
+    setAnswers({});
     setPicks([]);
     setPlaceOptions([]);
     setDestSlugs([]);
@@ -483,6 +490,7 @@ export function PlanFlow({
                 type="button"
                 role="tab"
                 aria-selected={mode === item}
+                disabled={pending}
                 onClick={() => switchMode(item)}
                 className={cn(
                   "grid gap-0.5 rounded-control px-4 py-2.5 text-start transition-colors",
@@ -786,15 +794,15 @@ export function PlanFlow({
               <h2 id="pf-review" className="title-section">
                 {copy.flowReviewTitle}
               </h2>
-              <p className="max-w-2xl text-text-muted">
-                {sessionId
-                  ? copy.flowReviewHint
-                  : initialTripId
+              {plan ? (
+                <p className="max-w-2xl text-text-muted">
+                  {initialTripId
                     ? copy.savedPlanNote
                     : mode === "manual"
                       ? copy.flowManualReviewHint
                       : copy.flowReviewHint}
-              </p>
+                </p>
+              ) : null}
             </div>
             <div className="flex flex-wrap gap-2">
               {plan && mode === "manual" && !initialTripId ? (
@@ -810,7 +818,7 @@ export function PlanFlow({
                 </Button>
               ) : null}
               {!initialTripId ? (
-                <Button type="button" variant="outline" onClick={startOver}>
+                <Button type="button" variant="outline" disabled={pending} onClick={startOver}>
                   <RefreshCw aria-hidden />
                   {copy.flowStartOver}
                 </Button>
@@ -825,13 +833,93 @@ export function PlanFlow({
             </div>
           ) : null}
 
+          {session?.degraded ? <Notice tone="warning">{copy.degraded}</Notice> : null}
+
+          {!pending && !plan && !initialTripId ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>{session?.clarifications.length ? copy.clarify : copy.flowNoPlanTitle}</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-4">
+                {session?.clarifications.length ? (
+                  <form
+                    className="grid gap-4"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      void run(() =>
+                        clarifyPlannerSession(session.session_id, {
+                          text: vibe.trim() || `A day in ${selectedDestination?.name ?? "Lebanon"}`,
+                          locale,
+                          answers: {
+                            party_size: party,
+                            window_start: windowStart,
+                            budget_minor: Math.round(budget * 100),
+                            strict_budget: strict,
+                            ...answers,
+                          },
+                        }),
+                      );
+                    }}
+                  >
+                    {session.clarifications.map((question) => (
+                      <label key={question.field} className="grid gap-2 text-sm font-medium">
+                        {question.prompt}
+                        <Input
+                          value={answers[question.field] ?? ""}
+                          required={question.required}
+                          onChange={(event) =>
+                            setAnswers((current) => ({ ...current, [question.field]: event.target.value }))
+                          }
+                        />
+                      </label>
+                    ))}
+                    <Button type="submit" className="w-fit">
+                      {copy.clarify}
+                    </Button>
+                  </form>
+                ) : (
+                  <p role="status" className="max-w-2xl text-text-muted">
+                    {copy.flowNoPlanHint}
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" variant="outline" onClick={() => setStep("details")}>
+                    <Pencil aria-hidden />
+                    {copy.flowEditDetails}
+                  </Button>
+                  {mode === "ai" ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setMode("manual");
+                        setError(null);
+                        void openPlaces();
+                      }}
+                    >
+                      {copy.modeManual}
+                    </Button>
+                  ) : null}
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {daySteps.length ? (
+            <DayTimeline
+              steps={daySteps}
+              plan={plan}
+              copy={copy}
+              sessionId={plan ? sessionId : undefined}
+              onLock={run}
+            />
+          ) : null}
+
           {plan ? (
             <>
-              {dayOf(session, plan).length ? (
-                <DayTimeline steps={dayOf(session, plan)} plan={plan} copy={copy} sessionId={sessionId} onLock={run} />
-              ) : (
+              {!daySteps.length ? (
                 <Timeline plan={plan} copy={copy} sessionId={sessionId} onLock={run} onReplace={setReplaceStopId} />
-              )}
+              ) : null}
               <CostPanel plan={plan} copy={copy} pricing={dayPriceOf(session, plan)} />
               {session?.driver_request && sessionId ? <DriverRequestPanel sessionId={sessionId} copy={copy} /> : null}
 
