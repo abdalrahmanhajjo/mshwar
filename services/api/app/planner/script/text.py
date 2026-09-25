@@ -23,6 +23,7 @@ from app.planner.intent.catalogue import fold
 from app.planner.script.vocabulary import (
     ALL_CONCEPTS,
     ARTICLES,
+    CONNECTOR_GUARDS,
     FUZZY_BLOCKLIST,
     NEGATIONS,
     SEQUENCE_CONNECTORS,
@@ -91,10 +92,12 @@ def _phrases_of(concept: Concept) -> list[str]:
 
 
 @lru_cache(maxsize=1)
-def _cue_index() -> tuple[dict[str, tuple[tuple[tuple[str, ...], Concept], ...]], tuple[tuple[str, Concept], ...]]:
-    """First word -> (all words, concept); plus single Latin words eligible for typo matching."""
+def _cue_index() -> tuple[
+    dict[str, tuple[tuple[tuple[str, ...], Concept], ...]], tuple[tuple[tuple[str, ...], Concept], ...]
+]:
+    """First word -> (all words, concept); plus Latin phrases (1-3 words) eligible for typo matching."""
     by_first: dict[str, list[tuple[tuple[str, ...], Concept]]] = {}
-    fuzzy: dict[str, Concept] = {}
+    fuzzy: dict[tuple[str, ...], Concept] = {}
     for concept in ALL_CONCEPTS:
         for phrase in _phrases_of(concept):
             parts = tuple(words(phrase))
@@ -103,8 +106,9 @@ def _cue_index() -> tuple[dict[str, tuple[tuple[tuple[str, ...], Concept], ...]]
             bucket = by_first.setdefault(parts[0], [])
             if all(existing != parts for existing, _concept in bucket):
                 bucket.append((parts, concept))
-            if len(parts) == 1 and len(parts[0]) >= _FUZZY_MIN_LENGTH and parts[0].isascii() and parts[0].isalpha():
-                fuzzy.setdefault(parts[0], concept)
+            latin = all(part.isascii() and part.isalpha() for part in parts)
+            if latin and len(parts) <= 3 and any(len(part) >= _FUZZY_MIN_LENGTH for part in parts):
+                fuzzy.setdefault(parts, concept)
     frozen = {key: tuple(value) for key, value in by_first.items()}
     return frozen, tuple(fuzzy.items())
 
@@ -141,23 +145,57 @@ def _exact_candidates(forms: list[frozenset[str]]) -> list[tuple[int, int, Conce
     return found
 
 
+def _slip(token: str, cue: str) -> bool:
+    """Two neighbouring letters swapped, or one letter missing or doubled (never a different letter:
+    "bench" is not "beach")."""
+    if len(token) == len(cue):
+        diffs = [index for index, (a, b) in enumerate(zip(token, cue, strict=True)) if a != b]
+        return (
+            len(diffs) == 2
+            and diffs[1] == diffs[0] + 1
+            and token[diffs[0]] == cue[diffs[1]]
+            and token[diffs[1]] == cue[diffs[0]]
+        )
+    shorter, longer = sorted((token, cue), key=len)
+    if len(longer) - len(shorter) != 1 or len(shorter) < 5:
+        return False
+    return any(longer[:index] + longer[index + 1 :] == shorter for index in range(len(longer)))
+
+
+def _close(token: str, cue: str) -> float:
+    """How close a typed word is to a cue word: 0 when it is not a plausible typo of it."""
+    if token in FUZZY_BLOCKLIST or len(token) < _FUZZY_MIN_LENGTH or abs(len(cue) - len(token)) > 2:
+        return 0.0
+    if not (token.isascii() and token.isalpha()):
+        return 0.0
+    ratio = SequenceMatcher(None, token, cue).ratio()
+    if ratio < _FUZZY_RATIO and _slip(token, cue):
+        ratio = _FUZZY_RATIO  # a slip of the finger: "musuem", "dinnre", "resturant"
+    return ratio if ratio >= _FUZZY_RATIO else 0.0
+
+
 def _fuzzy_candidates(tokens: list[str], covered: set[int]) -> list[tuple[int, int, Concept]]:
+    """Cues with exactly one mistyped word: "musuem", "ecsape room", "wine tsating"."""
     _index, fuzzy = _cue_index()
     found: list[tuple[int, int, Concept]] = []
-    for position, token in enumerate(tokens):
-        if position in covered or token in FUZZY_BLOCKLIST or len(token) < _FUZZY_MIN_LENGTH:
-            continue
-        if not (token.isascii() and token.isalpha()):
-            continue
-        best: tuple[float, Concept] | None = None
-        for cue, concept in fuzzy:
-            if abs(len(cue) - len(token)) > 2:
+    for start in range(len(tokens)):
+        best: tuple[float, int, Concept] | None = None
+        for parts, concept in fuzzy:
+            end = start + len(parts)
+            if end > len(tokens):
                 continue
-            ratio = SequenceMatcher(None, token, cue).ratio()
-            if ratio >= _FUZZY_RATIO and (best is None or ratio > best[0]):
-                best = (ratio, concept)
+            typed = tokens[start:end]
+            wrong = [
+                (offset, word, cue) for offset, (word, cue) in enumerate(zip(typed, parts, strict=True)) if word != cue
+            ]
+            # One mistyped word, not already read as something else; the longer phrase wins later.
+            if len(wrong) != 1 or start + wrong[0][0] in covered:
+                continue
+            score = _close(wrong[0][1], wrong[0][2])
+            if score and (best is None or (end - start, score) > (best[1] - start, best[0])):
+                best = (score, end, concept)
         if best is not None:
-            found.append((position, position + 1, best[1]))
+            found.append((start, best[1], best[2]))
     return found
 
 
@@ -186,9 +224,15 @@ def is_joiner(tokens: list[str], position: int, joiners: frozenset[str]) -> bool
     return cursor >= 0 and tokens[cursor] in joiners
 
 
+#: Arabizi "ma" is only a "not" before a want ("ma bade samak"); alone it may be French "ma".
+_ARABIZI_WANTS = frozenset({"bade", "badde", "baddi", "badi", "baddna", "badna", "bidna", "bidde", "biddi"})
+
+
 def _negated(tokens: list[str], start: int) -> bool:
     window = tokens[max(0, start - _NEGATION_WINDOW) : start]
-    return any(token in _negation_tokens() for token in window)
+    if any(token in _negation_tokens() for token in window):
+        return True
+    return any(a == "ma" and b in _ARABIZI_WANTS for a, b in zip(window, window[1:], strict=False))
 
 
 def find_hits(tokens: list[str], joiners: frozenset[str]) -> list[Hit]:
@@ -212,7 +256,7 @@ def find_hits(tokens: list[str], joiners: frozenset[str]) -> list[Hit]:
 @lru_cache(maxsize=1)
 def _connector_pattern() -> re.Pattern[str]:
     ordered = sorted(SEQUENCE_CONNECTORS, key=len, reverse=True)
-    alternatives = "|".join(re.escape(item) for item in ordered)
+    alternatives = "|".join(re.escape(item) + CONNECTOR_GUARDS.get(item, "") for item in ordered)
     return re.compile(rf"(?<![\w'’])(?:{alternatives})(?![\w'’])", re.IGNORECASE)
 
 
