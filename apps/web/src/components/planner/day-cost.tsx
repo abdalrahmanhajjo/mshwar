@@ -9,7 +9,7 @@ import { Notice } from "@/components/ui/notice";
 import { useLocale } from "@/components/shell/locale-provider";
 import { interpolate } from "@/i18n/catalogues";
 import { formatDate } from "@/i18n/format";
-import { formatMinor, requestDayDriver, type DayPrice, type PriceLine } from "@/lib/planner";
+import { byDay, formatMinor, requestDayDriver, type DayPrice, type PriceLine } from "@/lib/planner";
 import type { PlannerCopy, PlannerKey } from "@/lib/planner-copy";
 
 /** One line's amount: an exact figure, a range, "from", or "price on request" - never a made-up $0. */
@@ -54,6 +54,7 @@ function lineDetail(line: PriceLine, copy: PlannerCopy): string | null {
 /** Every step's price with what it is based on, the day's total as a range, per person, and the budget. */
 export function DayCostPanel({ pricing, copy }: { pricing: DayPrice; copy: PlannerCopy }) {
   const { locale } = useLocale();
+  const days = byDay(pricing.lines);
   const budget = pricing.budget_minor ? formatMinor(pricing.budget_minor, pricing.currency) : null;
   const budgetText =
     budget && pricing.budget_status !== "unknown"
@@ -70,31 +71,36 @@ export function DayCostPanel({ pricing, copy }: { pricing: DayPrice; copy: Plann
         </h3>
         <p className="text-sm text-text-muted">{copy.dayCostBody}</p>
       </div>
-      <dl className="grid gap-3 text-sm">
-        {pricing.lines.map((line, index) => (
-          <div key={`${line.kind}-${line.order ?? "day"}-${index}`} className="flex justify-between gap-3">
-            <dt className="grid gap-0.5">
-              <span className="font-medium text-text">{line.label}</span>
-              {lineDetail(line, copy) ? <span className="text-text-muted">{lineDetail(line, copy)}</span> : null}
-              {line.note ? <span className="text-xs text-text-muted">{line.note}</span> : null}
-              {line.source_name && line.source_url ? (
-                <a
-                  href={line.source_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-text-muted underline underline-offset-2"
-                >
-                  {interpolate(copy.priceSource, {
-                    source: line.source_name,
-                    date: line.checked_on ? formatDate(locale, `${line.checked_on}T12:00:00Z`) : "",
-                  })}
-                </a>
-              ) : null}
-            </dt>
-            <dd className="tabular-nums text-end">{lineAmount(line, copy)}</dd>
-          </div>
-        ))}
-      </dl>
+      {days.map(([day, lines]) => (
+        <div key={day} className="grid gap-3">
+          {days.length > 1 ? <h4 className="font-semibold">{interpolate(copy.tripDay, { day })}</h4> : null}
+          <dl className="grid gap-3 text-sm">
+            {lines.map((line, index) => (
+              <div key={`${line.kind}-${line.order ?? "day"}-${index}`} className="flex justify-between gap-3">
+                <dt className="grid gap-0.5">
+                  <span className="font-medium text-text">{line.label}</span>
+                  {lineDetail(line, copy) ? <span className="text-text-muted">{lineDetail(line, copy)}</span> : null}
+                  {line.note ? <span className="text-xs text-text-muted">{line.note}</span> : null}
+                  {line.source_name && line.source_url ? (
+                    <a
+                      href={line.source_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-text-muted underline underline-offset-2"
+                    >
+                      {interpolate(copy.priceSource, {
+                        source: line.source_name,
+                        date: line.checked_on ? formatDate(locale, `${line.checked_on}T12:00:00Z`) : "",
+                      })}
+                    </a>
+                  ) : null}
+                </dt>
+                <dd className="tabular-nums text-end">{lineAmount(line, copy)}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      ))}
       <div className="grid gap-2 border-t border-border-subtle pt-5">
         <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-text-muted">
           {copy.estimateLabel}

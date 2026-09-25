@@ -234,6 +234,16 @@ export type PlannerKey =
   | "flag_long_wait"
   | "flag_hours_unknown"
   | "flag_meal_unconfirmed"
+  | "flag_needs_unconfirmed"
+  | "tripDay"
+  | "otherOptions"
+  | "hideOptions"
+  | "useOption"
+  | "noOptions"
+  | "optionsLoading"
+  | "optionsFailed"
+  | "patchPreview"
+  | "optionDistance"
   | "flag_quote_required"
   | "flag_estimated_price"
   | "trust_checked_by_mshwar"
@@ -496,6 +506,16 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flag_long_wait: "Free time before this step",
     flag_hours_unknown: "Hours not confirmed",
     flag_meal_unconfirmed: "Meals served not confirmed",
+    flag_needs_unconfirmed: "Your needs not confirmed here",
+    tripDay: "Day {day}",
+    otherOptions: "Other options",
+    hideOptions: "Hide options",
+    useOption: "Use this place",
+    noOptions: "No other trusted place fits this step yet.",
+    optionsLoading: "Looking for trusted places…",
+    optionsFailed: "We could not load the options. Try again.",
+    patchPreview: "Your day would become:",
+    optionDistance: "{km} km from the step before",
     flag_quote_required: "Price on request",
     flag_estimated_price: "Price not fixed",
     trust_checked_by_mshwar: "Visited by Mshwar",
@@ -756,6 +776,16 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flag_long_wait: "وقت حرّ قبل هذه الخطوة",
     flag_hours_unknown: "ساعات العمل غير مؤكَّدة",
     flag_meal_unconfirmed: "الوجبات المقدَّمة غير مؤكَّدة",
+    flag_needs_unconfirmed: "احتياجاتك غير مؤكَّدة هنا",
+    tripDay: "اليوم {day}",
+    otherOptions: "خيارات أخرى",
+    hideOptions: "إخفاء الخيارات",
+    useOption: "اختر هذا المكان",
+    noOptions: "لا يوجد بعد مكان موثوق آخر يناسب هذه الخطوة.",
+    optionsLoading: "نبحث عن أماكن موثوقة…",
+    optionsFailed: "تعذّر تحميل الخيارات. حاول مجددًا.",
+    patchPreview: "سيصبح يومك:",
+    optionDistance: "{km} كم من الخطوة السابقة",
     flag_quote_required: "السعر عند الطلب",
     flag_estimated_price: "السعر غير ثابت",
     trust_checked_by_mshwar: "زاره فريق مشوار",
@@ -1024,6 +1054,16 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flag_long_wait: "Temps libre avant cette étape",
     flag_hours_unknown: "Horaires non confirmés",
     flag_meal_unconfirmed: "Repas servis non confirmés",
+    flag_needs_unconfirmed: "Vos besoins non confirmés ici",
+    tripDay: "Jour {day}",
+    otherOptions: "Autres options",
+    hideOptions: "Masquer les options",
+    useOption: "Choisir ce lieu",
+    noOptions: "Aucun autre lieu de confiance ne convient encore à cette étape.",
+    optionsLoading: "Recherche de lieux de confiance…",
+    optionsFailed: "Impossible de charger les options. Réessayez.",
+    patchPreview: "Votre journée deviendrait :",
+    optionDistance: "À {km} km de l'étape précédente",
     flag_quote_required: "Prix sur demande",
     flag_estimated_price: "Prix non fixe",
     trust_checked_by_mshwar: "Visité par Mshwar",

@@ -120,6 +120,24 @@ describe("day cost", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
+  it("puts each day of a trip under its own heading, with one total for the trip", () => {
+    const trip: DayPrice = {
+      ...PRICING,
+      lines: [
+        line({ label: "Byblos Castle", day: 1, low_minor: 800, high_minor: 800 }),
+        line({ label: "Cedars lodge", day: 2, kind: "stay", basis: "per_night_from", low_minor: 9000 }),
+      ],
+    };
+    render(
+      <LocaleProvider>
+        <DayCostPanel pricing={trip} copy={copy} />
+      </LocaleProvider>,
+    );
+    expect(screen.getByRole("heading", { name: "Day 1" }).parentElement).toHaveTextContent("Byblos Castle");
+    expect(screen.getByRole("heading", { name: "Day 2" }).parentElement).toHaveTextContent("Cedars lodge");
+    expect(screen.getByRole("heading", { name: "Day 2" }).parentElement).not.toHaveTextContent("Byblos Castle");
+  });
+
   it("formats exact, ranged and open totals", () => {
     expect(dayTotal({ ...PRICING, high_minor: 19600 }, copy)).toBe("$196.00");
     expect(dayTotal({ ...PRICING, high_minor: 25000 }, copy)).toBe("$196.00 – $250.00");

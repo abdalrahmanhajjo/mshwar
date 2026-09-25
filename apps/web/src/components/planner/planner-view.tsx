@@ -46,10 +46,11 @@ import {
   type DayPrice,
   type PlanDocument,
   type PlannerSession,
+  type UnderstoodDay,
 } from "@/lib/planner";
 import { useHubCopy } from "@/lib/hub-copy";
 import { ApiError } from "@/lib/api/client";
-import { type PlannerCopy, usePlannerCopy } from "@/lib/planner-copy";
+import { type PlannerCopy, type PlannerKey, usePlannerCopy } from "@/lib/planner-copy";
 import { DayCostPanel, DriverRequestPanel, dayTotal } from "@/components/planner/day-cost";
 import { DayTimeline } from "@/components/planner/day-timeline";
 import { interpolate } from "@/i18n/catalogues";
@@ -109,6 +110,7 @@ export function PlannerView({ initialTripId }: { initialTripId?: string }) {
     why_fit: string[];
   } | null>(null);
   const [interpretation, setInterpretation] = React.useState<string | null>(null);
+  const [patchSteps, setPatchSteps] = React.useState<UnderstoodDay["steps"] | null>(null);
   const [versions, setVersions] = React.useState<{ version: number; origin: string; sealed_at: string | null }[]>([]);
   const [replaceStopId, setReplaceStopId] = React.useState<string | null>(null);
   const [tripChecked, setTripChecked] = React.useState(false);
@@ -379,6 +381,7 @@ export function PlannerView({ initialTripId }: { initialTripId?: string }) {
                   onClick={() => {
                     void refinePlannerSession(session.session_id, refine, false).then((result) => {
                       setInterpretation(result.summary || result.clarification || null);
+                      setPatchSteps(result.kind === "day_patch" && result.understood ? (result.steps ?? null) : null);
                     });
                   }}
                 >
@@ -389,13 +392,30 @@ export function PlannerView({ initialTripId }: { initialTripId?: string }) {
                   <Button
                     type="button"
                     disabled={pending}
-                    onClick={() => void run(() => refinePlannerSession(session.session_id, refine, true))}
+                    onClick={() => {
+                      setPatchSteps(null);
+                      void run(() => refinePlannerSession(session.session_id, refine, true));
+                    }}
                   >
                     {copy.apply}
                   </Button>
                 ) : null}
               </div>
               {interpretation ? <Notice>{interpretation}</Notice> : null}
+              {patchSteps?.length ? (
+                <div className="grid gap-1 text-sm">
+                  <p className="font-medium">{copy.patchPreview}</p>
+                  <ol className="list-decimal ps-5 text-text-muted">
+                    {patchSteps.map((step) => (
+                      <li key={step.order}>
+                        {step.meal ? copy[`meal_${step.meal}` as PlannerKey] : copy[`role_${step.role}` as PlannerKey]}
+                        {step.tags.length ? ` · ${step.tags.map((tag) => tag.replace(/-/g, " ")).join(", ")}` : ""}
+                        {step.optional ? ` (${copy.understoodOptional})` : ""}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         ) : null}
