@@ -19,7 +19,7 @@ from app.core.auth_session import require_session
 from app.core.rate_limit import limit
 from app.core.sql import fetch_json
 from app.dependencies import get_auth_db
-from app.schemas.partners import ClaimIn, ListingDetailsIn
+from app.schemas.partners import ClaimIn, ListingDetailsIn, PlaceFactsIn, PlaceTypesIn
 
 router = APIRouter()
 
@@ -43,6 +43,92 @@ async def near(
         db,
         "SELECT app.public_venues_near(:kind, :lat, :lng, :radius)",
         {"kind": kind, "lat": lat, "lng": lng, "radius": radius},
+    )
+
+
+@router.get("/place-types", dependencies=[access.PUBLIC, limit("search")])
+async def place_types(db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    """Every kind of place a listing can be and a traveller can ask for, named in en/ar/fr."""
+    return await fetch_json(db, "SELECT app.place_types_json()", {})
+
+
+@router.get("/portal/{org_id}/listings/{experience_id}/place-types", dependencies=[access.SESSION])
+async def listing_place_types(
+    org_id: UUID,
+    experience_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    session = await require_session(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.portal_get_place_types(CAST(:uid AS uuid), CAST(:org AS uuid), CAST(:exp AS uuid))",
+        {"uid": str(session["user_id"]), "org": str(org_id), "exp": str(experience_id)},
+    )
+
+
+@router.put(
+    "/portal/{org_id}/listings/{experience_id}/place-types",
+    dependencies=[access.SESSION, limit("partner-write")],
+)
+async def set_listing_place_types(
+    org_id: UUID,
+    experience_id: UUID,
+    payload: PlaceTypesIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """What kinds of place this is, so the trip planner can offer it for the right step of a day."""
+    session = await require_session(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.portal_set_place_types(CAST(:uid AS uuid), CAST(:org AS uuid), CAST(:exp AS uuid), "
+        "CAST(:body AS jsonb))",
+        {
+            "uid": str(session["user_id"]),
+            "org": str(org_id),
+            "exp": str(experience_id),
+            "body": payload.model_dump_json(exclude_none=True),
+        },
+    )
+
+
+@router.get("/portal/{org_id}/listings/{experience_id}/facts", dependencies=[access.SESSION])
+async def get_listing_facts(
+    org_id: UUID,
+    experience_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """What the owner last said about the place; ``stale`` when it is over a year old and no longer used."""
+    session = await require_session(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.portal_get_place_facts(CAST(:uid AS uuid), CAST(:org AS uuid), CAST(:exp AS uuid))",
+        {"uid": str(session["user_id"]), "org": str(org_id), "exp": str(experience_id)},
+    )
+
+
+@router.put("/portal/{org_id}/listings/{experience_id}/facts", dependencies=[access.SESSION, limit("partner-write")])
+async def set_listing_facts(
+    org_id: UUID,
+    experience_id: UUID,
+    payload: PlaceFactsIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Halal, vegetarian, wheelchair access, views, cards...: what travellers filter a day on."""
+    session = await require_session(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.portal_set_place_facts(CAST(:uid AS uuid), CAST(:org AS uuid), CAST(:exp AS uuid), "
+        "CAST(:body AS jsonb))",
+        {
+            "uid": str(session["user_id"]),
+            "org": str(org_id),
+            "exp": str(experience_id),
+            "body": payload.model_dump_json(exclude_none=True),
+        },
     )
 
 

@@ -6,15 +6,15 @@ The policy model is described in [authorization.md](authorization.md).
 | Policy | Routes |
 |---|---|
 | `actor` | 15 |
-| `admin` | 84 |
+| `admin` | 107 |
 | `dev` | 1 |
 | `job` | 7 |
-| `public` | 42 |
-| `session` | 175 |
+| `public` | 43 |
+| `session` | 183 |
 | `signature` | 1 |
 | `token` | 6 |
 | `verified` | 7 |
-| **Total** | **338** |
+| **Total** | **370** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -48,6 +48,11 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/admin/guides/{profile_id}` | `admin` |
 | POST | `/api/v1/admin/guides/{profile_id}` | `admin` |
 | GET | `/api/v1/admin/kpis` | `admin` |
+| GET | `/api/v1/admin/leads` | `admin` |
+| GET | `/api/v1/admin/leads/field-sheet` | `admin` |
+| POST | `/api/v1/admin/leads/import` | `admin` |
+| POST | `/api/v1/admin/leads/{lead_id}/decision` | `admin` |
+| POST | `/api/v1/admin/leads/{lead_id}/publish` | `admin` |
 | GET | `/api/v1/admin/me` | `admin` |
 | GET | `/api/v1/admin/moderation` | `admin` |
 | POST | `/api/v1/admin/moderation/bulk` | `admin` |
@@ -71,6 +76,24 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/admin/partners/{partner_id}/checks` | `admin` |
 | POST | `/api/v1/admin/payments/reconcile` | `admin` |
 | GET | `/api/v1/admin/payments/reconciliation` | `admin` |
+| PUT | `/api/v1/admin/place-facts/listings/{experience_id}` | `admin` |
+| GET | `/api/v1/admin/place-types/coverage` | `admin` |
+| PUT | `/api/v1/admin/place-types/listings/{experience_id}` | `admin` |
+| GET | `/api/v1/admin/planner/candidates` | `admin` |
+| GET | `/api/v1/admin/planner/candidates/batches` | `admin` |
+| POST | `/api/v1/admin/planner/candidates/review` | `admin` |
+| GET | `/api/v1/admin/planner/concepts` | `admin` |
+| GET | `/api/v1/admin/planner/gaps` | `admin` |
+| GET | `/api/v1/admin/planner/misses` | `admin` |
+| POST | `/api/v1/admin/planner/misses/{miss_id}` | `admin` |
+| GET | `/api/v1/admin/planner/phrases` | `admin` |
+| POST | `/api/v1/admin/planner/phrases` | `admin` |
+| POST | `/api/v1/admin/planner/phrases/{phrase_id}/retire` | `admin` |
+| GET | `/api/v1/admin/planner/releases` | `admin` |
+| POST | `/api/v1/admin/planner/releases` | `admin` |
+| GET | `/api/v1/admin/prices/due` | `admin` |
+| PUT | `/api/v1/admin/prices/listings/{experience_id}` | `admin` |
+| GET | `/api/v1/admin/prices/worklist` | `admin` |
 | GET | `/api/v1/admin/proposals` | `admin` |
 | POST | `/api/v1/admin/proposals/{proposal_id}` | `admin` |
 | GET | `/api/v1/admin/quality` | `admin` |
@@ -252,15 +275,19 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/planner/sessions` | `session` |
 | GET | `/api/v1/planner/sessions/{session_id}` | `session` |
 | POST | `/api/v1/planner/sessions/{session_id}/clarify` | `session` |
+| POST | `/api/v1/planner/sessions/{session_id}/driver-request` | `session` |
 | POST | `/api/v1/planner/sessions/{session_id}/lock` | `session` |
 | POST | `/api/v1/planner/sessions/{session_id}/refine` | `session` |
 | POST | `/api/v1/planner/sessions/{session_id}/regenerate` | `session` |
 | POST | `/api/v1/planner/sessions/{session_id}/replace/accept` | `session` |
 | POST | `/api/v1/planner/sessions/{session_id}/replace/cancel` | `session` |
 | POST | `/api/v1/planner/sessions/{session_id}/replace/preview` | `session` |
+| GET | `/api/v1/planner/sessions/{session_id}/steps/{order}/alternatives` | `session` |
+| POST | `/api/v1/planner/sessions/{session_id}/steps/{order}/choose` | `session` |
 | GET | `/api/v1/planner/sessions/{session_id}/stops/{stop_id}/alternatives` | `session` |
 | GET | `/api/v1/planner/thresholds` | `session` |
 | GET | `/api/v1/planner/trips/{trip_id}/versions` | `session` |
+| POST | `/api/v1/planner/understand` | `session` |
 | GET | `/api/v1/planner/versions/{version_id}` | `session` |
 | POST | `/api/v1/planner/versions/{version_id}/link-booking` | `session` |
 | POST | `/api/v1/planner/warnings` | `session` |
@@ -350,9 +377,14 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/trips/{trip_id}/archive` | `session` |
 | GET | `/api/v1/venues/destinations/{slug}` | `public` |
 | GET | `/api/v1/venues/near` | `public` |
+| GET | `/api/v1/venues/place-types` | `public` |
 | GET | `/api/v1/venues/portal/{org_id}/claims` | `session` |
 | POST | `/api/v1/venues/portal/{org_id}/claims` | `session` |
 | GET | `/api/v1/venues/portal/{org_id}/listings/{experience_id}` | `session` |
 | PUT | `/api/v1/venues/portal/{org_id}/listings/{experience_id}` | `session` |
+| GET | `/api/v1/venues/portal/{org_id}/listings/{experience_id}/facts` | `session` |
+| PUT | `/api/v1/venues/portal/{org_id}/listings/{experience_id}/facts` | `session` |
+| GET | `/api/v1/venues/portal/{org_id}/listings/{experience_id}/place-types` | `session` |
+| PUT | `/api/v1/venues/portal/{org_id}/listings/{experience_id}/place-types` | `session` |
 | POST | `/api/v1/webhooks/payments` | `signature` |
 | GET | `/health` | `public` |

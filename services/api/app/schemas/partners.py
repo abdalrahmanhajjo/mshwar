@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -308,6 +309,81 @@ class ListingDetailsIn(_Strict):
     accepts_requests: bool = False
     amenities: list[str] = Field(default_factory=list, max_length=20)
     accessibility: list[str] = Field(default_factory=list, max_length=10)
+
+
+class PlaceTypesIn(_Strict):
+    """What kinds of place a listing is (migration 045). The first is the main one.
+
+    ``meal_services`` and ``schedule_note`` are optional: leave them out to keep what is set,
+    send an empty list or text to clear them.
+    """
+
+    place_types: list[Annotated[str, Field(pattern=r"^[a-z0-9]+(-[a-z0-9]+)*$", max_length=40)]] = Field(
+        min_length=1, max_length=6
+    )
+    meal_services: list[Literal["breakfast", "brunch", "lunch", "dinner", "late"]] | None = Field(
+        default=None, max_length=5
+    )
+    schedule_note: str | None = Field(default=None, max_length=280)
+    #: A restaurant's own typical spend per person, in cents: what the planner prices a meal with.
+    typical_spend_minor: int | None = Field(default=None, ge=100, le=100_000_000)
+
+
+class PlaceFactsIn(_Strict):
+    """Facts about a place travellers filter on (migration 049). Leave a fact out when you do not know it."""
+
+    halal: bool | None = None
+    vegetarian: bool | None = None
+    vegan: bool | None = None
+    gluten_free: bool | None = None
+    serves_alcohol: bool | None = None
+    wheelchair_access: bool | None = None
+    step_free: bool | None = None
+    accessible_toilet: bool | None = None
+    parking: bool | None = None
+    kids_friendly: bool | None = None
+    stroller_friendly: bool | None = None
+    outdoor_seating: bool | None = None
+    accepts_card: bool | None = None
+    accepts_usd_cash: bool | None = None
+    accepts_lbp_cash: bool | None = None
+    min_age: int | None = Field(default=None, ge=0, le=25)
+    views: list[Literal["sea", "mountain", "city", "valley", "sunset"]] = Field(default_factory=list, max_length=5)
+    languages: list[str] = Field(default_factory=list, max_length=8)
+    dress_code: str = Field(default="", max_length=120)
+
+
+class LeadDecisionIn(_Strict):
+    decision: Literal["checking", "rejected", "duplicate"]
+    reason: str = Field(default="", max_length=500)
+
+
+class OnSiteIn(_Strict):
+    """What staff saw at the place: the name on the sign and the point where it is (docs/legal/odbl-review.md)."""
+
+    name: str = Field(min_length=2, max_length=140)
+    name_ar: str | None = Field(default=None, max_length=140)
+    name_fr: str | None = Field(default=None, max_length=140)
+    lat: float = Field(ge=33.0, le=34.8)
+    lng: float = Field(ge=35.0, le=36.7)
+
+
+class LeadPublishIn(_Strict):
+    description: str = Field(min_length=20, max_length=4000)
+    #: What staff saw on the visit or call, recorded with the listing (migration 049). Unknowns left out.
+    facts: PlaceFactsIn | None = None
+    #: Taken on site: with it, nothing but the kind of place is copied from the lead.
+    on_site: OnSiteIn | None = None
+    notes: str = Field(min_length=10, max_length=2000)
+    destination: str | None = Field(default=None, max_length=80)
+    place_type: str | None = Field(default=None, pattern=r"^[a-z0-9]+(-[a-z0-9]+)*$")
+    setting: Literal["indoor", "outdoor", "mixed"] | None = None
+    duration_minutes: int | None = Field(default=None, ge=10, le=720)
+    address: str | None = Field(default=None, max_length=300)
+
+
+class LeadsImportIn(_Strict):
+    leads: list[dict[str, Any]] = Field(min_length=1, max_length=5000)
 
 
 class ClaimIn(_Strict):

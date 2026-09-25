@@ -31,6 +31,7 @@ const CATALOGUES = [
   "src/lib/local-copy.ts",
   "src/lib/admin-trust-copy.ts",
   "src/lib/venue-portal-copy.ts",
+  "src/lib/admin-catalogue-copy.ts",
 ];
 
 const MVP_PAGES = [

@@ -5,7 +5,7 @@ from datetime import date
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -45,6 +45,8 @@ from app.planner.routing import (
     time_bucket,
 )
 from app.planner.schemas import (
+    ChooseStepRequest,
+    DayDriverRequest,
     IntentRequest,
     LinkBookingRequest,
     LockRequest,
@@ -54,6 +56,7 @@ from app.planner.schemas import (
     RefineRequest,
     ReplaceAcceptRequest,
     ReplacePreviewRequest,
+    UnderstandRequest,
 )
 from app.planner.warnings import WarningStop, evaluate_warnings
 from app.planner.weather import WeatherService, persist_forecast
@@ -520,6 +523,101 @@ async def read_session(
     if stored.get("current_version_id"):
         plan = await get_version(db, session["user_id"], UUID(str(stored["current_version_id"])), False)
     return {"session": stored, "plan": plan}
+
+
+@router.post("/understand", dependencies=[access.SESSION, limit("search")])
+async def understand(
+    payload: UnderstandRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    """What the planner reads in a request, step by step, before planning anything.
+
+    Deterministic only: no language model, no quota, nothing stored.
+    """
+    from app.planner.day_session import MIN_DAY_STEPS, catalogue_terms
+    from app.planner.script import parse_day_script
+    from app.planner.script.learning import refresh_phrases
+    from app.planner.script.meaning import suggest, word_for
+
+    await require_session(request, db)
+    await refresh_phrases(db)
+    script = parse_day_script(payload.text, payload.locale, terms=await catalogue_terms(db))
+    body = script.model_dump(mode="json", exclude={"constraints"})
+    body["destination_slugs"] = script.constraints.destination_slugs
+    body["plans_as_day"] = len(script.steps) >= MIN_DAY_STEPS
+    # What the words we could not read may mean: offered to tap, never added on their own.
+    body["suggestions"] = [
+        {
+            "fragment": fragment,
+            "options": [
+                {"concept": item.concept, "word": word_for(item.concept), "because": list(item.because)}
+                for item in suggest(fragment)
+            ],
+        }
+        for fragment in script.unparsed
+    ]
+    return body
+
+
+@router.get("/sessions/{session_id}/steps/{order}/alternatives", dependencies=[access.SESSION, limit("search")])
+async def day_step_alternatives(
+    session_id: UUID,
+    order: int,
+    request: Request,
+    day: int = Query(default=1, ge=1, le=7),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> list[dict[str, Any]]:
+    """Trusted options for one step of a day, near the step before it, with published prices."""
+    from app.planner.day_session import alternatives_for_step
+
+    session = await require_session(request, db)
+    try:
+        return await alternatives_for_step(db, session["user_id"], session_id, order, day)
+    except (ValueError, TypeError) as exc:
+        raise _http(exc) from exc
+
+
+@router.post("/sessions/{session_id}/steps/{order}/choose", dependencies=[access.SESSION, limit("ai-generate")])
+async def day_step_choose(
+    session_id: UUID,
+    order: int,
+    payload: ChooseStepRequest,
+    request: Request,
+    day: int = Query(default=1, ge=1, le=7),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    """Use one of the step's trusted alternatives; the other steps keep their places."""
+    from app.planner.day_session import choose_for_step
+
+    session = await require_session(request, db)
+    try:
+        return await choose_for_step(db, session["user_id"], session_id, order, payload.experience_id, day)
+    except DBAPIError as exc:
+        raise_from_db(exc)
+        raise
+    except (ValueError, TypeError) as exc:
+        raise _http(exc) from exc
+
+
+@router.post("/sessions/{session_id}/driver-request", dependencies=[access.SESSION, limit("ride-request")])
+async def day_driver_request(
+    session_id: UUID,
+    payload: DayDriverRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    """Ask the verified drivers covering a planned day for fixed prices. The traveller then picks one."""
+    from app.planner.day_session import request_day_driver
+
+    session = await require_session(request, db)
+    try:
+        return await request_day_driver(db, session["user_id"], session_id, payload)
+    except DBAPIError as exc:
+        raise_from_db(exc)
+        raise
+    except (ValueError, TypeError) as exc:
+        raise _http(exc) from exc
 
 
 @router.post("/sessions/{session_id}/lock", dependencies=[access.SESSION])

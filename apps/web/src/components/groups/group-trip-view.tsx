@@ -26,12 +26,13 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
+import { DayTimeline } from "@/components/planner/day-timeline";
 import { CostPanel, Timeline } from "@/components/planner/planner-view";
 import { cn } from "@/lib/utils";
 import { useGroupCopy } from "@/lib/group-copy";
 import { usePlannerCopy } from "@/lib/planner-copy";
 import { useGuideHireCopy } from "@/lib/guide-hire-copy";
-import { formatMinor, type PlanDocument } from "@/lib/planner";
+import { dayOf, dayPriceOf, formatMinor, type PlanDocument } from "@/lib/planner";
 import {
   GROUP_POLL_MS,
   castVote,
@@ -307,13 +308,17 @@ export function GroupTripView({ tripId }: { tripId: string }) {
             <CardContent>
               {planDoc ? (
                 <div className="grid gap-6">
-                  <Timeline
-                    plan={planDoc}
-                    copy={plannerCopy}
-                    onLock={async () => undefined}
-                    onReplace={() => undefined}
-                  />
-                  <CostPanel plan={planDoc} copy={plannerCopy} />
+                  {dayOf(null, planDoc).length ? (
+                    <DayTimeline steps={dayOf(null, planDoc)} plan={planDoc} copy={plannerCopy} />
+                  ) : (
+                    <Timeline
+                      plan={planDoc}
+                      copy={plannerCopy}
+                      onLock={async () => undefined}
+                      onReplace={() => undefined}
+                    />
+                  )}
+                  <CostPanel plan={planDoc} copy={plannerCopy} pricing={dayPriceOf(null, planDoc)} />
                 </div>
               ) : (
                 <EmptyState

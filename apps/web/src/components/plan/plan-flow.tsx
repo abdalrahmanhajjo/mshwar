@@ -31,6 +31,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { PlanWorkspace } from "@/components/plan/plan-workspace";
 import { DayBuilder } from "@/components/plan/day-builder";
 import { useDayCheck } from "@/components/plan/day-panel";
+import { DriverRequestPanel } from "@/components/planner/day-cost";
+import { DayTimeline } from "@/components/planner/day-timeline";
+import { UnderstoodSteps } from "@/components/planner/understood-steps";
 import { CostPanel, ReplacePanel, Timeline, plannerErrorMessage } from "@/components/planner/planner-view";
 import {
   acceptReplacement,
@@ -41,6 +44,8 @@ import {
   fetchVersion,
   refinePlannerSession,
   regeneratePlannerSession,
+  dayOf,
+  dayPriceOf,
   type PlannerSession,
 } from "@/lib/planner";
 import { apiRequest } from "@/lib/api/client";
@@ -751,6 +756,7 @@ export function PlanFlow({
                   placeholder={copy.flowVibePlaceholder}
                   onChange={(event) => setVibe(event.target.value)}
                 />
+                <UnderstoodSteps text={vibe} copy={copy} onRewrite={setVibe} />
               </div>
             ) : null}
           </div>
@@ -821,8 +827,13 @@ export function PlanFlow({
 
           {plan ? (
             <>
-              <Timeline plan={plan} copy={copy} sessionId={sessionId} onLock={run} onReplace={setReplaceStopId} />
-              <CostPanel plan={plan} copy={copy} />
+              {dayOf(session, plan).length ? (
+                <DayTimeline steps={dayOf(session, plan)} plan={plan} copy={copy} sessionId={sessionId} onLock={run} />
+              ) : (
+                <Timeline plan={plan} copy={copy} sessionId={sessionId} onLock={run} onReplace={setReplaceStopId} />
+              )}
+              <CostPanel plan={plan} copy={copy} pricing={dayPriceOf(session, plan)} />
+              {session?.driver_request && sessionId ? <DriverRequestPanel sessionId={sessionId} copy={copy} /> : null}
 
               {sessionId ? (
                 <div className="flex flex-wrap gap-2">

@@ -9,7 +9,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.planner.ranking import weights_from_payload
-from app.planner.schemas import AssembledPlan, AssumedDefault, CandidateRecord, ExtractedConstraints
+from app.planner.schemas import AssembledPlan, AssumedDefault, CandidateRecord, ExtractedConstraints, StepCandidate
 
 
 def _dump(value: Any) -> str:
@@ -43,6 +43,45 @@ async def retrieve_candidates(
         for item in items
         if not (isinstance(item, dict) and item.get("listing_kind") == "hotel")
     ]
+
+
+def _json_items(row: Any) -> list[Any]:
+    parsed = json.loads(row) if isinstance(row, str) else row
+    return parsed if isinstance(parsed, list) else []
+
+
+async def retrieve_step(db: AsyncSession, query: dict[str, Any]) -> list[StepCandidate]:
+    """Trusted listings that can fill one step of a day (``app.planner_retrieve_step``, migration 045)."""
+    row = (
+        await db.execute(
+            text("SELECT app.planner_retrieve_step(CAST(:step AS jsonb))"),
+            {"step": json.dumps(query, default=str)},
+        )
+    ).scalar()
+    return [StepCandidate.model_validate(item) for item in _json_items(row)]
+
+
+async def retrieve_changers(db: AsyncSession, destination_slug: str) -> list[dict[str, Any]]:
+    """Live, registered money changers in a destination (migration 042). They are offices, not listings."""
+    row = (await db.execute(text("SELECT app.public_destination_changers(:slug)"), {"slug": destination_slug})).scalar()
+    return [item for item in _json_items(row) if isinstance(item, dict)]
+
+
+async def retrieve_driver_rates(db: AsyncSession, destination_slug: str, party_size: int) -> list[dict[str, Any]]:
+    """Published day rates of the verified drivers a day request would reach (migration 046)."""
+    row = (
+        await db.execute(
+            text("SELECT app.planner_driver_day_rates(:slug, :party)"),
+            {"slug": destination_slug, "party": party_size},
+        )
+    ).scalar()
+    return [item for item in _json_items(row) if isinstance(item, dict)]
+
+
+async def record_step_gaps(db: AsyncSession, gaps: list[dict[str, Any]]) -> None:
+    """Count steps no trusted place could fill (migration 048): kinds only, never the traveller's words."""
+    if gaps:
+        await db.execute(text("SELECT app.planner_record_step_gaps(CAST(:gaps AS jsonb))"), {"gaps": json.dumps(gaps)})
 
 
 async def load_weights(db: AsyncSession) -> dict[str, float]:
@@ -118,8 +157,13 @@ async def persist_plan(
     ranked: list[dict[str, Any]],
     latency_ms: int,
     run_status: str,
+    extra_constraints: dict[str, Any] | None = None,
+    run_versions: dict[str, str] | None = None,
 ) -> dict[str, Any]:
+    """Seal a version. ``extra_constraints`` rides along in the version's constraints (a v2 day's
+    steps, including empty ones); ``run_versions`` overrides the prompt/optimizer labels of the run."""
     payload = constraints.model_dump(mode="json")
+    payload.update(extra_constraints or {})
     payload["retrieved_ids"] = retrieved_ids
     payload["assumed_defaults"] = [item.model_dump(mode="json") for item in assumed]
     payload["degraded"] = degraded
@@ -192,6 +236,7 @@ async def persist_plan(
                         "prompt_version": "intent-v1",
                         "ranker_version": "ranker-v1",
                         "optimizer_version": "greedy-v1",
+                        **(run_versions or {}),
                         "status": run_status,
                         "latency_ms": latency_ms,
                         "candidates": ranked,

@@ -8,6 +8,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import { testDestinationServiceSources } from "./destination-service-sources.mjs";
+import { testPlaceTypes } from "./place-types.mjs";
+import { testDayPricing } from "./day-pricing.mjs";
+import { testSourcedPrices } from "./sourced-prices.mjs";
+import { testPlannerData } from "./planner-data.mjs";
+import { testLeadsAndFacts } from "./leads-and-facts.mjs";
+import { testPhraseCandidates } from "./phrase-candidates.mjs";
+import { testAttributionAndWorklist } from "./attribution-and-worklist.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const db = new PGlite({ extensions: { postgis, vector, btree_gist, pg_trgm } });
 const report = [];
@@ -54,6 +61,27 @@ try {
   await good(
     "all eight destinations have two sourced services per category; public reads enforce scope, review dates and RLS",
     () => testDestinationServiceSources(db),
+  );
+  await good("place types: every kind of place a step can ask for, filled only from trusted listings", () =>
+    testPlaceTypes(db),
+  );
+  await good("day pricing: only published prices, the top of ranges, stays per night, drivers' day rates", () =>
+    testDayPricing(db),
+  );
+  await good("sourced prices: published with proof, reviewed, lapsing to on request, staff only", () =>
+    testSourcedPrices(db),
+  );
+  await good("planner data: demand gaps by kind, consented and redacted misses, reviewed phrases, retention", () =>
+    testPlannerData(db),
+  );
+  await good("place facts filter and rank; leads deduplicated, queued by demand, published only after a check", () =>
+    testLeadsAndFacts(db),
+  );
+  await good("phrase candidates never go live until approved; batches, rejections kept, versioned releases", () =>
+    testPhraseCandidates(db),
+  );
+  await good("listings from open data credit their source; the price worklist lists what has no published price", () =>
+    testAttributionAndWorklist(db),
   );
   await sql("SELECT set_config('app.user_id',$1,false)", [alice]);
   await good("all app tables have forced RLS", async () =>
