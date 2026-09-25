@@ -4,6 +4,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { axe } from "vitest-axe";
 import { CatalogueGrowthAdmin } from "./catalogue-growth";
+import { IntentReleases, PhraseReview } from "./phrase-review";
 import { PlannerLanguageAdmin } from "./planner-language";
 import { LocaleProvider } from "@/components/shell/locale-provider";
 
@@ -15,7 +16,7 @@ function jsonResponse(body: unknown, status = 200) {
   return { ok: status < 400, status, json: async () => body, headers: new Headers(), statusText: "" };
 }
 
-/** First matching prefix wins; POST/PUT bodies are recorded. */
+/** First matching prefix wins; POST/PUT bodies are recorded. A number as the body answers with that status. */
 function route(handlers: [string, unknown][]) {
   const calls: { url: string; method: string; body?: unknown }[] = [];
   vi.stubGlobal(
@@ -23,6 +24,7 @@ function route(handlers: [string, unknown][]) {
     vi.fn(async (url: string, init?: RequestInit) => {
       calls.push({ url, method: init?.method ?? "GET", body: init?.body ? JSON.parse(String(init.body)) : undefined });
       const hit = handlers.find(([prefix]) => url.startsWith(prefix));
+      if (hit && typeof hit[1] === "number") return jsonResponse({ detail: "refused" }, hit[1]);
       return hit ? jsonResponse(hit[1]) : jsonResponse({ detail: "not found" }, 404);
     }),
   );
@@ -206,5 +208,102 @@ describe("catalogue growth", () => {
       }),
     );
     expect(await axe(container)).toHaveNoViolations();
+  });
+});
+
+describe("phrase review and releases", () => {
+  const CANDIDATES = [
+    {
+      id: "c1",
+      phrase: "7elwiyet",
+      concept: "sweets",
+      locale: "arabizi",
+      source: "generated_variant",
+      batch: "seed-v1",
+      variant_of: "7elwayet",
+      note: "spelling of 7elwayet",
+      status: "candidate",
+    },
+    {
+      id: "c2",
+      phrase: "apres le dejeuner",
+      concept: "time-afternoon",
+      locale: "fr",
+      source: "seed",
+      batch: "seed-v1",
+      variant_of: "",
+      note: "also reads as meal-lunch",
+      status: "candidate",
+    },
+  ];
+
+  it("approves a selection of candidates and flags clashes", async () => {
+    const calls = route([
+      [
+        "/api/v1/admin/planner/candidates/batches",
+        [{ batch: "seed-v1", candidate: 2, approved: 0, rejected: 0, locales: {}, first_added: "2026-09-25" }],
+      ],
+      ["/api/v1/admin/planner/candidates/review", { approved: 1, rejected: 0, duplicates: 0 }],
+      ["/api/v1/admin/planner/candidates", { total: 2, items: CANDIDATES }],
+    ]);
+    const onChanged = vi.fn();
+    const { container } = render(wrap(<PhraseReview concepts={[]} onChanged={onChanged} />));
+    const first = (await screen.findByText("7elwiyet")).closest("li") as HTMLElement;
+    expect(first).toHaveTextContent("spelling of 7elwayet");
+    const second = screen.getByText("apres le dejeuner").closest("li") as HTMLElement;
+    expect(second).toHaveTextContent("Also reads as another concept");
+    expect(screen.getByText(/2 to review/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Approve selected" })).toBeDisabled();
+    fireEvent.click(within(first).getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: "Approve selected" }));
+    await waitFor(() =>
+      expect(calls.find((call) => call.url.endsWith("/candidates/review"))?.body).toEqual({
+        ids: ["c1"],
+        decision: "approve",
+      }),
+    );
+    expect(await screen.findByRole("status")).toHaveTextContent("1 approved");
+    expect(onChanged).toHaveBeenCalled();
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("shows whether the live phrases are released, and says so when the gate refuses a release", async () => {
+    route([
+      [
+        "/api/v1/admin/planner/releases",
+        {
+          current_checksum: "new",
+          approved_phrases: 12,
+          releases: [
+            {
+              id: "r1",
+              name: "intent-data-v1",
+              version: 1,
+              approved_phrases: 10,
+              checksum: "old",
+              metrics: {
+                generated: {
+                  cases: 1200,
+                  case_accuracy: 1,
+                  step_accuracy: 1,
+                  order_accuracy: 1,
+                  passes: true,
+                  failures: [],
+                },
+              },
+              note: "first seed",
+              released_at: "2026-09-20T10:00:00Z",
+            },
+          ],
+        },
+      ],
+    ]);
+    render(wrap(<IntentReleases version={0} />));
+    expect(await screen.findByText(/12 approved phrases; changes since the last release/)).toBeInTheDocument();
+    expect(screen.getByText(/Generated set: 1200 prompts, 100% read right/)).toBeInTheDocument();
+    vi.unstubAllGlobals();
+    route([["/api/v1/admin/planner/releases", 422]]);
+    fireEvent.click(screen.getByRole("button", { name: "Measure and release" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Refused");
   });
 });

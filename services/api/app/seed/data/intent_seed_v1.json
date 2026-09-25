@@ -1,0 +1,709 @@
+{
+  "version": "seed-v1",
+  "note": "Candidate phrases for the planner's concepts, written for native-speaker review. Nothing here is read by the planner until staff approve it (migration 050).",
+  "concepts": {
+    "meal-breakfast": {
+      "en": [
+        "morning meal",
+        "breakfast time",
+        "first meal",
+        "eat breakfast",
+        "something for breakfast",
+        "a breakfast spot",
+        "breakfast place",
+        "bfast",
+        "b'fast",
+        "morning bite"
+      ],
+      "ar-LB": ["نفطر", "منفطر", "نترويق سوا", "ترويقة لبنانية", "بدنا نترويق", "صبحية", "فطور الصبح"],
+      "ar": ["وجبة الإفطار", "الإفطار", "إفطار", "طعام الفطور", "نتناول الفطور"],
+      "arabizi": [
+        "nfotor",
+        "nefter",
+        "ntarwa2",
+        "ntarwe2",
+        "terwe2a",
+        "tarwee2a",
+        "sob7iye",
+        "ftour el sob7",
+        "fatour"
+      ],
+      "fr": ["p'tit dej", "petit dej", "ptit dej", "prendre le petit dejeuner", "petit-dejeuner"]
+    },
+    "meal-brunch": {
+      "en": ["late breakfast", "brunch spot", "sunday brunch", "breakfast-lunch"],
+      "ar-LB": ["برانش", "ترويقة متأخرة"],
+      "ar": ["فطور متأخر"],
+      "arabizi": ["brunsh", "terwi2a m2akhra"],
+      "fr": ["un brunch", "petit dejeuner tardif"]
+    },
+    "meal-lunch": {
+      "en": [
+        "midday meal",
+        "lunch break",
+        "lunch spot",
+        "have a bite for lunch",
+        "eat lunch",
+        "lunch time",
+        "luch",
+        "lunsh"
+      ],
+      "ar-LB": ["نتغدى سوا", "بدنا نتغدى", "الغدى", "غدوة", "منتغدى"],
+      "ar": ["وجبة الغداء", "الغداء", "نتناول الغداء"],
+      "arabizi": ["ntghada", "nt8ada", "ghade", "8ade", "el ghada", "ghada"],
+      "fr": ["dejeuner", "manger a midi", "le repas de midi", "dej"]
+    },
+    "meal-dinner": {
+      "en": ["evening meal", "dinner time", "dinner spot", "supper time", "eat dinner", "a dinner place", "diner"],
+      "ar-LB": ["نتعشى سوا", "بدنا نتعشى", "العشوة", "عشوة", "منتعشى"],
+      "ar": ["وجبة العشاء", "العشاء", "نتناول العشاء"],
+      "arabizi": ["nt3asha", "3ashwe", "el 3asha", "asha", "3eshe", "nt3ashsha"],
+      "fr": ["le diner", "le repas du soir", "diner au resto", "souper"]
+    },
+    "meal-snack": {
+      "en": ["a snack", "a light bite", "quick bite", "something light", "a nibble", "grab a bite"],
+      "ar-LB": ["شي خفيف", "لقمة", "سناك خفيف", "ناكل شي خفيف"],
+      "ar": ["وجبة خفيفة"],
+      "arabizi": ["shi khafif", "shi 5afif", "lo2me", "snack khafif"],
+      "fr": ["un en-cas", "un encas", "casse-croute", "grignoter"]
+    },
+    "eat": {
+      "en": ["somewhere to eat", "a place to eat", "grab food", "get food", "dine", "dining", "eatery", "food place"],
+      "ar-LB": ["ناكل", "محل ناكل فيه", "مطعم منيح", "ناكل لقمة"],
+      "ar": ["مكان للأكل", "نأكل", "طعام"],
+      "arabizi": ["nekol", "mat3am", "ma6a3em", "mat3am mni7", "akel tayyeb"],
+      "fr": ["un restaurant", "un resto", "manger quelque part", "casser la croute"]
+    },
+    "sweets": {
+      "en": [
+        "lebanese sweets",
+        "arabic sweets",
+        "oriental sweets",
+        "sweet place",
+        "dessert place",
+        "baklava",
+        "maamoul",
+        "halawet el jeben",
+        "atayef",
+        "sfouf",
+        "cake shop"
+      ],
+      "ar-LB": [
+        "حلويات",
+        "حلو",
+        "حلويات عربية",
+        "كنافة بالجبن",
+        "معمول",
+        "بقلاوة",
+        "حلاوة الجبن",
+        "قطايف",
+        "صفوف",
+        "نحلّي"
+      ],
+      "ar": ["محل حلويات", "حلويات شرقية"],
+      "arabizi": [
+        "7elwayet",
+        "7lweyet",
+        "7elo",
+        "knefe b jebne",
+        "ma3moul",
+        "ba2lewa",
+        "7alewet el jeben",
+        "2ata2ef",
+        "n7alle"
+      ],
+      "fr": ["patisserie orientale", "patisseries libanaises", "douceurs", "un dessert"]
+    },
+    "bakery": {
+      "en": ["a bakery", "bread shop", "fresh bread", "oven bakery", "croissants"],
+      "ar-LB": ["فرن", "الفرن", "خبز", "كعك"],
+      "ar": ["مخبز", "مخبزة"],
+      "arabizi": ["el forn", "forn", "ka3ke", "ka3k"],
+      "fr": ["boulangerie", "une boulangerie", "viennoiseries"]
+    },
+    "manakish": {
+      "en": ["zaatar manousheh", "cheese manousheh", "lebanese flatbread", "zaatar pie", "manaeesh"],
+      "ar-LB": ["منقوشة زعتر", "منقوشة جبنة", "منقوشة كشك", "مناقيش زعتر"],
+      "ar": ["فطائر الزعتر"],
+      "arabizi": ["man2oushe za3tar", "man2oushe jebne", "manoushe", "mana2ish za3tar", "man2ouche", "ka3ke za3tar"],
+      "fr": ["manouche", "manakiche", "galette au zaatar"]
+    },
+    "cafe": {
+      "en": [
+        "a cafe",
+        "coffee place",
+        "cup of coffee",
+        "espresso",
+        "latte",
+        "cappuccino",
+        "coffeeshop",
+        "tea",
+        "a cup of tea"
+      ],
+      "ar-LB": ["فنجان قهوة", "قهوة عربية", "نشرب قهوة", "كافيه", "شاي", "نشرب شاي"],
+      "ar": ["مقهى", "المقهى"],
+      "arabizi": ["ahwe", "fenjen ahwe", "nechrab ahwe", "ahwe 3arabiye", "shay", "kafe"],
+      "fr": ["un cafe", "boire un cafe", "salon de the", "the"]
+    },
+    "seafood": {
+      "en": ["fish restaurant", "fresh fish", "seafood place", "shrimp", "calamari", "grilled fish", "sea food"],
+      "ar-LB": ["سمك مشوي", "مطعم سمك", "قريدس", "سمك طازة", "صيادية"],
+      "ar": ["مأكولات بحرية", "مطعم أسماك"],
+      "arabizi": ["samak mechwe", "mat3am samak", "2raydes", "sayyadiye", "samak taze"],
+      "fr": ["restaurant de poisson", "poisson grille", "crevettes", "calamars"]
+    },
+    "grill": {
+      "en": ["grilled meat", "kebab", "kebabs", "shish taouk", "mixed grill", "bbq place"],
+      "ar-LB": ["لحمة مشوية", "كباب", "شيش طاووق", "مشاوي مشكلة", "نشوي"],
+      "ar": ["مشويات", "لحوم مشوية"],
+      "arabizi": ["la7me mechwiye", "kebbeb", "chich tawou2", "mechewe", "mashewe"],
+      "fr": ["grillades", "brochettes", "viande grillee"]
+    },
+    "mezze": {
+      "en": [
+        "lebanese cuisine",
+        "lebanese restaurant",
+        "local food",
+        "hummus",
+        "tabbouleh",
+        "fattoush",
+        "kibbeh",
+        "authentic food"
+      ],
+      "ar-LB": ["أكل لبناني", "مطعم لبناني", "حمص", "تبولة", "فتوش", "كبة", "أكل بيتي", "مازات"],
+      "ar": ["مطبخ لبناني", "مقبلات لبنانية"],
+      "arabizi": ["akel lebnene", "mat3am lebnene", "7ommos", "tabbouleh", "fattouch", "kebbe", "akel bayte"],
+      "fr": ["restaurant libanais", "mezze libanais", "houmous", "taboule"]
+    },
+    "pizza": {
+      "en": ["pizzeria", "pizza place", "a pizza"],
+      "ar-LB": ["بيتزا", "محل بيتزا"],
+      "ar": ["مطعم بيتزا"],
+      "arabizi": ["pitza", "bitza"],
+      "fr": ["pizzeria", "une pizza"]
+    },
+    "burger": {
+      "en": ["burger joint", "a burger", "hamburger", "cheeseburger"],
+      "ar-LB": ["همبرغر", "برغر"],
+      "ar": ["شطيرة برغر"],
+      "arabizi": ["borger", "burgur"],
+      "fr": ["un burger", "hamburger"]
+    },
+    "sushi": {
+      "en": ["japanese food", "sushi bar", "japanese restaurant"],
+      "ar-LB": ["سوشي", "أكل ياباني"],
+      "ar": ["مطعم ياباني"],
+      "arabizi": ["soushi", "akel yabene"],
+      "fr": ["restaurant japonais", "sushis"]
+    },
+    "shawarma": {
+      "en": ["chicken shawarma", "meat shawarma", "shawarma sandwich", "shawarma wrap"],
+      "ar-LB": ["شاورما دجاج", "شاورما لحمة", "سندويش شاورما"],
+      "ar": ["شاورما"],
+      "arabizi": ["shawarma djej", "chawarma la7me", "sandwich shawarma"],
+      "fr": ["chawarma", "shawarma poulet"]
+    },
+    "falafel": {
+      "en": ["falafel sandwich", "falafel wrap"],
+      "ar-LB": ["سندويش فلافل", "فلافل"],
+      "ar": ["طعمية"],
+      "arabizi": ["falefel", "sandwich falafel"],
+      "fr": ["falafels", "sandwich falafel"]
+    },
+    "ice-cream": {
+      "en": ["ice-cream", "frozen yogurt", "gelato place", "ice cream parlor", "sorbet"],
+      "ar-LB": ["بوظة عربية", "آيس كريم", "بوظة بالقشطة"],
+      "ar": ["مثلجات", "آيس كريم"],
+      "arabizi": ["bouza 3arabiye", "ice cream", "bouza b 2ashta"],
+      "fr": ["glacier", "sorbet", "creme glacee"]
+    },
+    "fine-dining": {
+      "en": ["upscale restaurant", "fancy dinner", "gourmet restaurant", "chef's table", "tasting menu"],
+      "ar-LB": ["مطعم فخم", "عشا فخم"],
+      "ar": ["مطعم راقٍ"],
+      "arabizi": ["mat3am fakhem", "3asha fakhem"],
+      "fr": ["restaurant chic", "restaurant gastronomique", "diner chic"]
+    },
+    "rooftop": {
+      "en": ["rooftop bar", "rooftop restaurant", "on a roof", "terrace with a view"],
+      "ar-LB": ["روف توب", "سطح"],
+      "ar": ["مطعم على السطح"],
+      "arabizi": ["roof top", "3al roof"],
+      "fr": ["rooftop", "terrasse en hauteur", "toit-terrasse"]
+    },
+    "mountain": {
+      "en": [
+        "the mountains",
+        "up the mountain",
+        "mountain top",
+        "mountain village",
+        "go up to the mountain",
+        "hills",
+        "highlands",
+        "mountain air"
+      ],
+      "ar-LB": ["نطلع عالجبل", "ضيعة بالجبل", "طلعة عالجبل", "الجرد", "جرد", "ضيعة"],
+      "ar": ["قمة الجبل", "المرتفعات"],
+      "arabizi": ["nitla3 3al jabal", "day3a", "da3yie", "jord", "el jord", "tal3a 3al jabal"],
+      "fr": ["en montagne", "la montagne libanaise", "un village de montagne", "les hauteurs"]
+    },
+    "viewpoint": {
+      "en": ["a view", "nice view", "scenic spot", "look-out", "vista", "panoramic view", "photo spot"],
+      "ar-LB": ["منظر حلو", "مطل", "محل فيو"],
+      "ar": ["نقطة مشاهدة", "إطلالة"],
+      "arabizi": ["manzar 7elo", "matall", "view 7elo"],
+      "fr": ["un beau panorama", "vue panoramique", "belvedere"]
+    },
+    "sunset": {
+      "en": ["the sun going down", "sundown", "golden hour", "see the sun set"],
+      "ar-LB": ["مغيب الشمس", "نشوف الغروب", "المغربية"],
+      "ar": ["غروب الشمس"],
+      "arabizi": ["ghroub el shames", "maghib el shams", "el maghrebiye"],
+      "fr": ["coucher du soleil", "voir le coucher de soleil"]
+    },
+    "cedars": {
+      "en": ["cedar trees", "cedars of god", "cedar reserve", "the arz"],
+      "ar-LB": ["أرز الرب", "شجر الأرز", "محمية الأرز"],
+      "ar": ["غابة الأرز"],
+      "arabizi": ["arz el rab", "el arz", "shajar el arz"],
+      "fr": ["les cedres", "cedres de dieu", "foret de cedres"]
+    },
+    "forest": {
+      "en": ["woodland", "pine trees", "the woods", "a forest walk"],
+      "ar-LB": ["حرش", "الحرش", "غابة صنوبر"],
+      "ar": ["الغابة", "أحراج"],
+      "arabizi": ["7ersh", "el 7ersh", "ghabe"],
+      "fr": ["foret", "les bois", "pinede"]
+    },
+    "waterfall": {
+      "en": ["falls", "water falls", "cascade"],
+      "ar-LB": ["شلالات", "شلال مي"],
+      "ar": ["الشلالات"],
+      "arabizi": ["shallalet", "chellal"],
+      "fr": ["cascades", "chute d'eau"]
+    },
+    "cave": {
+      "en": ["grotto", "grottoes", "caverns", "underground cave"],
+      "ar-LB": ["مغارة جعيتا", "مغاير", "مغارة"],
+      "ar": ["كهف", "كهوف"],
+      "arabizi": ["m8ara", "mghara", "maghara"],
+      "fr": ["grottes", "caverne"]
+    },
+    "beach": {
+      "en": [
+        "the sea",
+        "seaside",
+        "by the sea",
+        "the coast",
+        "sandy beach",
+        "go swimming",
+        "a swim",
+        "sunbathe",
+        "sea side"
+      ],
+      "ar-LB": ["نسبح", "نسبح بالبحر", "شط البحر", "عالبحر", "بلاج"],
+      "ar": ["الشاطئ", "شاطئ", "السباحة"],
+      "arabizi": ["nesba7", "3al ba7r", "shat", "plaj", "el ba7r"],
+      "fr": ["bord de mer", "au bord de la mer", "se baigner", "baignade"]
+    },
+    "river": {
+      "en": ["riverside", "by the river", "stream"],
+      "ar-LB": ["عالنهر", "نبع"],
+      "ar": ["ضفة النهر"],
+      "arabizi": ["3al nahr", "nabe3"],
+      "fr": ["au bord de la riviere", "fleuve"]
+    },
+    "valley": {
+      "en": ["the valley", "canyon", "gorges"],
+      "ar-LB": ["الوادي", "وادي قنوبين"],
+      "ar": ["وادٍ"],
+      "arabizi": ["el wadi", "wede"],
+      "fr": ["la vallee", "gorges"]
+    },
+    "nature-reserve": {
+      "en": ["nature park", "reserve", "protected area", "biosphere reserve", "national park"],
+      "ar-LB": ["محمية طبيعية"],
+      "ar": ["محمية"],
+      "arabizi": ["m7amiye", "ma7miye"],
+      "fr": ["reserve naturelle", "parc naturel"]
+    },
+    "hiking": {
+      "en": ["a walk in nature", "nature walk", "hiking trail", "mountain walk", "walking trail", "trekking"],
+      "ar-LB": ["نمشي بالطبيعة", "مشوار مشي", "طلعة مشي", "هايك"],
+      "ar": ["المشي لمسافات", "رحلة مشي"],
+      "arabizi": ["nimshe bel tabi3a", "hike", "mechwar mashe"],
+      "fr": ["rando", "randonnee", "marche en nature", "balade en montagne"]
+    },
+    "ruins": {
+      "en": ["ancient site", "archaeological site", "roman temple", "old ruins", "historical site", "temples"],
+      "ar-LB": ["آثارات", "قلعة بعلبك", "هياكل"],
+      "ar": ["موقع أثري", "الآثار الرومانية"],
+      "arabizi": ["asar", "athar romeniye", "haykal"],
+      "fr": ["site archeologique", "vestiges", "temple romain"]
+    },
+    "castle": {
+      "en": ["fortress", "crusader castle", "the fort", "citadel"],
+      "ar-LB": ["قلعة", "القلعة"],
+      "ar": ["حصن"],
+      "arabizi": ["2al3a", "al3a", "qal3a"],
+      "fr": ["citadelle", "forteresse", "chateau croise"]
+    },
+    "old-town": {
+      "en": ["old quarter", "historic centre", "old streets", "old souks", "historic town"],
+      "ar-LB": ["البلد القديم", "الأسواق القديمة"],
+      "ar": ["المدينة القديمة"],
+      "arabizi": ["el balad", "balad 2adime"],
+      "fr": ["centre historique", "vieux quartier"]
+    },
+    "souk": {
+      "en": ["market", "old market", "bazaar", "market street"],
+      "ar-LB": ["السوق القديم", "سوق الصاغة", "سوق الخضرة"],
+      "ar": ["السوق", "أسواق"],
+      "arabizi": ["el souk", "sou2", "aswe2"],
+      "fr": ["le marche", "souks"]
+    },
+    "museum": {
+      "en": ["a museum visit", "exhibition", "national museum", "history museum", "museums"],
+      "ar-LB": ["المتحف الوطني", "متحف"],
+      "ar": ["متاحف"],
+      "arabizi": ["mat7af", "mathaf", "el mat7af"],
+      "fr": ["le musee", "exposition", "musees"]
+    },
+    "church": {
+      "en": ["cathedral", "chapel", "churches", "shrine", "basilica"],
+      "ar-LB": ["كنيسة", "كاتدرائية", "مزار"],
+      "ar": ["كنائس"],
+      "arabizi": ["kniseh", "knise", "mazar", "kanise"],
+      "fr": ["cathedrale", "chapelle", "basilique"]
+    },
+    "mosque": {
+      "en": ["mosques", "masjid", "grand mosque"],
+      "ar-LB": ["جامع", "الجامع العمري"],
+      "ar": ["مساجد"],
+      "arabizi": ["jeme3", "jami3", "masjid"],
+      "fr": ["la mosquee", "mosquees"]
+    },
+    "monastery": {
+      "en": ["convent", "hermitage", "abbey", "monasteries"],
+      "ar-LB": ["دير", "محبسة"],
+      "ar": ["أديرة"],
+      "arabizi": ["deir", "dayr", "ma7base"],
+      "fr": ["couvent", "abbaye", "ermitage"]
+    },
+    "gallery": {
+      "en": ["art gallery", "art exhibition", "art space", "galleries"],
+      "ar-LB": ["معرض فني", "معرض رسم"],
+      "ar": ["صالة عرض"],
+      "arabizi": ["ma3rad", "ma3rad fanne"],
+      "fr": ["galerie d'art", "expo"]
+    },
+    "cinema": {
+      "en": ["movie theater", "movie theatre", "see a movie", "watch a movie", "catch a film", "the movies", "flick"],
+      "ar-LB": ["نحضر فيلم", "سينما", "فيلم"],
+      "ar": ["دار السينما"],
+      "arabizi": ["cinema", "nes7ar film", "n7adder film", "film"],
+      "fr": ["aller au cine", "voir un film", "salle de cinema"]
+    },
+    "bowling": {
+      "en": ["bowling alley", "ten pin bowling", "bowl a few frames"],
+      "ar-LB": ["نلعب بولينغ", "بولينج"],
+      "ar": ["صالة بولينغ"],
+      "arabizi": ["bowlinj", "bowling", "nel3ab bowling"],
+      "fr": ["faire un bowling", "bowling"]
+    },
+    "escape-room": {
+      "en": ["escape rooms", "puzzle room", "escape game", "room escape"],
+      "ar-LB": ["إسكيب روم"],
+      "ar": ["غرفة الهروب"],
+      "arabizi": ["escape room"],
+      "fr": ["salle d'evasion", "escape game"]
+    },
+    "karting": {
+      "en": ["go-karts", "go kart racing", "kart racing", "karts"],
+      "ar-LB": ["كارتنغ", "سباق كارت"],
+      "ar": ["سباق السيارات الصغيرة"],
+      "arabizi": ["karting", "go kart"],
+      "fr": ["kart", "karting"]
+    },
+    "arcade": {
+      "en": ["game zone", "video game arcade", "games room", "arcade games"],
+      "ar-LB": ["ألعاب فيديو", "بلايستيشن"],
+      "ar": ["صالة ألعاب"],
+      "arabizi": ["al3ab video", "playstation"],
+      "fr": ["salle d'arcade", "jeux video"]
+    },
+    "billiards": {
+      "en": ["pool hall", "play pool", "snooker club"],
+      "ar-LB": ["بلياردو", "سنوكر"],
+      "ar": ["بلياردو"],
+      "arabizi": ["billiardo", "snooker"],
+      "fr": ["billard", "jouer au billard"]
+    },
+    "water-park": {
+      "en": ["water slides", "aqua park", "waterpark"],
+      "ar-LB": ["أكوا بارك", "ووتر بارك"],
+      "ar": ["مدينة مائية"],
+      "arabizi": ["aqua park", "water park"],
+      "fr": ["parc aquatique", "toboggans aquatiques"]
+    },
+    "amusement-park": {
+      "en": ["fun fair", "rides", "fairground", "theme park"],
+      "ar-LB": ["مدينة ملاهي", "لونا بارك"],
+      "ar": ["مدينة الملاهي"],
+      "arabizi": ["malehe", "luna park"],
+      "fr": ["parc d'attractions", "fete foraine"]
+    },
+    "zoo": {
+      "en": ["animal farm", "petting zoo", "wildlife park", "animals"],
+      "ar-LB": ["حديقة الحيوانات", "حيوانات"],
+      "ar": ["حديقة حيوان"],
+      "arabizi": ["7adi2at el 7ayawenet", "zoo"],
+      "fr": ["zoo", "parc animalier"]
+    },
+    "bar": {
+      "en": ["a drink", "have a drink", "grab a drink", "pub crawl", "cocktail bar", "a beer", "beers", "happy hour"],
+      "ar-LB": ["نشرب كاس", "كاس", "بار", "بيرة"],
+      "ar": ["حانة"],
+      "arabizi": ["nechrab kes", "kes", "bira", "bar"],
+      "fr": ["boire un verre", "un verre", "prendre un verre", "un pub"]
+    },
+    "winery": {
+      "en": ["vineyards", "wine estate", "wine cellar", "wine tour", "taste wine"],
+      "ar-LB": ["كرم عنب", "تذوق نبيذ", "خمارة"],
+      "ar": ["مصنع نبيذ", "تذوق النبيذ"],
+      "arabizi": ["karm 3enab", "nbid", "wine tasting"],
+      "fr": ["domaine viticole", "degustation", "vignoble", "cave"]
+    },
+    "nightclub": {
+      "en": ["go clubbing", "go out dancing", "a club", "night out", "party"],
+      "ar-LB": ["سهرة", "نسهر", "نرقص", "كلوب"],
+      "ar": ["ملهى ليلي"],
+      "arabizi": ["sahra", "nes'har", "nor2os", "club"],
+      "fr": ["boite", "sortir danser", "en boite"]
+    },
+    "live-music": {
+      "en": ["a gig", "band playing", "live band", "concert", "music night"],
+      "ar-LB": ["حفلة موسيقى", "فرقة", "حفلة"],
+      "ar": ["حفل موسيقي"],
+      "arabizi": ["7afle", "7aflit music", "far2a"],
+      "fr": ["concert", "musique en live", "un groupe live"]
+    },
+    "skiing": {
+      "en": ["ski slopes", "ski resort", "snowboarding", "hit the slopes", "snow"],
+      "ar-LB": ["تزلج", "تزلّج عالتلج", "تلج"],
+      "ar": ["التزلج على الثلج"],
+      "arabizi": ["tazalloj", "tezlaj", "talj", "tazaloj"],
+      "fr": ["faire du ski", "piste de ski", "station de ski"]
+    },
+    "paragliding": {
+      "en": ["para gliding", "paraglide", "fly over the bay"],
+      "ar-LB": ["باراغلايدنغ", "طيران شراعي"],
+      "ar": ["الطيران المظلي"],
+      "arabizi": ["paragliding", "tayaran shira3e"],
+      "fr": ["parapente", "vol en parapente"]
+    },
+    "diving": {
+      "en": ["scuba diving", "snorkeling", "dive", "free diving"],
+      "ar-LB": ["غطس", "نغطس"],
+      "ar": ["الغوص"],
+      "arabizi": ["ghats", "nghottos"],
+      "fr": ["plongee", "plongee sous-marine", "snorkeling"]
+    },
+    "kayaking": {
+      "en": ["kayak", "canoeing", "white water rafting", "paddle"],
+      "ar-LB": ["كاياك", "رافتينغ"],
+      "ar": ["التجديف"],
+      "arabizi": ["kayak", "rafting"],
+      "fr": ["canoe", "kayak", "rafting"]
+    },
+    "horse-riding": {
+      "en": ["ride horses", "horseback riding", "pony ride", "riding club"],
+      "ar-LB": ["ركوب خيل", "نركب خيل"],
+      "ar": ["ركوب الخيل", "الفروسية"],
+      "arabizi": ["rkoub khayl", "nerkab 5ayl"],
+      "fr": ["balade a cheval", "equitation"]
+    },
+    "zipline": {
+      "en": ["zip lining", "zip-line", "flying fox"],
+      "ar-LB": ["زيبلاين"],
+      "ar": ["الانزلاق بالحبل"],
+      "arabizi": ["zipline"],
+      "fr": ["tyrolienne", "accrobranche"]
+    },
+    "beach-club": {
+      "en": ["beach resort", "pool day", "swimming pool", "resort pool"],
+      "ar-LB": ["مسبح", "منتجع بحري"],
+      "ar": ["منتجع شاطئي"],
+      "arabizi": ["masba7", "resort"],
+      "fr": ["piscine", "club de plage"]
+    },
+    "spa": {
+      "en": ["massage", "spa day", "wellness", "turkish bath", "relaxation"],
+      "ar-LB": ["مساج", "حمام تركي", "سبا"],
+      "ar": ["منتجع صحي"],
+      "arabizi": ["massage", "7ammam torke"],
+      "fr": ["massage", "hammam", "bien-etre"]
+    },
+    "shopping": {
+      "en": ["shopping mall", "the mall", "shops", "boutiques", "go shopping", "buy clothes"],
+      "ar-LB": ["نتسوق", "مول", "نشتري تياب"],
+      "ar": ["مركز تسوق", "التسوق"],
+      "arabizi": ["shopping", "mall", "neshtere tyeb"],
+      "fr": ["faire les magasins", "centre commercial", "magasins"]
+    },
+    "pharmacy": {
+      "en": ["chemist", "drugstore", "buy medicine"],
+      "ar-LB": ["صيدلية", "دوا"],
+      "ar": ["صيدلية"],
+      "arabizi": ["saydaliye", "dawa"],
+      "fr": ["la pharmacie", "medicaments"]
+    },
+    "atm": {
+      "en": ["cash machine", "withdraw cash", "get cash", "bank machine"],
+      "ar-LB": ["صراف آلي", "نسحب مصاري"],
+      "ar": ["جهاز الصراف الآلي"],
+      "arabizi": ["atm", "nes7ab masare"],
+      "fr": ["distributeur", "retirer de l'argent", "guichet automatique"]
+    },
+    "sim-card": {
+      "en": ["local sim", "phone card", "data plan", "sim card"],
+      "ar-LB": ["خط", "شريحة خط"],
+      "ar": ["شريحة اتصال"],
+      "arabizi": ["khatt", "5at", "sim"],
+      "fr": ["carte sim", "puce telephone"]
+    },
+    "petrol": {
+      "en": ["gas station", "fill up the car", "fuel station", "petrol station"],
+      "ar-LB": ["محطة", "نعبي بنزين"],
+      "ar": ["محطة وقود"],
+      "arabizi": ["m7atta", "n3abbe benzine", "benzine"],
+      "fr": ["station-service", "faire le plein"]
+    },
+    "hospital": {
+      "en": ["a doctor", "medical centre", "emergency room", "clinic"],
+      "ar-LB": ["حكيم", "مستشفى", "عيادة"],
+      "ar": ["طبيب", "عيادة"],
+      "arabizi": ["7akim", "mostashfa", "3iyade"],
+      "fr": ["medecin", "clinique", "urgences"]
+    },
+    "exchange": {
+      "en": ["money exchange", "change money", "exchange dollars", "exchange euros", "foreign exchange", "change cash"],
+      "ar-LB": ["صرّاف", "نصرف مصاري", "صرافة", "نصرف دولار"],
+      "ar": ["مكتب صرافة", "صرف العملات"],
+      "arabizi": ["sarraf", "nosrof masare", "nsarref dollar", "sarrafe"],
+      "fr": ["bureau de change", "changer de l'argent", "changer des dollars"]
+    },
+    "overnight": {
+      "en": ["sleep over", "stay over", "spend the night", "night away", "stay overnight", "somewhere to sleep"],
+      "ar-LB": ["نبات", "منبات", "نام هونيك"],
+      "ar": ["المبيت", "قضاء الليلة"],
+      "arabizi": ["nbet", "nbat", "mnbet"],
+      "fr": ["passer la nuit", "dormir sur place", "nuit sur place"]
+    },
+    "hotel": {
+      "en": ["hotel room", "a room for the night", "resort hotel"],
+      "ar-LB": ["أوتيل", "فندق", "غرفة بفندق"],
+      "ar": ["فندق"],
+      "arabizi": ["otel", "hotel", "fondo2"],
+      "fr": ["hotel", "chambre d'hotel"]
+    },
+    "guesthouse": {
+      "en": ["guest house", "bed and breakfast", "family guesthouse", "maison d'hote"],
+      "ar-LB": ["بيت ضيافة", "بيت ضيعة"],
+      "ar": ["دار ضيافة"],
+      "arabizi": ["beit diyafe", "guest house"],
+      "fr": ["maison d'hotes", "chambre d'hotes", "gite"]
+    },
+    "hostel": {
+      "en": ["backpackers", "youth hostel", "dorm"],
+      "ar-LB": ["هوستل"],
+      "ar": ["نزل شبابي"],
+      "arabizi": ["hostel"],
+      "fr": ["auberge", "auberge de jeunesse"]
+    },
+    "chalet": {
+      "en": ["cabin", "mountain chalet", "lodge"],
+      "ar-LB": ["شاليه"],
+      "ar": ["كوخ"],
+      "arabizi": ["chalet", "shalleh"],
+      "fr": ["chalet", "cabane"]
+    },
+    "camping": {
+      "en": ["camp", "campsite", "pitch a tent", "glamping"],
+      "ar-LB": ["تخييم", "خيمة"],
+      "ar": ["مخيم"],
+      "arabizi": ["takhyim", "5ayme"],
+      "fr": ["camper", "sous la tente", "glamping"]
+    },
+    "driver": {
+      "en": ["private car", "car and driver", "a chauffeur", "someone to drive us", "private transfer"],
+      "ar-LB": ["شوفير", "سيارة مع شوفير", "حدا يسوق"],
+      "ar": ["سائق خاص"],
+      "arabizi": ["chauffeur", "shofir", "7ada ysou2"],
+      "fr": ["chauffeur prive", "voiture avec chauffeur"]
+    },
+    "public": {
+      "en": ["public bus", "minibus", "shared taxi", "service taxi"],
+      "ar-LB": ["سرفيس", "فان", "باص"],
+      "ar": ["النقل العام"],
+      "arabizi": ["servees", "service", "van"],
+      "fr": ["bus", "taxi collectif"]
+    },
+    "own": {
+      "en": ["rental car", "rented car", "we have a car", "self drive"],
+      "ar-LB": ["سيارتنا", "معنا سيارة"],
+      "ar": ["سيارة خاصة"],
+      "arabizi": ["sayyarte", "ma3na siyara"],
+      "fr": ["notre voiture", "voiture de location"]
+    },
+    "pickup": {
+      "en": ["collect us", "pick up from the hotel", "come pick me up"],
+      "ar-LB": ["مرّ علينا", "تاخدني من"],
+      "ar": ["اصطحابي"],
+      "arabizi": ["mer2elna", "ta5edne men"],
+      "fr": ["venir me chercher", "passer me prendre"]
+    },
+    "return": {
+      "en": ["take us home", "drop us back", "drop me off"],
+      "ar-LB": ["رجعنا عالبيت", "نزلني"],
+      "ar": ["العودة إلى"],
+      "arabizi": ["raje3na 3al bet", "nazzelne"],
+      "fr": ["me ramener", "nous ramener", "retour"]
+    },
+    "time-morning": {
+      "en": ["in the morning", "early morning", "am"],
+      "ar-LB": ["عالصبح", "بكّير"],
+      "ar": ["صباحاً"],
+      "arabizi": ["3al sob7", "bakkir"],
+      "fr": ["le matin", "tot le matin"]
+    },
+    "time-midday": {
+      "en": ["around noon", "midday"],
+      "ar-LB": ["عالضهر"],
+      "ar": ["ظهراً"],
+      "arabizi": ["3al dohr"],
+      "fr": ["a midi"]
+    },
+    "time-afternoon": {
+      "en": ["in the afternoon", "after lunch"],
+      "ar-LB": ["بعد الضهر", "العصر"],
+      "ar": ["عصراً"],
+      "arabizi": ["ba3d el dohr", "el 3asr"],
+      "fr": ["l'apres-midi", "apres le dejeuner"]
+    },
+    "time-evening": {
+      "en": ["in the evening", "this evening"],
+      "ar-LB": ["عالمسا", "المسا"],
+      "ar": ["مساءً"],
+      "arabizi": ["3al masa", "masa"],
+      "fr": ["le soir", "en soiree"]
+    },
+    "time-night": {
+      "en": ["at night", "late at night", "tonight"],
+      "ar-LB": ["بالليل", "آخر الليل"],
+      "ar": ["ليلاً"],
+      "arabizi": ["bel leil", "a5er el leil"],
+      "fr": ["la nuit", "tard le soir"]
+    }
+  }
+}

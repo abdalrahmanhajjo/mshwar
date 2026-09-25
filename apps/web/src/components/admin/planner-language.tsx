@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Loader2, Plus } from "lucide-react";
+import { IntentReleases, PhraseReview } from "@/components/admin/phrase-review";
 import { useLoad } from "@/components/admin/use-load";
 import { errorText } from "@/components/partners/step";
 import { useLocale } from "@/components/shell/locale-provider";
@@ -330,6 +331,7 @@ export function PlannerLanguageAdmin() {
     () => new Map((types.data ?? []).map((type) => [type.slug, type.names[locale]])),
     [types.data, locale],
   );
+  const [releaseVersion, setReleaseVersion] = React.useState(0);
   const learned = () => {
     misses.reload();
     phrases.reload();
@@ -421,6 +423,15 @@ export function PlannerLanguageAdmin() {
           <Loading failed={phrases.failed} copy={copy} />
         )}
       </section>
+
+      <PhraseReview
+        concepts={concepts.data ?? []}
+        onChanged={() => {
+          phrases.reload();
+          setReleaseVersion((value) => value + 1);
+        }}
+      />
+      <IntentReleases version={releaseVersion} />
     </div>
   );
 }

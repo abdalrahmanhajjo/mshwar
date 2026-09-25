@@ -6,6 +6,7 @@ video call or visit, and decide. Every step lands in app.trust_events.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import re
 from typing import Any
@@ -21,8 +22,9 @@ from app.core.http_status import HTTP_422_UNPROCESSABLE
 from app.core.sql import fetch_json
 from app.core.storage import media_url, sign_object_url
 from app.dependencies import get_auth_db
-from app.planner.schemas import IntentPhraseIn, MissDecisionIn, SourcedPriceIn
-from app.planner.script.learning import CONCEPT_SLUGS, concept_catalogue, reset_phrases
+from app.planner.schemas import CandidateReviewIn, IntentPhraseIn, MissDecisionIn, ReleaseIn, SourcedPriceIn
+from app.planner.script.learning import CONCEPT_SLUGS, concept_catalogue, refresh_phrases, reset_phrases
+from app.planner.script.release import measure
 from app.schemas.partners import (
     CheckedVenueIn,
     ClaimDecisionIn,
@@ -525,6 +527,81 @@ async def retire_planner_phrase(
     )
     reset_phrases()
     return result
+
+
+# ---- Candidate phrases and releases (migration 050) ----
+
+
+@router.get("/planner/candidates/batches", dependencies=[access.ADMIN])
+async def phrase_batches(request: Request, db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    admin = await _admin_id(request, db)
+    return await fetch_json(db, "SELECT app.admin_phrase_batches(CAST(:admin AS uuid))", {"admin": admin})
+
+
+@router.get("/planner/candidates", dependencies=[access.ADMIN])
+async def phrase_candidates(
+    request: Request,
+    batch: str = Query(default="", max_length=60),
+    concept: str = Query(default="", max_length=60),
+    locale: str = Query(default="", pattern="^(|en|ar|ar-LB|arabizi|fr|mixed)$"),
+    status: str = Query(default="candidate", pattern="^(candidate|approved|rejected)$"),
+    limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0, le=100_000),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Phrases waiting for review (never read by the planner), a page at a time."""
+    admin = await _admin_id(request, db)
+    query = {"batch": batch, "concept": concept, "locale": locale, "status": status, "limit": limit, "offset": offset}
+    return await fetch_json(
+        db,
+        "SELECT app.admin_list_phrase_candidates(CAST(:admin AS uuid), CAST(:filter AS jsonb))",
+        {"admin": admin, "filter": json.dumps(query)},
+    )
+
+
+@router.post("/planner/candidates/review", dependencies=[access.ADMIN])
+async def review_phrase_candidates(
+    payload: CandidateReviewIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Approve (the planner reads them from now on) or reject (never imported again) up to 1,000 phrases."""
+    admin = await _admin_id(request, db)
+    result = await fetch_json(
+        db,
+        "SELECT app.admin_review_phrase_candidates(CAST(:admin AS uuid), CAST(:body AS jsonb))",
+        {"admin": admin, "body": payload.model_dump_json()},
+    )
+    reset_phrases()
+    return result
+
+
+@router.get("/planner/releases", dependencies=[access.ADMIN])
+async def intent_data_releases(request: Request, db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    admin = await _admin_id(request, db)
+    return await fetch_json(db, "SELECT app.admin_intent_data_releases(CAST(:admin AS uuid))", {"admin": admin})
+
+
+@router.post("/planner/releases", dependencies=[access.ADMIN])
+async def release_intent_data(
+    payload: ReleaseIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Record the approved phrases as intent-data-vN - only if both eval sets still pass with them."""
+    admin = await _admin_id(request, db)
+    await refresh_phrases(db, force=True)
+    passes, metrics = await asyncio.to_thread(measure)  # ~15 s of reading: off the event loop
+    if not passes:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE,
+            detail={"message": "the eval sets fall below the release gate with these phrases", "metrics": metrics},
+        )
+    return await fetch_json(
+        db,
+        "SELECT app.admin_release_intent_data(CAST(:admin AS uuid), CAST(:body AS jsonb))",
+        {"admin": admin, "body": json.dumps({"note": payload.note, "metrics": metrics}, ensure_ascii=False)},
+    )
 
 
 # ---- Place facts and leads (migration 049) ----
