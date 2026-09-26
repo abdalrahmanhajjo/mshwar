@@ -62,7 +62,9 @@ async def test_public_catalogue_never_leaks_unpublished(api: AsyncClient) -> Non
     destinations = await api.get("/api/v1/catalogue/destinations")
     assert destinations.status_code == 200
     slugs = {item["slug"] for item in destinations.json()}
-    assert slugs == {"byblos", "batroun", "bsharri", "qadisha-valley", "baalbek", "beirut"}
+    towns = {"byblos", "batroun", "bsharri", "qadisha-valley", "baalbek", "beirut"}
+    # A governorate is offered through its towns' places (migration 055).
+    assert slugs == towns | {"mount-lebanon", "north-lebanon"}
 
     listed = await api.get("/api/v1/catalogue/experiences", params={"pageSize": 24})
     assert listed.status_code == 200
