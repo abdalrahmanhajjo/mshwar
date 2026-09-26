@@ -1,0 +1,270 @@
+{
+  "type": "FeatureCollection",
+  "_about": "Desk-research leads for Beirut and Batroun, for staff to visit or call (docs/places-import.md). Not shown to travellers. location_precision 'area' means the point is the neighbourhood or town, not the door: take the point on site.",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.5018, 33.8938]
+      },
+      "properties": {
+        "id": "guide:al-soussi-mar-elias",
+        "name": "Al Soussi",
+        "place_type": "restaurant",
+        "destination_slug": "beirut",
+        "location_precision": "area",
+        "address": "Chehade Street, Mar Elias, Beirut",
+        "source_url": "https://www.nogarlicnoonions.com/al-soussi-a-breakfast-paradise-in-beirut/",
+        "note": "Traditional breakfast (foul, hummus); the guide gives 8:00-13:30 daily - confirm on site."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.50784, 33.88896]
+      },
+      "properties": {
+        "id": "guide:em-sherif-monot",
+        "name": "Em Sherif",
+        "place_type": "fine-dining",
+        "destination_slug": "beirut",
+        "location_precision": "area",
+        "address": "Damascus Street, Monot, Beirut",
+        "source_url": "https://emsherifrestaurant.com/",
+        "note": "Point is the Monot neighbourhood (mapcarta.com/N4807360293)."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.5018, 33.8938]
+      },
+      "properties": {
+        "id": "guide:hallab-1881-jnah",
+        "name": "Hallab 1881 (Jnah)",
+        "place_type": "sweets",
+        "destination_slug": "beirut",
+        "location_precision": "area",
+        "address": "Spinneys Jnah, Wata El Msaytbeh, Beirut",
+        "source_url": "https://europe.hallab.com.lb/our-branches"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.5018, 33.8938]
+      },
+      "properties": {
+        "id": "guide:score-bowling-hamra",
+        "name": "Score Bowling & Games",
+        "place_type": "bowling",
+        "destination_slug": "beirut",
+        "location_precision": "area",
+        "address": "Taj Tower Center, Hamra Main Street, next to Crowne Plaza, Beirut",
+        "source_url": "https://www.beirut.com/en/directory/score-bowling-and-games/",
+        "note": "10 lanes and an arcade; no published point found, take it on site."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.49444, 33.90056]
+      },
+      "properties": {
+        "id": "guide:intercontinental-phoenicia-beirut",
+        "name": "InterContinental Phoenicia Beirut",
+        "place_type": "hotel",
+        "destination_slug": "beirut",
+        "location_precision": "exact",
+        "address": "Rue Fakhreddine, Minet El Hosn, Beirut",
+        "source_url": "https://en.wikipedia.org/wiki/Phoenicia_Hotel_Beirut"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.5018, 33.8938]
+      },
+      "properties": {
+        "id": "guide:crowne-plaza-beirut",
+        "name": "Crowne Plaza Beirut",
+        "place_type": "hotel",
+        "destination_slug": "beirut",
+        "location_precision": "area",
+        "address": "Hamra Main Street, Beirut",
+        "source_url": "https://www.ihg.com/crowneplaza/hotels/us/en/beirut/beyle/hoteldetail"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.6581, 34.2553]
+      },
+      "properties": {
+        "id": "guide:bistreau-batroun",
+        "name": "Bistr'eau",
+        "place_type": "seafood",
+        "destination_slug": "batroun",
+        "location_precision": "area",
+        "address": "The port, Batroun Old Souk",
+        "source_url": "https://www.tripadvisor.com/Restaurants-g1943861-c33-Batroun_North_Governorate.html"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.6581, 34.2553]
+      },
+      "properties": {
+        "id": "guide:mariolino-batroun",
+        "name": "Mariolino",
+        "place_type": "restaurant",
+        "destination_slug": "batroun",
+        "location_precision": "area",
+        "address": "Batroun Old Souk",
+        "source_url": "https://www.theremotetraveller.com/travel-destinations-1/10-best-batroun-restaurants-to-dine-at-during-your-time-in-northern-lebanon"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.6581, 34.2553]
+      },
+      "properties": {
+        "id": "guide:barrio-67-batroun",
+        "name": "Barrio 67",
+        "place_type": "restaurant",
+        "destination_slug": "batroun",
+        "location_precision": "area",
+        "address": "Batroun Old Souk",
+        "source_url": "https://artandthensome.com/best-restaurants-in-batroun/"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.6581, 34.2553]
+      },
+      "properties": {
+        "id": "guide:elies-yard-batroun",
+        "name": "Elie's Yard",
+        "place_type": "restaurant",
+        "destination_slug": "batroun",
+        "location_precision": "area",
+        "address": "Batroun Old Souk",
+        "source_url": "https://the961.com/batroun-breakfast-places-lebanon/",
+        "note": "Lebanese breakfast: hummus, foul, labneh, awarma, keshek."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.6581, 34.2553]
+      },
+      "properties": {
+        "id": "guide:missi-bakery-batroun",
+        "name": "Missi Bakery",
+        "place_type": "bakery",
+        "destination_slug": "batroun",
+        "location_precision": "area",
+        "address": "Batroun, facing Crepaway",
+        "source_url": "https://www.nogarlicnoonions.com/missi-bakery-batroun/",
+        "note": "Manakish and breakfast all day."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.6581, 34.2553]
+      },
+      "properties": {
+        "id": "guide:patisserie-rim-batroun",
+        "name": "Patisserie Rim",
+        "place_type": "sweets",
+        "destination_slug": "batroun",
+        "location_precision": "area",
+        "address": "Batroun",
+        "source_url": "https://gobatroun.com/location/patisserie-rim/",
+        "note": "Family oriental sweets since 1935, and Batroun lemonade."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.6581, 34.2553]
+      },
+      "properties": {
+        "id": "guide:khaled-al-moustafa-sweets-batroun",
+        "name": "Khaled Al Moustafa Sweets",
+        "place_type": "sweets",
+        "destination_slug": "batroun",
+        "location_precision": "area",
+        "address": "Batroun",
+        "source_url": "https://gobatroun.com/location/khaled-moustafa-sweets/"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.6581, 34.2553]
+      },
+      "properties": {
+        "id": "guide:villa-paradiso-batroun",
+        "name": "Villa Paradiso",
+        "place_type": "guesthouse",
+        "destination_slug": "batroun",
+        "location_precision": "area",
+        "address": "Batroun old city",
+        "source_url": "https://lebanonuntravelled.com/beautiful-guesthouses-in-batroun/",
+        "note": "A heritage mansion: guesthouse, venue and lounge."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.6581, 34.2553]
+      },
+      "properties": {
+        "id": "guide:old-town-guest-houses-batroun",
+        "name": "Old Town Guest Houses",
+        "place_type": "guesthouse",
+        "destination_slug": "batroun",
+        "location_precision": "area",
+        "address": "Batroun Old Town, near the old souks",
+        "source_url": "https://oldtownguesthouses.com/"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.73474, 34.36356]
+      },
+      "properties": {
+        "id": "guide:las-salinas-resort-enfeh",
+        "name": "Las Salinas Resort",
+        "place_type": "resort",
+        "destination_slug": "north-lebanon",
+        "location_precision": "exact",
+        "address": "Enfeh, north of Batroun",
+        "source_url": "https://lassalinas-lb.com/",
+        "note": "Point from OpenStreetMap via mapcarta.com/N6550911381; take it again on site before publishing."
+      }
+    }
+  ]
+}

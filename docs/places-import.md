@@ -88,6 +88,37 @@ A published lead's price is **on request** until someone records a published pri
   is copied, so nothing needs crediting. Wikidata and official-list leads can be published as they
   are.
 
+## Desk-research leads: Beirut and Batroun
+
+`services/api/app/seed/data/guide-leads-beirut-batroun.geojson` lists 16 real businesses found in
+guides and on their own sites: sweets shops, breakfast places, dinner restaurants, hotels and
+guesthouses, and a bowling alley. Each lead has its `source_url` and address. Load them with:
+
+```bash
+DATABASE_URL=... python scripts/import_leads.py app/seed/data/guide-leads-beirut-batroun.geojson --source guide --admin you@mshwar.example
+```
+
+`location_precision` says how far to trust the point. `exact` is the building. `area` is the
+neighbourhood or town centre, because no published point was found. For an `area` lead, take the
+point at the door with "use my location" before publishing. Restaurants and stays need that visit
+anyway: the planner uses them only once Mshwar has checked them.
+
+Cinemas and bowling alleys with a published point are in the curated catalogue instead
+(`app/seed/lebanon_catalogue.py`, kinds from migration 054), so the planner can offer them now:
+
+| Place                          | Where                     | Point from                                                          |
+| ------------------------------ | ------------------------- | ------------------------------------------------------------------- |
+| Cinemacity Beirut Souks        | Downtown Beirut           | 961guide / vymaps listing (33.9003, 35.5049)                        |
+| Grand Cinemas ABC Achrafieh    | ABC Achrafieh mall        | near-place listing of the mall (33.8886, 35.5201)                   |
+| Grand Cinemas ABC Verdun       | ABC Verdun mall           | near-place listing of the cinema (33.8844, 35.4843)                 |
+| VOX Cinemas City Centre Beirut | City Centre Beirut mall   | Google Maps place link of the mall (33.8620, 35.5296)               |
+| Grand Cinemas Las Salinas      | Las Salinas resort, Enfeh | Wikimapia "Las Salinas cinema theatre" (34.3639, 35.7358)           |
+| Las Salinas Bowling            | Las Salinas resort, Enfeh | plus code 9P7P+MC2 Anfeh in its Trip.com listing (34.3636, 35.7360) |
+
+Money changers are not listings. A changer is shown only after it registers in the changer portal
+with its Banque du Liban number, the number is matched against the BDL list, and the branch is checked
+(migration 042).
+
 ## Import record
 
 | Date | Source | File | Read | Created | Duplicates | Known | Invalid | By  |

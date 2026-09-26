@@ -89,12 +89,16 @@ SUGGESTED_VISIT_MINUTES = {
     "winery": 90,
     "waterfall": 90,
     "cave": 75,
+    "cinema": 150,  # one film, with the time to get in and out
+    "bowling": 90,
 }
 DEFAULT_VISIT_MINUTES = 120
 
 # Two coordinates closer than this (deg) for two different slugs are flagged as a
 # likely duplicate. ~0.0004 deg ~= 40 m.
 DUP_COORD_EPSILON = 0.0004
+# Different places in one building or resort, each with its own published point.
+SHARED_SITES = {frozenset({"grand-cinemas-las-salinas", "las-salinas-bowling"})}
 
 # Wikimedia Commons licences we accept are decided in _license_allowed().
 COMMONS_API = "https://commons.wikimedia.org/w/api.php"
@@ -147,6 +151,8 @@ def _duplicate_errors(coords: list[tuple[str, float, float]]) -> list[str]:
         s1, la1, ln1 = coords[i]
         for j in range(i + 1, len(coords)):
             s2, la2, ln2 = coords[j]
+            if frozenset({s1, s2}) in SHARED_SITES:
+                continue
             if abs(la1 - la2) < DUP_COORD_EPSILON and abs(ln1 - ln2) < DUP_COORD_EPSILON:
                 errors.append(f"{s1} and {s2}: coordinates are duplicates (<~40m apart)")
     return errors
@@ -182,7 +188,7 @@ def suggested_minutes(p: Place) -> int:
 
 def derive_setting(p: Place) -> str:
     tags = set(p.get("tags", []))
-    if "museum" in tags:
+    if tags & {"museum", "cinema", "bowling"}:
         return "indoor"
     outdoorish = {
         "archaeological-site",
@@ -776,6 +782,12 @@ def run_import(
                 (SAMPLE_EXPERIENCE_SLUGS,),
             )
             stats.samples_archived += res.rowcount or 0
+
+        # 8) Kinds of place from the tags, so the day planner can use the places (migration 053).
+        #    Only listings without a kind get one; a kind staff or an owner chose is kept.
+        has_backfill = conn.execute("SELECT to_regproc('app.backfill_catalogue_place_types') IS NOT NULL").fetchone()
+        if has_backfill and has_backfill[0]:
+            conn.execute("SELECT app.backfill_catalogue_place_types()")
 
         conn.commit()
         return stats
