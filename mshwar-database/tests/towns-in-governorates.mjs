@@ -54,6 +54,24 @@ export async function testTownsInGovernorates(db) {
   );
   assert.ok(terms.some((row) => row.slug === "test-governorate" && row.term === "Test Governorate"));
 
+  // A town left out of the list (059) is still a place: its listings and the planner still find it.
+  await db.query("UPDATE app.destinations SET listed = false WHERE id = $1", [listing.town_id]);
+  const listedNow = (await one(db, "SELECT app.public_catalogue_destinations() AS rows")).rows;
+  assert.ok(!listedNow.some((row) => row.slug === listing.town), "an unlisted town is not in the list");
+  assert.ok(
+    listedNow.some((row) => row.slug === "test-governorate"),
+    "its governorate still is",
+  );
+  const stillListed = await db.query(
+    "SELECT listing->>'slug' AS slug FROM app.public_catalogue_experiences(NULL, NULL, $1, NULL, NULL, NULL, NULL, NULL, 48, 0)",
+    [listing.town],
+  );
+  assert.ok(
+    stillListed.rows.some((row) => row.slug === listing.slug),
+    "its places are still listed",
+  );
+  await db.query("UPDATE app.destinations SET listed = true WHERE id = $1", [listing.town_id]);
+
   await db.query("UPDATE app.destinations SET parent_id = NULL, region = $2 WHERE id = $1", [
     listing.town_id,
     listing.town_region,

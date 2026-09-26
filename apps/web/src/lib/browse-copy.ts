@@ -137,7 +137,6 @@ export type BrowseKey =
   | "operations"
   | "heroKicker"
   | "heroCta"
-  | "heroCaption"
   | "lessSearchingNote"
   | "perfectDayKicker"
   | "goodDaysKicker"
@@ -320,7 +319,6 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     operations: "Operations",
     heroKicker: "Small country. Endless possibilities.",
     heroCta: "Let’s plan something good",
-    heroCaption: "Byblos, Mount Lebanon",
     lessSearchingNote: "Local places. Thoughtful plans. Your own pace.",
     perfectDayKicker: "Follow your curiosity",
     goodDaysKicker: "A little inspiration",
@@ -499,7 +497,6 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     operations: "العمليات",
     heroKicker: "بلد صغير. احتمالات لا تنتهي.",
     heroCta: "لنخطّط لشيء جميل",
-    heroCaption: "جبيل، جبل لبنان",
     lessSearchingNote: "أماكن محلية. خطط مدروسة. على مهلك.",
     perfectDayKicker: "اتبع فضولك",
     goodDaysKicker: "قليل من الإلهام",
@@ -679,7 +676,6 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     operations: "Opérations",
     heroKicker: "Petit pays. Possibilités infinies.",
     heroCta: "Préparons quelque chose de bien",
-    heroCaption: "Byblos, Mont-Liban",
     lessSearchingNote: "Des lieux locaux. Des plans réfléchis. À votre rythme.",
     perfectDayKicker: "Suivez votre curiosité",
     goodDaysKicker: "Un peu d’inspiration",

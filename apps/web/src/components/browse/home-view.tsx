@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, MapPin } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { ArrowLink } from "@/components/ui/arrow-link";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { CategoryPills } from "@/components/browse/category-pills";
@@ -65,13 +65,6 @@ export function HomeView({
               />
             </LocaleLink>
           </div>
-          <p className="absolute bottom-24 end-6 hidden items-center gap-1.5 text-xs text-white/80 md:flex">
-            <MapPin className="size-3.5" aria-hidden />
-            {copy.heroCaption}
-            <span className="ms-2 text-[0.6875rem] tabular-nums tracking-wide text-white/60" dir="ltr">
-              34.1230° N, 35.6519° E
-            </span>
-          </p>
         </div>
         <div className="shell-frame relative z-10 -mt-20 md:-mt-12">
           <div className="mx-auto max-w-5xl">

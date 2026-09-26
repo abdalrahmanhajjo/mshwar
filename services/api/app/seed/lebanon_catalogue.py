@@ -807,7 +807,7 @@ PLACES: list[Place] = [
         "summary_en": "A high plateau of cedar, fir and juniper forest above Fnaidek in the Akkar mountains, a popular summer hiking area.",
         "summary_ar": "هضبة مرتفعة من غابات الأرز والشوح والعرعر فوق فنيدق في جبال عكار، منطقة مشي مقصودة صيفاً.",
         "summary_fr": "Un haut plateau de forêts de cèdres, sapins et genévriers au-dessus de Fnaidek, dans les montagnes d'Akkar.",
-        "image_commons": None,
+        "image_commons": "Mount Qammouaa - Akkar 3.jpg",
         "source_url": "https://en.wikipedia.org/wiki/Akkar_District",
     },
     # ===================== BEQAA =====================
