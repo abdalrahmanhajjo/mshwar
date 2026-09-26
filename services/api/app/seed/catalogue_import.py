@@ -61,6 +61,7 @@ from app.seed.lebanon_catalogue import (
     LEBANON_BBOX,
     PLACES,
     TAG_LABELS,
+    TOWNS,
     Place,
 )
 
@@ -116,6 +117,13 @@ def _in_lebanon(lat: float, lng: float) -> bool:
     )
 
 
+def _town_errors(p: Place, where: str) -> list[str]:
+    town = p.get("town")
+    if town is None or TOWNS.get(town) == p.get("governorate"):
+        return []
+    return [f"{where}: town '{town}' is not a town of {p.get('governorate')}"]
+
+
 def _place_field_errors(p: Place, gov_slugs: set[str]) -> list[str]:
     """Field-level checks for a single place (no cross-record state)."""
     errors: list[str] = []
@@ -130,6 +138,7 @@ def _place_field_errors(p: Place, gov_slugs: set[str]) -> list[str]:
         errors.append(f"{where}: missing source_url (provenance)")
     if p.get("governorate") not in gov_slugs:
         errors.append(f"{where}: governorate '{p.get('governorate')}' is not one of the 8 muhafazat")
+    errors += _town_errors(p, where)
     if p.get("category") not in VALID_CATEGORIES:
         errors.append(f"{where}: category '{p.get('category')}' not in {sorted(VALID_CATEGORIES)}")
     if p.get("listing_kind") not in VALID_LISTING_KINDS:
@@ -754,10 +763,13 @@ def run_import(
             dest_ids[g["slug"]] = _upsert_destination(conn, g)
             stats.destinations += 1
 
+        town_ids = _link_towns(conn, dest_ids)
+
         # 3) Places → venue + experience + taxonomy + translations + media.
         for p in PLACES:
+            dest_id = town_ids.get(p.get("town") or "", dest_ids[p["governorate"]])
             try:
-                _import_place(conn, p, org_id, dest_ids[p["governorate"]], term_ids, do_images, stats, refresh_images)
+                _import_place(conn, p, org_id, dest_id, term_ids, do_images, stats, refresh_images)
             except Exception as exc:  # noqa: BLE001 - one bad place must not abort the run
                 conn.rollback()
                 raise SystemExit(f"Import failed on '{p.get('slug')}': {exc}") from exc
@@ -805,6 +817,19 @@ def _upsert_taxonomy(conn, kind: str, slug: str, label: str) -> uuid.UUID:
         (uuid.uuid4(), kind, slug, label),
     ).fetchone()
     return row[0]
+
+
+def _link_towns(conn, dest_ids: dict[str, uuid.UUID]) -> dict[str, uuid.UUID]:
+    """Towns (migration 013) hang off their governorate, which then shows their places too (migration 055)."""
+    town_ids: dict[str, uuid.UUID] = {}
+    for town, governorate in TOWNS.items():
+        found = conn.execute(
+            "UPDATE app.destinations SET parent_id = %s WHERE slug = %s RETURNING id",
+            (dest_ids[governorate], town),
+        ).fetchone()
+        if found:
+            town_ids[town] = found[0]
+    return town_ids
 
 
 def _upsert_destination(conn, g: dict[str, Any]) -> uuid.UUID:
