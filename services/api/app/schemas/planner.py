@@ -213,3 +213,9 @@ class ReplanResponse(BaseModel):
     diff: ReplanDiffOut | None = None
     bookings_mutated: bool
     booking_statuses: dict[str, str]
+
+
+class SaveTripIn(BaseModel):
+    """Save a plan to the traveller's trips. The name is optional; the plan keeps its own otherwise."""
+
+    name: str | None = Field(default=None, max_length=120)

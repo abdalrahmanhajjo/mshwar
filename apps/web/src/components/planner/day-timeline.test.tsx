@@ -163,6 +163,67 @@ describe("day timeline", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
+  it("shows each place like the itinerary: photo, its page, the map and why it is here", () => {
+    const steps = [
+      step({
+        order: 1,
+        role: "sight",
+        title: "Byblos Castle",
+        slug: "byblos-castle",
+        experience_id: "exp-castle",
+        trust: { level: "verified_organisation" },
+        lat: 34.12,
+        lng: 35.6464,
+      }),
+      step({
+        order: 2,
+        role: "meal",
+        title: "Patisserie Rim",
+        slug: "patisserie-rim-batroun",
+        experience_id: "exp-rim",
+        trust: { level: "sourced", source_url: "https://gobatroun.com/location/patisserie-rim/" },
+        travel_minutes: 25,
+      }),
+    ];
+    const plan = {
+      stops: [
+        {
+          id: "stop-castle",
+          experience_id: "exp-castle",
+          locked: false,
+          image: "https://images.example.org/castle.jpg",
+          image_alt: "Byblos Castle walls",
+          snapshot: { explanation: "A Crusader castle by the old harbour." },
+        },
+        { id: "stop-rim", experience_id: "exp-rim", locked: false, snapshot: {} },
+      ],
+    } as unknown as PlanDocument;
+    render(
+      <LocaleProvider>
+        <DayTimeline steps={steps} plan={plan} copy={copy} />
+      </LocaleProvider>,
+    );
+    const [castle, rim] = within(screen.getByRole("list", { name: "Day 1" })).getAllByRole("listitem");
+    expect(within(castle).getByRole("img", { name: "Byblos Castle walls" })).toBeInTheDocument();
+    expect(within(castle).getByRole("link", { name: "Byblos Castle" })).toHaveAttribute(
+      "href",
+      expect.stringContaining("/experiences/byblos-castle"),
+    );
+    expect(within(castle).getByRole("link", { name: "Place details" })).toBeInTheDocument();
+    expect(within(castle).getByRole("link", { name: "Open in Maps" })).toHaveAttribute(
+      "href",
+      "https://www.google.com/maps/search/?api=1&query=34.12,35.6464",
+    );
+    expect(castle).toHaveTextContent("Why this stop: A Crusader castle by the old harbour.");
+    expect(rim).toHaveTextContent("25 min drive");
+    expect(rim).toHaveTextContent("From a published source · not yet visited by Mshwar");
+    expect(within(rim).getByRole("link", { name: "Source" })).toHaveAttribute(
+      "href",
+      "https://gobatroun.com/location/patisserie-rim/",
+    );
+    expect(within(rim).queryByRole("link", { name: "Open in Maps" })).not.toBeInTheDocument();
+  });
+
   it("locks and unlocks a step's place", async () => {
     const calls: string[] = [];
     globalThis.fetch = vi.fn(async (url: string) => {
