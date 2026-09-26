@@ -88,6 +88,30 @@ A published lead's price is **on request** until someone records a published pri
   is copied, so nothing needs crediting. Wikidata and official-list leads can be published as they
   are.
 
+## Restaurants and stays from a published source
+
+Some restaurants and stays are in the curated catalogue (`app/seed/lebanon_catalogue.py`, kinds
+`restaurant` and `hotel`), each with its published point, contact and the page it came from. The
+planner uses them for meal and night steps, labelled "From a published source · not yet visited by
+Mshwar" with a link to the source (migration 056). A place Mshwar has visited always ranks first.
+
+| Place              | Kind             | Where                 | Point from                          |
+| ------------------ | ---------------- | --------------------- | ----------------------------------- |
+| Patisserie Rim     | sweets           | Batroun               | plus code 7M46+934 Batroun          |
+| Bistr'eau          | seafood          | Batroun               | plus code 7M45+R6 Batroun           |
+| Villa Paradiso     | guesthouse       | Batroun               | plus code 7M45+HFW Batroun          |
+| Las Salinas Resort | resort and hotel | Enfeh                 | plus code 9P7P+MC2 Anfeh (Trip.com) |
+| Phoenicia Beirut   | hotel            | Minet el Hosn, Beirut | Wikipedia, 33°54′2″N 35°29′40″E     |
+
+What is filled is only what a source published: phone, booking link, rooms, check-in and check-out.
+Prices stay "on request" and hours "not confirmed" until someone records them with their source
+(`docs/sourced-prices.md`). Visiting one of these places and recording the check (Admin → Venues)
+turns the label into "Visited by Mshwar".
+
+To add one, it needs a point from a cited source other than OpenStreetMap (see
+`docs/legal/odbl-review.md`), an address, and its source page. Without a point, add it as a lead
+instead (next section).
+
 ## Desk-research leads: Beirut and Batroun
 
 `services/api/app/seed/data/guide-leads-beirut-batroun.geojson` lists 16 real businesses found in

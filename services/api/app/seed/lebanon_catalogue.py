@@ -29,7 +29,7 @@ category model is introduced and the existing filters keep working.
 
 from __future__ import annotations
 
-from typing import TypedDict
+from typing import Any, TypedDict
 
 # Lebanon bounding box (a generous rectangle around the country's land borders).
 # Any coordinate outside this box is rejected by the importer before insert.
@@ -186,6 +186,11 @@ TAG_LABELS: dict[str, str] = {
     "bowling": "Bowling",
     "arcade": "Arcade",
     "mall": "Mall",
+    "sweets": "Sweets",
+    "seafood": "Seafood",
+    "guesthouse": "Guesthouse",
+    "hotel": "Hotel",
+    "resort": "Resort",
 }
 
 
@@ -206,6 +211,9 @@ class Place(TypedDict, total=False):
     summary_fr: str | None
     image_commons: str | None  # Wikimedia Commons "File:..." name (no "File:" prefix)
     source_url: str  # human-checkable reference for provenance
+    # Restaurants and stays only: what the place itself or a guide published (listing_details columns),
+    # e.g. reservation_phone, booking_url, stay_type, rooms, check_in. Never a guess.
+    details: dict[str, Any]
 
 
 # ---------------------------------------------------------------------------
@@ -1224,6 +1232,115 @@ PLACES: list[Place] = [
         "summary_fr": None,
         "image_commons": None,
         "source_url": "https://en.wikipedia.org/wiki/Duris,_Lebanon",
+    },
+    # ===================== RESTAURANTS AND STAYS =====================
+    # Real businesses with a published point, address and contact. Listed as "from a published source,
+    # not yet visited by Mshwar" until staff check them (migration 056); prices stay on request.
+    {
+        "slug": "patisserie-rim-batroun",
+        "name_en": "Patisserie Rim",
+        "name_ar": None,
+        "name_fr": None,
+        "governorate": "north-lebanon",
+        "town": "batroun",
+        "category": "city",
+        "listing_kind": "restaurant",
+        "tags": ["sweets"],
+        "lat": 34.2559,
+        "lng": 35.6602,
+        "summary_en": "A family sweets shop in the heart of Batroun, founded in 1935, known for homemade oriental sweets, Arabic ice cream and its Batroun lemonade.",
+        "summary_ar": None,
+        "summary_fr": None,
+        "image_commons": None,
+        "source_url": "https://gobatroun.com/location/patisserie-rim/",
+        "details": {"reservation_phone": "+961 6 740 121", "cuisines": ["lebanese sweets"]},
+    },
+    {
+        "slug": "bistreau-batroun",
+        "name_en": "Bistr'eau",
+        "name_ar": None,
+        "name_fr": None,
+        "governorate": "north-lebanon",
+        "town": "batroun",
+        "category": "coast",
+        "listing_kind": "restaurant",
+        "tags": ["seafood", "seaside"],
+        "lat": 34.2571,
+        "lng": 35.6581,
+        "summary_en": "A seafood bistro at L'Auberge de la Mer on Batroun's waterfront, serving fish, oysters and Lebanese mezze to share.",
+        "summary_ar": None,
+        "summary_fr": None,
+        "image_commons": None,
+        "source_url": "https://www.nogarlicnoonions.com/bistreau-happiness-guaranteed-seafood-cuisine-in-batroun/",
+        "details": {"reservation_phone": "+961 70 222 151", "cuisines": ["seafood", "lebanese"]},
+    },
+    {
+        "slug": "villa-paradiso-batroun",
+        "name_en": "Villa Paradiso",
+        "name_ar": None,
+        "name_fr": None,
+        "governorate": "north-lebanon",
+        "town": "batroun",
+        "category": "culture",
+        "listing_kind": "hotel",
+        "tags": ["guesthouse", "historic"],
+        "lat": 34.2565,
+        "lng": 35.6587,
+        "summary_en": "A Lebanese heritage mansion in Batroun's old town with a seven-room guesthouse, a restaurant and boutiques.",
+        "summary_ar": None,
+        "summary_fr": None,
+        "image_commons": None,
+        "source_url": "https://lebanonuntravelled.com/villa-paradiso-batroun/",
+        "details": {
+            "stay_type": "guesthouse",
+            "rooms": 7,
+            "reservation_phone": "+961 6 740 927",
+            "booking_url": "https://villaparadiso.bookingmystay.com/",
+        },
+    },
+    {
+        "slug": "las-salinas-resort",
+        "name_en": "Las Salinas Resort",
+        "name_ar": None,
+        "name_fr": None,
+        "governorate": "north-lebanon",
+        "category": "coast",
+        "listing_kind": "hotel",
+        "tags": ["resort", "hotel", "beach", "seaside"],
+        "lat": 34.3641,
+        "lng": 35.736,
+        "summary_en": "A seaside resort in Enfeh, north of Batroun, with rooms, pools, a beach, a bowling alley and a cinema.",
+        "summary_ar": None,
+        "summary_fr": None,
+        "image_commons": None,
+        "source_url": "https://lassalinas-lb.com/",
+        "details": {
+            "stay_type": "hotel",
+            "check_in": "14:00",
+            "check_out": "12:00",
+            "booking_url": "https://lassalinas-lb.com/",
+        },
+    },
+    {
+        "slug": "intercontinental-phoenicia-beirut",
+        "name_en": "InterContinental Phoenicia Beirut",
+        "name_ar": "فندق فينيسيا",
+        "name_fr": "InterContinental Phoenicia Beyrouth",
+        "governorate": "beirut",
+        "category": "city",
+        "listing_kind": "hotel",
+        "tags": ["hotel", "historic", "seaside"],
+        "lat": 33.9006,
+        "lng": 35.4944,
+        "summary_en": "A landmark hotel on Rue Fakhreddine near the Corniche and the Zaitunay Bay marina.",
+        "summary_ar": None,
+        "summary_fr": None,
+        "image_commons": None,
+        "source_url": "https://en.wikipedia.org/wiki/Phoenicia_Hotel_Beirut",
+        "details": {
+            "stay_type": "hotel",
+            "booking_url": "https://www.ihg.com/intercontinental/hotels/us/en/beirut/beyha/hoteldetail",
+        },
     },
     # ===================== NABATIEH =====================
     {

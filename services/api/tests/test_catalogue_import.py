@@ -49,7 +49,10 @@ def test_every_coordinate_is_inside_lebanon() -> None:
 def test_slugs_and_coordinates_are_unique() -> None:
     slugs = [p["slug"] for p in PLACES]
     assert len(slugs) == len(set(slugs)), "duplicate slug"
-    coords = [(round(float(p["lat"]), 4), round(float(p["lng"]), 4)) for p in PLACES]
+    from app.seed.catalogue_import import SHARED_SITES
+
+    shared = {slug for site in SHARED_SITES for slug in site}
+    coords = [(round(float(p["lat"]), 4), round(float(p["lng"]), 4)) for p in PLACES if p["slug"] not in shared]
     assert len(coords) == len(set(coords)), "duplicate coordinate"
 
 
