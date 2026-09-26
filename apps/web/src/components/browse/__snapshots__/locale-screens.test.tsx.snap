@@ -18,8 +18,8 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
           fetchpriority="high"
           loading="eager"
           sizes="100vw"
-          src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80"
-          srcset="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80 2000w"
+          src="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=2000&q=80"
+          srcset="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=2000&q=80 2000w"
         />
         <div
           class="photo-scrim-side absolute inset-0"
@@ -1924,8 +1924,8 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
           fetchpriority="high"
           loading="eager"
           sizes="100vw"
-          src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80"
-          srcset="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80 2000w"
+          src="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=2000&q=80"
+          srcset="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=2000&q=80 2000w"
         />
         <div
           class="photo-scrim-side absolute inset-0"
@@ -3830,8 +3830,8 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
           fetchpriority="high"
           loading="eager"
           sizes="100vw"
-          src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80"
-          srcset="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80 2000w"
+          src="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=2000&q=80"
+          srcset="https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=480&q=80 480w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=800&q=80 800w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1200&q=80 1200w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=1600&q=80 1600w, https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=2000&q=80 2000w"
         />
         <div
           class="photo-scrim-side absolute inset-0"
