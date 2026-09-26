@@ -22,7 +22,7 @@ from app.seed.catalogue_import import (
     suggested_minutes,
     validate_dataset,
 )
-from app.seed.lebanon_catalogue import GOVERNORATES, LEBANON_BBOX, PLACES, TAG_LABELS
+from app.seed.lebanon_catalogue import GOVERNORATES, LEBANON_BBOX, PLACES, TAG_LABELS, Place
 
 
 def test_dataset_is_valid() -> None:
@@ -120,3 +120,13 @@ def test_collections_reference_real_places() -> None:
         assert c["slugs"], f"{c['slug']} has no experiences"
         for s in c["slugs"]:
             assert s in place_slugs, f"{c['slug']} -> unknown place {s}"
+
+
+def test_every_town_has_real_places_of_its_governorate() -> None:
+    from app.seed.catalogue_import import _town_errors
+    from app.seed.lebanon_catalogue import TOWNS
+
+    for town in TOWNS:
+        assert sum(1 for p in PLACES if p.get("town") == town) >= 3, f"{town} has too few places"
+    wrong: Place = {"slug": "x", "governorate": "beirut", "town": "byblos"}
+    assert _town_errors(wrong, "x") == ["x: town 'byblos' is not a town of beirut"]
