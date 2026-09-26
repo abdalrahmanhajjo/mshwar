@@ -67,6 +67,14 @@ async def retrieve_changers(db: AsyncSession, destination_slug: str) -> list[dic
     return [item for item in _json_items(row) if isinstance(item, dict)]
 
 
+async def retrieve_destination_point(db: AsyncSession, destination_slug: str) -> tuple[float, float] | None:
+    """The published point of a destination (migration 054): where to look when a day found nothing there."""
+    row = (await db.execute(text("SELECT app.planner_destination_point(:slug)"), {"slug": destination_slug})).scalar()
+    if not isinstance(row, dict) or row.get("lat") is None or row.get("lng") is None:
+        return None
+    return float(row["lat"]), float(row["lng"])
+
+
 async def retrieve_driver_rates(db: AsyncSession, destination_slug: str, party_size: int) -> list[dict[str, Any]]:
     """Published day rates of the verified drivers a day request would reach (migration 046)."""
     row = (
