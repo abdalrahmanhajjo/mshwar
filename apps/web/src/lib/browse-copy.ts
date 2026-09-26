@@ -2,6 +2,7 @@ import type { Locale } from "@/lib/locale";
 import { useLocale } from "@/components/shell/locale-provider";
 
 export type BrowseKey =
+  | "areaPhoto"
   | "heroTitle"
   | "heroBody"
   | "where"
@@ -180,6 +181,7 @@ export type BrowseKey =
 
 export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
   en: {
+    areaPhoto: "Photo of the area",
     dataSource: "Name and location from",
     heroTitle: "Make room for a little mshwar.",
     heroBody: "From the mountain air to the sea, find your next day at your own pace.",
@@ -360,6 +362,7 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     personLabel: "person",
   },
   ar: {
+    areaPhoto: "صورة للمنطقة",
     dataSource: "الاسم والموقع من",
     heroTitle: "اترك مساحة لمشوار صغير.",
     heroBody: "من هواء الجبل إلى البحر، ابحث عن يومك القادم على مهلك.",
@@ -538,6 +541,7 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     personLabel: "شخص",
   },
   fr: {
+    areaPhoto: "Photo du secteur",
     dataSource: "Nom et emplacement :",
     heroTitle: "Faites une place à un petit mshwar.",
     heroBody: "De l’air de la montagne à la mer, trouvez votre prochaine journée à votre rythme.",

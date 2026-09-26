@@ -537,6 +537,7 @@ export function Timeline({
           const listing = slug ? getExperience(slug) : undefined;
           const imageSrc = stop.image || listing?.image || "";
           const imageAlt = stop.image_alt || listing?.imageAlt || stop.snapshot.title || stop.title || "";
+          const areaLabel = stop.image && stop.image_kind === "area" ? copy.areaPhoto : undefined;
           const detailHref = slug ? `/experiences/${slug}` : undefined;
           return (
             <li key={stop.id} className="grid gap-3">
@@ -565,10 +566,10 @@ export function Timeline({
                     {imageSrc ? (
                       detailHref ? (
                         <LocaleLink href={detailHref} target="_blank" rel="noopener" aria-label={imageAlt}>
-                          <CatalogImage src={imageSrc} alt={imageAlt} />
+                          <CatalogImage src={imageSrc} alt={imageAlt} areaLabel={areaLabel} />
                         </LocaleLink>
                       ) : (
-                        <CatalogImage src={imageSrc} alt={imageAlt} />
+                        <CatalogImage src={imageSrc} alt={imageAlt} areaLabel={areaLabel} />
                       )
                     ) : (
                       <div className="grid h-full place-items-center text-text-muted">

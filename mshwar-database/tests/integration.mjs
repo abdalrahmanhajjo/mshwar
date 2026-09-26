@@ -19,6 +19,7 @@ import { testAdminTwoStep } from "./admin-two-step.mjs";
 import { testCatalogueLeisureTags, testCataloguePlaceTypes } from "./catalogue-place-types.mjs";
 import { testTownsInGovernorates } from "./towns-in-governorates.mjs";
 import { testSourcedRestaurants } from "./sourced-restaurants.mjs";
+import { testPlaceImages } from "./place-images.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const db = new PGlite({ extensions: { postgis, vector, btree_gist, pg_trgm } });
 const report = [];
@@ -97,6 +98,9 @@ try {
   );
   await good("restaurants and stays from a published source are planned, marked as sourced", () =>
     testSourcedRestaurants(db),
+  );
+  await good("every place has a picture: its own photo, else its town's, marked as the area", () =>
+    testPlaceImages(db),
   );
   await sql("SELECT set_config('app.user_id',$1,false)", [alice]);
   await good("all app tables have forced RLS", async () =>

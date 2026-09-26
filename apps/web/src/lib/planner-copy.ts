@@ -2,6 +2,7 @@ import type { Locale } from "@/lib/locale";
 import { useLocale } from "@/components/shell/locale-provider";
 
 export type PlannerKey =
+  | "areaPhoto"
   | "startTitle"
   | "startHint"
   | "searchPlace"
@@ -229,6 +230,7 @@ export type PlannerKey =
   | "role_service"
   | "role_exchange"
   | "status_empty"
+  | "dayNothingFound"
   | "status_skipped"
   | "askedFor"
   | "reason_no_trusted_match"
@@ -288,6 +290,7 @@ export type PlannerKey =
 
 export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
   en: {
+    areaPhoto: "Photo of the area",
     understoodMaybe: "Did you mean:",
     startTitle: "Where should this plan start?",
     startHint: "Search, drop a pin, or type a place. Device location is optional and never the only way in.",
@@ -511,8 +514,8 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     driverSent: "Sent. Fixed prices from verified drivers will appear in Rides.",
     priceSource: "Published by {source} · checked {date}",
     dayTitle: "Your day, step by step",
-    dayBody:
-      "Every step you asked for, in your order. Places come only from trusted listings; a step we could not fill says why.",
+    dayBody: "Your day, in your order. Places come only from trusted listings.",
+    dayNothingFound: "We could not find trusted places for this day yet. Try another destination or change the steps.",
     role_meal: "Meal",
     role_sight: "Sight",
     role_activity: "Activity",
@@ -577,6 +580,7 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     meal_snack: "A bite",
   },
   ar: {
+    areaPhoto: "صورة للمنطقة",
     understoodMaybe: "هل تقصد:",
     startTitle: "من أين تبدأ هذه الخطة؟",
     startHint: "ابحث أو أسقط دبوساً أو اكتب مكاناً. موقع الجهاز اختياري وليس الطريق الوحيد.",
@@ -800,7 +804,8 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     driverSent: "تم الإرسال. ستظهر أسعار السائقين الموثّقين الثابتة في قسم الرحلات.",
     priceSource: "منشور من {source} · جرى التحقّق في {date}",
     dayTitle: "يومك خطوة بخطوة",
-    dayBody: "كل خطوة طلبتها، بترتيبك. الأماكن من منشورات موثوقة فقط؛ والخطوة التي لم نستطع ملأها تذكر السبب.",
+    dayBody: "يومك، بترتيبك. الأماكن من منشورات موثوقة فقط.",
+    dayNothingFound: "لم نجد بعد أماكن موثوقة لهذا اليوم. جرّب وجهة أخرى أو غيّر الخطوات.",
     role_meal: "وجبة",
     role_sight: "معلم",
     role_activity: "نشاط",
@@ -865,6 +870,7 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     meal_snack: "لقمة سريعة",
   },
   fr: {
+    areaPhoto: "Photo du secteur",
     understoodMaybe: "Vouliez-vous dire :",
     startTitle: "D’où part ce plan ?",
     startHint: "Recherchez, déposez une épingle ou saisissez un lieu. La géolocalisation est facultative.",
@@ -1097,8 +1103,9 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     driverSent: "Envoyé. Les prix fixes des chauffeurs vérifiés apparaîtront dans Trajets.",
     priceSource: "Publié par {source} · vérifié le {date}",
     dayTitle: "Votre journée, étape par étape",
-    dayBody:
-      "Chaque étape demandée, dans votre ordre. Les lieux viennent uniquement de fiches vérifiées ; une étape non remplie dit pourquoi.",
+    dayBody: "Votre journée, dans votre ordre. Les lieux viennent uniquement de fiches vérifiées.",
+    dayNothingFound:
+      "Nous n’avons pas encore trouvé de lieux vérifiés pour cette journée. Essayez une autre destination ou changez les étapes.",
     role_meal: "Repas",
     role_sight: "Visite",
     role_activity: "Activité",
