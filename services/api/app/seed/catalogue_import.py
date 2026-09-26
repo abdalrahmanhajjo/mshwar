@@ -505,6 +505,12 @@ def resolve_place_image(p: Place, *, radius: int = 3000) -> ResolvedImage | None
     it matches the place and is usually its most attractive view. Only when the
     article has no usable image do we fall back to the newest licence-clean photo
     geotagged at the coordinates."""
+    named = p.get("image_commons")
+    if named:
+        # A Commons photo chosen for this place wins over the article's lead image (often a map).
+        resolved = resolve_commons_image(named)
+        if resolved is not None:
+            return resolved
     title = _wiki_title_from_url(p.get("source_url", ""))
     if title:
         lead = wikipedia_lead_image(title)
@@ -655,7 +661,7 @@ DESTINATION_COVERS: dict[str, str] = {
     "baalbek-hermel": "baalbek-temples",
     "south-lebanon": "sidon-sea-castle",
     "nabatieh": "beaufort-castle",
-    # akkar's places have no free image yet → no cover (left as-is), by omission.
+    "akkar": "qammoua-forest",
 }
 
 # Real curated collections. Each cover reuses a representative place's photo; each

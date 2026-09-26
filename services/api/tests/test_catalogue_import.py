@@ -8,6 +8,8 @@ gate only accepts reusable licences.
 
 from __future__ import annotations
 
+import pytest
+
 from app.seed.catalogue_import import (
     COLLECTIONS,
     DESTINATION_COVERS,
@@ -133,3 +135,20 @@ def test_every_town_has_real_places_of_its_governorate() -> None:
         assert sum(1 for p in PLACES if p.get("town") == town) >= 3, f"{town} has too few places"
     wrong: Place = {"slug": "x", "governorate": "beirut", "town": "byblos"}
     assert _town_errors(wrong, "x") == ["x: town 'byblos' is not a town of beirut"]
+
+
+def test_a_named_commons_photo_is_used_before_the_article_image(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.seed.catalogue_import as importer
+
+    asked: list[str] = []
+    photo = object()
+    monkeypatch.setattr(importer, "resolve_commons_image", lambda name, **_: asked.append(name) or photo)
+    monkeypatch.setattr(importer, "wikipedia_lead_image", lambda *_a, **_k: pytest.fail("article not needed"))
+    place: Place = {
+        "slug": "x",
+        "image_commons": "Mount Qammouaa - Akkar 3.jpg",
+        "source_url": "https://en.wikipedia.org/wiki/X",
+    }
+    assert importer.resolve_place_image(place) is photo
+    assert asked == ["Mount Qammouaa - Akkar 3.jpg"]
+    assert importer.DESTINATION_COVERS["akkar"] == "qammoua-forest", "Akkar has a cover photo"
