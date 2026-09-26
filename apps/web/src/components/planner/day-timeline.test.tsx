@@ -120,14 +120,14 @@ afterEach(() => {
 });
 
 describe("day timeline", () => {
-  it("shows every step asked for, in order, with trust, warnings, prices and actions", async () => {
+  it("shows the filled steps in order, with trust, warnings, prices and actions, and leaves out the rest", async () => {
     const { container } = render(
       <LocaleProvider>
         <DayTimeline steps={STEPS} plan={PLAN} copy={copy} />
       </LocaleProvider>,
     );
     const items = within(screen.getByRole("list", { name: "Day 1" })).getAllByRole("listitem");
-    expect(items).toHaveLength(5);
+    expect(items).toHaveLength(4);
 
     expect(items[0]).toHaveTextContent("Batroun branch");
     expect(items[0]).toHaveTextContent("Registered money changer");
@@ -144,19 +144,19 @@ describe("day timeline", () => {
       "https://example.org/reserve",
     );
 
-    expect(items[2]).toHaveTextContent("Not filled");
-    expect(items[2]).toHaveTextContent("No trusted place of this kind here yet.");
-    expect(items[2]).toHaveTextContent("You asked for: play bowling");
+    expect(screen.queryByText("Not filled")).not.toBeInTheDocument();
+    expect(screen.queryByText(/play bowling/)).not.toBeInTheDocument();
+    items.forEach((item, index) => expect(within(item).getByText(`0${index + 1}`)).toBeInTheDocument());
 
-    expect(items[3]).toHaveTextContent("Check showtimes");
-    expect(items[3]).toHaveTextContent("Price on request");
-    expect(items[3]).toHaveTextContent("90 min free before");
-    expect(items[3]).not.toHaveTextContent("Price not fixed");
+    expect(items[2]).toHaveTextContent("Check showtimes");
+    expect(items[2]).toHaveTextContent("Price on request");
+    expect(items[2]).toHaveTextContent("90 min free before");
+    expect(items[2]).not.toHaveTextContent("Price not fixed");
 
-    expect(items[4]).toHaveTextContent("Licence checked");
-    expect(items[4]).toHaveTextContent("from $90.00");
-    expect(items[4]).toHaveTextContent("Check-in from 14:00");
-    expect(within(items[4]).getByRole("link", { name: "Book the stay" })).toHaveAttribute(
+    expect(items[3]).toHaveTextContent("Licence checked");
+    expect(items[3]).toHaveTextContent("from $90.00");
+    expect(items[3]).toHaveTextContent("Check-in from 14:00");
+    expect(within(items[3]).getByRole("link", { name: "Book the stay" })).toHaveAttribute(
       "href",
       "https://example.org/book",
     );
@@ -195,7 +195,15 @@ describe("day timeline", () => {
           image_alt: "Byblos Castle walls",
           snapshot: { explanation: "A Crusader castle by the old harbour." },
         },
-        { id: "stop-rim", experience_id: "exp-rim", locked: false, snapshot: {} },
+        {
+          id: "stop-rim",
+          experience_id: "exp-rim",
+          locked: false,
+          image: "https://images.example.org/batroun.jpg",
+          image_alt: "Batroun",
+          image_kind: "area",
+          snapshot: {},
+        },
       ],
     } as unknown as PlanDocument;
     render(
@@ -222,6 +230,20 @@ describe("day timeline", () => {
       "https://gobatroun.com/location/patisserie-rim/",
     );
     expect(within(rim).queryByRole("link", { name: "Open in Maps" })).not.toBeInTheDocument();
+    expect(within(rim).getByRole("img", { name: "Batroun" })).toBeInTheDocument();
+    expect(rim).toHaveTextContent("Photo of the area");
+    expect(castle).not.toHaveTextContent("Photo of the area");
+  });
+
+  it("says so when no step could be filled", () => {
+    render(
+      <LocaleProvider>
+        <DayTimeline steps={STEPS.filter((item) => item.status === "empty")} plan={null} copy={copy} />
+      </LocaleProvider>,
+    );
+    expect(screen.getByText(copy.dayNothingFound)).toBeInTheDocument();
+    expect(screen.queryByRole("list")).not.toBeInTheDocument();
+    expect(screen.queryByText("Not filled")).not.toBeInTheDocument();
   });
 
   it("locks and unlocks a step's place", async () => {

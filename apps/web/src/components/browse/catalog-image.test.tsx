@@ -27,6 +27,18 @@ describe("CatalogImage", () => {
     expect(container.querySelector("img")).toBeNull();
   });
 
+  it("labels a photo of the town shown while the place has none of its own", () => {
+    render(<CatalogImage src="https://images.unsplash.com/batroun.jpg" alt="Batroun" areaLabel="Photo of the area" />);
+    expect(screen.getByRole("img", { name: "Batroun" })).toBeInTheDocument();
+    expect(screen.getByText("Photo of the area")).toBeInTheDocument();
+  });
+
+  it("shows a picture placeholder, never a blank box, when there is no photo at all", () => {
+    render(<CatalogImage src="" alt="Patisserie Rim" />);
+    const placeholder = screen.getByRole("img", { name: "Patisserie Rim" });
+    expect(placeholder.querySelector("svg")).not.toBeNull();
+  });
+
   it("lazy-loads by default and eager-loads priority images", () => {
     const { rerender } = render(<CatalogImage src="https://images.unsplash.com/p?w=1600" alt="Harbour" />);
     expect(screen.getByRole("img", { name: "Harbour" })).toHaveAttribute("loading", "lazy");

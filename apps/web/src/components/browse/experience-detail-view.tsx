@@ -144,6 +144,7 @@ export function ExperienceDetailView({
             <CatalogImage
               src={gallery[0] ?? experience.image}
               alt={experience.imageAlt}
+              areaLabel={!gallery.length && experience.imageIsArea ? copy.areaPhoto : undefined}
               className="absolute inset-0"
               priority
               sizes="(min-width: 1024px) 62vw, 100vw"

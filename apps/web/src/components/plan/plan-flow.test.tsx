@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { PlanFlow } from "./plan-flow";
 import { LocaleProvider } from "@/components/shell/locale-provider";
@@ -137,7 +137,7 @@ function jsonResponse(body: unknown, status = 200) {
 describe("plan flow generation results", () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it("shows every returned day step and its reason even when no plan could be saved", async () => {
+  it("says no trusted places were found, without listing unfilled steps, when no plan could be made", async () => {
     const requested: [DayStepOutcome["role"], string][] = [
       ["exchange", "change currency"],
       ["meal", "breakfast at a sweets place"],
@@ -176,13 +176,9 @@ describe("plan flow generation results", () => {
     );
     openAiDetails();
     fireEvent.click(screen.getByRole("button", { name: plannerCopy.en.flowGenerate }));
-    const timeline = await screen.findByRole("list", { name: "Day 1" });
-    const steps = within(timeline).getAllByRole("listitem");
-    expect(steps).toHaveLength(7);
-    requested.forEach(([, text], index) => {
-      expect(steps[index]).toHaveTextContent(text);
-      expect(steps[index]).toHaveTextContent(plannerCopy.en.reason_no_trusted_match);
-    });
+    expect(await screen.findByText(plannerCopy.en.dayNothingFound)).toBeInTheDocument();
+    expect(screen.queryByRole("list", { name: "Day 1" })).not.toBeInTheDocument();
+    expect(screen.queryByText(plannerCopy.en.status_empty)).not.toBeInTheDocument();
     expect(screen.queryByText(plannerCopy.en.flowReviewHint)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: plannerCopy.en.lock })).not.toBeInTheDocument();
   });
