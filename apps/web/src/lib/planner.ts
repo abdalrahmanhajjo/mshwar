@@ -388,6 +388,9 @@ export type DayStepOutcome = {
   named_place: string | null;
   price: PriceLine | null;
   actions: Record<string, string>;
+  /** Where the step happens. */
+  lat?: number | null;
+  lng?: number | null;
 };
 
 /** Every step of a day told step by step: from the live session, or from what the sealed version kept. */
@@ -658,6 +661,21 @@ export function refinePlannerSession(sessionId: string, text: string, apply: boo
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text, apply }),
+  });
+}
+
+export type TripSaved = { trip_id: string; saved: boolean; saved_at: string | null };
+
+/** Whether a plan is kept in "My trips". New plans are not, until the traveller saves and confirms. */
+export function fetchTripSaved(tripId: string) {
+  return readJson<TripSaved>(`/api/v1/planner/trips/${tripId}/saved`);
+}
+
+export function saveTrip(tripId: string, name?: string) {
+  return readJson<TripSaved>(`/api/v1/planner/trips/${tripId}/save`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(name ? { name } : {}),
   });
 }
 

@@ -33,6 +33,7 @@ import { DayBuilder } from "@/components/plan/day-builder";
 import { useDayCheck } from "@/components/plan/day-panel";
 import { DriverRequestPanel } from "@/components/planner/day-cost";
 import { DayTimeline } from "@/components/planner/day-timeline";
+import { SavePlan } from "@/components/planner/save-plan";
 import { UnderstoodSteps } from "@/components/planner/understood-steps";
 import { CostPanel, ReplacePanel, Timeline, plannerErrorMessage } from "@/components/planner/planner-view";
 import {
@@ -904,6 +905,8 @@ export function PlanFlow({
               </CardContent>
             </Card>
           ) : null}
+
+          {plan?.trip_id ? <SavePlan tripId={plan.trip_id} title={plan.trip_title} copy={copy} /> : null}
 
           {daySteps.length ? (
             <DayTimeline

@@ -4,7 +4,8 @@ import * as React from "react";
 import {
   Banknote,
   BedDouble,
-  CircleSlash,
+  Car,
+  Clock,
   Landmark,
   Lock,
   LockOpen,
@@ -17,7 +18,9 @@ import {
   Utensils,
   type LucideIcon,
 } from "lucide-react";
+import { CatalogImage } from "@/components/browse/catalog-image";
 import { lineAmount } from "@/components/planner/day-cost";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { useLocale } from "@/components/shell/locale-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -228,8 +231,8 @@ export function DayTimeline({
       {days.map(([day, daySteps]) => (
         <div key={day} className="grid gap-3">
           {days.length > 1 ? <h4 className="font-semibold">{interpolate(copy.tripDay, { day })}</h4> : null}
-          <ol className="grid gap-3" aria-label={interpolate(copy.tripDay, { day })}>
-            {daySteps.map((step) => {
+          <ol className="relative grid gap-4" aria-label={interpolate(copy.tripDay, { day })}>
+            {daySteps.map((step, index) => {
               const Icon = ROLE_ICON[step.role] ?? MapPin;
               const gap = step.status === "empty" || step.status === "skipped";
               const name =
@@ -237,95 +240,172 @@ export function DayTimeline({
               const trust = gap ? null : trustLabel(step, copy);
               const stop = step.status === "filled" ? stopFor(step) : undefined;
               const flags = step.flags.filter((flag) => SHOWN_FLAGS.has(flag));
+              const detailHref = step.status === "filled" && step.slug ? `/experiences/${step.slug}` : undefined;
+              const imageSrc = stop?.image ?? "";
+              const imageAlt = stop?.image_alt || name || "";
+              const why = stop?.snapshot?.explanation;
+              const mapHref =
+                step.lat != null && step.lng != null
+                  ? `https://www.google.com/maps/search/?api=1&query=${step.lat},${step.lng}`
+                  : undefined;
               return (
-                <li
-                  key={`${day}-${step.order}`}
-                  className={
-                    gap
-                      ? "grid gap-2 rounded-card border border-dashed border-border-subtle p-4"
-                      : "grid gap-2 rounded-card border border-border-subtle bg-surface-raised p-4 shadow-sm"
-                  }
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
-                      <span className="mt-0.5 grid size-8 place-items-center rounded-full bg-brand-subtle" aria-hidden>
-                        {gap ? <CircleSlash className="size-4" /> : <Icon className="size-4" />}
+                <li key={`${day}-${step.order}`} className="grid gap-3">
+                  {step.travel_minutes ? (
+                    <p className="inline-flex items-center gap-2 ps-14 text-xs font-medium uppercase tracking-[0.14em] text-text-muted">
+                      <Car className="size-3.5" aria-hidden />
+                      {interpolate(copy.driveMinutes, { minutes: step.travel_minutes })}
+                    </p>
+                  ) : null}
+                  <div className="grid grid-cols-[2.5rem_1fr] gap-4">
+                    <div className="flex flex-col items-center">
+                      <span className="grid size-10 place-items-center rounded-full border border-border-subtle bg-surface-raised text-sm font-medium tabular-nums">
+                        {String(step.order).padStart(2, "0")}
                       </span>
-                      <div className="grid gap-0.5">
-                        <p className="text-sm text-text-muted">
-                          {step.order}. {copy[`role_${step.role}` as PlannerKey]}
-                          {step.starts_at ? ` · ${clock(step.starts_at, locale)}` : ""}
-                          {step.ends_at && step.ends_at !== step.starts_at ? ` – ${clock(step.ends_at, locale)}` : ""}
-                        </p>
-                        <h4 className="font-medium">
-                          {gap ? (step.status === "skipped" ? copy.status_skipped : copy.status_empty) : name}
-                        </h4>
-                      </div>
-                    </div>
-                    {!gap && step.price ? (
-                      <span className="text-sm font-medium tabular-nums">{lineAmount(step.price, copy)}</span>
-                    ) : null}
-                  </div>
-
-                  {gap ? (
-                    <div className="grid gap-1 text-sm text-text-muted">
-                      {step.reason ? <p>{copy[`reason_${step.reason}` as PlannerKey] ?? step.reason}</p> : null}
-                      {step.text ? <p>{interpolate(copy.askedFor, { text: step.text })}</p> : null}
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex flex-wrap items-center gap-2 text-sm text-text-muted">
-                        {trust ? (
-                          <Badge
-                            variant={step.trust?.level === "sourced" ? "warning" : "success"}
-                            className="inline-flex items-center gap-1"
-                          >
-                            {step.trust?.level === "sourced" ? null : <ShieldCheck className="size-3" aria-hidden />}
-                            {trust}
-                          </Badge>
-                        ) : null}
-                        {step.trust?.source_url ? (
-                          <a
-                            href={step.trust.source_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="underline underline-offset-2"
-                          >
-                            {copy.sourceLink}
-                          </a>
-                        ) : null}
-                        {flags.map((flag) => (
-                          <Badge key={flag} variant="warning">
-                            {copy[`flag_${flag}` as PlannerKey]}
-                          </Badge>
-                        ))}
-                        {step.travel_minutes ? (
-                          <span>{interpolate(copy.driveMinutes, { minutes: step.travel_minutes })}</span>
-                        ) : null}
-                        {step.wait_minutes >= 45 ? (
-                          <span>{interpolate(copy.freeMinutes, { minutes: step.wait_minutes })}</span>
-                        ) : null}
-                      </div>
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <StepActions step={step} copy={copy} />
-                        {stop && sessionId && onLock ? (
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            aria-pressed={stop.locked}
-                            onClick={() => void onLock(() => lockPlannerStop(sessionId, stop.id, !stop.locked))}
-                          >
-                            {stop.locked ? <Lock aria-hidden /> : <LockOpen aria-hidden />}
-                            {stop.locked ? copy.unlock : copy.lock}
-                          </Button>
-                        ) : null}
-                      </div>
-                      {step.status === "filled" && sessionId && onLock ? (
-                        <StepOptions step={step} sessionId={sessionId} copy={copy} onChoose={onLock} />
+                      {index < daySteps.length - 1 ? (
+                        <span className="mt-2 w-px flex-1 bg-border-subtle" aria-hidden />
                       ) : null}
-                    </>
-                  )}
+                    </div>
+                    {gap ? (
+                      <div className="grid gap-2 rounded-card border border-dashed border-border-subtle p-4">
+                        <p className="text-sm text-text-muted">{copy[`role_${step.role}` as PlannerKey]}</p>
+                        <h4 className="font-medium">
+                          {step.status === "skipped" ? copy.status_skipped : copy.status_empty}
+                        </h4>
+                        <div className="grid gap-1 text-sm text-text-muted">
+                          {step.reason ? <p>{copy[`reason_${step.reason}` as PlannerKey] ?? step.reason}</p> : null}
+                          {step.text ? <p>{interpolate(copy.askedFor, { text: step.text })}</p> : null}
+                        </div>
+                      </div>
+                    ) : (
+                      <article
+                        className={
+                          stop?.locked
+                            ? "grid gap-4 rounded-card border border-brand/50 bg-surface-raised p-4 shadow-sm sm:grid-cols-[7rem_1fr] md:p-5"
+                            : "grid gap-4 rounded-card border border-border-subtle bg-surface-raised p-4 shadow-sm sm:grid-cols-[7rem_1fr] md:p-5"
+                        }
+                      >
+                        <div className="aspect-[4/3] overflow-hidden rounded-[0.9rem] bg-brand-subtle sm:aspect-square">
+                          {imageSrc && detailHref ? (
+                            <LocaleLink href={detailHref} target="_blank" rel="noopener" aria-label={imageAlt}>
+                              <CatalogImage src={imageSrc} alt={imageAlt} />
+                            </LocaleLink>
+                          ) : imageSrc ? (
+                            <CatalogImage src={imageSrc} alt={imageAlt} />
+                          ) : (
+                            <div className="grid h-full place-items-center text-text-muted">
+                              <Icon className="size-6" aria-hidden />
+                            </div>
+                          )}
+                        </div>
+                        <div className="grid min-w-0 gap-2">
+                          <div className="flex flex-wrap items-center gap-2 text-sm text-text-muted">
+                            {trust ? (
+                              <Badge
+                                variant={step.trust?.level === "sourced" ? "warning" : "success"}
+                                className="inline-flex items-center gap-1"
+                              >
+                                {step.trust?.level === "sourced" ? null : (
+                                  <ShieldCheck className="size-3" aria-hidden />
+                                )}
+                                {trust}
+                              </Badge>
+                            ) : null}
+                            {step.trust?.source_url ? (
+                              <a
+                                href={step.trust.source_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline underline-offset-2"
+                              >
+                                {copy.sourceLink}
+                              </a>
+                            ) : null}
+                            {flags.map((flag) => (
+                              <Badge key={flag} variant="warning">
+                                {copy[`flag_${flag}` as PlannerKey]}
+                              </Badge>
+                            ))}
+                          </div>
+                          <h4 className="title-card text-[1.3rem]">
+                            {detailHref ? (
+                              <LocaleLink
+                                href={detailHref}
+                                target="_blank"
+                                rel="noopener"
+                                className="transition-colors hover:text-brand"
+                              >
+                                {name}
+                              </LocaleLink>
+                            ) : (
+                              name
+                            )}
+                          </h4>
+                          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-text-muted">
+                            <span className="inline-flex items-center gap-1.5">
+                              <Clock className="size-3.5" aria-hidden />
+                              {copy[`role_${step.role}` as PlannerKey]}
+                              {step.starts_at ? ` · ${clock(step.starts_at, locale)}` : ""}
+                              {step.ends_at && step.ends_at !== step.starts_at
+                                ? ` – ${clock(step.ends_at, locale)}`
+                                : ""}
+                            </span>
+                            {step.price ? (
+                              <span className="font-medium text-text tabular-nums">{lineAmount(step.price, copy)}</span>
+                            ) : null}
+                            {step.wait_minutes >= 45 ? (
+                              <span>{interpolate(copy.freeMinutes, { minutes: step.wait_minutes })}</span>
+                            ) : null}
+                          </p>
+                          {why ? (
+                            <p className="text-sm text-text-muted">
+                              <span className="font-medium text-text">{copy.why}:</span> {why}
+                            </p>
+                          ) : null}
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <StepActions step={step} copy={copy} />
+                              {mapHref ? (
+                                <a
+                                  href={mapHref}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle px-3 py-1 text-sm hover:bg-surface-raised"
+                                >
+                                  <MapPin className="size-3.5" aria-hidden />
+                                  {copy.openInMaps}
+                                </a>
+                              ) : null}
+                              {detailHref ? (
+                                <LocaleLink
+                                  href={detailHref}
+                                  target="_blank"
+                                  rel="noopener"
+                                  className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle px-3 py-1 text-sm hover:bg-surface-raised"
+                                >
+                                  {copy.placeDetails}
+                                </LocaleLink>
+                              ) : null}
+                            </div>
+                            {stop && sessionId && onLock ? (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                aria-pressed={stop.locked}
+                                onClick={() => void onLock(() => lockPlannerStop(sessionId, stop.id, !stop.locked))}
+                              >
+                                {stop.locked ? <Lock aria-hidden /> : <LockOpen aria-hidden />}
+                                {stop.locked ? copy.unlock : copy.lock}
+                              </Button>
+                            ) : null}
+                          </div>
+                          {step.status === "filled" && sessionId && onLock ? (
+                            <StepOptions step={step} sessionId={sessionId} copy={copy} onChoose={onLock} />
+                          ) : null}
+                        </div>
+                      </article>
+                    )}
+                  </div>
                 </li>
               );
             })}
