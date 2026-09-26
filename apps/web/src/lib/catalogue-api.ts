@@ -49,6 +49,8 @@ type ApiListing = {
   travel_seconds?: number | null;
   image?: string | null;
   image_alt?: string | null;
+  /** "area": the photo shows the place's town, while the place has none of its own (migration 058). */
+  image_kind?: "place" | "area" | null;
   gallery?: string[];
   attributions?: Experience["attributions"];
   price: ApiPrice;
@@ -110,6 +112,7 @@ export function listingFromApi(item: ApiListing): Experience {
     priceFrom: item.price?.amount ?? 0,
     image: item.image ?? "",
     imageAlt: item.image_alt ?? item.title,
+    imageIsArea: item.image_kind === "area",
     summary: item.summary ?? item.body,
     body: item.body,
     tags: item.tags ?? [],

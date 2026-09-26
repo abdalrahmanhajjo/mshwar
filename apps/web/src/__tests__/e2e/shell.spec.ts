@@ -113,7 +113,7 @@ test.describe("MSHWAR-26 responsive app shell", () => {
   });
 });
 
-test("planner shows all unmatched steps when the API returns a day without a saved plan", async ({
+test("planner hides unmatched steps and says nothing was found when the API returns an empty day", async ({
   page,
 }, testInfo) => {
   await signInForShell(page);
@@ -172,12 +172,10 @@ test("planner shows all unmatched steps when the API returns a day without a sav
   await page.getByLabel("Anything specific? (optional)").fill(request);
   await page.getByRole("button", { name: "Generate itinerary" }).click();
   const main = page.getByRole("main");
-  const steps = main.getByRole("list", { name: "Day 1" }).getByRole("listitem");
-  await expect(steps).toHaveCount(7);
-  for (const [index, [, text]] of requested.entries()) {
-    await expect(steps.nth(index)).toContainText(text);
-    await expect(steps.nth(index)).toContainText("No trusted place of this kind here yet.");
-  }
+  // Steps no trusted place could fill are left out; the planner says it found nothing for the day.
+  await expect(main.getByText(/We could not find trusted places for this day yet/)).toBeVisible();
+  await expect(main.getByRole("list", { name: "Day 1" })).toHaveCount(0);
+  await expect(main.getByText("Not filled")).toHaveCount(0);
   await expect(main.getByText(/Saved to My Trips automatically/)).toHaveCount(0);
   await assertNoHorizontalScroll(page);
   await page.screenshot({ path: testInfo.outputPath("planner-no-match.png"), fullPage: true });

@@ -32,6 +32,7 @@ export function ExperienceCard({ experience, compact = false }: { experience: Ex
             <CatalogImage
               src={experience.image}
               alt={experience.imageAlt}
+              areaLabel={experience.imageIsArea ? copy.areaPhoto : undefined}
               className="transition-transform duration-slow ease-standard group-hover:scale-[1.04]"
             />
           </div>

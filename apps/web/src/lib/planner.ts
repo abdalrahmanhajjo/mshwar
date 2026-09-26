@@ -253,6 +253,7 @@ export type PlanStop = {
   booking_mode?: string;
   image?: string | null;
   image_alt?: string | null;
+  image_kind?: "place" | "area" | null;
 };
 
 export type PlanLeg = {

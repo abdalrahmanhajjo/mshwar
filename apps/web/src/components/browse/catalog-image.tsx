@@ -1,3 +1,4 @@
+import { ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const RESPONSIVE_WIDTHS = [480, 800, 1200, 1600, 2000];
@@ -57,10 +58,13 @@ export function CatalogImage({
   className,
   priority = false,
   sizes,
+  areaLabel,
 }: {
   src: string;
   alt: string;
   className?: string;
+  /** Set when the photo shows the place's town, not the place itself (it has no photo yet). */
+  areaLabel?: string;
   /** Above-the-fold images load eagerly with high priority; everything else is lazy. */
   priority?: boolean;
   sizes?: string;
@@ -73,8 +77,33 @@ export function CatalogImage({
         role={alt ? "img" : undefined}
         aria-label={alt || undefined}
         aria-hidden={alt ? undefined : true}
-        className={cn("h-full w-full bg-surface-sunken", className)}
-      />
+        className={cn(
+          "grid h-full w-full place-items-center bg-gradient-to-br from-brand-subtle to-surface-sunken text-brand/60",
+          className,
+        )}
+      >
+        <ImageIcon className="size-8" aria-hidden />
+      </div>
+    );
+  }
+  if (areaLabel) {
+    return (
+      <div className={cn("relative h-full w-full", className)}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={resolved}
+          srcSet={responsiveSrcSet(resolved)}
+          sizes={sizes ?? (priority ? HERO_SIZES : CARD_SIZES)}
+          alt={alt}
+          loading={priority ? "eager" : "lazy"}
+          decoding="async"
+          fetchPriority={priority ? "high" : "auto"}
+          className="h-full w-full object-cover"
+        />
+        <span className="absolute bottom-1.5 start-1.5 rounded-full bg-black/60 px-2 py-0.5 text-[0.7rem] font-medium text-white">
+          {areaLabel}
+        </span>
+      </div>
     );
   }
   return (

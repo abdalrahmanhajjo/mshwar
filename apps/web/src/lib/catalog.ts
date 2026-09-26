@@ -48,6 +48,8 @@ export type Experience = {
   priceFrom: number;
   image: string;
   imageAlt: string;
+  /** The image shows the place's town, not the place (it has no photo of its own yet). */
+  imageIsArea?: boolean;
   summary: string;
   body: string;
   tags: string[];
