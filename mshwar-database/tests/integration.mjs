@@ -17,6 +17,7 @@ import { testPhraseCandidates } from "./phrase-candidates.mjs";
 import { testAttributionAndWorklist } from "./attribution-and-worklist.mjs";
 import { testAdminTwoStep } from "./admin-two-step.mjs";
 import { testCatalogueLeisureTags, testCataloguePlaceTypes } from "./catalogue-place-types.mjs";
+import { testTownsInGovernorates } from "./towns-in-governorates.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const db = new PGlite({ extensions: { postgis, vector, btree_gist, pg_trgm } });
 const report = [];
@@ -90,6 +91,9 @@ try {
   );
   await good("catalogue tags become kinds of place, only where none was chosen", () => testCataloguePlaceTypes(db));
   await good("cinemas and bowling alleys in the catalogue become kinds of place", () => testCatalogueLeisureTags(db));
+  await good("a governorate shows its towns' places, and a town is not named by its region", () =>
+    testTownsInGovernorates(db),
+  );
   await sql("SELECT set_config('app.user_id',$1,false)", [alice]);
   await good("all app tables have forced RLS", async () =>
     assert.ok(
