@@ -68,7 +68,7 @@ from app.seed.lebanon_catalogue import (
 CATALOGUE_ORG_SLUG = "mshwar-catalogue"
 
 VALID_CATEGORIES = {"culture", "nature", "coast", "adventure", "city"}
-VALID_LISTING_KINDS = {"experience", "attraction", "restaurant"}
+VALID_LISTING_KINDS = {"experience", "attraction", "restaurant", "hotel"}
 
 # The base category taxonomy (migration 013 seeds exactly these five).
 CATEGORY_LABELS = {
@@ -99,7 +99,23 @@ DEFAULT_VISIT_MINUTES = 120
 # likely duplicate. ~0.0004 deg ~= 40 m.
 DUP_COORD_EPSILON = 0.0004
 # Different places in one building or resort, each with its own published point.
-SHARED_SITES = {frozenset({"grand-cinemas-las-salinas", "las-salinas-bowling"})}
+SHARED_SITES = {
+    frozenset({"grand-cinemas-las-salinas", "las-salinas-bowling"}),
+    frozenset({"las-salinas-resort", "las-salinas-bowling"}),
+    frozenset({"las-salinas-resort", "grand-cinemas-las-salinas"}),
+}
+# What a restaurant's or stay's details may hold: listing_details columns a published source can give.
+DETAIL_FIELDS = (
+    "reservation_phone",
+    "reservation_url",
+    "booking_url",
+    "stay_type",
+    "stars",
+    "rooms",
+    "check_in",
+    "check_out",
+    "cuisines",
+)
 
 # Wikimedia Commons licences we accept are decided in _license_allowed().
 COMMONS_API = "https://commons.wikimedia.org/w/api.php"
@@ -880,6 +896,37 @@ def _upsert_venue(conn, p: Place, org_id: uuid.UUID, dest_id: uuid.UUID) -> uuid
     return row[0]
 
 
+def _venue_has_source_url(conn) -> bool:
+    """Migration 056 adds venues.source_url; an older database still imports."""
+    row = conn.execute(
+        "SELECT 1 FROM information_schema.columns "
+        "WHERE table_schema = 'app' AND table_name = 'venues' AND column_name = 'source_url'"
+    ).fetchone()
+    return row is not None
+
+
+def _set_venue_source(conn, venue_id: uuid.UUID, p: Place) -> None:
+    """Where the place's facts come from, shown with a restaurant or stay not yet visited (migration 056)."""
+    if _venue_has_source_url(conn):
+        conn.execute("UPDATE app.venues SET source_url = %s WHERE id = %s", (p["source_url"], venue_id))
+
+
+def _upsert_details(conn, exp_id: uuid.UUID, p: Place) -> None:
+    """A restaurant's or stay's published details (phone, booking link, rooms, check-in). Nothing else."""
+    details = {key: value for key, value in (p.get("details") or {}).items() if key in DETAIL_FIELDS}
+    if p["listing_kind"] not in ("restaurant", "hotel") or not details:
+        return
+    columns = list(details)
+    values = [details[key] for key in columns]
+    updates = ", ".join(f"{key} = EXCLUDED.{key}" for key in columns)
+    conn.execute(
+        f"INSERT INTO app.listing_details (experience_id, {', '.join(columns)}) "  # noqa: S608 - fixed column names
+        f"VALUES (%s, {', '.join(['%s'] * len(columns))}) "
+        f"ON CONFLICT (experience_id) DO UPDATE SET {updates}, updated_at = now()",
+        (exp_id, *values),
+    )
+
+
 def _set_price(conn, exp_id: uuid.UUID, slug: str) -> None:
     """No invented amounts: genuinely public open places are free (fixed 0),
     everything else is 'on request' (quote-required). Idempotent."""
@@ -981,6 +1028,8 @@ def _import_place(
         stats.experiences_inserted += 1
 
     _set_price(conn, exp_id, p["slug"])
+    _upsert_details(conn, exp_id, p)
+    _set_venue_source(conn, venue_id, p)
 
     # Taxonomy links: re-sync (category + tags). Remove stale, add current.
     wanted: list[uuid.UUID] = [term_ids[("category", p["category"])]]
