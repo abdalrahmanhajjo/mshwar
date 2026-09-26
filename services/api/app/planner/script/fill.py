@@ -14,7 +14,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.planner.persist import retrieve_changers, retrieve_driver_rates, retrieve_step
+from app.planner.persist import retrieve_changers, retrieve_destination_point, retrieve_driver_rates, retrieve_step
 from app.planner.schemas import DayScript, ExtractedConstraints, StepCandidate, StepSpec
 from app.planner.script.day import DayPlan, DayPools, PoolEntry, assemble_day
 from app.planner.script.retrieval import Near, step_query, without_avoided
@@ -22,6 +22,9 @@ from app.planner.script.trip import TripPlan, assemble_trip
 
 #: How far to look for a step the destination cannot fill.
 FALLBACK_RADIUS_M = 60_000
+#: A place this close to the middle of the town the traveller named is in the town, even when the catalogue
+#: files it under the wider region (curated places hang off governorates).
+IN_TOWN_M = 5_000
 POOL_SIZE = 8
 #: How many trusted options a traveller can pick from for one step.
 MAX_ALTERNATIVES = 24
@@ -31,18 +34,38 @@ def _destinations(step: StepSpec, script: DayScript) -> list[str]:
     return [step.destination_slug] if step.destination_slug else list(script.constraints.destination_slugs)
 
 
-def _anchor(pools: DayPools, constraints: ExtractedConstraints) -> Near | None:
-    """The middle of what the day already found, else where the day starts."""
+def _anchor(pools: DayPools) -> Near | None:
+    """The middle of what the day already found."""
     points = [(entry.candidate.lat, entry.candidate.lng) for entries in pools.places.values() for entry in entries]
-    if points:
-        return Near(
-            lat=sum(lat for lat, _lng in points) / len(points),
-            lng=sum(lng for _lat, lng in points) / len(points),
-            radius_m=FALLBACK_RADIUS_M,
-        )
+    if not points:
+        return None
+    return Near(
+        lat=sum(lat for lat, _lng in points) / len(points),
+        lng=sum(lng for _lat, lng in points) / len(points),
+        radius_m=FALLBACK_RADIUS_M,
+    )
+
+
+def _start_anchor(constraints: ExtractedConstraints) -> Near | None:
+    """Where the day starts (Beirut when the traveller did not say)."""
     if constraints.start_lat is None or constraints.start_lng is None:
         return None
     return Near(lat=constraints.start_lat, lng=constraints.start_lng, radius_m=FALLBACK_RADIUS_M)
+
+
+async def _destination_anchor(db: AsyncSession, script: DayScript) -> tuple[str, Near] | None:
+    """When the day found nothing yet, look around the destination the traveller named."""
+    for slug in script.constraints.destination_slugs:
+        point = await retrieve_destination_point(db, slug)
+        if point is not None:
+            return slug, Near(lat=point[0], lng=point[1], radius_m=FALLBACK_RADIUS_M)
+    return None
+
+
+def _in_town(candidate: StepCandidate, step: StepSpec, town: tuple[str, Near] | None) -> bool:
+    if town is None or candidate.distance_m is None:
+        return False
+    return step.destination_slug in (None, town[0]) and candidate.distance_m <= IN_TOWN_M
 
 
 async def _changers(db: AsyncSession, step: StepSpec, script: DayScript) -> list[dict[str, object]]:
@@ -97,7 +120,10 @@ async def gather_pools(
         pools.driver_rates = await retrieve_driver_rates(
             db, constraints.destination_slugs[0], constraints.party_size or 1
         )
-    anchor = _anchor(pools, constraints)
+    # Near the rest of the day first, then the place the traveller named, then where the day starts.
+    anchor = _anchor(pools)
+    town = None if anchor else await _destination_anchor(db, scoped)
+    anchor = anchor or (town[1] if town else None) or _start_anchor(constraints)
     for step in script.steps:
         if step.role == "exchange" or pools.places.get(step.order) or not _destinations(step, scoped) or anchor is None:
             continue
@@ -105,7 +131,8 @@ async def gather_pools(
         unscoped = scoped.model_copy(update={"constraints": constraints.model_copy(update={"destination_slugs": []})})
         found = await retrieve_step(db, step_query(wider, unscoped, near=anchor, exclude_ids=excluded, limit=POOL_SIZE))
         pools.places[step.order] = [
-            PoolEntry(candidate, outside=True) for candidate in without_avoided(found, script.avoid_tags)
+            PoolEntry(candidate, outside=not _in_town(candidate, step, town))
+            for candidate in without_avoided(found, script.avoid_tags)
         ]
     for step in script.steps:
         if step.order in pinned and step.role != "exchange":

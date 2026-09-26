@@ -144,6 +144,28 @@ def test_the_field_sheet_never_runs_a_formula() -> None:
     assert row.split(",")[1].startswith("'=cmd"), "the injected formula is written as text"
 
 
+def test_the_desk_research_leads_are_sourced_places_in_lebanon() -> None:
+    import json
+    import re
+
+    path = Path(__file__).resolve().parents[1] / "app" / "seed" / "data" / "guide-leads-beirut-batroun.geojson"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    leads = leads_from(payload, "guide")
+    assert len(leads) == len(payload["features"]), "every lead is a named point inside Lebanon"
+    migrations = Path(__file__).resolve().parents[3] / "mshwar-database" / "migrations"
+    kinds = set(
+        re.findall(r'"slug": "([a-z-]+)"', "".join(p.read_text(encoding="utf-8") for p in migrations.glob("*.sql")))
+    )
+    ids = [lead["external_id"] for lead in leads]
+    assert len(ids) == len(set(ids)) and all(i.startswith("guide:") for i in ids)
+    for lead in leads:
+        props = lead["raw"]["properties"]
+        assert lead["place_type"] in kinds, lead["external_id"]
+        assert props["source_url"].startswith("https://"), lead["external_id"]
+        assert props["location_precision"] in {"exact", "area"}, lead["external_id"]
+        assert props["address"], lead["external_id"]
+
+
 # ---- Through the API (needs a migrated database) ----
 
 

@@ -340,6 +340,32 @@ async def test_pools_widen_to_nearby_places_and_mark_them(monkeypatch: pytest.Mo
     assert len(wider) == 1 and wider[0]["destination_slugs"] == []
 
 
+@pytest.mark.asyncio
+async def test_a_day_that_found_nothing_looks_around_the_destination(monkeypatch: pytest.MonkeyPatch) -> None:
+    script = parse_day_script("in Batroun: the cinema, then bowling")
+    constraints = constraints_for(script)
+    screens = place("enfeh-screens", ["cinema"], at=(34.36, 35.73)).model_copy(update={"distance_m": 14_000})
+    lanes = place("town-lanes", ["bowling"], at=(34.26, 35.66)).model_copy(update={"distance_m": 900})
+    looked_up: list[str] = []
+
+    async def fake_step(_db: Any, query: dict[str, Any]) -> list[StepCandidate]:
+        if not query.get("near"):
+            return []
+        assert query["near"]["lat"] == 34.2553 and query["destination_slugs"] == []
+        return [screens] if "cinema" in query["tags"] else [lanes]
+
+    async def fake_point(_db: Any, slug: str) -> tuple[float, float] | None:
+        looked_up.append(slug)
+        return (34.2553, 35.6581)
+
+    monkeypatch.setattr(fill_module, "retrieve_step", fake_step)
+    monkeypatch.setattr(fill_module, "retrieve_destination_point", fake_point)
+    pools = await fill_module.gather_pools(None, script, constraints)  # type: ignore[arg-type]
+    assert looked_up == ["batroun"]
+    assert [(entry.candidate.slug, entry.outside) for entry in pools.places[1]] == [("enfeh-screens", True)]
+    assert [(entry.candidate.slug, entry.outside) for entry in pools.places[2]] == [("town-lanes", False)], "in town"
+
+
 # ---- Through the API (needs a migrated database) ----
 
 
