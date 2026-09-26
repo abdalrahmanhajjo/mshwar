@@ -728,7 +728,7 @@ async def trip_saved(
     trip_id: UUID,
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
-) -> dict[str, Any]:
+) -> Any:
     """Whether a plan is kept among the traveller's trips (migration 057)."""
     session = await require_session(request, db)
     return await fetch_json(
@@ -742,7 +742,7 @@ async def save_trip(
     payload: SaveTripIn,
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
-) -> dict[str, Any]:
+) -> Any:
     """Keep a plan in "My trips". Plans are never kept until the traveller saves and confirms."""
     session = await require_session(request, db)
     return await fetch_json(
