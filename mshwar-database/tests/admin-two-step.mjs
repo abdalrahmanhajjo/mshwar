@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 // Two-step sign-in for the console (migration 052). Alice is a platform admin; Bob is not.
 const alice = "00000000-0000-0000-0000-000000000001";
 const bob = "00000000-0000-0000-0000-000000000002";
-const secret = "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP";
+// A fake, low-entropy key: valid base32, never mistaken for a real credential.
+const secret = "ABCD".repeat(8);
 
 const one = async (db, sql, params = []) => (await db.query(sql, params)).rows[0];
 

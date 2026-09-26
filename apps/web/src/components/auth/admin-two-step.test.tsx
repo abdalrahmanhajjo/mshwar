@@ -26,6 +26,8 @@ function route(handlers: Record<string, unknown>) {
 }
 
 const console_ = <p>Console</p>;
+// A fake, low-entropy key: valid base32, never mistaken for a real credential.
+const FAKE_KEY = "ABCD".repeat(8);
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -41,13 +43,13 @@ describe("admin two-step sign-in", () => {
   it("sets up an authenticator, then verifies the session with the next code", async () => {
     const calls = route({
       "/api/v1/admin/mfa": { required: true, enrolled: false, verified: false, verified_until: null },
-      "/api/v1/partners/security/totp": { secret: "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP", otpauth_uri: "otpauth://totp/x" },
+      "/api/v1/partners/security/totp": { secret: FAKE_KEY, otpauth_uri: "otpauth://totp/x" },
       "/api/v1/partners/security/totp/confirm": { totp_enabled: true },
       "/api/v1/admin/mfa/verify": { required: true, enrolled: true, verified: true, verified_until: null },
     });
     const { container } = render(<LocaleProvider>{<AdminTwoStep>{console_}</AdminTwoStep>}</LocaleProvider>);
     fireEvent.click(await screen.findByRole("button", { name: "Show my key" }));
-    expect(await screen.findByText("JBSW Y3DP EHPK 3PXP JBSW Y3DP EHPK 3PXP")).toBeInTheDocument();
+    expect(await screen.findByText("ABCD ABCD ABCD ABCD ABCD ABCD ABCD ABCD")).toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
     const code = screen.getByLabelText("Code");
     fireEvent.change(code, { target: { value: "12a3456" } });
