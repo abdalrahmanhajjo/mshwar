@@ -53,6 +53,7 @@ import { ApiError } from "@/lib/api/client";
 import { type PlannerCopy, type PlannerKey, usePlannerCopy } from "@/lib/planner-copy";
 import { DayCostPanel, DriverRequestPanel, dayTotal } from "@/components/planner/day-cost";
 import { DayTimeline } from "@/components/planner/day-timeline";
+import { SavePlan } from "@/components/planner/save-plan";
 import { interpolate } from "@/i18n/catalogues";
 import { formatDate } from "@/i18n/format";
 import { DESTINATIONS, getExperience } from "@/lib/catalog";
@@ -306,6 +307,7 @@ export function PlannerView({ initialTripId }: { initialTripId?: string }) {
 
         {plan && initialTripId && !session?.session_id ? <Notice role="status">{copy.savedPlanNote}</Notice> : null}
         {!plan && initialTripId && tripChecked ? <Notice role="status">{copy.noSavedPlan}</Notice> : null}
+        {plan?.trip_id ? <SavePlan tripId={plan.trip_id} title={plan.trip_title} copy={copy} /> : null}
 
         {plan ? (
           dayOf(session, plan).length ? (
