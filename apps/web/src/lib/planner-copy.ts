@@ -74,6 +74,15 @@ export type PlannerKey =
   | "takingShape"
   | "editableNote"
   | "savedPlanNote"
+  | "savePlan"
+  | "savePlanTitle"
+  | "savePlanBody"
+  | "savePlanName"
+  | "savePlanConfirm"
+  | "savePlanFailed"
+  | "savedToTrips"
+  | "viewInTrips"
+  | "unsavedNote"
   | "noSavedPlan"
   | "flowStepOf"
   | "flowStepDestination"
@@ -254,6 +263,8 @@ export type PlannerKey =
   | "trust_verified_organisation"
   | "trust_sourced"
   | "sourceLink"
+  | "openInMaps"
+  | "placeDetails"
   | "trust_changer"
   | "action_call"
   | "action_whatsapp"
@@ -350,6 +361,15 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     takingShape: "Your day is taking shape",
     editableNote: "Stop order is editable. Travel times, opening hours and availability still need live verification.",
     savedPlanNote: "This is your saved itinerary. Start a new plan or refine it to make changes.",
+    savePlan: "Save plan",
+    savePlanTitle: "Save this plan?",
+    savePlanBody: "It will be kept in My trips so you can open it again. Plans you don't save are not kept there.",
+    savePlanName: "Name",
+    savePlanConfirm: "Yes, save it",
+    savePlanFailed: "We could not save the plan. Try again.",
+    savedToTrips: "Saved to My trips",
+    viewInTrips: "Open in My trips",
+    unsavedNote: "Not saved yet: this plan is not in My trips until you save it.",
     noSavedPlan: "This trip has no saved plan yet. Describe your day below to generate one.",
     flowStepOf: "Step {n} of {total}",
     flowStepDestination: "Destination",
@@ -375,7 +395,7 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flowNoPlanHint:
       "We couldn’t build an itinerary from the available places with these details. Nothing has been saved. Try another destination, date or budget, or choose places yourself.",
     flowEditDetails: "Edit trip details",
-    flowReviewHint: "Saved to My Trips automatically. Refine it, swap stops or fine-tune the route below.",
+    flowReviewHint: "Refine it, swap stops or fine-tune the route below. Save it to keep it in My trips.",
     flowAdvancedTitle: "Advanced tools",
     flowAdvancedHint: "Optimise the route, check the weather and plan with a group.",
     flowOpenGroup: "Plan with a group",
@@ -403,7 +423,7 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flowYourDay: "Your day",
     flowAddMore: "Add more places",
     flowManualNeedPicks: "Add at least one place to continue.",
-    flowManualReviewHint: "Saved to My Trips. Times are estimated from each place’s typical visit length.",
+    flowManualReviewHint: "Times are estimated from each place’s typical visit length. Save it to keep it in My trips.",
     flowEditManual: "Edit manually",
     flowNoOverlap: "Stops are scheduled back-to-back, so times never overlap.",
     stopsLabel: "stops",
@@ -534,6 +554,8 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     trust_verified_organisation: "Verified business",
     trust_sourced: "From a published source · not yet visited by Mshwar",
     sourceLink: "Source",
+    openInMaps: "Open in Maps",
+    placeDetails: "Place details",
     trust_changer: "Registered money changer",
     action_call: "Call",
     action_whatsapp: "WhatsApp",
@@ -628,6 +650,15 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     takingShape: "يومك يتشكّل",
     editableNote: "يمكن تعديل ترتيب المحطات. أوقات التنقل وساعات العمل والتوفر تحتاج إلى تحقق مباشر.",
     savedPlanNote: "هذه خطتك المحفوظة. ابدأ خطة جديدة أو حسّنها لإجراء تغييرات.",
+    savePlan: "احفظ الخطة",
+    savePlanTitle: "هل تريد حفظ هذه الخطة؟",
+    savePlanBody: "ستُحفظ في رحلاتي لتعود إليها لاحقاً. الخطط التي لا تحفظها لا تُضاف إلى رحلاتي.",
+    savePlanName: "الاسم",
+    savePlanConfirm: "نعم، احفظها",
+    savePlanFailed: "تعذّر حفظ الخطة. حاول مجدداً.",
+    savedToTrips: "محفوظة في رحلاتي",
+    viewInTrips: "افتح في رحلاتي",
+    unsavedNote: "لم تُحفظ بعد: هذه الخطة ليست في رحلاتي حتى تحفظها.",
     noSavedPlan: "لا توجد خطة محفوظة لهذه الرحلة بعد. صف يومك بالأسفل لإنشاء واحدة.",
     flowStepOf: "خطوة {n} من {total}",
     flowStepDestination: "الوجهة",
@@ -653,7 +684,7 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flowNoPlanHint:
       "لم نتمكّن من إعداد برنامج من الأماكن المتاحة بهذه التفاصيل. لم يتم حفظ أي رحلة. جرّب وجهة أو تاريخاً أو ميزانية أخرى، أو اختر الأماكن بنفسك.",
     flowEditDetails: "تعديل تفاصيل الرحلة",
-    flowReviewHint: "يُحفظ في رحلاتي تلقائياً. حسّنه أو بدّل المحطات أو اضبط المسار بالأسفل.",
+    flowReviewHint: "حسّنه أو بدّل المحطات أو اضبط المسار بالأسفل. احفظه ليبقى في رحلاتي.",
     flowAdvancedTitle: "أدوات متقدمة",
     flowAdvancedHint: "حسّن المسار، تحقق من الطقس، وخطّط مع مجموعة.",
     flowOpenGroup: "التخطيط مع مجموعة",
@@ -681,7 +712,7 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flowYourDay: "يومك",
     flowAddMore: "إضافة أماكن أخرى",
     flowManualNeedPicks: "أضف مكاناً واحداً على الأقل للمتابعة.",
-    flowManualReviewHint: "محفوظ في رحلاتي. الأوقات تقديرية بناءً على مدة الزيارة المعتادة لكل مكان.",
+    flowManualReviewHint: "الأوقات تقديرية بناءً على مدة الزيارة المعتادة لكل مكان. احفظه ليبقى في رحلاتي.",
     flowEditManual: "تعديل يدوي",
     flowNoOverlap: "المحطات مجدولة تِباعاً، لذا لا تتداخل الأوقات.",
     stopsLabel: "محطات",
@@ -811,6 +842,8 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     trust_verified_organisation: "مؤسسة موثّقة",
     trust_sourced: "من مصدر منشور · لم يزره مشوار بعد",
     sourceLink: "المصدر",
+    openInMaps: "افتح في الخرائط",
+    placeDetails: "تفاصيل المكان",
     trust_changer: "صرّاف مسجّل",
     action_call: "اتصل",
     action_whatsapp: "واتساب",
@@ -908,6 +941,16 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     editableNote:
       "L’ordre des étapes est modifiable. Trajets, horaires et disponibilités restent à vérifier en direct.",
     savedPlanNote: "Voici votre itinéraire enregistré. Lancez un nouveau plan ou affinez-le pour le modifier.",
+    savePlan: "Enregistrer le plan",
+    savePlanTitle: "Enregistrer ce plan ?",
+    savePlanBody:
+      "Il sera conservé dans Mes voyages pour le rouvrir plus tard. Les plans non enregistrés n’y figurent pas.",
+    savePlanName: "Nom",
+    savePlanConfirm: "Oui, enregistrer",
+    savePlanFailed: "Impossible d’enregistrer le plan. Réessayez.",
+    savedToTrips: "Enregistré dans Mes voyages",
+    viewInTrips: "Ouvrir dans Mes voyages",
+    unsavedNote: "Pas encore enregistré : ce plan n’est pas dans Mes voyages tant que vous ne l’enregistrez pas.",
     noSavedPlan: "Ce voyage n’a pas encore de plan enregistré. Décrivez votre journée ci-dessous pour en générer un.",
     flowStepOf: "Étape {n} sur {total}",
     flowStepDestination: "Destination",
@@ -934,7 +977,7 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
       "Nous n’avons pas pu créer d’itinéraire avec les lieux disponibles et ces détails. Rien n’a été enregistré. Essayez une autre destination, date ou un autre budget, ou choisissez vous-même les lieux.",
     flowEditDetails: "Modifier les détails du voyage",
     flowReviewHint:
-      "Enregistré dans Mes voyages automatiquement. Affinez-le, changez des étapes ou ajustez l'itinéraire ci-dessous.",
+      "Affinez-le, changez des étapes ou ajustez l'itinéraire ci-dessous. Enregistrez-le pour le garder dans Mes voyages.",
     flowAdvancedTitle: "Outils avancés",
     flowAdvancedHint: "Optimisez l'itinéraire, vérifiez la météo et planifiez en groupe.",
     flowOpenGroup: "Planifier en groupe",
@@ -962,7 +1005,8 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flowYourDay: "Votre journée",
     flowAddMore: "Ajouter d'autres lieux",
     flowManualNeedPicks: "Ajoutez au moins un lieu pour continuer.",
-    flowManualReviewHint: "Enregistré dans Mes voyages. Les horaires sont estimés selon la durée de visite habituelle.",
+    flowManualReviewHint:
+      "Les horaires sont estimés selon la durée de visite habituelle. Enregistrez-le pour le garder dans Mes voyages.",
     flowEditManual: "Modifier manuellement",
     flowNoOverlap: "Les étapes s'enchaînent, les horaires ne se chevauchent jamais.",
     stopsLabel: "étapes",
@@ -1096,6 +1140,8 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     trust_verified_organisation: "Entreprise vérifiée",
     trust_sourced: "D’après une source publiée · pas encore visité par Mshwar",
     sourceLink: "Source",
+    openInMaps: "Ouvrir dans Maps",
+    placeDetails: "Détails du lieu",
     trust_changer: "Changeur enregistré",
     action_call: "Appeler",
     action_whatsapp: "WhatsApp",

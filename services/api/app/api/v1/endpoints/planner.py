@@ -73,6 +73,7 @@ from app.schemas.planner import (
     RouteLegOut,
     RouteRequest,
     RoutingCostOut,
+    SaveTripIn,
     WarningEvalRequest,
     WarningEvalResponse,
     WeatherWarningOut,
@@ -720,6 +721,35 @@ async def trip_versions(
 ) -> list[dict[str, Any]]:
     session = await require_session(request, db)
     return await list_versions(db, session["user_id"], trip_id, False)
+
+
+@router.get("/trips/{trip_id}/saved", dependencies=[access.SESSION])
+async def trip_saved(
+    trip_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    """Whether a plan is kept among the traveller's trips (migration 057)."""
+    session = await require_session(request, db)
+    return await fetch_json(
+        db, "SELECT app.planner_trip_saved(:user_id, :trip)", {"user_id": str(session["user_id"]), "trip": str(trip_id)}
+    )
+
+
+@router.post("/trips/{trip_id}/save", dependencies=[access.SESSION, limit("community-write")])
+async def save_trip(
+    trip_id: UUID,
+    payload: SaveTripIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> dict[str, Any]:
+    """Keep a plan in "My trips". Plans are never kept until the traveller saves and confirms."""
+    session = await require_session(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.planner_save_trip(:user_id, :trip, :name)",
+        {"user_id": str(session["user_id"]), "trip": str(trip_id), "name": payload.name},
+    )
 
 
 @router.get("/versions/{version_id}", dependencies=[access.SESSION])
