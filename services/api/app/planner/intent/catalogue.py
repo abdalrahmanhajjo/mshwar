@@ -18,6 +18,7 @@ the caller falls back to the whole country rather than inventing a town.
 
 from __future__ import annotations
 
+import functools
 import json
 import re
 import time
@@ -163,6 +164,16 @@ def _text_words(raw: str) -> set[str]:
     return found
 
 
+@functools.cache
+def _kind_words() -> frozenset[str]:
+    """One-word names of kinds of place ("bowling", "cinema", "hotel"): never the name of a destination,
+    even when only one destination has a place called "... Bowling"."""
+    from app.planner.script.vocabulary import ALL_CONCEPTS  # the script package imports this module
+
+    folded = (fold(cue).strip() for concept in ALL_CONCEPTS for cue in concept.cues)
+    return frozenset(word for word in folded if word and " " not in word)
+
+
 def _name_index(terms: list[tuple[str, str, int]]) -> dict[str, str]:
     """Words that name exactly one destination across the whole catalogue.
 
@@ -173,7 +184,7 @@ def _name_index(terms: list[tuple[str, str, int]]) -> dict[str, str]:
     owners: dict[str, set[str]] = {}
     for slug, term, _weight in terms:
         for word in term.split():
-            if len(word) >= 4 and word not in GENERIC_WORDS:
+            if len(word) >= 4 and word not in GENERIC_WORDS and word not in _kind_words():
                 owners.setdefault(word, set()).add(slug)
     index: dict[str, str] = {}
     for word, slugs in owners.items():
