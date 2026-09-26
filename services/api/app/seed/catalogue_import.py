@@ -777,6 +777,12 @@ def run_import(
             )
             stats.samples_archived += res.rowcount or 0
 
+        # 8) Kinds of place from the tags, so the day planner can use the places (migration 053).
+        #    Only listings without a kind get one; a kind staff or an owner chose is kept.
+        has_backfill = conn.execute("SELECT to_regproc('app.backfill_catalogue_place_types') IS NOT NULL").fetchone()
+        if has_backfill and has_backfill[0]:
+            conn.execute("SELECT app.backfill_catalogue_place_types()")
+
         conn.commit()
         return stats
     except Exception:
