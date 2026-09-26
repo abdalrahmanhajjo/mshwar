@@ -1,7 +1,7 @@
 {
   "engine": "PostgreSQL 18.3 (PGlite 0.5.8) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.74 (1092ec30a3fb1d46b1782ff1b4db5094d3d06ae5), 32-bit",
-  "migrations": 55,
-  "passed": 74,
+  "migrations": 56,
+  "passed": 75,
   "tests": [
     {
       "name": "all eight destinations have two sourced services per category; public reads enforce scope, review dates and RLS",
@@ -49,6 +49,10 @@
     },
     {
       "name": "a governorate shows its towns' places, and a town is not named by its region",
+      "status": "PASS"
+    },
+    {
+      "name": "restaurants and stays from a published source are planned, marked as sourced",
       "status": "PASS"
     },
     {

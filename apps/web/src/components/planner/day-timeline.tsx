@@ -276,10 +276,23 @@ export function DayTimeline({
                     <>
                       <div className="flex flex-wrap items-center gap-2 text-sm text-text-muted">
                         {trust ? (
-                          <Badge variant="success" className="inline-flex items-center gap-1">
-                            <ShieldCheck className="size-3" aria-hidden />
+                          <Badge
+                            variant={step.trust?.level === "sourced" ? "warning" : "success"}
+                            className="inline-flex items-center gap-1"
+                          >
+                            {step.trust?.level === "sourced" ? null : <ShieldCheck className="size-3" aria-hidden />}
                             {trust}
                           </Badge>
+                        ) : null}
+                        {step.trust?.source_url ? (
+                          <a
+                            href={step.trust.source_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline underline-offset-2"
+                          >
+                            {copy.sourceLink}
+                          </a>
                         ) : null}
                         {flags.map((flag) => (
                           <Badge key={flag} variant="warning">

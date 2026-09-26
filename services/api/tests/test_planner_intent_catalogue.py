@@ -63,6 +63,13 @@ def test_naming_no_place_invents_none() -> None:
     assert match_destinations("", TERMS) == []
 
 
+def test_a_kind_of_place_is_never_read_as_a_place_name() -> None:
+    # Only one destination has a place called "... Bowling"; "play bowling" still names no destination.
+    terms = [*TERMS, ("north-lebanon", fold("Las Salinas Bowling").strip(), 2)]
+    assert match_destinations("then play bowling", terms) == []
+    assert match_destinations("bowling at las salinas", terms) == ["north-lebanon"]
+
+
 def test_a_substring_of_a_longer_word_is_not_a_match() -> None:
     # "beirut" inside "beirutish" is not the traveller naming Beirut.
     assert match_destinations("beirutish vibes", TERMS) == []

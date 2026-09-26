@@ -383,7 +383,7 @@ export type DayStepOutcome = {
   title: string | null;
   destination_slug: string | null;
   office: { branch_name?: string; address?: string; phone?: string; changer?: { bdl_number?: string } } | null;
-  trust: { level?: string; checked_on?: string | null };
+  trust: { level?: string; checked_on?: string | null; source_url?: string | null };
   flags: string[];
   named_place: string | null;
   price: PriceLine | null;
@@ -432,7 +432,7 @@ export type StepOption = {
   title: string;
   destination_slug: string | null;
   place_types: string[];
-  trust: { level?: string; checked_on?: string | null };
+  trust: { level?: string; checked_on?: string | null; source_url?: string | null };
   distance_m: number | null;
   outside_destination: boolean;
   needs_schedule: boolean;

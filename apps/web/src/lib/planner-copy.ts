@@ -252,6 +252,8 @@ export type PlannerKey =
   | "trust_checked_by_mshwar"
   | "trust_licensed_claimed"
   | "trust_verified_organisation"
+  | "trust_sourced"
+  | "sourceLink"
   | "trust_changer"
   | "action_call"
   | "action_whatsapp"
@@ -530,6 +532,8 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     trust_checked_by_mshwar: "Visited by Mshwar",
     trust_licensed_claimed: "Licence checked",
     trust_verified_organisation: "Verified business",
+    trust_sourced: "From a published source · not yet visited by Mshwar",
+    sourceLink: "Source",
     trust_changer: "Registered money changer",
     action_call: "Call",
     action_whatsapp: "WhatsApp",
@@ -805,6 +809,8 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     trust_checked_by_mshwar: "زاره فريق مشوار",
     trust_licensed_claimed: "جرى التحقّق من الترخيص",
     trust_verified_organisation: "مؤسسة موثّقة",
+    trust_sourced: "من مصدر منشور · لم يزره مشوار بعد",
+    sourceLink: "المصدر",
     trust_changer: "صرّاف مسجّل",
     action_call: "اتصل",
     action_whatsapp: "واتساب",
@@ -1088,6 +1094,8 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     trust_checked_by_mshwar: "Visité par Mshwar",
     trust_licensed_claimed: "Licence vérifiée",
     trust_verified_organisation: "Entreprise vérifiée",
+    trust_sourced: "D’après une source publiée · pas encore visité par Mshwar",
+    sourceLink: "Source",
     trust_changer: "Changeur enregistré",
     action_call: "Appeler",
     action_whatsapp: "WhatsApp",
