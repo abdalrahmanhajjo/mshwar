@@ -1,0 +1,3 @@
+# A fake TOTP key in the two-step tests (commit e0e0a73); replaced by a low-entropy fake since.
+e0e0a73cffc03dce3078e4eed0bfcd9e5155e468:mshwar-database/tests/admin-two-step.mjs:mshwar-generic-secret-assignment:6
+e0e0a73cffc03dce3078e4eed0bfcd9e5155e468:apps/web/src/components/auth/admin-two-step.test.tsx:mshwar-generic-secret-assignment:44
