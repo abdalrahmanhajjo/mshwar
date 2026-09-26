@@ -463,8 +463,9 @@ export const IDEAS: Idea[] = [
   },
 ];
 
+// Baalbek's temples - the same photo as the bundled Baalbek destination.
 export const HOME_HERO_IMAGE =
-  "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=2000&q=80";
+  "https://images.unsplash.com/photo-1555993533-2719c56586d4?auto=format&fit=crop&w=2000&q=80";
 
 export type ExperienceFilters = {
   q?: string;
