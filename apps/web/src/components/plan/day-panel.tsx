@@ -44,6 +44,7 @@ export type DayCheckInput = {
 export function useDayCheck(input: DayCheckInput) {
   const [preview, setPreview] = React.useState<ManualPreview | null>(null);
   const [checking, setChecking] = React.useState(false);
+  const [failed, setFailed] = React.useState(false);
   // Serialised so the effect re-runs on value, not on a fresh object each render.
   const key = JSON.stringify(input);
 
@@ -71,11 +72,14 @@ export function useDayCheck(input: DayCheckInput) {
         .then((result) => {
           if (!controller.signal.aborted) {
             setPreview(result);
+            setFailed(false);
           }
         })
         .catch(() => {
+          // Keep the last answer on screen: a busy moment (or a rate limit) must not
+          // wipe the timings the traveller was reading. The next change retries.
           if (!controller.signal.aborted) {
-            setPreview(null);
+            setFailed(true);
           }
         })
         .finally(() => {
@@ -92,7 +96,7 @@ export function useDayCheck(input: DayCheckInput) {
 
   // With nothing picked there is nothing to report, and the last answer is stale.
   const empty = !(JSON.parse(key) as DayCheckInput).slugs.length;
-  return { preview: empty ? null : preview, checking: !empty && checking };
+  return { preview: empty ? null : preview, checking: !empty && checking, failed: !empty && failed };
 }
 
 /** Turn a structured issue into a sentence, so the rule and its wording stay separate. */
@@ -160,7 +164,7 @@ function StopRow({
           {index + 1}
         </span>
         <div className="grid min-w-0 flex-1 gap-0.5">
-          <span className="truncate font-medium leading-snug">{pick.title}</span>
+          <span className="line-clamp-2 break-words font-medium leading-snug">{pick.title}</span>
           <span className="inline-flex min-w-0 items-center gap-1 text-xs text-text-muted">
             <MapPin className="size-3 shrink-0" aria-hidden />
             <span className="truncate">{timing?.destination_name || pick.placeLabel}</span>
@@ -238,6 +242,7 @@ export function DayPanel({
   picks,
   preview,
   checking,
+  failed = false,
   copy,
   locale,
   onMove,
@@ -249,6 +254,7 @@ export function DayPanel({
   picks: Experience[];
   preview: ManualPreview | null;
   checking: boolean;
+  failed?: boolean;
   copy: PlannerCopy;
   locale: string;
   onMove: (index: number, direction: -1 | 1) => void;
@@ -264,6 +270,17 @@ export function DayPanel({
   const blocked = issues.some((issue) => issue.severity === "blocking");
   const bySlug = new Map((preview?.stops ?? []).map((stop) => [stop.slug, stop]));
   const last = preview?.stops.at(-1);
+  const betterOrder = Boolean(
+    report &&
+    (report.order_saves_minutes > 0 || report.order_fixes_hours) &&
+    report.suggested_order.join() !== picks.map((pick) => pick.slug).join(),
+  );
+  const orderReasons = report
+    ? [
+        report.order_saves_minutes > 0 ? interpolate(copy.dayReorderSaves, { n: report.order_saves_minutes }) : "",
+        report.order_fixes_hours ? copy.dayReorderHours : "",
+      ].filter(Boolean)
+    : [];
 
   return (
     <section aria-labelledby="day-panel" aria-busy={checking} className="grid gap-4">
@@ -327,6 +344,7 @@ export function DayPanel({
           </div>
 
           <div aria-live="polite" className="grid gap-2">
+            {failed && !checking ? <Notice tone="warning">{copy.dayCheckFailed}</Notice> : null}
             {report && !checking ? (
               issues.length ? (
                 <>
@@ -344,12 +362,20 @@ export function DayPanel({
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {report && report.order_saves_minutes > 0 ? (
-              <Button type="button" size="sm" variant="outline" onClick={() => onReorder(report.suggested_order)}>
-                <Shuffle className="size-4" aria-hidden />
-                {copy.dayReorder}
-                <span className="text-text-muted">
-                  ({interpolate(copy.dayReorderSaves, { n: report.order_saves_minutes })})
+            {report && betterOrder ? (
+              // Wraps inside the narrow rail rather than pushing past its edge.
+              <Button
+                type="button"
+                size="sm"
+                className="h-auto min-h-9 w-full justify-start whitespace-normal py-2 text-start"
+                onClick={() => onReorder(report.suggested_order)}
+              >
+                <Shuffle className="size-4 shrink-0" aria-hidden />
+                <span className="grid min-w-0 gap-0.5">
+                  <span>{copy.dayReorderBest}</span>
+                  {orderReasons.length ? (
+                    <span className="text-xs font-normal opacity-90">{orderReasons.join(" · ")}</span>
+                  ) : null}
                 </span>
               </Button>
             ) : null}
@@ -358,6 +384,7 @@ export function DayPanel({
                 type="button"
                 size="sm"
                 variant="outline"
+                className="h-auto min-h-9 whitespace-normal py-2 text-start"
                 onClick={() => onSplit(preview.suggested_days[0] ?? [])}
               >
                 <Scissors className="size-4" aria-hidden />

@@ -416,7 +416,7 @@ async def create_or_plan(
         raise _http(exc) from exc
 
 
-@router.post("/manual", dependencies=[access.SESSION, limit("ai-generate")])
+@router.post("/manual", dependencies=[access.SESSION, limit("planner-edit")])
 async def create_manual_plan(
     payload: ManualPlanRequest,
     request: Request,
@@ -456,7 +456,7 @@ async def create_manual_plan(
         raise _http(exc) from exc
 
 
-@router.post("/manual/preview", dependencies=[access.SESSION, limit("ai-generate")])
+@router.post("/manual/preview", dependencies=[access.SESSION, limit("planner-edit")])
 async def preview_manual_plan(
     payload: ManualPreviewRequest,
     request: Request,

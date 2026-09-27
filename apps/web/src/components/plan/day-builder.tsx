@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronLeft, Loader2, MapPin, Plus } from "lucide-react";
+import { Check, ChevronLeft, Clock, Loader2, MapPin, Plus, Search } from "lucide-react";
 import { CatalogImage } from "@/components/browse/catalog-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Notice } from "@/components/ui/notice";
 import { DayPanel } from "@/components/plan/day-panel";
 import type { ManualPreview } from "@/lib/planner";
@@ -29,25 +30,31 @@ function PlaceCard({
   return (
     <div
       className={cn(
-        "grid overflow-hidden rounded-card border bg-surface-raised shadow-sm transition-colors",
+        "grid min-w-0 grid-cols-[6.5rem_minmax(0,1fr)] overflow-hidden rounded-card border bg-surface-raised shadow-sm transition-colors sm:grid-cols-1 sm:grid-rows-[auto_1fr]",
         added ? "border-brand ring-1 ring-brand/30" : "border-border-subtle",
       )}
     >
-      <span className="relative block aspect-[16/10] overflow-hidden">
+      <span className="relative block h-full min-h-28 overflow-hidden sm:aspect-[16/10] sm:h-auto sm:min-h-0">
         <CatalogImage src={place.image} alt={place.imageAlt} />
       </span>
-      <div className="grid gap-2 p-4">
-        <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-text-muted">
+      <div className="grid min-w-0 content-start gap-1.5 p-3 sm:gap-2 sm:p-4">
+        <span className="flex min-w-0 items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-text-muted">
           <MapPin className="size-3.5 shrink-0" aria-hidden />
-          {place.placeLabel}
+          <span className="truncate">{place.placeLabel}</span>
         </span>
-        <span className="title-card text-[1.1rem] leading-snug">{place.title}</span>
-        <span className="line-clamp-2 text-sm text-text-muted">{place.summary}</span>
+        <span className="title-card break-words text-base leading-snug sm:text-[1.1rem]">{place.title}</span>
+        {place.hours ? (
+          <span className="inline-flex items-center gap-1 text-xs text-text-muted">
+            <Clock className="size-3 shrink-0" aria-hidden />
+            {interpolate(copy.flowPlaceHours, { n: place.hours })}
+          </span>
+        ) : null}
+        <span className="hidden text-sm text-text-muted sm:line-clamp-2">{place.summary}</span>
         <Button
           type="button"
           size="sm"
           variant={added ? "outline" : "default"}
-          className="mt-1 w-fit"
+          className="mt-auto w-full sm:w-fit"
           aria-pressed={added}
           onClick={() => onToggle(place)}
         >
@@ -82,6 +89,8 @@ export function DayBuilder({
   towns,
   preview,
   checking,
+  failed = false,
+  notice,
   copy,
   locale,
   onToggle,
@@ -98,6 +107,9 @@ export function DayBuilder({
   towns: Destination[];
   preview: ManualPreview | null;
   checking: boolean;
+  failed?: boolean;
+  /** Shown above the grid, e.g. when an AI plan is being edited by hand. */
+  notice?: React.ReactNode;
   copy: PlannerCopy;
   locale: string;
   onToggle: (place: Experience) => void;
@@ -111,8 +123,15 @@ export function DayBuilder({
 }) {
   const [town, setTown] = React.useState<string>(ALL_TOWNS);
   const [dayOpen, setDayOpen] = React.useState(false);
+  const [query, setQuery] = React.useState("");
   const pickedSlugs = new Set(picks.map((item) => item.slug));
-  const shown = town === ALL_TOWNS ? places : places.filter((place) => place.destinationSlug === town);
+  const needle = query.trim().toLocaleLowerCase();
+  const inTown = town === ALL_TOWNS ? places : places.filter((place) => place.destinationSlug === town);
+  const shown = needle
+    ? inTown.filter((place) =>
+        `${place.title} ${place.placeLabel} ${place.summary}`.toLocaleLowerCase().includes(needle),
+      )
+    : inTown;
   const tabs = [{ slug: ALL_TOWNS, name: copy.flowAllDestinations }, ...towns];
 
   return (
@@ -123,6 +142,8 @@ export function DayBuilder({
         </h2>
         <p className="max-w-2xl text-text-muted">{copy.flowPickHint}</p>
       </div>
+
+      {notice}
 
       {towns.length > 1 ? (
         <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
@@ -152,20 +173,37 @@ export function DayBuilder({
         </div>
       ) : null}
 
+      {/* On a phone the day is one tap away rather than a scroll past the grid. */}
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full justify-between lg:hidden"
+        aria-expanded={dayOpen}
+        aria-controls="day-rail"
+        onClick={() => setDayOpen((value) => !value)}
+      >
+        <span>{dayOpen ? copy.dayPanelHide : copy.dayPanelShow}</span>
+        <Badge variant="secondary">{interpolate(copy.dayStopsCount, { n: picks.length })}</Badge>
+      </Button>
+
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
         <div className="grid min-w-0 gap-4">
-          {/* On a phone the day is one tap away rather than a scroll past the grid. */}
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full justify-between lg:hidden"
-            aria-expanded={dayOpen}
-            aria-controls="day-rail"
-            onClick={() => setDayOpen((value) => !value)}
-          >
-            <span>{dayOpen ? copy.dayPanelHide : copy.dayPanelShow}</span>
-            <Badge variant="secondary">{interpolate(copy.dayStopsCount, { n: picks.length })}</Badge>
-          </Button>
+          {places.length > 6 ? (
+            <label className="relative block">
+              <span className="sr-only">{copy.flowPickSearch}</span>
+              <Search
+                className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-text-muted"
+                aria-hidden
+              />
+              <Input
+                type="search"
+                value={query}
+                placeholder={copy.flowPickSearch}
+                className="ps-9"
+                onChange={(event) => setQuery(event.target.value)}
+              />
+            </label>
+          ) : null}
 
           {loading ? (
             <div className="grid place-items-center gap-2 py-16 text-text-muted">
@@ -184,14 +222,16 @@ export function DayBuilder({
               ))}
             </div>
           ) : (
-            <Notice role="status">{copy.flowPickEmpty}</Notice>
+            <Notice role="status">
+              {needle && inTown.length ? interpolate(copy.flowPickNoMatch, { q: query.trim() }) : copy.flowPickEmpty}
+            </Notice>
           )}
         </div>
 
         <div
           id="day-rail"
           className={cn(
-            "rounded-card border border-border-subtle bg-surface-raised p-4 shadow-sm md:p-5 lg:sticky lg:top-24 lg:block",
+            "order-first min-w-0 rounded-card border border-border-subtle bg-surface-raised p-4 shadow-sm md:p-5 lg:sticky lg:top-24 lg:order-none lg:block",
             dayOpen ? "block" : "hidden",
           )}
         >
@@ -199,6 +239,7 @@ export function DayBuilder({
             picks={picks}
             preview={preview}
             checking={checking}
+            failed={failed}
             copy={copy}
             locale={locale}
             onMove={onMove}
@@ -210,7 +251,8 @@ export function DayBuilder({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* Stays in reach on a phone, where the grid of places is long. */}
+      <div className="sticky bottom-2 z-10 flex flex-wrap items-center justify-between gap-3 rounded-card border border-border-subtle bg-surface/95 p-3 shadow-md backdrop-blur sm:static sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-none">
         <Button type="button" variant="ghost" onClick={onBack}>
           <ChevronLeft className="rtl:-scale-x-100" aria-hidden />
           {copy.flowBack}

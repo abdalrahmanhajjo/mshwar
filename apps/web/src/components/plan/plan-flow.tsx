@@ -109,6 +109,8 @@ export function PlanFlow({
   const [picks, setPicks] = React.useState<Experience[]>([]);
   const [manualTripId, setManualTripId] = React.useState<string | undefined>(undefined);
   const [acceptWarnings, setAcceptWarnings] = React.useState(false);
+  // Set while an AI plan is being edited by hand: how many of its stops could not come along.
+  const [editingAi, setEditingAi] = React.useState<{ dropped: number } | null>(null);
 
   const [session, setSession] = React.useState<PlannerSession | null>(null);
   const [versions, setVersions] = React.useState<{ version: number; origin: string; sealed_at: string | null }[]>([]);
@@ -133,7 +135,11 @@ export function PlanFlow({
   const sessionId = session?.session_id || undefined;
   const selectedDestination = destinations.find((item) => item.slug === destSlugs[0]) ?? null;
   const windowStart = `${date}T09:00:00`;
-  const { preview: dayPreview, checking: dayChecking } = useDayCheck({
+  const {
+    preview: dayPreview,
+    checking: dayChecking,
+    failed: dayCheckFailed,
+  } = useDayCheck({
     slugs: picks.map((item) => item.slug),
     destinationSlugs: Array.from(new Set(picks.map((item) => item.destinationSlug).filter(Boolean))),
     partySize: party,
@@ -297,7 +303,7 @@ export function PlanFlow({
       return;
     }
     setPending(true);
-    type ApiListingItem = Parameters<typeof listingFromApi>[0];
+    setError(null);
     try {
       const resolved = await Promise.all(
         slugs.map((slug) =>
@@ -308,44 +314,33 @@ export function PlanFlow({
       );
       const picksResolved = resolved.filter((item): item is Experience => item !== null);
       if (!picksResolved.length) {
+        setError(copy.flowNoPlanHint);
         return;
       }
+      // Every town the AI day touched, so all of its stops stay editable side by side.
+      const towns = Array.from(new Set(picksResolved.map((item) => item.destinationSlug).filter(Boolean)));
       setPicks(picksResolved);
       setMode("manual");
       setManualTripId(plan.trip_id);
-      const destination = picksResolved[0]?.destinationSlug;
-      if (destination) {
-        setDestSlugs([destination]);
-      }
-      setPlaceOptions([]);
-      setStep("places");
-      if (destination) {
-        setLoadingPlaces(true);
-        try {
-          const search = new URLSearchParams({ destination, page: "1", pageSize: "48" });
-          const data = await apiRequest<{ items: ApiListingItem[] }>(`/api/v1/catalogue/experiences?${search}`);
-          setPlaceOptions(data.items.map(listingFromApi));
-        } catch {
-          setPlaceOptions([]);
-        } finally {
-          setLoadingPlaces(false);
-        }
-      }
+      setAcceptWarnings(false);
+      setEditingAi({ dropped: plan.stops.length - picksResolved.length });
+      setDestSlugs(towns);
+      await openPlaces(towns);
     } finally {
       setPending(false);
     }
   }
 
-  async function openPlaces() {
+  async function openPlaces(towns: string[] = destSlugs) {
     setStep("places");
-    if (!destSlugs.length) {
+    if (!towns.length) {
       return;
     }
     setLoadingPlaces(true);
     try {
       // One request per town, so a single day can mix places from several of them.
       const pages = await Promise.all(
-        destSlugs.map((slug) => {
+        towns.map((slug) => {
           const search = new URLSearchParams({ destination: slug, page: "1", pageSize: "48" });
           return apiRequest<{ items: ApiListingItem[] }>(`/api/v1/catalogue/experiences?${search}`).catch(() => ({
             items: [] as ApiListingItem[],
@@ -438,6 +433,7 @@ export function PlanFlow({
     setDestSlugs([]);
     setManualTripId(undefined);
     setAcceptWarnings(false);
+    setEditingAi(null);
     setStep("destination");
   }
 
@@ -451,6 +447,7 @@ export function PlanFlow({
     setDestSlugs((current) => (next === "ai" ? current.slice(0, 1) : current));
     setManualTripId(undefined);
     setAcceptWarnings(false);
+    setEditingAi(null);
     setError(null);
     setStep("destination");
   }
@@ -512,7 +509,7 @@ export function PlanFlow({
             ))}
           </div>
 
-          <ol className="flex flex-wrap items-center gap-2 text-sm" aria-label={copy.flowStepReview}>
+          <ol className="flex min-w-0 flex-wrap items-center gap-1.5 text-sm sm:gap-2" aria-label={copy.flowStepReview}>
             {order.map((item, index) => {
               const done = index < activeIndex;
               const current = index === activeIndex;
@@ -531,9 +528,10 @@ export function PlanFlow({
                     <span className="grid size-5 place-items-center rounded-full bg-white/20 text-xs tabular-nums">
                       {done ? <Check className="size-3.5" aria-hidden /> : index + 1}
                     </span>
-                    {stepLabel(item)}
+                    {/* On a phone only the current step is named, so the row never outgrows the screen. */}
+                    <span className={cn(!current && "sr-only sm:not-sr-only")}>{stepLabel(item)}</span>
                   </span>
-                  {index < order.length - 1 ? <span className="h-px w-5 bg-border-subtle" aria-hidden /> : null}
+                  {index < order.length - 1 ? <span className="h-px w-3 bg-border-subtle sm:w-5" aria-hidden /> : null}
                 </li>
               );
             })}
@@ -669,6 +667,21 @@ export function PlanFlow({
           towns={destinations.filter((item) => destSlugs.includes(item.slug))}
           preview={dayPreview}
           checking={dayChecking}
+          failed={dayCheckFailed}
+          notice={
+            editingAi ? (
+              <Notice role="status">
+                <span className="grid gap-1">
+                  <span>{copy.flowEditingAi}</span>
+                  {editingAi.dropped > 0 ? (
+                    <span className="text-text-muted">
+                      {interpolate(copy.flowEditDropped, { n: editingAi.dropped })}
+                    </span>
+                  ) : null}
+                </span>
+              </Notice>
+            ) : null
+          }
           copy={copy}
           locale={locale}
           onToggle={togglePick}

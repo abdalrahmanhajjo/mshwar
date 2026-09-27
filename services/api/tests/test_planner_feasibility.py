@@ -179,3 +179,43 @@ def test_traffic_duration_wins_over_free_flow() -> None:
     assert leg.duration_seconds == 3300
     assert leg.traffic_aware is True
     assert leg.traffic_delay_seconds == 900
+
+
+def test_suggested_order_is_the_shortest_drive() -> None:
+    # Start in Beirut; the shortest day runs north along the coast, not back and forth.
+    picks = [
+        _candidate("batroun-walls", BATROUN, "batroun"),
+        _candidate("byblos-port", BYBLOS, "byblos"),
+        _candidate("tripoli-citadel", TRIPOLI, "tripoli"),
+    ]
+    ordered = suggest_order(picks, 33.8938, 35.5018)
+    assert [item.slug for item in ordered] == ["byblos-port", "batroun-walls", "tripoli-citadel"]
+
+
+def test_suggested_order_keeps_the_travellers_order_when_nothing_is_gained() -> None:
+    picks = [_candidate("byblos-port", BYBLOS, "byblos"), _candidate("batroun-walls", BATROUN, "batroun")]
+    assert suggest_order(picks, 33.8938, 35.5018) == picks
+
+
+def test_suggested_order_moves_an_evening_place_to_the_evening() -> None:
+    start = datetime(2026, 9, 26, 9, 0, tzinfo=BEIRUT)
+    evening = [{"weekday": day, "opens": "18:00", "closes": "01:00"} for day in range(7)]
+    daytime = [{"weekday": day, "opens": "08:00", "closes": "17:00"} for day in range(7)]
+    picks = [
+        _candidate("byblos-bowling", BYBLOS, "byblos", hours=evening, duration_minutes=120),
+        _candidate("byblos-port", BYBLOS, "byblos", hours=daytime, duration_minutes=240),
+        _candidate("byblos-castle", BYBLOS, "byblos", hours=daytime, duration_minutes=240),
+    ]
+    ordered = suggest_order(picks, 33.8938, 35.5018, start)
+    assert ordered[-1].slug == "byblos-bowling"
+    report, _timings = _assess(picks, window_start=start, return_by=start + timedelta(hours=14))
+    assert report.order_fixes_hours is True
+    assert report.suggested_order[-1] == "byblos-bowling"
+
+
+def test_suggested_order_solves_many_stops_without_dropping_any() -> None:
+    picks = [
+        _candidate(f"stop-{index}", (33.9 + index * 0.03, 35.5 + (index % 3) * 0.02), "byblos") for index in range(12)
+    ]
+    ordered = suggest_order(picks, 33.8938, 35.5018)
+    assert sorted(item.slug for item in ordered) == sorted(item.slug for item in picks)

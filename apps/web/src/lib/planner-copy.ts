@@ -173,6 +173,14 @@ export type PlannerKey =
   | "dayCheckBlocked"
   | "dayReorder"
   | "dayReorderSaves"
+  | "dayReorderBest"
+  | "dayReorderHours"
+  | "dayCheckFailed"
+  | "flowPickSearch"
+  | "flowPlaceHours"
+  | "flowPickNoMatch"
+  | "flowEditingAi"
+  | "flowEditDropped"
   | "daySplit"
   | "daySaveAnyway"
   | "issueRegionSpread"
@@ -464,6 +472,15 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     dayCheckBlocked: "Something needs to change before this day can be saved.",
     dayReorder: "Use the shortest driving order",
     dayReorderSaves: "saves about {n} min",
+    dayReorderBest: "Use the best order",
+    dayReorderHours: "reaches each place while it’s open",
+    dayCheckFailed:
+      "We couldn’t check the day just now. Your places are kept — it will try again when you change something.",
+    flowPickSearch: "Search places",
+    flowPlaceHours: "About {n} h",
+    flowPickNoMatch: "No places match “{q}”.",
+    flowEditingAi: "You’re editing the AI plan. Add, remove or reorder stops, then save.",
+    flowEditDropped: "{n} stop(s) from the AI plan are no longer listed and were left out.",
     daySplit: "Split into {n} days",
     daySaveAnyway: "Save it anyway",
     issueRegionSpread: "{a} and {b} are about {km} km apart — too far for one day.",
@@ -754,6 +771,14 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     dayCheckBlocked: "هناك ما يجب تعديله قبل حفظ هذا اليوم.",
     dayReorder: "استخدم الترتيب الأقصر قيادةً",
     dayReorderSaves: "يوفّر نحو {n} دقيقة",
+    dayReorderBest: "استخدم أفضل ترتيب",
+    dayReorderHours: "يصل إلى كل مكان وهو مفتوح",
+    dayCheckFailed: "تعذّر التحقق من اليوم الآن. أماكنك محفوظة — سنعيد المحاولة عند أي تغيير.",
+    flowPickSearch: "ابحث عن مكان",
+    flowPlaceHours: "حوالي {n} ساعة",
+    flowPickNoMatch: "لا توجد أماكن تطابق «{q}».",
+    flowEditingAi: "أنت تعدّل خطة الذكاء الاصطناعي. أضف المحطات أو احذفها أو غيّر ترتيبها، ثم احفظ.",
+    flowEditDropped: "{n} من محطات خطة الذكاء الاصطناعي لم تعد مدرجة وتُركت خارج الخطة.",
     daySplit: "قسّمه إلى {n} أيام",
     daySaveAnyway: "احفظه على أي حال",
     issueRegionSpread: "{a} و{b} تبعدان نحو {km} كم — بعيدتان جداً ليوم واحد.",
@@ -1052,6 +1077,15 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     dayCheckBlocked: "Quelque chose doit changer avant d’enregistrer cette journée.",
     dayReorder: "Adopter l’ordre le plus court",
     dayReorderSaves: "économise environ {n} min",
+    dayReorderBest: "Adopter le meilleur ordre",
+    dayReorderHours: "arrive à chaque lieu pendant ses horaires",
+    dayCheckFailed:
+      "Impossible de vérifier la journée pour le moment. Vos lieux sont conservés — nouvel essai au prochain changement.",
+    flowPickSearch: "Rechercher un lieu",
+    flowPlaceHours: "Environ {n} h",
+    flowPickNoMatch: "Aucun lieu ne correspond à « {q} ».",
+    flowEditingAi: "Vous modifiez le plan de l’IA. Ajoutez, retirez ou réordonnez des étapes, puis enregistrez.",
+    flowEditDropped: "{n} étape(s) du plan de l’IA ne sont plus proposées et ont été retirées.",
     daySplit: "Répartir sur {n} journées",
     daySaveAnyway: "Enregistrer quand même",
     issueRegionSpread: "{a} et {b} sont à environ {km} km l’une de l’autre — trop loin pour une journée.",
