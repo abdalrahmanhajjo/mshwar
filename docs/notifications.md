@@ -45,7 +45,7 @@ Manual resend is `POST /api/v1/admin/notifications/{id}/resend` with a reason (a
 | `SMTP_HOST`                       | empty                  | Empty = stub email                                                    |
 | `SMTP_PORT`                       | `587`                  | Used only when `SMTP_HOST` is set                                     |
 | `SMTP_USERNAME` / `SMTP_PASSWORD` | empty                  | Optional AUTH                                                         |
-| `SMTP_FROM`                       | `noreply@mshwar.local` | Envelope sender                                                       |
+| `SMTP_FROM`                       | `noreply@mshwarlb.com` | Envelope sender                                                       |
 | `SENDGRID_API_KEY`                | empty                  | Alternative provider. Empty keeps the stub                            |
 | `NOTIFICATION_MAX_ATTEMPTS`       | `8`                    | Dead-letter limit                                                     |
 | `NOTIFICATION_DISPATCH_TOKEN`     | empty                  | Required in production for `/notifications/dispatch`                  |

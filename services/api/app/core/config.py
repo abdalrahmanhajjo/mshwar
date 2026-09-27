@@ -182,7 +182,7 @@ class Settings(BaseSettings):
     smtp_username: str = Field(default="", validation_alias=AliasChoices("SMTP_USERNAME", "smtp_username"))
     smtp_password: str = Field(default="", validation_alias=AliasChoices("SMTP_PASSWORD", "smtp_password"))
     smtp_from: str = Field(
-        default="noreply@mshwar.local",
+        default="noreply@mshwarlb.com",
         validation_alias=AliasChoices("SMTP_FROM", "smtp_from"),
     )
     sendgrid_api_key: str = Field(default="", validation_alias=AliasChoices("SENDGRID_API_KEY", "sendgrid_api_key"))
