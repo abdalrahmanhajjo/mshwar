@@ -231,6 +231,9 @@ def _rules() -> dict[str, Rule]:
         ),
         Rule("search", Allowance(60, minute), Allowance(120, minute), "Catalogue browse and search"),
         Rule("ai-generate", None, Allowance(20, 10 * minute), "AI trip generation, clarify, refine, regenerate"),
+        # Manual day building: every add, remove or reorder re-checks the day. No model
+        # is called, so it gets its own, larger allowance and never spends the AI one.
+        Rule("planner-edit", None, Allowance(300, 10 * minute), "Manual day checks and manual plan saves"),
         Rule("maps", None, Allowance(90, 10 * minute), "Routing, weather and place lookups (paid providers)"),
         Rule("booking", None, Allowance(30, 10 * minute), "Checkout drafts, commits, payments, cancellations"),
         Rule("booking-ip", Allowance(120, 10 * minute), None, "All booking writes from one IP"),

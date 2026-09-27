@@ -18,7 +18,7 @@ Three families of check:
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -86,6 +86,9 @@ class FeasibilityReport(BaseModel):
     issues: list[DayIssue] = Field(default_factory=list)
     suggested_order: list[str] = Field(default_factory=list)
     order_saves_minutes: int = 0
+    #: The suggested order reaches more stops while they are open (less waiting,
+    #: fewer closed doors), even when it drives the same or a little further.
+    order_fixes_hours: bool = False
 
 
 def _hhmm(value: Any) -> str | None:
@@ -107,21 +110,183 @@ def spread_metres(candidates: list[CandidateRecord]) -> tuple[int, tuple[str, st
     return worst, pair
 
 
-def suggest_order(
-    candidates: list[CandidateRecord], start_lat: float | None, start_lng: float | None
+#: Up to this many picks the order is solved exactly; above it, greedy plus 2-opt.
+EXACT_ORDER_LIMIT = 8
+#: Minutes of driving one hours conflict is worth: the solver drives up to this much
+#: further rather than arrive at a closed door.
+HOURS_PENALTY_MINUTES = 90
+
+
+def _drive_minutes(a_lat: float, a_lng: float, b_lat: float, b_lng: float) -> float:
+    return road_distance_m(a_lat, a_lng, b_lat, b_lng) / 1000 * 60 / KMH
+
+
+def _visit(candidate: CandidateRecord, arrive: datetime) -> tuple[datetime, float]:
+    """When the traveller leaves ``candidate`` after arriving at ``arrive``, and the
+    penalty in minutes: waiting for it to open, plus a flat cost for a closed door
+    or a visit that runs past closing."""
+    opens, closes, closed = opening_hours_for(candidate, arrive)
+    penalty = 0.0
+    start = arrive
+    if closed:
+        penalty += HOURS_PENALTY_MINUTES
+    elif opens is not None and closes is not None:
+        local = arrive.astimezone(BEIRUT)
+        opening = local.replace(hour=opens.hour, minute=opens.minute, second=0, microsecond=0)
+        closing = local.replace(hour=closes.hour, minute=closes.minute, second=0, microsecond=0)
+        if closing <= opening:
+            # Open past midnight (a bowling alley closing at 01:00).
+            closing += timedelta(days=1)
+        if opening > local:
+            wait = (opening - local).total_seconds() / 60
+            penalty += wait
+            start = arrive + (opening - local)
+        if start + timedelta(minutes=candidate.duration_minutes) > closing:
+            penalty += HOURS_PENALTY_MINUTES
+    return start + timedelta(minutes=candidate.duration_minutes), penalty
+
+
+def order_cost(
+    candidates: list[CandidateRecord],
+    start_lat: float | None,
+    start_lng: float | None,
+    window_start: datetime | None = None,
+) -> tuple[float, float]:
+    """(driving minutes, hours penalty minutes) for visiting ``candidates`` in this order."""
+    drive = 0.0
+    total = 0.0
+    lat, lng = start_lat, start_lng
+    clock = window_start
+    for candidate in candidates:
+        if lat is not None and lng is not None:
+            drive += _drive_minutes(lat, lng, candidate.lat, candidate.lng)
+        cost, clock = _step(lat, lng, candidate, clock)
+        total += cost
+        lat, lng = candidate.lat, candidate.lng
+    return drive, total - drive
+
+
+def _step(
+    lat: float | None, lng: float | None, target: CandidateRecord, clock: datetime | None
+) -> tuple[float, datetime | None]:
+    """Cost of driving to ``target`` and visiting it, and the clock when it is left."""
+    leg = _drive_minutes(lat, lng, target.lat, target.lng) if lat is not None and lng is not None else 0.0
+    if clock is None:
+        return leg, None
+    leaves, penalty = _visit(target, clock + timedelta(minutes=leg))
+    return leg + penalty, leaves
+
+
+_State = tuple[float, datetime | None, int]
+
+
+def _unwind(best: dict[tuple[int, int], _State], count: int) -> list[int]:
+    full = (1 << count) - 1
+    last = min(range(count), key=lambda item: (best[(full, item)][0], item))
+    order: list[int] = []
+    mask = full
+    while last != -1:
+        order.append(last)
+        prev = best[(mask, last)][2]
+        mask &= ~(1 << last)
+        last = prev
+    return order[::-1]
+
+
+def _exact_order(
+    candidates: list[CandidateRecord],
+    start_lat: float | None,
+    start_lng: float | None,
+    window_start: datetime | None,
+) -> list[int]:
+    """Held-Karp over (visited set, last stop). Each state keeps its cheapest path and
+    the clock at which that path leaves the last stop, so opening hours are judged on
+    the real arrival time of the path being extended."""
+    count = len(candidates)
+    # best[(mask, last)] = (cost, clock leaving last, previous last)
+    best: dict[tuple[int, int], _State] = {}
+    for index, candidate in enumerate(candidates):
+        cost, clock = _step(start_lat, start_lng, candidate, window_start)
+        best[(1 << index, index)] = (cost, clock, -1)
+    for mask in range(1, 1 << count):
+        for last in range(count):
+            state = best.get((mask, last))
+            if state is None:
+                continue
+            here = candidates[last]
+            for nxt in range(count):
+                if mask & (1 << nxt):
+                    continue
+                cost, clock = _step(here.lat, here.lng, candidates[nxt], state[1])
+                key = (mask | (1 << nxt), nxt)
+                current = best.get(key)
+                if current is None or state[0] + cost < current[0] - 1e-9:
+                    best[key] = (state[0] + cost, clock, last)
+    return _unwind(best, count)
+
+
+def _greedy_order(
+    candidates: list[CandidateRecord],
+    start_lat: float | None,
+    start_lng: float | None,
+    window_start: datetime | None,
 ) -> list[CandidateRecord]:
-    """Nearest-neighbour from the start point. Cheap, deterministic, no provider calls."""
-    if start_lat is None or start_lng is None or len(candidates) < 3:
-        return list(candidates)
+    """Nearest-neighbour, then 2-opt until no reversal lowers the cost."""
     remaining = list(candidates)
     ordered: list[CandidateRecord] = []
-    lat, lng = start_lat, start_lng
+    lat, lng = (
+        (start_lat, start_lng)
+        if start_lat is not None and start_lng is not None
+        else (
+            candidates[0].lat,
+            candidates[0].lng,
+        )
+    )
     while remaining:
         nearest = min(remaining, key=lambda item: road_distance_m(lat, lng, item.lat, item.lng))
         remaining.remove(nearest)
         ordered.append(nearest)
         lat, lng = nearest.lat, nearest.lng
+
+    def cost(order: list[CandidateRecord]) -> float:
+        drive, penalty = order_cost(order, start_lat, start_lng, window_start)
+        return drive + penalty
+
+    current = cost(ordered)
+    improved = True
+    while improved:
+        improved = False
+        for i in range(len(ordered) - 1):
+            for j in range(i + 1, len(ordered)):
+                trial = ordered[:i] + ordered[i : j + 1][::-1] + ordered[j + 1 :]
+                trial_cost = cost(trial)
+                if trial_cost < current - 1e-9:
+                    ordered, current, improved = trial, trial_cost, True
     return ordered
+
+
+def suggest_order(
+    candidates: list[CandidateRecord],
+    start_lat: float | None,
+    start_lng: float | None,
+    window_start: datetime | None = None,
+) -> list[CandidateRecord]:
+    """The order with the least driving that also reaches each stop while it is open.
+
+    Exact (Held-Karp) up to ``EXACT_ORDER_LIMIT`` picks, greedy plus 2-opt above it.
+    Opening hours count only when ``window_start`` is known. Deterministic and free:
+    straight-line road estimates, no provider calls. The traveller's order is kept
+    unless the suggestion is strictly better, so ties never shuffle their day.
+    """
+    if len(candidates) < 2:
+        return list(candidates)
+    if len(candidates) <= EXACT_ORDER_LIMIT:
+        suggested = [candidates[index] for index in _exact_order(candidates, start_lat, start_lng, window_start)]
+    else:
+        suggested = _greedy_order(candidates, start_lat, start_lng, window_start)
+    mine = sum(order_cost(candidates, start_lat, start_lng, window_start))
+    theirs = sum(order_cost(suggested, start_lat, start_lng, window_start))
+    return suggested if theirs < mine - 0.5 else list(candidates)
 
 
 def _driving_metres(candidates: list[CandidateRecord], start_lat: float | None, start_lng: float | None) -> int:
@@ -266,7 +431,13 @@ def assess(
 
     issues.extend(_hours_issues(timings))
 
-    suggested = suggest_order(candidates, constraints.start_lat, constraints.start_lng)
+    suggested = suggest_order(candidates, constraints.start_lat, constraints.start_lng, constraints.window_start)
+    _drive_now, penalty_now = order_cost(
+        candidates, constraints.start_lat, constraints.start_lng, constraints.window_start
+    )
+    _drive_new, penalty_new = order_cost(
+        suggested, constraints.start_lat, constraints.start_lng, constraints.window_start
+    )
     saved_m = _driving_metres(candidates, constraints.start_lat, constraints.start_lng) - _driving_metres(
         suggested, constraints.start_lat, constraints.start_lng
     )
@@ -281,6 +452,7 @@ def assess(
         issues=issues,
         suggested_order=[item.slug for item in suggested],
         order_saves_minutes=max(int(saved_m / 1000 * 60 / KMH), 0) if saved_m > 0 else 0,
+        order_fixes_hours=penalty_new < penalty_now - 0.5,
     )
     return report, timings
 
@@ -309,5 +481,6 @@ __all__ = [
     "day_split",
     "spread_metres",
     "stop_timings",
+    "order_cost",
     "suggest_order",
 ]

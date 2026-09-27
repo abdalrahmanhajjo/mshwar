@@ -132,8 +132,34 @@ describe("day panel", () => {
         feasibility: { ...preview().feasibility, suggested_order: ["b", "a"], order_saves_minutes: 25 },
       }),
     });
-    fireEvent.click(screen.getByRole("button", { name: /shortest driving order/i }));
+    fireEvent.click(screen.getByRole("button", { name: /best order.*saves about 25 min/i }));
     expect(onReorder).toHaveBeenCalledWith(["b", "a"]);
+  });
+
+  it("offers a better order when it reaches places while they are open", () => {
+    const onReorder = vi.fn();
+    renderPanel({
+      onReorder,
+      preview: preview({
+        feasibility: { ...preview().feasibility, suggested_order: ["b", "a"], order_fixes_hours: true },
+      }),
+    });
+    fireEvent.click(screen.getByRole("button", { name: /reaches each place while it’s open/i }));
+    expect(onReorder).toHaveBeenCalledWith(["b", "a"]);
+  });
+
+  it("hides the order button when the day is already in the suggested order", () => {
+    renderPanel({
+      preview: preview({
+        feasibility: { ...preview().feasibility, suggested_order: ["saida-souks"], order_saves_minutes: 5 },
+      }),
+    });
+    expect(screen.queryByRole("button", { name: /best order/i })).not.toBeInTheDocument();
+  });
+
+  it("keeps the day on screen and says so when the check fails", () => {
+    renderPanel({ failed: true });
+    expect(screen.getByText(/couldn’t check the day just now/i)).toBeInTheDocument();
   });
 
   it("removes the stop the traveller points at, not the first one", () => {

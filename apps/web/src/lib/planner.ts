@@ -509,6 +509,8 @@ export type FeasibilityReport = {
   issues: DayIssue[];
   suggested_order: string[];
   order_saves_minutes: number;
+  /** The suggested order reaches more stops while they are open. */
+  order_fixes_hours?: boolean;
 };
 
 export type ManualStopTiming = {
