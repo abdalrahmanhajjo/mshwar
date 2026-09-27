@@ -87,6 +87,11 @@ html[lang="ar"] body {
   outline-offset: 2px;
 }
 
+/* Headings focused from script (to announce a new screen) are not controls. */
+:is(h1, h2)[tabindex="-1"]:focus-visible {
+  outline: none;
+}
+
 .unicode-bidi-isolate {
   unicode-bidi: isolate;
 }

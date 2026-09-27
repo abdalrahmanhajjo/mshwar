@@ -193,23 +193,24 @@ test.describe("MSHWAR-29 recovery routes", () => {
     await page.goto("/forgot-password");
     await page.getByLabel("Email").fill("ada@example.com");
     await page.getByRole("button", { name: "Send reset link" }).click();
-    await expect(page.getByRole("status")).toHaveText(
+    await expect(page.getByRole("status")).toContainText(
       "If an account exists for this address, a reset link has been sent.",
     );
+    await expect(page.getByText(/Check your Spam or Junk folder/)).toBeVisible();
     await expect(page).toHaveURL(/\/forgot-password$/);
   });
 
   test("forgot-password is usable at 390px and 1440px", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/forgot-password");
-    await expect(page.getByRole("heading", { name: "Forgot password?" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Forgot your password?" })).toBeVisible();
     await expect(page.getByLabel("Email")).toBeVisible();
     await expect(page.getByRole("button", { name: "Send reset link" })).toBeVisible();
     await assertNoHorizontalScroll(page);
 
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/forgot-password");
-    await expect(page.getByRole("link", { name: "Back to sign in" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Back to sign in" }).first()).toBeVisible();
     await assertNoHorizontalScroll(page);
   });
 
@@ -217,13 +218,15 @@ test.describe("MSHWAR-29 recovery routes", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/reset-password");
     // Suspense can briefly keep a hidden streamed copy outside the page landmark.
-    await expect(page.getByRole("main").getByText("This reset link is invalid or has expired.")).toBeVisible();
+    await expect(
+      page.getByRole("main").getByRole("heading", { name: "This reset link has expired or was already used" }),
+    ).toBeVisible();
     await expect(page.getByRole("main").getByLabel("New password")).toHaveCount(0);
     await assertNoHorizontalScroll(page);
 
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/reset-password?token=demo-token");
-    await expect(page.getByLabel("New password")).toBeVisible();
+    await expect(page.getByLabel("New password", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Update password" })).toBeVisible();
     await assertNoHorizontalScroll(page);
   });
@@ -233,7 +236,7 @@ test.describe("MSHWAR-30 verification routes", () => {
   test("verify-email is usable at 390px and 1440px", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/verify-email");
-    await expect(page.getByRole("heading", { name: "Verify email" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Verify your email" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Resend verification email" })).toBeVisible();
     await assertNoHorizontalScroll(page);
 
@@ -263,16 +266,16 @@ test.describe("MSHWAR-28 auth routes", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/plan");
     await expect(page).toHaveURL(/\/signin\?next=/);
-    await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
     await expect(page.getByLabel("Email")).toBeVisible();
-    await expect(page.getByLabel("Password")).toBeVisible();
+    await expect(page.getByLabel("Password", { exact: true })).toBeVisible();
     await assertNoHorizontalScroll(page);
   });
 
   test("sign-up is usable at 390px and 1440px", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/signup");
-    await expect(page.getByRole("heading", { name: "Sign up" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Create your Mshwar account" })).toBeVisible();
     await expect(page.getByLabel("Display name")).toBeVisible();
     await assertNoHorizontalScroll(page);
 
@@ -626,7 +629,8 @@ test.describe("MSHWAR-105 Arabic RTL MVP matrix", () => {
         await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
         // Destinations (and other catalogue pages) can stream a second shell while
         // `loadDestinations()` waits on a down API. Assert the visible chrome.
-        const shell = page.locator("[data-shell='traveller']").first();
+        // Signed-out /plan lands on sign-in, which has its own minimal auth shell.
+        const shell = page.locator("[data-shell='traveller'], [data-shell='auth']").first();
         await expect(shell).toBeVisible();
         await expect(shell).toHaveAttribute("dir", "rtl");
         await assertNoHorizontalScroll(page);
