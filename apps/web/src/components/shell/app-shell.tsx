@@ -134,7 +134,7 @@ export function AppShell({ surface, children, auth, currentPath, items: itemsOve
           >
             <div
               className={cn(
-                "shell-frame grid grid-cols-[1fr_auto] items-center gap-3 py-2 transition-[min-height] duration-200 lg:grid-cols-[1fr_auto_1fr]",
+                "shell-frame grid grid-cols-[1fr_auto] items-center gap-2 py-2 min-[360px]:gap-3 transition-[min-height] duration-200 lg:grid-cols-[1fr_auto_1fr]",
                 scrolled ? "min-h-14 lg:min-h-16" : "min-h-16 lg:min-h-[4.5rem]",
               )}
             >

@@ -41,7 +41,8 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
             aria-label={LOCALE_LABELS[item]}
             onClick={() => onSelect(item)}
             className={cn(
-              "inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors",
+              // Slightly narrower below 360px so the header fits beside the logo on small phones.
+              "inline-flex h-8 min-w-8 items-center justify-center rounded-pill px-1.5 text-xs font-semibold tracking-wide transition-colors min-[360px]:min-w-9 min-[360px]:px-2",
               !compact && "h-10 flex-1 text-sm",
               focusRing,
               active ? "bg-brand text-brand-foreground" : "text-text-muted hover:bg-surface-sunken hover:text-text",

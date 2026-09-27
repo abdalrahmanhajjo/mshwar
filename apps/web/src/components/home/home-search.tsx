@@ -13,7 +13,11 @@ import { MOOD_CATEGORIES, useMoodLabel } from "@/components/home/moods";
 
 const PARTY_SIZES = [1, 2, 3, 4, 5, 6, 8, 10, 12];
 
-/** One labelled cell of the search bar. The whole cell is the hit area; the control stays native. */
+/**
+ * One labelled cell of the search bar. The native control is stretched over the whole
+ * cell, so a tap anywhere on it opens the picker (not just the small value line), and
+ * the icon and label sit on top without catching the tap.
+ */
 function Field({
   icon: Icon,
   label,
@@ -30,23 +34,28 @@ function Field({
   return (
     <div
       className={cn(
-        "relative flex min-w-0 items-center gap-3 rounded-[0.875rem] px-4 py-2.5 transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70",
+        "relative min-h-[3.875rem] min-w-0 rounded-[0.875rem] transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70",
         className,
       )}
     >
-      <Icon className="size-[1.1rem] shrink-0 text-text-muted" strokeWidth={1.6} aria-hidden />
-      <div className="grid min-w-0 flex-1">
-        <label htmlFor={htmlFor} className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-text-muted">
-          {label}
-        </label>
-        {children}
-      </div>
+      {children}
+      <Icon
+        className="pointer-events-none absolute start-4 top-1/2 size-[1.1rem] -translate-y-1/2 text-text-muted"
+        strokeWidth={1.6}
+        aria-hidden
+      />
+      <label
+        htmlFor={htmlFor}
+        className="pointer-events-none absolute start-[2.875rem] top-2.5 text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.12em] text-text-muted"
+      >
+        {label}
+      </label>
     </div>
   );
 }
 
 const control =
-  "w-full min-w-0 cursor-pointer appearance-none truncate bg-transparent py-0.5 text-[0.9375rem] font-medium text-text outline-none [&::-webkit-calendar-picker-indicator]:opacity-60";
+  "absolute inset-0 h-full w-full min-w-0 cursor-pointer appearance-none truncate rounded-[inherit] bg-transparent pb-2 pe-4 ps-[2.875rem] pt-[1.5rem] text-start text-[1rem] font-medium leading-tight text-text outline-none";
 
 /**
  * The hero search: where, when, how many and what kind. It hands off to the
@@ -106,8 +115,25 @@ export function HomeSearch({ destinations }: { destinations: Destination[] }) {
           type="date"
           value={date}
           onChange={(event) => setDate(event.target.value)}
-          className={cn(control, !date && "text-text-muted")}
+          // A tap anywhere on the cell opens the calendar (desktop browsers otherwise need the tiny icon).
+          onClick={(event) => {
+            try {
+              event.currentTarget.showPicker?.();
+            } catch {
+              // Not allowed here (e.g. inside a cross-origin frame): the native control still works.
+            }
+          }}
+          // Empty date inputs show "mm/dd/yyyy" (or nothing on iOS); show a word instead.
+          className={cn(control, "[&::-webkit-calendar-picker-indicator]:hidden", !date && "text-transparent")}
         />
+        {!date ? (
+          <span
+            className="pointer-events-none absolute inset-0 flex items-center pb-2 pe-4 ps-[2.875rem] pt-[1.5rem] text-[1rem] font-medium leading-tight text-text-muted"
+            aria-hidden
+          >
+            {copy.searchWhenAny}
+          </span>
+        ) : null}
       </Field>
       <Field icon={Users} label={copy.searchGuests} htmlFor="home-party" className={divider}>
         <select
@@ -119,7 +145,7 @@ export function HomeSearch({ destinations }: { destinations: Destination[] }) {
         >
           {PARTY_SIZES.map((count) => (
             <option key={count} value={count}>
-              {interpolate(copy.searchGuestsValue, { n: count })}
+              {count === 1 ? copy.searchGuestsOne : interpolate(copy.searchGuestsValue, { n: count })}
             </option>
           ))}
         </select>

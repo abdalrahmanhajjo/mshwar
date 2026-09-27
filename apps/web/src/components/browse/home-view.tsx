@@ -37,7 +37,7 @@ export function HomeView({
     <div className="pb-24 md:pb-8">
       <HomeHero image={heroImage} destinations={destinations} />
       <WhyMshwar />
-      <div className="grid gap-20 pt-16 md:gap-24 md:pt-20 lg:gap-28">
+      <div className="grid gap-16 pt-14 md:gap-24 md:pt-20 lg:gap-28">
         <MoodGrid destinations={destinations} />
         <FeaturedExperiences experiences={experiences} />
         <PlannerShowcase />

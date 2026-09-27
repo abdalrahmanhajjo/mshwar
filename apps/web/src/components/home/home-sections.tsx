@@ -79,7 +79,7 @@ function TextLink({ href, children }: { href: string; children: React.ReactNode 
     <LocaleLink
       href={href}
       className={cn(
-        "group inline-flex items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text",
+        "group inline-flex min-h-10 items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text",
         focusRing,
       )}
     >
@@ -187,7 +187,7 @@ export function MoodGrid({ destinations }: { destinations: Destination[] }) {
   return (
     <section aria-labelledby="home-moods" className="shell-frame grid gap-8">
       <SectionHead id="home-moods" kicker={copy.moodKicker} title={copy.moodTitle} />
-      <ul className="scrollbar-hide -mx-[var(--layout-gutter-mobile)] flex snap-x snap-mandatory gap-3 overflow-x-auto px-[var(--layout-gutter-mobile)] pb-1 lg:mx-0 lg:grid lg:auto-rows-[12.5rem] lg:grid-cols-4 lg:gap-4 lg:overflow-visible lg:px-0">
+      <ul className="scrollbar-hide -mx-[var(--layout-gutter-mobile)] flex snap-x snap-mandatory scroll-px-[var(--layout-gutter-mobile)] gap-3 overflow-x-auto px-[var(--layout-gutter-mobile)] pb-1 lg:mx-0 lg:grid lg:auto-rows-[12.5rem] lg:grid-cols-4 lg:gap-4 lg:overflow-visible lg:px-0">
         {MOOD_ORDER.map((slug) => {
           if (slug === "all") {
             return (
@@ -299,7 +299,7 @@ export function FeaturedExperiences({ experiences }: { experiences: Experience[]
       />
       <ul
         ref={rail}
-        className="scrollbar-hide -mx-[var(--layout-gutter-mobile)] flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-[var(--layout-gutter-mobile)] pb-2 md:mx-0 md:gap-5 md:px-0"
+        className="scrollbar-hide -mx-[var(--layout-gutter-mobile)] flex snap-x snap-mandatory scroll-px-[var(--layout-gutter-mobile)] gap-4 overflow-x-auto scroll-smooth px-[var(--layout-gutter-mobile)] pb-2 md:mx-0 md:scroll-px-0 md:gap-5 md:px-0"
       >
         {experiences.map((experience) => (
           <li
@@ -412,7 +412,7 @@ export function PlannerShowcase() {
                         {index + 1}
                       </span>
                       <span className="grid min-w-0">
-                        <span className="truncate text-[0.9375rem] font-semibold">{stop.title}</span>
+                        <span className="text-pretty text-[0.9375rem] font-semibold leading-snug">{stop.title}</span>
                         <span className="text-[0.8125rem] text-text-muted">{stop.place}</span>
                       </span>
                       <span className="text-sm font-medium tabular-nums text-text-muted">{stop.time}</span>
@@ -652,7 +652,7 @@ export function StayInspired() {
 
   return (
     <section aria-labelledby="home-inspired" className="shell-frame">
-      <div className="surface-grain grid items-center gap-8 rounded-[1.5rem] bg-surface-sunken px-6 py-10 sm:px-10 lg:grid-cols-12 lg:gap-8 lg:px-14 lg:py-14">
+      <div className="surface-grain grid items-center gap-8 rounded-[1.5rem] bg-surface-sunken px-5 py-10 min-[360px]:px-6 sm:px-10 lg:grid-cols-12 lg:gap-8 lg:px-14 lg:py-14">
         <div className="grid gap-3 lg:col-span-6">
           <h2
             id="home-inspired"
@@ -670,11 +670,14 @@ export function StayInspired() {
             <input
               id="home-email"
               type="email"
+              inputMode="email"
+              autoCapitalize="none"
+              spellCheck={false}
               required
               autoComplete="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="h-12 min-w-0 flex-1 rounded-pill border border-border bg-surface-raised px-5 text-[0.9375rem] text-text outline-none transition-colors duration-150 placeholder:text-text-muted focus:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]"
+              className="h-12 w-full min-w-0 rounded-pill border border-border bg-surface-raised px-5 text-base sm:flex-1 sm:text-[0.9375rem] text-text outline-none transition-colors duration-150 placeholder:text-text-muted focus:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]"
             />
             <button
               type="submit"

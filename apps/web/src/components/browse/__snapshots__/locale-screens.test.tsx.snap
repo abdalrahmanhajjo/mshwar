@@ -106,11 +106,52 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
             role="search"
           >
             <div
-              class="relative flex min-w-0 items-center gap-3 rounded-[0.875rem] px-4 py-2.5 transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 col-span-2 lg:col-span-1"
+              class="relative min-h-[3.875rem] min-w-0 rounded-[0.875rem] transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 col-span-2 lg:col-span-1"
             >
+              <select
+                class="absolute inset-0 h-full w-full min-w-0 cursor-pointer appearance-none truncate rounded-[inherit] bg-transparent pb-2 pe-4 ps-[2.875rem] pt-[1.5rem] text-start text-[1rem] font-medium leading-tight text-text outline-none"
+                id="home-where"
+                name="destination"
+              >
+                <option
+                  value=""
+                >
+                  أي مكان في لبنان
+                </option>
+                <option
+                  value="byblos"
+                >
+                  Byblos
+                </option>
+                <option
+                  value="batroun"
+                >
+                  Batroun
+                </option>
+                <option
+                  value="bsharri"
+                >
+                  Bsharri
+                </option>
+                <option
+                  value="qadisha-valley"
+                >
+                  Qadisha Valley
+                </option>
+                <option
+                  value="baalbek"
+                >
+                  Baalbek
+                </option>
+                <option
+                  value="beirut"
+                >
+                  Beirut
+                </option>
+              </select>
               <svg
                 aria-hidden="true"
-                class="lucide lucide-map-pin size-[1.1rem] shrink-0 text-text-muted"
+                class="lucide lucide-map-pin pointer-events-none absolute start-4 top-1/2 size-[1.1rem] -translate-y-1/2 text-text-muted"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -130,64 +171,32 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                   r="3"
                 />
               </svg>
-              <div
-                class="grid min-w-0 flex-1"
+              <label
+                class="pointer-events-none absolute start-[2.875rem] top-2.5 text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.12em] text-text-muted"
+                for="home-where"
               >
-                <label
-                  class="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-text-muted"
-                  for="home-where"
-                >
-                  إلى أين
-                </label>
-                <select
-                  class="w-full min-w-0 cursor-pointer appearance-none truncate bg-transparent py-0.5 text-[0.9375rem] font-medium text-text outline-none [&::-webkit-calendar-picker-indicator]:opacity-60"
-                  id="home-where"
-                  name="destination"
-                >
-                  <option
-                    value=""
-                  >
-                    أي مكان في لبنان
-                  </option>
-                  <option
-                    value="byblos"
-                  >
-                    Byblos
-                  </option>
-                  <option
-                    value="batroun"
-                  >
-                    Batroun
-                  </option>
-                  <option
-                    value="bsharri"
-                  >
-                    Bsharri
-                  </option>
-                  <option
-                    value="qadisha-valley"
-                  >
-                    Qadisha Valley
-                  </option>
-                  <option
-                    value="baalbek"
-                  >
-                    Baalbek
-                  </option>
-                  <option
-                    value="beirut"
-                  >
-                    Beirut
-                  </option>
-                </select>
-              </div>
+                إلى أين
+              </label>
             </div>
             <div
-              class="relative flex min-w-0 items-center gap-3 rounded-[0.875rem] px-4 py-2.5 transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 lg:rounded-none lg:border-s lg:border-border-subtle"
+              class="relative min-h-[3.875rem] min-w-0 rounded-[0.875rem] transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 lg:rounded-none lg:border-s lg:border-border-subtle"
             >
+              <input
+                class="absolute inset-0 h-full w-full min-w-0 cursor-pointer appearance-none truncate rounded-[inherit] bg-transparent pb-2 pe-4 ps-[2.875rem] pt-[1.5rem] text-start text-[1rem] font-medium leading-tight outline-none [&::-webkit-calendar-picker-indicator]:hidden text-transparent"
+                id="home-when"
+                name="date"
+                type="date"
+                value=""
+              />
+              <span
+                aria-hidden="true"
+                class="pointer-events-none absolute inset-0 flex items-center pb-2 pe-4 ps-[2.875rem] pt-[1.5rem] text-[1rem] font-medium leading-tight text-text-muted"
+              >
+                أي تاريخ
+              </span>
               <svg
                 aria-hidden="true"
-                class="lucide lucide-calendar-days size-[1.1rem] shrink-0 text-text-muted"
+                class="lucide lucide-calendar-days pointer-events-none absolute start-4 top-1/2 size-[1.1rem] -translate-y-1/2 text-text-muted"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -233,30 +242,70 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                   d="M16 18h.01"
                 />
               </svg>
-              <div
-                class="grid min-w-0 flex-1"
+              <label
+                class="pointer-events-none absolute start-[2.875rem] top-2.5 text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.12em] text-text-muted"
+                for="home-when"
               >
-                <label
-                  class="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-text-muted"
-                  for="home-when"
-                >
-                  متى
-                </label>
-                <input
-                  class="w-full min-w-0 cursor-pointer appearance-none truncate bg-transparent py-0.5 text-[0.9375rem] font-medium outline-none [&::-webkit-calendar-picker-indicator]:opacity-60 text-text-muted"
-                  id="home-when"
-                  name="date"
-                  type="date"
-                  value=""
-                />
-              </div>
+                متى
+              </label>
             </div>
             <div
-              class="relative flex min-w-0 items-center gap-3 rounded-[0.875rem] px-4 py-2.5 transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 lg:rounded-none lg:border-s lg:border-border-subtle"
+              class="relative min-h-[3.875rem] min-w-0 rounded-[0.875rem] transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 lg:rounded-none lg:border-s lg:border-border-subtle"
             >
+              <select
+                class="absolute inset-0 h-full w-full min-w-0 cursor-pointer appearance-none truncate rounded-[inherit] bg-transparent pb-2 pe-4 ps-[2.875rem] pt-[1.5rem] text-start text-[1rem] font-medium leading-tight text-text outline-none"
+                id="home-party"
+                name="party"
+              >
+                <option
+                  value="1"
+                >
+                  ضيف واحد
+                </option>
+                <option
+                  value="2"
+                >
+                  2 ضيوف
+                </option>
+                <option
+                  value="3"
+                >
+                  3 ضيوف
+                </option>
+                <option
+                  value="4"
+                >
+                  4 ضيوف
+                </option>
+                <option
+                  value="5"
+                >
+                  5 ضيوف
+                </option>
+                <option
+                  value="6"
+                >
+                  6 ضيوف
+                </option>
+                <option
+                  value="8"
+                >
+                  8 ضيوف
+                </option>
+                <option
+                  value="10"
+                >
+                  10 ضيوف
+                </option>
+                <option
+                  value="12"
+                >
+                  12 ضيوف
+                </option>
+              </select>
               <svg
                 aria-hidden="true"
-                class="lucide lucide-users size-[1.1rem] shrink-0 text-text-muted"
+                class="lucide lucide-users pointer-events-none absolute start-4 top-1/2 size-[1.1rem] -translate-y-1/2 text-text-muted"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -282,74 +331,55 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                   d="M16 3.13a4 4 0 0 1 0 7.75"
                 />
               </svg>
-              <div
-                class="grid min-w-0 flex-1"
+              <label
+                class="pointer-events-none absolute start-[2.875rem] top-2.5 text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.12em] text-text-muted"
+                for="home-party"
               >
-                <label
-                  class="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-text-muted"
-                  for="home-party"
-                >
-                  الضيوف
-                </label>
-                <select
-                  class="w-full min-w-0 cursor-pointer appearance-none truncate bg-transparent py-0.5 text-[0.9375rem] font-medium text-text outline-none [&::-webkit-calendar-picker-indicator]:opacity-60"
-                  id="home-party"
-                  name="party"
-                >
-                  <option
-                    value="1"
-                  >
-                    1 ضيوف
-                  </option>
-                  <option
-                    value="2"
-                  >
-                    2 ضيوف
-                  </option>
-                  <option
-                    value="3"
-                  >
-                    3 ضيوف
-                  </option>
-                  <option
-                    value="4"
-                  >
-                    4 ضيوف
-                  </option>
-                  <option
-                    value="5"
-                  >
-                    5 ضيوف
-                  </option>
-                  <option
-                    value="6"
-                  >
-                    6 ضيوف
-                  </option>
-                  <option
-                    value="8"
-                  >
-                    8 ضيوف
-                  </option>
-                  <option
-                    value="10"
-                  >
-                    10 ضيوف
-                  </option>
-                  <option
-                    value="12"
-                  >
-                    12 ضيوف
-                  </option>
-                </select>
-              </div>
+                الضيوف
+              </label>
             </div>
             <div
-              class="relative flex min-w-0 items-center gap-3 rounded-[0.875rem] px-4 py-2.5 transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 col-span-2 lg:col-span-1 lg:rounded-none lg:border-s lg:border-border-subtle"
+              class="relative min-h-[3.875rem] min-w-0 rounded-[0.875rem] transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 col-span-2 lg:col-span-1 lg:rounded-none lg:border-s lg:border-border-subtle"
             >
+              <select
+                class="absolute inset-0 h-full w-full min-w-0 cursor-pointer appearance-none truncate rounded-[inherit] bg-transparent pb-2 pe-4 ps-[2.875rem] pt-[1.5rem] text-start text-[1rem] font-medium leading-tight text-text outline-none"
+                id="home-type"
+                name="category"
+              >
+                <option
+                  value=""
+                >
+                  أي نوع
+                </option>
+                <option
+                  value="nature"
+                >
+                  طبيعة
+                </option>
+                <option
+                  value="coast"
+                >
+                  ساحل
+                </option>
+                <option
+                  value="culture"
+                >
+                  ثقافة
+                </option>
+                <option
+                  value="adventure"
+                >
+                  مغامرة
+                </option>
+                <option
+                  value="city"
+                >
+                  مدن
+                </option>
+              </select>
               <svg
                 aria-hidden="true"
-                class="lucide lucide-compass size-[1.1rem] shrink-0 text-text-muted"
+                class="lucide lucide-compass pointer-events-none absolute start-4 top-1/2 size-[1.1rem] -translate-y-1/2 text-text-muted"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -369,52 +399,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                   r="10"
                 />
               </svg>
-              <div
-                class="grid min-w-0 flex-1"
+              <label
+                class="pointer-events-none absolute start-[2.875rem] top-2.5 text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.12em] text-text-muted"
+                for="home-type"
               >
-                <label
-                  class="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-text-muted"
-                  for="home-type"
-                >
-                  التجربة
-                </label>
-                <select
-                  class="w-full min-w-0 cursor-pointer appearance-none truncate bg-transparent py-0.5 text-[0.9375rem] font-medium text-text outline-none [&::-webkit-calendar-picker-indicator]:opacity-60"
-                  id="home-type"
-                  name="category"
-                >
-                  <option
-                    value=""
-                  >
-                    أي نوع
-                  </option>
-                  <option
-                    value="nature"
-                  >
-                    طبيعة
-                  </option>
-                  <option
-                    value="coast"
-                  >
-                    ساحل
-                  </option>
-                  <option
-                    value="culture"
-                  >
-                    ثقافة
-                  </option>
-                  <option
-                    value="adventure"
-                  >
-                    مغامرة
-                  </option>
-                  <option
-                    value="city"
-                  >
-                    مدن
-                  </option>
-                </select>
-              </div>
+                التجربة
+              </label>
             </div>
             <div
               class="col-span-2 p-1 lg:col-span-1 lg:ps-2"
@@ -627,7 +617,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
       </ul>
     </section>
     <div
-      class="grid gap-20 pt-16 md:gap-24 md:pt-20 lg:gap-28"
+      class="grid gap-16 pt-14 md:gap-24 md:pt-20 lg:gap-28"
     >
       <section
         aria-labelledby="home-moods"
@@ -657,7 +647,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
           </div>
         </div>
         <ul
-          class="scrollbar-hide -mx-[var(--layout-gutter-mobile)] flex snap-x snap-mandatory gap-3 overflow-x-auto px-[var(--layout-gutter-mobile)] pb-1 lg:mx-0 lg:grid lg:auto-rows-[12.5rem] lg:grid-cols-4 lg:gap-4 lg:overflow-visible lg:px-0"
+          class="scrollbar-hide -mx-[var(--layout-gutter-mobile)] flex snap-x snap-mandatory scroll-px-[var(--layout-gutter-mobile)] gap-3 overflow-x-auto px-[var(--layout-gutter-mobile)] pb-1 lg:mx-0 lg:grid lg:auto-rows-[12.5rem] lg:grid-cols-4 lg:gap-4 lg:overflow-visible lg:px-0"
         >
           <li
             class="w-[13.5rem] shrink-0 snap-start lg:w-auto lg:col-span-2 lg:row-span-2"
@@ -1100,7 +1090,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
             class="flex items-center gap-4"
           >
             <a
-              class="group inline-flex items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+              class="group inline-flex min-h-10 items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
               href="/ar/experiences"
             >
               كل التجارب
@@ -1178,7 +1168,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
           </div>
         </div>
         <ul
-          class="scrollbar-hide -mx-[var(--layout-gutter-mobile)] flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-[var(--layout-gutter-mobile)] pb-2 md:mx-0 md:gap-5 md:px-0"
+          class="scrollbar-hide -mx-[var(--layout-gutter-mobile)] flex snap-x snap-mandatory scroll-px-[var(--layout-gutter-mobile)] gap-4 overflow-x-auto scroll-smooth px-[var(--layout-gutter-mobile)] pb-2 md:mx-0 md:scroll-px-0 md:gap-5 md:px-0"
         >
           <li
             class="w-[82%] shrink-0 snap-start sm:w-[46%] md:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-3.75rem)/4)]"
@@ -3805,7 +3795,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                         class="grid min-w-0"
                       >
                         <span
-                          class="truncate text-[0.9375rem] font-semibold"
+                          class="text-pretty text-[0.9375rem] font-semibold leading-snug"
                         >
                           قهوة مطلّة على الجبل
                         </span>
@@ -3870,7 +3860,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                         class="grid min-w-0"
                       >
                         <span
-                          class="truncate text-[0.9375rem] font-semibold"
+                          class="text-pretty text-[0.9375rem] font-semibold leading-snug"
                         >
                           مشي في قرية قديمة
                         </span>
@@ -3935,7 +3925,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                         class="grid min-w-0"
                       >
                         <span
-                          class="truncate text-[0.9375rem] font-semibold"
+                          class="text-pretty text-[0.9375rem] font-semibold leading-snug"
                         >
                           غداء في مكان محلّي
                         </span>
@@ -4000,7 +3990,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
                         class="grid min-w-0"
                       >
                         <span
-                          class="truncate text-[0.9375rem] font-semibold"
+                          class="text-pretty text-[0.9375rem] font-semibold leading-snug"
                         >
                           غروب على البحر
                         </span>
@@ -4055,7 +4045,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
             </h2>
           </div>
           <a
-            class="group inline-flex items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            class="group inline-flex min-h-10 items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
             href="/ar/destinations"
           >
             كل الوجهات
@@ -4582,7 +4572,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
             </p>
             <div>
               <a
-                class="group inline-flex items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="group inline-flex min-h-10 items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 href="/ar/plan"
               >
                 ابدأ بشعور
@@ -4616,7 +4606,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
         class="shell-frame"
       >
         <div
-          class="surface-grain grid items-center gap-8 rounded-[1.5rem] bg-surface-sunken px-6 py-10 sm:px-10 lg:grid-cols-12 lg:gap-8 lg:px-14 lg:py-14"
+          class="surface-grain grid items-center gap-8 rounded-[1.5rem] bg-surface-sunken px-5 py-10 min-[360px]:px-6 sm:px-10 lg:grid-cols-12 lg:gap-8 lg:px-14 lg:py-14"
         >
           <div
             class="grid gap-3 lg:col-span-6"
@@ -4646,10 +4636,13 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
               class="flex flex-col gap-2 sm:flex-row"
             >
               <input
+                autocapitalize="none"
                 autocomplete="email"
-                class="h-12 min-w-0 flex-1 rounded-pill border border-border bg-surface-raised px-5 text-[0.9375rem] text-text outline-none transition-colors duration-150 placeholder:text-text-muted focus:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]"
+                class="h-12 w-full min-w-0 rounded-pill border border-border bg-surface-raised px-5 text-base sm:flex-1 sm:text-[0.9375rem] text-text outline-none transition-colors duration-150 placeholder:text-text-muted focus:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]"
                 id="home-email"
+                inputmode="email"
                 required=""
+                spellcheck="false"
                 type="email"
                 value=""
               />
@@ -4811,11 +4804,52 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
             role="search"
           >
             <div
-              class="relative flex min-w-0 items-center gap-3 rounded-[0.875rem] px-4 py-2.5 transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 col-span-2 lg:col-span-1"
+              class="relative min-h-[3.875rem] min-w-0 rounded-[0.875rem] transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 col-span-2 lg:col-span-1"
             >
+              <select
+                class="absolute inset-0 h-full w-full min-w-0 cursor-pointer appearance-none truncate rounded-[inherit] bg-transparent pb-2 pe-4 ps-[2.875rem] pt-[1.5rem] text-start text-[1rem] font-medium leading-tight text-text outline-none"
+                id="home-where"
+                name="destination"
+              >
+                <option
+                  value=""
+                >
+                  Anywhere in Lebanon
+                </option>
+                <option
+                  value="byblos"
+                >
+                  Byblos
+                </option>
+                <option
+                  value="batroun"
+                >
+                  Batroun
+                </option>
+                <option
+                  value="bsharri"
+                >
+                  Bsharri
+                </option>
+                <option
+                  value="qadisha-valley"
+                >
+                  Qadisha Valley
+                </option>
+                <option
+                  value="baalbek"
+                >
+                  Baalbek
+                </option>
+                <option
+                  value="beirut"
+                >
+                  Beirut
+                </option>
+              </select>
               <svg
                 aria-hidden="true"
-                class="lucide lucide-map-pin size-[1.1rem] shrink-0 text-text-muted"
+                class="lucide lucide-map-pin pointer-events-none absolute start-4 top-1/2 size-[1.1rem] -translate-y-1/2 text-text-muted"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -4835,64 +4869,32 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                   r="3"
                 />
               </svg>
-              <div
-                class="grid min-w-0 flex-1"
+              <label
+                class="pointer-events-none absolute start-[2.875rem] top-2.5 text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.12em] text-text-muted"
+                for="home-where"
               >
-                <label
-                  class="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-text-muted"
-                  for="home-where"
-                >
-                  Where
-                </label>
-                <select
-                  class="w-full min-w-0 cursor-pointer appearance-none truncate bg-transparent py-0.5 text-[0.9375rem] font-medium text-text outline-none [&::-webkit-calendar-picker-indicator]:opacity-60"
-                  id="home-where"
-                  name="destination"
-                >
-                  <option
-                    value=""
-                  >
-                    Anywhere in Lebanon
-                  </option>
-                  <option
-                    value="byblos"
-                  >
-                    Byblos
-                  </option>
-                  <option
-                    value="batroun"
-                  >
-                    Batroun
-                  </option>
-                  <option
-                    value="bsharri"
-                  >
-                    Bsharri
-                  </option>
-                  <option
-                    value="qadisha-valley"
-                  >
-                    Qadisha Valley
-                  </option>
-                  <option
-                    value="baalbek"
-                  >
-                    Baalbek
-                  </option>
-                  <option
-                    value="beirut"
-                  >
-                    Beirut
-                  </option>
-                </select>
-              </div>
+                Where
+              </label>
             </div>
             <div
-              class="relative flex min-w-0 items-center gap-3 rounded-[0.875rem] px-4 py-2.5 transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 lg:rounded-none lg:border-s lg:border-border-subtle"
+              class="relative min-h-[3.875rem] min-w-0 rounded-[0.875rem] transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 lg:rounded-none lg:border-s lg:border-border-subtle"
             >
+              <input
+                class="absolute inset-0 h-full w-full min-w-0 cursor-pointer appearance-none truncate rounded-[inherit] bg-transparent pb-2 pe-4 ps-[2.875rem] pt-[1.5rem] text-start text-[1rem] font-medium leading-tight outline-none [&::-webkit-calendar-picker-indicator]:hidden text-transparent"
+                id="home-when"
+                name="date"
+                type="date"
+                value=""
+              />
+              <span
+                aria-hidden="true"
+                class="pointer-events-none absolute inset-0 flex items-center pb-2 pe-4 ps-[2.875rem] pt-[1.5rem] text-[1rem] font-medium leading-tight text-text-muted"
+              >
+                Any date
+              </span>
               <svg
                 aria-hidden="true"
-                class="lucide lucide-calendar-days size-[1.1rem] shrink-0 text-text-muted"
+                class="lucide lucide-calendar-days pointer-events-none absolute start-4 top-1/2 size-[1.1rem] -translate-y-1/2 text-text-muted"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -4938,30 +4940,70 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                   d="M16 18h.01"
                 />
               </svg>
-              <div
-                class="grid min-w-0 flex-1"
+              <label
+                class="pointer-events-none absolute start-[2.875rem] top-2.5 text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.12em] text-text-muted"
+                for="home-when"
               >
-                <label
-                  class="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-text-muted"
-                  for="home-when"
-                >
-                  When
-                </label>
-                <input
-                  class="w-full min-w-0 cursor-pointer appearance-none truncate bg-transparent py-0.5 text-[0.9375rem] font-medium outline-none [&::-webkit-calendar-picker-indicator]:opacity-60 text-text-muted"
-                  id="home-when"
-                  name="date"
-                  type="date"
-                  value=""
-                />
-              </div>
+                When
+              </label>
             </div>
             <div
-              class="relative flex min-w-0 items-center gap-3 rounded-[0.875rem] px-4 py-2.5 transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 lg:rounded-none lg:border-s lg:border-border-subtle"
+              class="relative min-h-[3.875rem] min-w-0 rounded-[0.875rem] transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 lg:rounded-none lg:border-s lg:border-border-subtle"
             >
+              <select
+                class="absolute inset-0 h-full w-full min-w-0 cursor-pointer appearance-none truncate rounded-[inherit] bg-transparent pb-2 pe-4 ps-[2.875rem] pt-[1.5rem] text-start text-[1rem] font-medium leading-tight text-text outline-none"
+                id="home-party"
+                name="party"
+              >
+                <option
+                  value="1"
+                >
+                  1 guest
+                </option>
+                <option
+                  value="2"
+                >
+                  2 guests
+                </option>
+                <option
+                  value="3"
+                >
+                  3 guests
+                </option>
+                <option
+                  value="4"
+                >
+                  4 guests
+                </option>
+                <option
+                  value="5"
+                >
+                  5 guests
+                </option>
+                <option
+                  value="6"
+                >
+                  6 guests
+                </option>
+                <option
+                  value="8"
+                >
+                  8 guests
+                </option>
+                <option
+                  value="10"
+                >
+                  10 guests
+                </option>
+                <option
+                  value="12"
+                >
+                  12 guests
+                </option>
+              </select>
               <svg
                 aria-hidden="true"
-                class="lucide lucide-users size-[1.1rem] shrink-0 text-text-muted"
+                class="lucide lucide-users pointer-events-none absolute start-4 top-1/2 size-[1.1rem] -translate-y-1/2 text-text-muted"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -4987,74 +5029,55 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                   d="M16 3.13a4 4 0 0 1 0 7.75"
                 />
               </svg>
-              <div
-                class="grid min-w-0 flex-1"
+              <label
+                class="pointer-events-none absolute start-[2.875rem] top-2.5 text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.12em] text-text-muted"
+                for="home-party"
               >
-                <label
-                  class="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-text-muted"
-                  for="home-party"
-                >
-                  Guests
-                </label>
-                <select
-                  class="w-full min-w-0 cursor-pointer appearance-none truncate bg-transparent py-0.5 text-[0.9375rem] font-medium text-text outline-none [&::-webkit-calendar-picker-indicator]:opacity-60"
-                  id="home-party"
-                  name="party"
-                >
-                  <option
-                    value="1"
-                  >
-                    1 guests
-                  </option>
-                  <option
-                    value="2"
-                  >
-                    2 guests
-                  </option>
-                  <option
-                    value="3"
-                  >
-                    3 guests
-                  </option>
-                  <option
-                    value="4"
-                  >
-                    4 guests
-                  </option>
-                  <option
-                    value="5"
-                  >
-                    5 guests
-                  </option>
-                  <option
-                    value="6"
-                  >
-                    6 guests
-                  </option>
-                  <option
-                    value="8"
-                  >
-                    8 guests
-                  </option>
-                  <option
-                    value="10"
-                  >
-                    10 guests
-                  </option>
-                  <option
-                    value="12"
-                  >
-                    12 guests
-                  </option>
-                </select>
-              </div>
+                Guests
+              </label>
             </div>
             <div
-              class="relative flex min-w-0 items-center gap-3 rounded-[0.875rem] px-4 py-2.5 transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 col-span-2 lg:col-span-1 lg:rounded-none lg:border-s lg:border-border-subtle"
+              class="relative min-h-[3.875rem] min-w-0 rounded-[0.875rem] transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 col-span-2 lg:col-span-1 lg:rounded-none lg:border-s lg:border-border-subtle"
             >
+              <select
+                class="absolute inset-0 h-full w-full min-w-0 cursor-pointer appearance-none truncate rounded-[inherit] bg-transparent pb-2 pe-4 ps-[2.875rem] pt-[1.5rem] text-start text-[1rem] font-medium leading-tight text-text outline-none"
+                id="home-type"
+                name="category"
+              >
+                <option
+                  value=""
+                >
+                  Any kind
+                </option>
+                <option
+                  value="nature"
+                >
+                  Nature
+                </option>
+                <option
+                  value="coast"
+                >
+                  Coast
+                </option>
+                <option
+                  value="culture"
+                >
+                  Culture
+                </option>
+                <option
+                  value="adventure"
+                >
+                  Adventure
+                </option>
+                <option
+                  value="city"
+                >
+                  Cities
+                </option>
+              </select>
               <svg
                 aria-hidden="true"
-                class="lucide lucide-compass size-[1.1rem] shrink-0 text-text-muted"
+                class="lucide lucide-compass pointer-events-none absolute start-4 top-1/2 size-[1.1rem] -translate-y-1/2 text-text-muted"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -5074,52 +5097,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                   r="10"
                 />
               </svg>
-              <div
-                class="grid min-w-0 flex-1"
+              <label
+                class="pointer-events-none absolute start-[2.875rem] top-2.5 text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.12em] text-text-muted"
+                for="home-type"
               >
-                <label
-                  class="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-text-muted"
-                  for="home-type"
-                >
-                  Experience
-                </label>
-                <select
-                  class="w-full min-w-0 cursor-pointer appearance-none truncate bg-transparent py-0.5 text-[0.9375rem] font-medium text-text outline-none [&::-webkit-calendar-picker-indicator]:opacity-60"
-                  id="home-type"
-                  name="category"
-                >
-                  <option
-                    value=""
-                  >
-                    Any kind
-                  </option>
-                  <option
-                    value="nature"
-                  >
-                    Nature
-                  </option>
-                  <option
-                    value="coast"
-                  >
-                    Coast
-                  </option>
-                  <option
-                    value="culture"
-                  >
-                    Culture
-                  </option>
-                  <option
-                    value="adventure"
-                  >
-                    Adventure
-                  </option>
-                  <option
-                    value="city"
-                  >
-                    Cities
-                  </option>
-                </select>
-              </div>
+                Experience
+              </label>
             </div>
             <div
               class="col-span-2 p-1 lg:col-span-1 lg:ps-2"
@@ -5332,7 +5315,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
       </ul>
     </section>
     <div
-      class="grid gap-20 pt-16 md:gap-24 md:pt-20 lg:gap-28"
+      class="grid gap-16 pt-14 md:gap-24 md:pt-20 lg:gap-28"
     >
       <section
         aria-labelledby="home-moods"
@@ -5362,7 +5345,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
           </div>
         </div>
         <ul
-          class="scrollbar-hide -mx-[var(--layout-gutter-mobile)] flex snap-x snap-mandatory gap-3 overflow-x-auto px-[var(--layout-gutter-mobile)] pb-1 lg:mx-0 lg:grid lg:auto-rows-[12.5rem] lg:grid-cols-4 lg:gap-4 lg:overflow-visible lg:px-0"
+          class="scrollbar-hide -mx-[var(--layout-gutter-mobile)] flex snap-x snap-mandatory scroll-px-[var(--layout-gutter-mobile)] gap-3 overflow-x-auto px-[var(--layout-gutter-mobile)] pb-1 lg:mx-0 lg:grid lg:auto-rows-[12.5rem] lg:grid-cols-4 lg:gap-4 lg:overflow-visible lg:px-0"
         >
           <li
             class="w-[13.5rem] shrink-0 snap-start lg:w-auto lg:col-span-2 lg:row-span-2"
@@ -5805,7 +5788,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
             class="flex items-center gap-4"
           >
             <a
-              class="group inline-flex items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+              class="group inline-flex min-h-10 items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
               href="/experiences"
             >
               See all experiences
@@ -5883,7 +5866,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
           </div>
         </div>
         <ul
-          class="scrollbar-hide -mx-[var(--layout-gutter-mobile)] flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-[var(--layout-gutter-mobile)] pb-2 md:mx-0 md:gap-5 md:px-0"
+          class="scrollbar-hide -mx-[var(--layout-gutter-mobile)] flex snap-x snap-mandatory scroll-px-[var(--layout-gutter-mobile)] gap-4 overflow-x-auto scroll-smooth px-[var(--layout-gutter-mobile)] pb-2 md:mx-0 md:scroll-px-0 md:gap-5 md:px-0"
         >
           <li
             class="w-[82%] shrink-0 snap-start sm:w-[46%] md:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-3.75rem)/4)]"
@@ -8510,7 +8493,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                         class="grid min-w-0"
                       >
                         <span
-                          class="truncate text-[0.9375rem] font-semibold"
+                          class="text-pretty text-[0.9375rem] font-semibold leading-snug"
                         >
                           Coffee with a mountain view
                         </span>
@@ -8575,7 +8558,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                         class="grid min-w-0"
                       >
                         <span
-                          class="truncate text-[0.9375rem] font-semibold"
+                          class="text-pretty text-[0.9375rem] font-semibold leading-snug"
                         >
                           A walk through an old village
                         </span>
@@ -8640,7 +8623,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                         class="grid min-w-0"
                       >
                         <span
-                          class="truncate text-[0.9375rem] font-semibold"
+                          class="text-pretty text-[0.9375rem] font-semibold leading-snug"
                         >
                           Lunch somewhere local
                         </span>
@@ -8705,7 +8688,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
                         class="grid min-w-0"
                       >
                         <span
-                          class="truncate text-[0.9375rem] font-semibold"
+                          class="text-pretty text-[0.9375rem] font-semibold leading-snug"
                         >
                           Sunset by the sea
                         </span>
@@ -8760,7 +8743,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
             </h2>
           </div>
           <a
-            class="group inline-flex items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            class="group inline-flex min-h-10 items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
             href="/destinations"
           >
             All destinations
@@ -9287,7 +9270,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
             </p>
             <div>
               <a
-                class="group inline-flex items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="group inline-flex min-h-10 items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 href="/plan"
               >
                 Start with a feeling
@@ -9321,7 +9304,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
         class="shell-frame"
       >
         <div
-          class="surface-grain grid items-center gap-8 rounded-[1.5rem] bg-surface-sunken px-6 py-10 sm:px-10 lg:grid-cols-12 lg:gap-8 lg:px-14 lg:py-14"
+          class="surface-grain grid items-center gap-8 rounded-[1.5rem] bg-surface-sunken px-5 py-10 min-[360px]:px-6 sm:px-10 lg:grid-cols-12 lg:gap-8 lg:px-14 lg:py-14"
         >
           <div
             class="grid gap-3 lg:col-span-6"
@@ -9351,10 +9334,13 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
               class="flex flex-col gap-2 sm:flex-row"
             >
               <input
+                autocapitalize="none"
                 autocomplete="email"
-                class="h-12 min-w-0 flex-1 rounded-pill border border-border bg-surface-raised px-5 text-[0.9375rem] text-text outline-none transition-colors duration-150 placeholder:text-text-muted focus:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]"
+                class="h-12 w-full min-w-0 rounded-pill border border-border bg-surface-raised px-5 text-base sm:flex-1 sm:text-[0.9375rem] text-text outline-none transition-colors duration-150 placeholder:text-text-muted focus:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]"
                 id="home-email"
+                inputmode="email"
                 required=""
+                spellcheck="false"
                 type="email"
                 value=""
               />
@@ -9516,11 +9502,52 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
             role="search"
           >
             <div
-              class="relative flex min-w-0 items-center gap-3 rounded-[0.875rem] px-4 py-2.5 transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 col-span-2 lg:col-span-1"
+              class="relative min-h-[3.875rem] min-w-0 rounded-[0.875rem] transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 col-span-2 lg:col-span-1"
             >
+              <select
+                class="absolute inset-0 h-full w-full min-w-0 cursor-pointer appearance-none truncate rounded-[inherit] bg-transparent pb-2 pe-4 ps-[2.875rem] pt-[1.5rem] text-start text-[1rem] font-medium leading-tight text-text outline-none"
+                id="home-where"
+                name="destination"
+              >
+                <option
+                  value=""
+                >
+                  Partout au Liban
+                </option>
+                <option
+                  value="byblos"
+                >
+                  Byblos
+                </option>
+                <option
+                  value="batroun"
+                >
+                  Batroun
+                </option>
+                <option
+                  value="bsharri"
+                >
+                  Bsharri
+                </option>
+                <option
+                  value="qadisha-valley"
+                >
+                  Qadisha Valley
+                </option>
+                <option
+                  value="baalbek"
+                >
+                  Baalbek
+                </option>
+                <option
+                  value="beirut"
+                >
+                  Beirut
+                </option>
+              </select>
               <svg
                 aria-hidden="true"
-                class="lucide lucide-map-pin size-[1.1rem] shrink-0 text-text-muted"
+                class="lucide lucide-map-pin pointer-events-none absolute start-4 top-1/2 size-[1.1rem] -translate-y-1/2 text-text-muted"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -9540,64 +9567,32 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                   r="3"
                 />
               </svg>
-              <div
-                class="grid min-w-0 flex-1"
+              <label
+                class="pointer-events-none absolute start-[2.875rem] top-2.5 text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.12em] text-text-muted"
+                for="home-where"
               >
-                <label
-                  class="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-text-muted"
-                  for="home-where"
-                >
-                  Où
-                </label>
-                <select
-                  class="w-full min-w-0 cursor-pointer appearance-none truncate bg-transparent py-0.5 text-[0.9375rem] font-medium text-text outline-none [&::-webkit-calendar-picker-indicator]:opacity-60"
-                  id="home-where"
-                  name="destination"
-                >
-                  <option
-                    value=""
-                  >
-                    Partout au Liban
-                  </option>
-                  <option
-                    value="byblos"
-                  >
-                    Byblos
-                  </option>
-                  <option
-                    value="batroun"
-                  >
-                    Batroun
-                  </option>
-                  <option
-                    value="bsharri"
-                  >
-                    Bsharri
-                  </option>
-                  <option
-                    value="qadisha-valley"
-                  >
-                    Qadisha Valley
-                  </option>
-                  <option
-                    value="baalbek"
-                  >
-                    Baalbek
-                  </option>
-                  <option
-                    value="beirut"
-                  >
-                    Beirut
-                  </option>
-                </select>
-              </div>
+                Où
+              </label>
             </div>
             <div
-              class="relative flex min-w-0 items-center gap-3 rounded-[0.875rem] px-4 py-2.5 transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 lg:rounded-none lg:border-s lg:border-border-subtle"
+              class="relative min-h-[3.875rem] min-w-0 rounded-[0.875rem] transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 lg:rounded-none lg:border-s lg:border-border-subtle"
             >
+              <input
+                class="absolute inset-0 h-full w-full min-w-0 cursor-pointer appearance-none truncate rounded-[inherit] bg-transparent pb-2 pe-4 ps-[2.875rem] pt-[1.5rem] text-start text-[1rem] font-medium leading-tight outline-none [&::-webkit-calendar-picker-indicator]:hidden text-transparent"
+                id="home-when"
+                name="date"
+                type="date"
+                value=""
+              />
+              <span
+                aria-hidden="true"
+                class="pointer-events-none absolute inset-0 flex items-center pb-2 pe-4 ps-[2.875rem] pt-[1.5rem] text-[1rem] font-medium leading-tight text-text-muted"
+              >
+                N’importe quand
+              </span>
               <svg
                 aria-hidden="true"
-                class="lucide lucide-calendar-days size-[1.1rem] shrink-0 text-text-muted"
+                class="lucide lucide-calendar-days pointer-events-none absolute start-4 top-1/2 size-[1.1rem] -translate-y-1/2 text-text-muted"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -9643,30 +9638,70 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                   d="M16 18h.01"
                 />
               </svg>
-              <div
-                class="grid min-w-0 flex-1"
+              <label
+                class="pointer-events-none absolute start-[2.875rem] top-2.5 text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.12em] text-text-muted"
+                for="home-when"
               >
-                <label
-                  class="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-text-muted"
-                  for="home-when"
-                >
-                  Quand
-                </label>
-                <input
-                  class="w-full min-w-0 cursor-pointer appearance-none truncate bg-transparent py-0.5 text-[0.9375rem] font-medium outline-none [&::-webkit-calendar-picker-indicator]:opacity-60 text-text-muted"
-                  id="home-when"
-                  name="date"
-                  type="date"
-                  value=""
-                />
-              </div>
+                Quand
+              </label>
             </div>
             <div
-              class="relative flex min-w-0 items-center gap-3 rounded-[0.875rem] px-4 py-2.5 transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 lg:rounded-none lg:border-s lg:border-border-subtle"
+              class="relative min-h-[3.875rem] min-w-0 rounded-[0.875rem] transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 lg:rounded-none lg:border-s lg:border-border-subtle"
             >
+              <select
+                class="absolute inset-0 h-full w-full min-w-0 cursor-pointer appearance-none truncate rounded-[inherit] bg-transparent pb-2 pe-4 ps-[2.875rem] pt-[1.5rem] text-start text-[1rem] font-medium leading-tight text-text outline-none"
+                id="home-party"
+                name="party"
+              >
+                <option
+                  value="1"
+                >
+                  1 voyageur
+                </option>
+                <option
+                  value="2"
+                >
+                  2 voyageurs
+                </option>
+                <option
+                  value="3"
+                >
+                  3 voyageurs
+                </option>
+                <option
+                  value="4"
+                >
+                  4 voyageurs
+                </option>
+                <option
+                  value="5"
+                >
+                  5 voyageurs
+                </option>
+                <option
+                  value="6"
+                >
+                  6 voyageurs
+                </option>
+                <option
+                  value="8"
+                >
+                  8 voyageurs
+                </option>
+                <option
+                  value="10"
+                >
+                  10 voyageurs
+                </option>
+                <option
+                  value="12"
+                >
+                  12 voyageurs
+                </option>
+              </select>
               <svg
                 aria-hidden="true"
-                class="lucide lucide-users size-[1.1rem] shrink-0 text-text-muted"
+                class="lucide lucide-users pointer-events-none absolute start-4 top-1/2 size-[1.1rem] -translate-y-1/2 text-text-muted"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -9692,74 +9727,55 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                   d="M16 3.13a4 4 0 0 1 0 7.75"
                 />
               </svg>
-              <div
-                class="grid min-w-0 flex-1"
+              <label
+                class="pointer-events-none absolute start-[2.875rem] top-2.5 text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.12em] text-text-muted"
+                for="home-party"
               >
-                <label
-                  class="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-text-muted"
-                  for="home-party"
-                >
-                  Voyageurs
-                </label>
-                <select
-                  class="w-full min-w-0 cursor-pointer appearance-none truncate bg-transparent py-0.5 text-[0.9375rem] font-medium text-text outline-none [&::-webkit-calendar-picker-indicator]:opacity-60"
-                  id="home-party"
-                  name="party"
-                >
-                  <option
-                    value="1"
-                  >
-                    1 voyageurs
-                  </option>
-                  <option
-                    value="2"
-                  >
-                    2 voyageurs
-                  </option>
-                  <option
-                    value="3"
-                  >
-                    3 voyageurs
-                  </option>
-                  <option
-                    value="4"
-                  >
-                    4 voyageurs
-                  </option>
-                  <option
-                    value="5"
-                  >
-                    5 voyageurs
-                  </option>
-                  <option
-                    value="6"
-                  >
-                    6 voyageurs
-                  </option>
-                  <option
-                    value="8"
-                  >
-                    8 voyageurs
-                  </option>
-                  <option
-                    value="10"
-                  >
-                    10 voyageurs
-                  </option>
-                  <option
-                    value="12"
-                  >
-                    12 voyageurs
-                  </option>
-                </select>
-              </div>
+                Voyageurs
+              </label>
             </div>
             <div
-              class="relative flex min-w-0 items-center gap-3 rounded-[0.875rem] px-4 py-2.5 transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 col-span-2 lg:col-span-1 lg:rounded-none lg:border-s lg:border-border-subtle"
+              class="relative min-h-[3.875rem] min-w-0 rounded-[0.875rem] transition-colors duration-150 focus-within:bg-surface-sunken hover:bg-surface-sunken/70 col-span-2 lg:col-span-1 lg:rounded-none lg:border-s lg:border-border-subtle"
             >
+              <select
+                class="absolute inset-0 h-full w-full min-w-0 cursor-pointer appearance-none truncate rounded-[inherit] bg-transparent pb-2 pe-4 ps-[2.875rem] pt-[1.5rem] text-start text-[1rem] font-medium leading-tight text-text outline-none"
+                id="home-type"
+                name="category"
+              >
+                <option
+                  value=""
+                >
+                  Tous types
+                </option>
+                <option
+                  value="nature"
+                >
+                  Nature
+                </option>
+                <option
+                  value="coast"
+                >
+                  Côte
+                </option>
+                <option
+                  value="culture"
+                >
+                  Culture
+                </option>
+                <option
+                  value="adventure"
+                >
+                  Aventure
+                </option>
+                <option
+                  value="city"
+                >
+                  Villes
+                </option>
+              </select>
               <svg
                 aria-hidden="true"
-                class="lucide lucide-compass size-[1.1rem] shrink-0 text-text-muted"
+                class="lucide lucide-compass pointer-events-none absolute start-4 top-1/2 size-[1.1rem] -translate-y-1/2 text-text-muted"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -9779,52 +9795,12 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                   r="10"
                 />
               </svg>
-              <div
-                class="grid min-w-0 flex-1"
+              <label
+                class="pointer-events-none absolute start-[2.875rem] top-2.5 text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.12em] text-text-muted"
+                for="home-type"
               >
-                <label
-                  class="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-text-muted"
-                  for="home-type"
-                >
-                  Expérience
-                </label>
-                <select
-                  class="w-full min-w-0 cursor-pointer appearance-none truncate bg-transparent py-0.5 text-[0.9375rem] font-medium text-text outline-none [&::-webkit-calendar-picker-indicator]:opacity-60"
-                  id="home-type"
-                  name="category"
-                >
-                  <option
-                    value=""
-                  >
-                    Tous types
-                  </option>
-                  <option
-                    value="nature"
-                  >
-                    Nature
-                  </option>
-                  <option
-                    value="coast"
-                  >
-                    Côte
-                  </option>
-                  <option
-                    value="culture"
-                  >
-                    Culture
-                  </option>
-                  <option
-                    value="adventure"
-                  >
-                    Aventure
-                  </option>
-                  <option
-                    value="city"
-                  >
-                    Villes
-                  </option>
-                </select>
-              </div>
+                Expérience
+              </label>
             </div>
             <div
               class="col-span-2 p-1 lg:col-span-1 lg:ps-2"
@@ -10037,7 +10013,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
       </ul>
     </section>
     <div
-      class="grid gap-20 pt-16 md:gap-24 md:pt-20 lg:gap-28"
+      class="grid gap-16 pt-14 md:gap-24 md:pt-20 lg:gap-28"
     >
       <section
         aria-labelledby="home-moods"
@@ -10067,7 +10043,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
           </div>
         </div>
         <ul
-          class="scrollbar-hide -mx-[var(--layout-gutter-mobile)] flex snap-x snap-mandatory gap-3 overflow-x-auto px-[var(--layout-gutter-mobile)] pb-1 lg:mx-0 lg:grid lg:auto-rows-[12.5rem] lg:grid-cols-4 lg:gap-4 lg:overflow-visible lg:px-0"
+          class="scrollbar-hide -mx-[var(--layout-gutter-mobile)] flex snap-x snap-mandatory scroll-px-[var(--layout-gutter-mobile)] gap-3 overflow-x-auto px-[var(--layout-gutter-mobile)] pb-1 lg:mx-0 lg:grid lg:auto-rows-[12.5rem] lg:grid-cols-4 lg:gap-4 lg:overflow-visible lg:px-0"
         >
           <li
             class="w-[13.5rem] shrink-0 snap-start lg:w-auto lg:col-span-2 lg:row-span-2"
@@ -10510,7 +10486,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
             class="flex items-center gap-4"
           >
             <a
-              class="group inline-flex items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+              class="group inline-flex min-h-10 items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
               href="/fr/experiences"
             >
               Toutes les expériences
@@ -10588,7 +10564,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
           </div>
         </div>
         <ul
-          class="scrollbar-hide -mx-[var(--layout-gutter-mobile)] flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-[var(--layout-gutter-mobile)] pb-2 md:mx-0 md:gap-5 md:px-0"
+          class="scrollbar-hide -mx-[var(--layout-gutter-mobile)] flex snap-x snap-mandatory scroll-px-[var(--layout-gutter-mobile)] gap-4 overflow-x-auto scroll-smooth px-[var(--layout-gutter-mobile)] pb-2 md:mx-0 md:scroll-px-0 md:gap-5 md:px-0"
         >
           <li
             class="w-[82%] shrink-0 snap-start sm:w-[46%] md:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-3.75rem)/4)]"
@@ -13215,7 +13191,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                         class="grid min-w-0"
                       >
                         <span
-                          class="truncate text-[0.9375rem] font-semibold"
+                          class="text-pretty text-[0.9375rem] font-semibold leading-snug"
                         >
                           Un café face à la montagne
                         </span>
@@ -13280,7 +13256,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                         class="grid min-w-0"
                       >
                         <span
-                          class="truncate text-[0.9375rem] font-semibold"
+                          class="text-pretty text-[0.9375rem] font-semibold leading-snug"
                         >
                           Balade dans un vieux village
                         </span>
@@ -13345,7 +13321,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                         class="grid min-w-0"
                       >
                         <span
-                          class="truncate text-[0.9375rem] font-semibold"
+                          class="text-pretty text-[0.9375rem] font-semibold leading-snug"
                         >
                           Déjeuner dans une adresse locale
                         </span>
@@ -13410,7 +13386,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
                         class="grid min-w-0"
                       >
                         <span
-                          class="truncate text-[0.9375rem] font-semibold"
+                          class="text-pretty text-[0.9375rem] font-semibold leading-snug"
                         >
                           Coucher de soleil sur la mer
                         </span>
@@ -13465,7 +13441,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
             </h2>
           </div>
           <a
-            class="group inline-flex items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            class="group inline-flex min-h-10 items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
             href="/fr/destinations"
           >
             Toutes les destinations
@@ -13992,7 +13968,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
             </p>
             <div>
               <a
-                class="group inline-flex items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="group inline-flex min-h-10 items-center gap-1.5 rounded-sm text-sm font-semibold text-text underline decoration-border underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 href="/fr/plan"
               >
                 Partir d’une envie
@@ -14026,7 +14002,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
         class="shell-frame"
       >
         <div
-          class="surface-grain grid items-center gap-8 rounded-[1.5rem] bg-surface-sunken px-6 py-10 sm:px-10 lg:grid-cols-12 lg:gap-8 lg:px-14 lg:py-14"
+          class="surface-grain grid items-center gap-8 rounded-[1.5rem] bg-surface-sunken px-5 py-10 min-[360px]:px-6 sm:px-10 lg:grid-cols-12 lg:gap-8 lg:px-14 lg:py-14"
         >
           <div
             class="grid gap-3 lg:col-span-6"
@@ -14056,10 +14032,13 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
               class="flex flex-col gap-2 sm:flex-row"
             >
               <input
+                autocapitalize="none"
                 autocomplete="email"
-                class="h-12 min-w-0 flex-1 rounded-pill border border-border bg-surface-raised px-5 text-[0.9375rem] text-text outline-none transition-colors duration-150 placeholder:text-text-muted focus:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]"
+                class="h-12 w-full min-w-0 rounded-pill border border-border bg-surface-raised px-5 text-base sm:flex-1 sm:text-[0.9375rem] text-text outline-none transition-colors duration-150 placeholder:text-text-muted focus:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]"
                 id="home-email"
+                inputmode="email"
                 required=""
+                spellcheck="false"
                 type="email"
                 value=""
               />
@@ -22341,7 +22320,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
       class="sticky top-0 z-40 border-b bg-surface/90 backdrop-blur-md transition-[border-color,box-shadow] duration-200 print:hidden border-transparent"
     >
       <div
-        class="shell-frame grid grid-cols-[1fr_auto] items-center gap-3 py-2 transition-[min-height] duration-200 lg:grid-cols-[1fr_auto_1fr] min-h-16 lg:min-h-[4.5rem]"
+        class="shell-frame grid grid-cols-[1fr_auto] items-center gap-2 py-2 min-[360px]:gap-3 transition-[min-height] duration-200 lg:grid-cols-[1fr_auto_1fr] min-h-16 lg:min-h-[4.5rem]"
       >
         <div
           class="flex min-w-0 items-center gap-2"
@@ -22490,7 +22469,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
             <button
               aria-label="English"
               aria-pressed="false"
-              class="inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
+              class="inline-flex h-8 min-w-8 items-center justify-center rounded-pill px-1.5 text-xs font-semibold tracking-wide transition-colors min-[360px]:min-w-9 min-[360px]:px-2 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
               type="button"
             >
               EN
@@ -22498,7 +22477,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
             <button
               aria-label="العربية"
               aria-pressed="true"
-              class="inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface bg-brand text-brand-foreground"
+              class="inline-flex h-8 min-w-8 items-center justify-center rounded-pill px-1.5 text-xs font-semibold tracking-wide transition-colors min-[360px]:min-w-9 min-[360px]:px-2 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface bg-brand text-brand-foreground"
               type="button"
             >
               AR
@@ -22506,7 +22485,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
             <button
               aria-label="Français"
               aria-pressed="false"
-              class="inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
+              class="inline-flex h-8 min-w-8 items-center justify-center rounded-pill px-1.5 text-xs font-semibold tracking-wide transition-colors min-[360px]:min-w-9 min-[360px]:px-2 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
               type="button"
             >
               FR
@@ -22563,10 +22542,14 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
             </h2>
           </div>
           <a
-            aria-label="خطّط لرحلة"
-            class="group grid size-16 shrink-0 place-items-center rounded-full bg-brand text-brand-foreground transition-colors duration-200 hover:bg-brand/90 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            class="group inline-flex h-14 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-6 text-brand-foreground transition-colors duration-200 hover:bg-brand/90 md:size-16 md:px-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
             href="/ar/plan"
           >
+            <span
+              class="text-[0.9375rem] font-semibold md:sr-only"
+            >
+              خطّط لرحلة
+            </span>
             <svg
               aria-hidden="true"
               class="lucide lucide-arrow-up-right size-6 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 rtl:-scale-x-100"
@@ -22631,7 +22614,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
                 <button
                   aria-label="English"
                   aria-pressed="false"
-                  class="inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
+                  class="inline-flex h-8 min-w-8 items-center justify-center rounded-pill px-1.5 text-xs font-semibold tracking-wide transition-colors min-[360px]:min-w-9 min-[360px]:px-2 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
                   type="button"
                 >
                   EN
@@ -22639,7 +22622,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
                 <button
                   aria-label="العربية"
                   aria-pressed="true"
-                  class="inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface bg-brand text-brand-foreground"
+                  class="inline-flex h-8 min-w-8 items-center justify-center rounded-pill px-1.5 text-xs font-semibold tracking-wide transition-colors min-[360px]:min-w-9 min-[360px]:px-2 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface bg-brand text-brand-foreground"
                   type="button"
                 >
                   AR
@@ -22647,7 +22630,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
                 <button
                   aria-label="Français"
                   aria-pressed="false"
-                  class="inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
+                  class="inline-flex h-8 min-w-8 items-center justify-center rounded-pill px-1.5 text-xs font-semibold tracking-wide transition-colors min-[360px]:min-w-9 min-[360px]:px-2 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
                   type="button"
                 >
                   FR
@@ -22657,10 +22640,10 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
           </div>
           <nav
             aria-label="روابط الموقع"
-            class="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:col-span-8"
+            class="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4 lg:col-span-8"
           >
             <div
-              class="grid content-start gap-3"
+              class="grid content-start gap-1.5 md:gap-3"
             >
               <p
                 class="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted"
@@ -22668,11 +22651,11 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
                 استكشف
               </p>
               <ul
-                class="grid gap-2.5 text-sm"
+                class="grid text-sm md:gap-2.5"
               >
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/ar/destinations"
                   >
                     الوجهات
@@ -22680,7 +22663,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/ar/experiences"
                   >
                     التجارب
@@ -22688,7 +22671,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/ar/collections"
                   >
                     أفكار رحلات
@@ -22697,7 +22680,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
               </ul>
             </div>
             <div
-              class="grid content-start gap-3"
+              class="grid content-start gap-1.5 md:gap-3"
             >
               <p
                 class="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted"
@@ -22705,11 +22688,11 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
                 خطّط
               </p>
               <ul
-                class="grid gap-2.5 text-sm"
+                class="grid text-sm md:gap-2.5"
               >
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/ar/plan"
                   >
                     خطّط لرحلة
@@ -22717,7 +22700,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/ar/trips"
                   >
                     رحلاتي
@@ -22725,7 +22708,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/ar/drivers"
                   >
                     سائقون موثّقون
@@ -22734,7 +22717,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
               </ul>
             </div>
             <div
-              class="grid content-start gap-3"
+              class="grid content-start gap-1.5 md:gap-3"
             >
               <p
                 class="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted"
@@ -22742,11 +22725,11 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
                 اعمل معنا
               </p>
               <ul
-                class="grid gap-2.5 text-sm"
+                class="grid text-sm md:gap-2.5"
               >
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/ar/guide"
                   >
                     أرشِد معنا
@@ -22754,7 +22737,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/ar/drive"
                   >
                     قُد مع مشوار
@@ -22762,7 +22745,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/ar/exchange"
                   >
                     أدرج مكتب الصرافة
@@ -22771,7 +22754,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
               </ul>
             </div>
             <div
-              class="grid content-start gap-3"
+              class="grid content-start gap-1.5 md:gap-3"
             >
               <p
                 class="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted"
@@ -22779,11 +22762,11 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
                 المساعدة
               </p>
               <ul
-                class="grid gap-2.5 text-sm"
+                class="grid text-sm md:gap-2.5"
               >
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/ar/contact"
                   >
                     مركز المساعدة
@@ -22791,7 +22774,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/ar/cancellation-policy"
                   >
                     سياسة الإلغاء
@@ -22799,7 +22782,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/ar/community-guidelines"
                   >
                     إرشادات المجتمع
@@ -22820,40 +22803,40 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
               معاينة تفاعلية · عروض عيّنة · لا مدفوعات حية
             </p>
             <div
-              class="flex flex-wrap items-center gap-x-5 gap-y-2"
+              class="flex flex-wrap items-center gap-x-5 md:gap-y-2"
             >
               <a
-                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="inline-flex min-h-10 items-center hover:text-text md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 href="/ar/privacy"
               >
                 الخصوصية
               </a>
               <a
-                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="inline-flex min-h-10 items-center hover:text-text md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 href="/ar/terms"
               >
                 الشروط
               </a>
               <button
-                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface inline-flex min-h-10 items-center md:min-h-0"
                 type="button"
               >
                 إعدادات ملفات تعريف الارتباط
               </button>
               <a
-                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="inline-flex min-h-10 items-center hover:text-text md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 href="/ar/privacy"
               >
                 حقوق الصور
               </a>
               <a
-                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="inline-flex min-h-10 items-center hover:text-text md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 href="/ar/contact"
               >
                 تواصل
               </a>
               <a
-                class="inline-flex items-center gap-1 hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="inline-flex min-h-10 items-center hover:text-text md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface gap-1"
                 href="/ar/admin"
               >
                 العمليات
@@ -22905,7 +22888,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
       class="sticky top-0 z-40 border-b bg-surface/90 backdrop-blur-md transition-[border-color,box-shadow] duration-200 print:hidden border-transparent"
     >
       <div
-        class="shell-frame grid grid-cols-[1fr_auto] items-center gap-3 py-2 transition-[min-height] duration-200 lg:grid-cols-[1fr_auto_1fr] min-h-16 lg:min-h-[4.5rem]"
+        class="shell-frame grid grid-cols-[1fr_auto] items-center gap-2 py-2 min-[360px]:gap-3 transition-[min-height] duration-200 lg:grid-cols-[1fr_auto_1fr] min-h-16 lg:min-h-[4.5rem]"
       >
         <div
           class="flex min-w-0 items-center gap-2"
@@ -23054,7 +23037,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
             <button
               aria-label="English"
               aria-pressed="true"
-              class="inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface bg-brand text-brand-foreground"
+              class="inline-flex h-8 min-w-8 items-center justify-center rounded-pill px-1.5 text-xs font-semibold tracking-wide transition-colors min-[360px]:min-w-9 min-[360px]:px-2 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface bg-brand text-brand-foreground"
               type="button"
             >
               EN
@@ -23062,7 +23045,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
             <button
               aria-label="العربية"
               aria-pressed="false"
-              class="inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
+              class="inline-flex h-8 min-w-8 items-center justify-center rounded-pill px-1.5 text-xs font-semibold tracking-wide transition-colors min-[360px]:min-w-9 min-[360px]:px-2 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
               type="button"
             >
               AR
@@ -23070,7 +23053,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
             <button
               aria-label="Français"
               aria-pressed="false"
-              class="inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
+              class="inline-flex h-8 min-w-8 items-center justify-center rounded-pill px-1.5 text-xs font-semibold tracking-wide transition-colors min-[360px]:min-w-9 min-[360px]:px-2 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
               type="button"
             >
               FR
@@ -23127,10 +23110,14 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
             </h2>
           </div>
           <a
-            aria-label="Plan a trip"
-            class="group grid size-16 shrink-0 place-items-center rounded-full bg-brand text-brand-foreground transition-colors duration-200 hover:bg-brand/90 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            class="group inline-flex h-14 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-6 text-brand-foreground transition-colors duration-200 hover:bg-brand/90 md:size-16 md:px-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
             href="/plan"
           >
+            <span
+              class="text-[0.9375rem] font-semibold md:sr-only"
+            >
+              Plan a trip
+            </span>
             <svg
               aria-hidden="true"
               class="lucide lucide-arrow-up-right size-6 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 rtl:-scale-x-100"
@@ -23195,7 +23182,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
                 <button
                   aria-label="English"
                   aria-pressed="true"
-                  class="inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface bg-brand text-brand-foreground"
+                  class="inline-flex h-8 min-w-8 items-center justify-center rounded-pill px-1.5 text-xs font-semibold tracking-wide transition-colors min-[360px]:min-w-9 min-[360px]:px-2 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface bg-brand text-brand-foreground"
                   type="button"
                 >
                   EN
@@ -23203,7 +23190,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
                 <button
                   aria-label="العربية"
                   aria-pressed="false"
-                  class="inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
+                  class="inline-flex h-8 min-w-8 items-center justify-center rounded-pill px-1.5 text-xs font-semibold tracking-wide transition-colors min-[360px]:min-w-9 min-[360px]:px-2 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
                   type="button"
                 >
                   AR
@@ -23211,7 +23198,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
                 <button
                   aria-label="Français"
                   aria-pressed="false"
-                  class="inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
+                  class="inline-flex h-8 min-w-8 items-center justify-center rounded-pill px-1.5 text-xs font-semibold tracking-wide transition-colors min-[360px]:min-w-9 min-[360px]:px-2 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
                   type="button"
                 >
                   FR
@@ -23221,10 +23208,10 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
           </div>
           <nav
             aria-label="Site links"
-            class="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:col-span-8"
+            class="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4 lg:col-span-8"
           >
             <div
-              class="grid content-start gap-3"
+              class="grid content-start gap-1.5 md:gap-3"
             >
               <p
                 class="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted"
@@ -23232,11 +23219,11 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
                 Explore
               </p>
               <ul
-                class="grid gap-2.5 text-sm"
+                class="grid text-sm md:gap-2.5"
               >
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/destinations"
                   >
                     Destinations
@@ -23244,7 +23231,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/experiences"
                   >
                     Experiences
@@ -23252,7 +23239,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/collections"
                   >
                     Trip ideas
@@ -23261,7 +23248,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
               </ul>
             </div>
             <div
-              class="grid content-start gap-3"
+              class="grid content-start gap-1.5 md:gap-3"
             >
               <p
                 class="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted"
@@ -23269,11 +23256,11 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
                 Plan
               </p>
               <ul
-                class="grid gap-2.5 text-sm"
+                class="grid text-sm md:gap-2.5"
               >
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/plan"
                   >
                     Plan a trip
@@ -23281,7 +23268,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/trips"
                   >
                     My trips
@@ -23289,7 +23276,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/drivers"
                   >
                     Verified drivers
@@ -23298,7 +23285,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
               </ul>
             </div>
             <div
-              class="grid content-start gap-3"
+              class="grid content-start gap-1.5 md:gap-3"
             >
               <p
                 class="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted"
@@ -23306,11 +23293,11 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
                 Work with us
               </p>
               <ul
-                class="grid gap-2.5 text-sm"
+                class="grid text-sm md:gap-2.5"
               >
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/guide"
                   >
                     Guide with us
@@ -23318,7 +23305,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/drive"
                   >
                     Drive with Mshwar
@@ -23326,7 +23313,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/exchange"
                   >
                     List your exchange
@@ -23335,7 +23322,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
               </ul>
             </div>
             <div
-              class="grid content-start gap-3"
+              class="grid content-start gap-1.5 md:gap-3"
             >
               <p
                 class="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted"
@@ -23343,11 +23330,11 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
                 Help
               </p>
               <ul
-                class="grid gap-2.5 text-sm"
+                class="grid text-sm md:gap-2.5"
               >
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/contact"
                   >
                     Help center
@@ -23355,7 +23342,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/cancellation-policy"
                   >
                     Cancellation policy
@@ -23363,7 +23350,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/community-guidelines"
                   >
                     Community guidelines
@@ -23384,40 +23371,40 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
               Interactive preview · Sample offers · No live payments
             </p>
             <div
-              class="flex flex-wrap items-center gap-x-5 gap-y-2"
+              class="flex flex-wrap items-center gap-x-5 md:gap-y-2"
             >
               <a
-                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="inline-flex min-h-10 items-center hover:text-text md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 href="/privacy"
               >
                 Privacy
               </a>
               <a
-                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="inline-flex min-h-10 items-center hover:text-text md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 href="/terms"
               >
                 Terms
               </a>
               <button
-                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface inline-flex min-h-10 items-center md:min-h-0"
                 type="button"
               >
                 Cookie settings
               </button>
               <a
-                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="inline-flex min-h-10 items-center hover:text-text md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 href="/privacy"
               >
                 Photography credits
               </a>
               <a
-                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="inline-flex min-h-10 items-center hover:text-text md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 href="/contact"
               >
                 Contact
               </a>
               <a
-                class="inline-flex items-center gap-1 hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="inline-flex min-h-10 items-center hover:text-text md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface gap-1"
                 href="/admin"
               >
                 Operations
@@ -23469,7 +23456,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
       class="sticky top-0 z-40 border-b bg-surface/90 backdrop-blur-md transition-[border-color,box-shadow] duration-200 print:hidden border-transparent"
     >
       <div
-        class="shell-frame grid grid-cols-[1fr_auto] items-center gap-3 py-2 transition-[min-height] duration-200 lg:grid-cols-[1fr_auto_1fr] min-h-16 lg:min-h-[4.5rem]"
+        class="shell-frame grid grid-cols-[1fr_auto] items-center gap-2 py-2 min-[360px]:gap-3 transition-[min-height] duration-200 lg:grid-cols-[1fr_auto_1fr] min-h-16 lg:min-h-[4.5rem]"
       >
         <div
           class="flex min-w-0 items-center gap-2"
@@ -23618,7 +23605,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
             <button
               aria-label="English"
               aria-pressed="false"
-              class="inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
+              class="inline-flex h-8 min-w-8 items-center justify-center rounded-pill px-1.5 text-xs font-semibold tracking-wide transition-colors min-[360px]:min-w-9 min-[360px]:px-2 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
               type="button"
             >
               EN
@@ -23626,7 +23613,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
             <button
               aria-label="العربية"
               aria-pressed="false"
-              class="inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
+              class="inline-flex h-8 min-w-8 items-center justify-center rounded-pill px-1.5 text-xs font-semibold tracking-wide transition-colors min-[360px]:min-w-9 min-[360px]:px-2 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
               type="button"
             >
               AR
@@ -23634,7 +23621,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
             <button
               aria-label="Français"
               aria-pressed="true"
-              class="inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface bg-brand text-brand-foreground"
+              class="inline-flex h-8 min-w-8 items-center justify-center rounded-pill px-1.5 text-xs font-semibold tracking-wide transition-colors min-[360px]:min-w-9 min-[360px]:px-2 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface bg-brand text-brand-foreground"
               type="button"
             >
               FR
@@ -23691,10 +23678,14 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
             </h2>
           </div>
           <a
-            aria-label="Planifier un voyage"
-            class="group grid size-16 shrink-0 place-items-center rounded-full bg-brand text-brand-foreground transition-colors duration-200 hover:bg-brand/90 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            class="group inline-flex h-14 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-6 text-brand-foreground transition-colors duration-200 hover:bg-brand/90 md:size-16 md:px-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
             href="/fr/plan"
           >
+            <span
+              class="text-[0.9375rem] font-semibold md:sr-only"
+            >
+              Planifier un voyage
+            </span>
             <svg
               aria-hidden="true"
               class="lucide lucide-arrow-up-right size-6 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 rtl:-scale-x-100"
@@ -23759,7 +23750,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
                 <button
                   aria-label="English"
                   aria-pressed="false"
-                  class="inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
+                  class="inline-flex h-8 min-w-8 items-center justify-center rounded-pill px-1.5 text-xs font-semibold tracking-wide transition-colors min-[360px]:min-w-9 min-[360px]:px-2 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
                   type="button"
                 >
                   EN
@@ -23767,7 +23758,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
                 <button
                   aria-label="العربية"
                   aria-pressed="false"
-                  class="inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
+                  class="inline-flex h-8 min-w-8 items-center justify-center rounded-pill px-1.5 text-xs font-semibold tracking-wide transition-colors min-[360px]:min-w-9 min-[360px]:px-2 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-text-muted hover:bg-surface-sunken hover:text-text"
                   type="button"
                 >
                   AR
@@ -23775,7 +23766,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
                 <button
                   aria-label="Français"
                   aria-pressed="true"
-                  class="inline-flex h-8 min-w-9 items-center justify-center rounded-pill px-2 text-xs font-semibold tracking-wide transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface bg-brand text-brand-foreground"
+                  class="inline-flex h-8 min-w-8 items-center justify-center rounded-pill px-1.5 text-xs font-semibold tracking-wide transition-colors min-[360px]:min-w-9 min-[360px]:px-2 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface bg-brand text-brand-foreground"
                   type="button"
                 >
                   FR
@@ -23785,10 +23776,10 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
           </div>
           <nav
             aria-label="Liens du site"
-            class="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:col-span-8"
+            class="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4 lg:col-span-8"
           >
             <div
-              class="grid content-start gap-3"
+              class="grid content-start gap-1.5 md:gap-3"
             >
               <p
                 class="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted"
@@ -23796,11 +23787,11 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
                 Explorer
               </p>
               <ul
-                class="grid gap-2.5 text-sm"
+                class="grid text-sm md:gap-2.5"
               >
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/fr/destinations"
                   >
                     Destinations
@@ -23808,7 +23799,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/fr/experiences"
                   >
                     Expériences
@@ -23816,7 +23807,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/fr/collections"
                   >
                     Idées de voyage
@@ -23825,7 +23816,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
               </ul>
             </div>
             <div
-              class="grid content-start gap-3"
+              class="grid content-start gap-1.5 md:gap-3"
             >
               <p
                 class="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted"
@@ -23833,11 +23824,11 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
                 Planifier
               </p>
               <ul
-                class="grid gap-2.5 text-sm"
+                class="grid text-sm md:gap-2.5"
               >
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/fr/plan"
                   >
                     Planifier un voyage
@@ -23845,7 +23836,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/fr/trips"
                   >
                     Mes voyages
@@ -23853,7 +23844,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/fr/drivers"
                   >
                     Chauffeurs vérifiés
@@ -23862,7 +23853,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
               </ul>
             </div>
             <div
-              class="grid content-start gap-3"
+              class="grid content-start gap-1.5 md:gap-3"
             >
               <p
                 class="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted"
@@ -23870,11 +23861,11 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
                 Travailler avec nous
               </p>
               <ul
-                class="grid gap-2.5 text-sm"
+                class="grid text-sm md:gap-2.5"
               >
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/fr/guide"
                   >
                     Guidez avec nous
@@ -23882,7 +23873,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/fr/drive"
                   >
                     Conduire avec Mshwar
@@ -23890,7 +23881,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/fr/exchange"
                   >
                     Référencez votre bureau de change
@@ -23899,7 +23890,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
               </ul>
             </div>
             <div
-              class="grid content-start gap-3"
+              class="grid content-start gap-1.5 md:gap-3"
             >
               <p
                 class="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted"
@@ -23907,11 +23898,11 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
                 Aide
               </p>
               <ul
-                class="grid gap-2.5 text-sm"
+                class="grid text-sm md:gap-2.5"
               >
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/fr/contact"
                   >
                     Centre d’aide
@@ -23919,7 +23910,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/fr/cancellation-policy"
                   >
                     Politique d’annulation
@@ -23927,7 +23918,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
                 </li>
                 <li>
                   <a
-                    class="rounded-sm text-text transition-colors hover:text-text/60 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/fr/community-guidelines"
                   >
                     Règles de la communauté
@@ -23948,40 +23939,40 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
               Aperçu interactif · Offres d’exemple · Pas de paiements en direct
             </p>
             <div
-              class="flex flex-wrap items-center gap-x-5 gap-y-2"
+              class="flex flex-wrap items-center gap-x-5 md:gap-y-2"
             >
               <a
-                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="inline-flex min-h-10 items-center hover:text-text md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 href="/fr/privacy"
               >
                 Confidentialité
               </a>
               <a
-                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="inline-flex min-h-10 items-center hover:text-text md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 href="/fr/terms"
               >
                 Conditions
               </a>
               <button
-                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface inline-flex min-h-10 items-center md:min-h-0"
                 type="button"
               >
                 Paramètres des cookies
               </button>
               <a
-                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="inline-flex min-h-10 items-center hover:text-text md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 href="/fr/privacy"
               >
                 Crédits photo
               </a>
               <a
-                class="hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="inline-flex min-h-10 items-center hover:text-text md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 href="/fr/contact"
               >
                 Contact
               </a>
               <a
-                class="inline-flex items-center gap-1 hover:text-text outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                class="inline-flex min-h-10 items-center hover:text-text md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface gap-1"
                 href="/fr/admin"
               >
                 Opérations
