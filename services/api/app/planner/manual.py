@@ -19,7 +19,7 @@ from app.core.config import settings
 from app.planner.assembly import _price_snapshot
 from app.planner.defaults import apply_defaults
 from app.planner.eligibility import hours_allow, travel_leg, unit_price_minor
-from app.planner.feasibility import FeasibilityReport, assess, day_split
+from app.planner.feasibility import FeasibilityReport, assess, day_split, is_stay
 from app.planner.persist import persist_plan, retrieve_candidates
 from app.planner.schemas import (
     AssembledLeg,
@@ -31,6 +31,11 @@ from app.planner.schemas import (
 
 MANUAL_CANDIDATE_LIMIT = 120
 MAX_MANUAL_STOPS = 12
+#: Bounds for a stop length the traveller (or an edited AI plan) supplies.
+MIN_STOP_MINUTES = 10
+#: Checking in at a place to stay: a stop has to end after it starts.
+STAY_CHECKIN_MINUTES = 30
+MAX_STOP_MINUTES = 12 * 60
 
 
 class ManualDayInfeasible(ValueError):
@@ -53,6 +58,7 @@ def assemble_manual(candidates: list[CandidateRecord], constraints: ExtractedCon
     stops: list[AssembledStop] = []
     legs: list[AssembledLeg] = []
     for candidate in candidates:
+        stay = is_stay(candidate)
         minutes, distance, route = travel_leg(lat, lng, candidate.lat, candidate.lng, departure_at=cursor)
         available = route.available and minutes < 10**6
         travel_min = minutes if available else 0
@@ -70,18 +76,22 @@ def assemble_manual(candidates: list[CandidateRecord], constraints: ExtractedCon
             )
         )
         arrive = cursor + timedelta(minutes=travel_min)
-        leave = arrive + timedelta(minutes=candidate.duration_minutes)
+        # A place to stay is where the day ends: the traveller checks in, not visits.
+        leave = arrive + timedelta(minutes=STAY_CHECKIN_MINUTES if stay else candidate.duration_minutes)
         amount, kind = unit_price_minor(candidate, party)
-        flags: list[str] = []
-        _ok, hours_code = hours_allow(candidate, arrive, leave)
-        if hours_code == "hours_unknown":
-            flags.append("hours_unknown")
+        flags: list[str] = ["overnight"] if stay else []
+        if not stay:
+            _ok, hours_code = hours_allow(candidate, arrive, leave)
+            if hours_code == "hours_unknown":
+                flags.append("hours_unknown")
+            elif hours_code == "outside_opening_hours":
+                # Reached before it opens or still there after it closes. Running past
+                # the traveller's "back by" is a separate check (day_overflow).
+                flags.append("after_hours")
         if kind == "quote":
             flags.append("quote_required")
         elif kind == "estimate":
             flags.append("estimated_price")
-        if leave > constraints.return_by:
-            flags.append("after_hours")
         stops.append(
             AssembledStop(
                 experience_id=candidate.id,
@@ -122,11 +132,13 @@ def _constraints(
     currency: str,
     start_lat: float | None,
     start_lng: float | None,
+    return_by: datetime | None = None,
 ) -> ExtractedConstraints:
     return ExtractedConstraints(
         destination_slugs=destination_slugs,
         party_size=party_size,
         window_start=window_start,
+        return_by=return_by,
         budget_minor=budget_minor,
         strict_budget=strict_budget,
         currency=currency or "USD",
@@ -140,23 +152,32 @@ async def _gather(
     *,
     experience_slugs: list[str],
     constraints: ExtractedConstraints,
+    stop_minutes: dict[str, int] | None = None,
 ) -> tuple[list[CandidateRecord], ExtractedConstraints, list[Any]]:
     """Resolve the traveller's chosen slugs to published candidates, in their order."""
     merged, assumed = apply_defaults(constraints, None)
-    candidates = await retrieve_candidates(db, merged, limit=MANUAL_CANDIDATE_LIMIT)
+    candidates = await retrieve_candidates(db, merged, limit=MANUAL_CANDIDATE_LIMIT, keep_hotels=True)
     by_slug = {candidate.slug: candidate for candidate in candidates}
     chosen: list[CandidateRecord] = []
     seen: set[str] = set()
     for slug in experience_slugs:
         candidate = by_slug.get(slug)
         if candidate is not None and candidate.slug not in seen:
+            minutes = (stop_minutes or {}).get(slug)
+            if minutes is not None:
+                candidate = candidate.model_copy(
+                    update={"duration_minutes": min(max(int(minutes), MIN_STOP_MINUTES), MAX_STOP_MINUTES)}
+                )
             chosen.append(candidate)
             seen.add(candidate.slug)
         if len(chosen) >= MAX_MANUAL_STOPS:
             break
     if not chosen:
         raise ValueError("None of the selected places are available to plan")
-    return chosen, merged, assumed
+    # The day ends where the traveller sleeps: one place to stay, always last.
+    stays = [candidate for candidate in chosen if is_stay(candidate)]
+    visits = [candidate for candidate in chosen if not is_stay(candidate)]
+    return visits + stays[-1:], merged, assumed
 
 
 def _suggested_days(chosen: list[CandidateRecord]) -> list[list[str]]:
@@ -178,6 +199,8 @@ async def preview_manual(
     currency: str,
     start_lat: float | None,
     start_lng: float | None,
+    return_by: datetime | None = None,
+    stop_minutes: dict[str, int] | None = None,
 ) -> dict[str, Any]:
     """Cost the day without saving it, so the builder can react as picks change."""
     chosen, merged, assumed = await _gather(
@@ -192,7 +215,9 @@ async def preview_manual(
             currency=currency,
             start_lat=start_lat,
             start_lng=start_lng,
+            return_by=return_by,
         ),
+        stop_minutes=stop_minutes,
     )
     plan = assemble_manual(chosen, merged)
     base: dict[str, Any] = {
@@ -247,6 +272,8 @@ async def build_manual(
     title: str | None,
     trip_id: UUID | None,
     accept_warnings: bool = False,
+    return_by: datetime | None = None,
+    stop_minutes: dict[str, int] | None = None,
 ) -> dict[str, Any]:
     """Retrieve the chosen published places, order them, assemble and persist."""
     chosen, merged, assumed = await _gather(
@@ -261,7 +288,9 @@ async def build_manual(
             currency=currency,
             start_lat=start_lat,
             start_lng=start_lng,
+            return_by=return_by,
         ),
+        stop_minutes=stop_minutes,
     )
     plan = assemble_manual(chosen, merged)
     if plan.infeasible or not plan.stops:

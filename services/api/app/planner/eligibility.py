@@ -58,9 +58,16 @@ def hours_allow(candidate: CandidateRecord, start: datetime, end: datetime) -> t
         return False, "hours_closed_exception"
     if opens is None or closes is None:
         return True, "hours_unknown"
-    local_start = start.astimezone(BEIRUT).time()
-    local_end = end.astimezone(BEIRUT).time()
-    if local_start < opens or local_end > closes:
+    local = start.astimezone(BEIRUT)
+    opening = local.replace(hour=opens.hour, minute=opens.minute, second=0, microsecond=0)
+    closing = local.replace(hour=closes.hour, minute=closes.minute, second=0, microsecond=0)
+    if closing <= opening:
+        # Open past midnight (a bowling alley closing at 01:00).
+        if local < closing:
+            opening -= timedelta(days=1)
+        else:
+            closing += timedelta(days=1)
+    if local < opening or end.astimezone(BEIRUT) > closing:
         return False, "outside_opening_hours"
     return True, "hours_ok"
 

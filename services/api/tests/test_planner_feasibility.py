@@ -219,3 +219,67 @@ def test_suggested_order_solves_many_stops_without_dropping_any() -> None:
     ]
     ordered = suggest_order(picks, 33.8938, 35.5018)
     assert sorted(item.slug for item in ordered) == sorted(item.slug for item in picks)
+
+
+def test_a_place_to_stay_ends_the_day_so_an_evening_is_not_an_overflow() -> None:
+    start = datetime(2026, 9, 26, 9, 0, tzinfo=BEIRUT)
+    evening = [{"weekday": day, "opens": "10:00", "closes": "01:00"} for day in range(7)]
+    picks = [
+        _candidate("byblos-port", BYBLOS, "byblos", duration_minutes=240),
+        _candidate("batroun-bowling", BATROUN, "batroun", hours=evening, duration_minutes=300),
+        _candidate("batroun-resort", BATROUN, "batroun", listing_kind="hotel", hours=[]),
+    ]
+    report, timings = _assess(picks, window_start=start, return_by=start + timedelta(hours=9))
+    codes = _codes(report)
+    assert "day_overflow" not in codes
+    assert "after_hours" not in codes
+    assert report.feasible is True
+    assert "overnight" in timings[-1].flags
+    # Only a check-in: the stay is where the evening ends, not a four-hour visit.
+    assert timings[-1].leaves_at - timings[-1].arrives_at == timedelta(minutes=30)
+
+
+def test_without_a_place_to_stay_running_late_is_an_overflow_not_a_closing_time() -> None:
+    start = datetime(2026, 9, 26, 9, 0, tzinfo=BEIRUT)
+    picks = [
+        _candidate("byblos-port", BYBLOS, "byblos", duration_minutes=300),
+        _candidate("byblos-souk", BYBLOS, "byblos", duration_minutes=300),
+    ]
+    report, _timings = _assess(picks, window_start=start, return_by=start + timedelta(hours=8))
+    codes = _codes(report)
+    assert "day_overflow" in codes
+    assert "after_hours" not in codes
+
+
+def test_a_place_to_stay_stays_last_in_the_suggested_order() -> None:
+    picks = [
+        _candidate("batroun-resort", BATROUN, "batroun", listing_kind="hotel"),
+        _candidate("tripoli-citadel", TRIPOLI, "tripoli"),
+        _candidate("byblos-port", BYBLOS, "byblos"),
+    ]
+    ordered = suggest_order(picks, 33.8938, 35.5018)
+    assert ordered[-1].slug == "batroun-resort"
+
+
+def test_meals_keep_their_place_and_only_the_sights_move() -> None:
+    # Breakfast first and dinner last, whatever driving it would save to move them.
+    picks = [
+        _candidate("batroun-breakfast", BATROUN, "batroun", listing_kind="restaurant"),
+        _candidate("tripoli-citadel", TRIPOLI, "tripoli"),
+        _candidate("byblos-port", BYBLOS, "byblos"),
+        _candidate("byblos-souk", BYBLOS, "byblos"),
+        _candidate("byblos-dinner", BYBLOS, "byblos", listing_kind="restaurant"),
+    ]
+    ordered = [item.slug for item in suggest_order(picks, 33.8938, 35.5018)]
+    assert ordered[0] == "batroun-breakfast"
+    assert ordered[-1] == "byblos-dinner"
+    assert sorted(ordered[1:-1]) == ["byblos-port", "byblos-souk", "tripoli-citadel"]
+
+
+def test_meals_stay_put_on_the_long_path_too() -> None:
+    picks = [_candidate("breakfast", BATROUN, "batroun", listing_kind="restaurant")] + [
+        _candidate(f"stop-{index}", (33.9 + index * 0.03, 35.5 + (index % 3) * 0.02), "byblos") for index in range(10)
+    ]
+    ordered = suggest_order(picks, 33.8938, 35.5018)
+    assert ordered[0].slug == "breakfast"
+    assert len(ordered) == len(picks)

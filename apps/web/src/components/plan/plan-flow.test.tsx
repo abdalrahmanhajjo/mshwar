@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { PlanFlow } from "./plan-flow";
 import { LocaleProvider } from "@/components/shell/locale-provider";
@@ -254,5 +254,106 @@ describe("plan flow generation results", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Planning is temporarily unavailable");
     expect(screen.getByRole("button", { name: plannerCopy.en.flowEditDetails })).toBeEnabled();
     expect(screen.queryByText(plannerCopy.en.flowReviewHint)).not.toBeInTheDocument();
+  });
+});
+
+describe("plan flow changes to an AI plan", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("reads a change request first, then applies what it understood", async () => {
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (String(url).endsWith("/planner/sessions")) return jsonResponse(planned);
+      if (String(url).endsWith("/refine")) {
+        const body = JSON.parse(String(init?.body));
+        return jsonResponse(body.apply ? planned : { understood: true, summary: "Start at 10:00" });
+      }
+      return jsonResponse([]);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    openAiDetails();
+    fireEvent.click(screen.getByRole("button", { name: plannerCopy.en.flowGenerate }));
+    fireEvent.change(await screen.findByLabelText(plannerCopy.en.refine), { target: { value: "start at 10" } });
+    fireEvent.click(screen.getByRole("button", { name: plannerCopy.en.apply }));
+    await waitFor(() => expect(fetchMock.mock.calls.filter(([url]) => url.endsWith("/refine"))).toHaveLength(2));
+    const bodies = fetchMock.mock.calls
+      .filter(([url]) => url.endsWith("/refine"))
+      .map(([, init]) => JSON.parse(String(init?.body)));
+    expect(bodies.map((body) => body.apply)).toEqual([false, true]);
+    expect(await screen.findByText("Start at 10:00")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("asks again instead of applying a change it did not understand", async () => {
+    const fetchMock = vi.fn(async (url: string) => {
+      if (String(url).endsWith("/planner/sessions")) return jsonResponse(planned);
+      if (String(url).endsWith("/refine")) return jsonResponse({ understood: false, clarification: null });
+      return jsonResponse([]);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    openAiDetails();
+    fireEvent.click(screen.getByRole("button", { name: plannerCopy.en.flowGenerate }));
+    fireEvent.change(await screen.findByLabelText(plannerCopy.en.refine), { target: { value: "hmm" } });
+    fireEvent.click(screen.getByRole("button", { name: plannerCopy.en.apply }));
+    expect(await screen.findByText(plannerCopy.en.refineUnclear)).toBeInTheDocument();
+    expect(fetchMock.mock.calls.filter(([url]) => url.endsWith("/refine"))).toHaveLength(1);
+  });
+
+  it("edits an AI plan by hand with the AI day's own times and stop lengths", async () => {
+    const withSlug: PlannerSession = {
+      ...planned,
+      constraints: { start_lat: 34.25, start_lng: 35.65 },
+      plan: {
+        ...planned.plan!,
+        window_start: "2026-09-26T08:30:00+03:00",
+        return_by: "2026-09-26T23:30:00+03:00",
+        stops: [{ ...planned.plan!.stops[0]!, snapshot: { title: "Harbour walk", slug: "harbour-walk" } }],
+      },
+    };
+    const fetchMock = vi.fn(async (url: string, _init?: RequestInit) => {
+      if (String(url).endsWith("/planner/sessions")) return jsonResponse(withSlug);
+      if (String(url).endsWith("/experiences/harbour-walk"))
+        return jsonResponse(apiItem("harbour-walk", "Harbour walk"));
+      if (String(url).includes("/catalogue/experiences?")) return jsonResponse({ items: [] });
+      if (String(url).endsWith("/manual/preview")) {
+        return jsonResponse({
+          stops: [],
+          feasibility: {
+            feasible: true,
+            travel_minutes: 0,
+            travel_distance_m: 0,
+            day_minutes: 900,
+            travel_share: 0,
+            spread_m: 0,
+            destination_slugs: ["byblos"],
+            issues: [],
+            suggested_order: ["harbour-walk"],
+            order_saves_minutes: 0,
+          },
+          suggested_days: [],
+          total_minor: 0,
+          currency: "USD",
+          budget_warning: null,
+          infeasible_reason: null,
+        });
+      }
+      return jsonResponse([]);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    openAiDetails();
+    fireEvent.click(screen.getByRole("button", { name: plannerCopy.en.flowGenerate }));
+    fireEvent.click(await screen.findByRole("button", { name: plannerCopy.en.flowEditManual }));
+    expect(await screen.findByText(plannerCopy.en.flowEditingAi)).toBeInTheDocument();
+    await waitFor(() => expect(fetchMock.mock.calls.some(([url]) => url.endsWith("/manual/preview"))).toBe(true), {
+      timeout: 2000,
+    });
+    const request = fetchMock.mock.calls.find(([url]) => url.endsWith("/manual/preview"));
+    expect(JSON.parse(String(request?.[1]?.body))).toMatchObject({
+      experience_slugs: ["harbour-walk"],
+      window_start: "2026-09-26T08:30:00",
+      return_by: "2026-09-26T23:30:00",
+      start_lat: 34.25,
+      start_lng: 35.65,
+      stop_minutes: { "harbour-walk": 120 },
+    });
   });
 });

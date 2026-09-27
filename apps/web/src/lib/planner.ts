@@ -547,6 +547,10 @@ export function previewManualPlan(
     destination_slugs?: string[];
     party_size?: number;
     window_start?: string;
+    return_by?: string;
+    stop_minutes?: Record<string, number>;
+    start_lat?: number;
+    start_lng?: number;
     budget_minor?: number;
     strict_budget?: boolean;
     currency?: string;
@@ -567,6 +571,10 @@ export function createManualPlan(input: {
   destination_slugs?: string[];
   party_size?: number;
   window_start?: string;
+  return_by?: string;
+  stop_minutes?: Record<string, number>;
+  start_lat?: number;
+  start_lng?: number;
   budget_minor?: number;
   strict_budget?: boolean;
   currency?: string;

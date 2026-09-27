@@ -7,6 +7,7 @@ import {
   Check,
   ChevronDown,
   ChevronLeft,
+  Clock,
   Loader2,
   MapPin,
   Pencil,
@@ -70,6 +71,43 @@ function stepsFor(mode: Mode): Step[] {
   return mode === "manual" ? ["destination", "details", "places", "review"] : ["destination", "details", "review"];
 }
 
+const DEFAULT_START_TIME = "09:00";
+const DEFAULT_END_TIME = "18:00";
+
+/** The Beirut date and time of an ISO instant, as the date and time inputs want them. */
+function beirutParts(iso: unknown): { date: string; time: string } | null {
+  if (typeof iso !== "string" || !iso) {
+    return null;
+  }
+  const moment = new Date(iso);
+  if (Number.isNaN(moment.getTime())) {
+    return null;
+  }
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Beirut",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    })
+      .formatToParts(moment)
+      .map((part) => [part.type, part.value]),
+  );
+  return { date: `${parts.year}-${parts.month}-${parts.day}`, time: `${parts.hour}:${parts.minute}` };
+}
+
+/** The day after an ISO date, for a "back by" that falls after midnight. */
+function nextDayIso(date: string) {
+  const next = new Date(`${date}T00:00:00Z`);
+  next.setUTCDate(next.getUTCDate() + 1);
+  return next.toISOString().slice(0, 10);
+}
+
+const asNumber = (value: unknown) => (typeof value === "number" && Number.isFinite(value) ? value : undefined);
+
 function tomorrowIso() {
   const date = new Date();
   date.setDate(date.getDate() + 1);
@@ -98,6 +136,12 @@ export function PlanFlow({
   const [step, setStep] = React.useState<Step>(() => (initialTripId ? "review" : "destination"));
   const [destSlugs, setDestSlugs] = React.useState<string[]>([]);
   const [date, setDate] = React.useState<string>(tomorrowIso);
+  const [startTime, setStartTime] = React.useState<string>(DEFAULT_START_TIME);
+  const [endTime, setEndTime] = React.useState<string>(DEFAULT_END_TIME);
+  // Where the day starts. Unset means the planner's default; an edited AI plan keeps its own.
+  // Stop lengths an edited AI plan brings along, by slug; new picks use their own.
+  const [stopMinutes, setStopMinutes] = React.useState<Record<string, number>>({});
+  const [startPoint, setStartPoint] = React.useState<{ lat: number; lng: number } | null>(null);
   const [party, setParty] = React.useState<number>(2);
   const [budget, setBudget] = React.useState<number>(200);
   const [strict, setStrict] = React.useState<boolean>(false);
@@ -117,6 +161,8 @@ export function PlanFlow({
   const [pending, setPending] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [refine, setRefine] = React.useState("");
+  // What the planner understood from the last change request, shown under the box.
+  const [refineNote, setRefineNote] = React.useState<string | null>(null);
   const [answers, setAnswers] = React.useState<Record<string, string>>({});
   const [replaceStopId, setReplaceStopId] = React.useState<string | null>(null);
   const [alts, setAlts] = React.useState<
@@ -134,7 +180,12 @@ export function PlanFlow({
   const daySteps = dayOf(session, plan);
   const sessionId = session?.session_id || undefined;
   const selectedDestination = destinations.find((item) => item.slug === destSlugs[0]) ?? null;
-  const windowStart = `${date}T09:00:00`;
+  const windowStart = `${date}T${startTime}:00`;
+  // A "back by" at or before the start time means after midnight.
+  const returnBy = `${endTime > startTime ? date : nextDayIso(date)}T${endTime}:00`;
+  const keptMinutes = Object.fromEntries(
+    picks.filter((item) => stopMinutes[item.slug]).map((item) => [item.slug, stopMinutes[item.slug] as number]),
+  );
   const {
     preview: dayPreview,
     checking: dayChecking,
@@ -144,11 +195,15 @@ export function PlanFlow({
     destinationSlugs: Array.from(new Set(picks.map((item) => item.destinationSlug).filter(Boolean))),
     partySize: party,
     windowStart,
+    returnBy,
+    stopMinutes: keptMinutes,
+    startLat: startPoint?.lat,
+    startLng: startPoint?.lng,
     budgetMinor: Math.round(budget * 100),
     strictBudget: strict,
     locale,
   });
-  const dayBlocked = Boolean(dayPreview && !dayPreview.feasibility.feasible);
+  const dayBlocked = Boolean(dayPreview?.feasibility && !dayPreview.feasibility.feasible);
 
   // Reopening a saved trip: load its latest version read-only and jump to review.
   React.useEffect(() => {
@@ -251,6 +306,44 @@ export function PlanFlow({
     }
   }
 
+  // Each step opens at the top of the page, not wherever the last one was scrolled to.
+  const firstStep = React.useRef(true);
+  React.useEffect(() => {
+    if (firstStep.current) {
+      firstStep.current = false;
+      return;
+    }
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+  }, [step]);
+
+  /** Ask for a change in words: the planner reads it first, then applies what it understood. */
+  async function applyRefine() {
+    const text = refine.trim();
+    if (!sessionId || !text) {
+      return;
+    }
+    setError(null);
+    setRefineNote(null);
+    setPending(true);
+    let understood: Awaited<ReturnType<typeof refinePlannerSession>>;
+    try {
+      understood = await refinePlannerSession(sessionId, text, false);
+    } catch (caught) {
+      setError(plannerErrorMessage(caught, copy));
+      setPending(false);
+      return;
+    }
+    if (!understood.understood) {
+      setRefineNote(understood.clarification || copy.refineUnclear);
+      setPending(false);
+      return;
+    }
+    setRefineNote(understood.summary ?? null);
+    await run(() => refinePlannerSession(sessionId, text, true));
+    setRefine("");
+  }
+
   async function generate() {
     if (!selectedDestination) {
       return;
@@ -282,6 +375,10 @@ export function PlanFlow({
         destination_slugs: destinationSlugs,
         party_size: party,
         window_start: windowStart,
+        return_by: returnBy,
+        stop_minutes: keptMinutes,
+        start_lat: startPoint?.lat,
+        start_lng: startPoint?.lng,
         budget_minor: Math.round(budget * 100),
         strict_budget: strict,
         currency: "USD",
@@ -316,6 +413,45 @@ export function PlanFlow({
       if (!picksResolved.length) {
         setError(copy.flowNoPlanHint);
         return;
+      }
+      // Keep the AI day's own window, start point, group and budget: the manual check
+      // must judge the same day the AI planned, not a default 09:00-18:00 one.
+      const kept: Record<string, unknown> = {
+        ...(session?.constraints ?? {}),
+        ...(plan.constraints ?? {}),
+        window_start: plan.window_start,
+        return_by: plan.return_by,
+        party_size: plan.party_size,
+        budget_minor: plan.budget_minor,
+      };
+      const minutes: Record<string, number> = {};
+      for (const stop of plan.stops) {
+        const slug = stop.snapshot.slug ?? stop.slug;
+        const length = (new Date(stop.ends_at).getTime() - new Date(stop.starts_at).getTime()) / 60000;
+        if (slug && Number.isFinite(length) && length > 0) {
+          minutes[slug] = Math.round(length);
+        }
+      }
+      setStopMinutes(minutes);
+      const from = beirutParts(kept.window_start);
+      const until = beirutParts(kept.return_by);
+      if (from) {
+        setDate(from.date);
+        setStartTime(from.time);
+      }
+      if (until) {
+        setEndTime(until.time);
+      }
+      const lat = asNumber(kept.start_lat);
+      const lng = asNumber(kept.start_lng);
+      setStartPoint(lat !== undefined && lng !== undefined ? { lat, lng } : null);
+      const keptParty = asNumber(kept.party_size);
+      if (keptParty) {
+        setParty(keptParty);
+      }
+      const keptBudget = asNumber(kept.budget_minor);
+      if (keptBudget !== undefined) {
+        setBudget(Math.round(keptBudget / 100));
       }
       // Every town the AI day touched, so all of its stops stay editable side by side.
       const towns = Array.from(new Set(picksResolved.map((item) => item.destinationSlug).filter(Boolean)));
@@ -434,6 +570,8 @@ export function PlanFlow({
     setManualTripId(undefined);
     setAcceptWarnings(false);
     setEditingAi(null);
+    setStartPoint(null);
+    setStopMinutes({});
     setStep("destination");
   }
 
@@ -448,6 +586,8 @@ export function PlanFlow({
     setManualTripId(undefined);
     setAcceptWarnings(false);
     setEditingAi(null);
+    setStartPoint(null);
+    setStopMinutes({});
     setError(null);
     setStep("destination");
   }
@@ -767,6 +907,36 @@ export function PlanFlow({
                 <input type="checkbox" checked={strict} onChange={(event) => setStrict(event.target.checked)} />
                 {copy.flowStrictLabel}
               </label>
+              {mode === "manual" ? (
+                <>
+                  <label className="grid gap-2 text-sm font-medium">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Clock className="size-4" aria-hidden />
+                      {copy.flowStartTimeLabel}
+                    </span>
+                    <Input
+                      type="time"
+                      value={startTime}
+                      onChange={(event) => setStartTime(event.target.value || DEFAULT_START_TIME)}
+                    />
+                  </label>
+                  <label className="grid gap-2 text-sm font-medium">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Clock className="size-4" aria-hidden />
+                      {copy.flowEndTimeLabel}
+                    </span>
+                    <Input
+                      type="time"
+                      value={endTime}
+                      aria-describedby="pf-end-hint"
+                      onChange={(event) => setEndTime(event.target.value || DEFAULT_END_TIME)}
+                    />
+                    <span id="pf-end-hint" className="text-xs font-normal text-text-muted">
+                      {copy.flowEndTimeHint}
+                    </span>
+                  </label>
+                </>
+              ) : null}
             </div>
             {mode === "ai" ? (
               <div className="grid gap-2">
@@ -978,15 +1148,15 @@ export function PlanFlow({
                     <CardTitle>{copy.refine}</CardTitle>
                   </CardHeader>
                   <CardContent className="grid gap-3">
-                    <Textarea value={refine} onChange={(event) => setRefine(event.target.value)} rows={3} />
+                    <Textarea
+                      value={refine}
+                      onChange={(event) => setRefine(event.target.value)}
+                      rows={3}
+                      aria-label={copy.refine}
+                    />
+                    {refineNote ? <Notice role="status">{refineNote}</Notice> : null}
                     <div className="flex flex-wrap gap-2">
-                      <Button
-                        type="button"
-                        disabled={pending || !refine.trim()}
-                        onClick={() =>
-                          void run(() => refinePlannerSession(sessionId, refine, true)).then(() => setRefine(""))
-                        }
-                      >
+                      <Button type="button" disabled={pending || !refine.trim()} onClick={() => void applyRefine()}>
                         <Wand2 aria-hidden />
                         {copy.apply}
                       </Button>

@@ -436,6 +436,8 @@ async def create_manual_plan(
             currency=payload.currency,
             start_lat=payload.start_lat,
             start_lng=payload.start_lng,
+            return_by=payload.return_by,
+            stop_minutes=payload.stop_minutes,
             title=payload.title,
             trip_id=payload.trip_id,
             accept_warnings=payload.accept_warnings,
@@ -476,6 +478,8 @@ async def preview_manual_plan(
             currency=payload.currency,
             start_lat=payload.start_lat,
             start_lng=payload.start_lng,
+            return_by=payload.return_by,
+            stop_minutes=payload.stop_minutes,
         )
     except DBAPIError as exc:
         raise_from_db(exc)
