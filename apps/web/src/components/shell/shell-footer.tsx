@@ -23,7 +23,12 @@ const FOOTER_COPY: Record<ShellSurface, "travellerFooter" | "guideFooter" | "adm
   partner: "partnerFooter",
 };
 
-const linkClass = cn("rounded-sm text-text transition-colors hover:text-text/60", focusRing);
+// On phones each link is a 40px-tall row, so a thumb lands on the right one.
+const linkClass = cn(
+  "inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0",
+  focusRing,
+);
+const legalLink = cn("inline-flex min-h-10 items-center hover:text-text md:min-h-0", focusRing);
 
 export function ShellFooter({ surface }: { surface: ShellSurface }) {
   const { t } = useLocale();
@@ -108,14 +113,15 @@ export function ShellFooter({ surface }: { surface: ShellSurface }) {
               {lead} <span className="text-serif">{quoted}</span>
             </h2>
           </div>
+          {/* A labelled, full-width button on phones; the round arrow from md up. */}
           <LocaleLink
             href="/plan"
-            aria-label={copy.planATrip}
             className={cn(
-              "group grid size-16 shrink-0 place-items-center rounded-full bg-brand text-brand-foreground transition-colors duration-200 hover:bg-brand/90",
+              "group inline-flex h-14 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-6 text-brand-foreground transition-colors duration-200 hover:bg-brand/90 md:size-16 md:px-0",
               focusRing,
             )}
           >
+            <span className="text-[0.9375rem] font-semibold md:sr-only">{copy.planATrip}</span>
             <ArrowUpRight
               className="size-6 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 rtl:-scale-x-100"
               aria-hidden
@@ -135,11 +141,11 @@ export function ShellFooter({ surface }: { surface: ShellSurface }) {
               <LanguageSwitcher compact />
             </div>
           </div>
-          <nav aria-label={home.footerNav} className="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:col-span-8">
+          <nav aria-label={home.footerNav} className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4 lg:col-span-8">
             {groups.map((group) => (
-              <div key={group.title} className="grid content-start gap-3">
+              <div key={group.title} className="grid content-start gap-1.5 md:gap-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted">{group.title}</p>
-                <ul className="grid gap-2.5 text-sm">
+                <ul className="grid text-sm md:gap-2.5">
                   {group.links.map((item) => (
                     <li key={`${item.href}-${item.label}`}>
                       <LocaleLink href={item.href} className={linkClass}>
@@ -155,21 +161,21 @@ export function ShellFooter({ surface }: { surface: ShellSurface }) {
         <div className="shell-frame">
           <div className="flex flex-col gap-4 border-t border-border-subtle py-6 text-xs text-text-muted lg:flex-row lg:items-center lg:justify-between">
             <p>© 2026 Mshwar · {copy.sampleDisclaimer}</p>
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-              <LocaleLink href="/privacy" className={cn("hover:text-text", focusRing)}>
+            <div className="flex flex-wrap items-center gap-x-5 md:gap-y-2">
+              <LocaleLink href="/privacy" className={legalLink}>
                 {t("privacy")}
               </LocaleLink>
-              <LocaleLink href="/terms" className={cn("hover:text-text", focusRing)}>
+              <LocaleLink href="/terms" className={legalLink}>
                 {t("terms")}
               </LocaleLink>
-              <CookieSettingsButton />
-              <LocaleLink href="/privacy" className={cn("hover:text-text", focusRing)}>
+              <CookieSettingsButton className="inline-flex min-h-10 items-center md:min-h-0" />
+              <LocaleLink href="/privacy" className={legalLink}>
                 {copy.photoCredits}
               </LocaleLink>
-              <LocaleLink href="/contact" className={cn("hover:text-text", focusRing)}>
+              <LocaleLink href="/contact" className={legalLink}>
                 {t("contact")}
               </LocaleLink>
-              <LocaleLink href="/admin" className={cn("inline-flex items-center gap-1 hover:text-text", focusRing)}>
+              <LocaleLink href="/admin" className={cn(legalLink, "gap-1")}>
                 {copy.operations}
                 <ArrowUpRight className="size-3 rtl:-scale-x-100" aria-hidden />
               </LocaleLink>

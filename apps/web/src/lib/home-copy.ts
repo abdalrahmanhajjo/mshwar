@@ -14,8 +14,10 @@ export type HomeKey =
   | "searchWhere"
   | "searchWhereAny"
   | "searchWhen"
+  | "searchWhenAny"
   | "searchGuests"
   | "searchGuestsValue"
+  | "searchGuestsOne"
   | "searchType"
   | "searchTypeAny"
   | "searchSubmit"
@@ -112,8 +114,10 @@ export const homeCopy: Record<Locale, Record<HomeKey, string>> = {
     searchWhere: "Where",
     searchWhereAny: "Anywhere in Lebanon",
     searchWhen: "When",
+    searchWhenAny: "Any date",
     searchGuests: "Guests",
     searchGuestsValue: "{n} guests",
+    searchGuestsOne: "1 guest",
     searchType: "Experience",
     searchTypeAny: "Any kind",
     searchSubmit: "Search",
@@ -212,8 +216,10 @@ export const homeCopy: Record<Locale, Record<HomeKey, string>> = {
     searchWhere: "إلى أين",
     searchWhereAny: "أي مكان في لبنان",
     searchWhen: "متى",
+    searchWhenAny: "أي تاريخ",
     searchGuests: "الضيوف",
     searchGuestsValue: "{n} ضيوف",
+    searchGuestsOne: "ضيف واحد",
     searchType: "التجربة",
     searchTypeAny: "أي نوع",
     searchSubmit: "ابحث",
@@ -312,8 +318,10 @@ export const homeCopy: Record<Locale, Record<HomeKey, string>> = {
     searchWhere: "Où",
     searchWhereAny: "Partout au Liban",
     searchWhen: "Quand",
+    searchWhenAny: "N’importe quand",
     searchGuests: "Voyageurs",
     searchGuestsValue: "{n} voyageurs",
+    searchGuestsOne: "1 voyageur",
     searchType: "Expérience",
     searchTypeAny: "Tous types",
     searchSubmit: "Rechercher",
