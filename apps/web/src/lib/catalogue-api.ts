@@ -266,3 +266,48 @@ export async function loadMapListings(filters: ExperienceFilters): Promise<Exper
   const page = await loadExperiencePage({ ...filters, page: 1, pageSize: 48 });
   return page.items;
 }
+
+/** A published, moderated review from a verified booking, shown as a traveller story. */
+export type TravellerStory = {
+  id: string;
+  rating: number;
+  body: string;
+  createdAt: string;
+  experienceSlug: string;
+  experienceTitle: string;
+  image: string;
+  imageAlt: string;
+};
+
+type ApiReviewList = {
+  items?: { id: string; rating: number; body: string | null; created_at: string }[];
+};
+
+/** Longest-enough verified reviews of the given listings. Never sample data: none means no section. */
+export async function loadTravellerStories(experiences: Experience[], limit = 3): Promise<TravellerStory[]> {
+  const lists = await Promise.all(
+    experiences.map((experience) =>
+      readJson<ApiReviewList>(`/api/v1/reviews?listing_slug=${encodeURIComponent(experience.slug)}`).then((result) => ({
+        experience,
+        items: result.status === "ok" ? (result.data.items ?? []) : [],
+      })),
+    ),
+  );
+  return lists
+    .flatMap(({ experience, items }) =>
+      items
+        .filter((item) => item.rating >= 4 && (item.body ?? "").trim().length >= 60)
+        .map((item) => ({
+          id: item.id,
+          rating: item.rating,
+          body: (item.body ?? "").trim(),
+          createdAt: item.created_at,
+          experienceSlug: experience.slug,
+          experienceTitle: experience.title,
+          image: experience.image,
+          imageAlt: experience.imageAlt,
+        })),
+    )
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, limit);
+}

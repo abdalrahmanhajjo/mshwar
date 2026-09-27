@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
-import { ArrowUpRight, Bell } from "lucide-react";
+import { Bell } from "lucide-react";
 import { cn, focusRing } from "@/lib/utils";
 import { VerificationBanner } from "@/components/auth/verification-banner";
 import { PolicyUpdateBanner } from "@/components/legal/policy-update-banner";
@@ -18,6 +18,7 @@ import type { MessageKey } from "@/lib/messages";
 import { ShellFooter } from "@/components/shell/shell-footer";
 import { useLocale } from "@/components/shell/locale-provider";
 import { localeDirection } from "@/lib/locale";
+import { useHomeCopy } from "@/lib/home-copy";
 
 export interface AppShellProps {
   surface: ShellSurface;
@@ -47,6 +48,16 @@ export function AppShell({ surface, children, auth, currentPath, items: itemsOve
   const homeHref = items[0]?.href ?? "/";
   const isSidebar = surface !== "traveller";
   const activeItem = items.find((item) => isNavActive(activePath, item));
+  const home = useHomeCopy();
+  // The traveller bar tightens and gains a hairline once the page moves.
+  const [scrolled, setScrolled] = React.useState(false);
+  React.useEffect(() => {
+    if (isSidebar) return;
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isSidebar]);
 
   return (
     <div
@@ -114,8 +125,19 @@ export function AppShell({ surface, children, auth, currentPath, items: itemsOve
         </div>
       ) : (
         <>
-          <header className="sticky top-0 z-40 border-b border-border-subtle bg-surface/85 backdrop-blur-md print:hidden">
-            <div className="shell-frame grid min-h-16 grid-cols-[1fr_auto] items-center gap-3 py-2 lg:min-h-[4.5rem] lg:grid-cols-[1fr_auto_1fr]">
+          <header
+            data-scrolled={scrolled || undefined}
+            className={cn(
+              "sticky top-0 z-40 border-b bg-surface/90 backdrop-blur-md transition-[border-color,box-shadow] duration-200 print:hidden",
+              scrolled ? "border-border-subtle shadow-[0_6px_20px_-18px_rgb(18_53_47/0.5)]" : "border-transparent",
+            )}
+          >
+            <div
+              className={cn(
+                "shell-frame grid grid-cols-[1fr_auto] items-center gap-3 py-2 transition-[min-height] duration-200 lg:grid-cols-[1fr_auto_1fr]",
+                scrolled ? "min-h-14 lg:min-h-16" : "min-h-16 lg:min-h-[4.5rem]",
+              )}
+            >
               <div className="flex min-w-0 items-center gap-2">
                 <MobileNav items={items} pathname={activePath} auth={auth} />
                 <BrandMark href={homeHref} compact />
@@ -127,14 +149,13 @@ export function AppShell({ surface, children, auth, currentPath, items: itemsOve
               </nav>
               <div className="flex items-center justify-end gap-1.5 sm:gap-3">
                 <LocaleLink
-                  href="/guide"
+                  href="/plan"
                   className={cn(
-                    "hidden items-center gap-1 rounded-control px-2 py-2 text-sm text-text hover:text-text/70 xl:inline-flex",
+                    "hidden h-10 items-center rounded-pill bg-brand px-4 text-sm font-semibold text-brand-foreground transition-colors duration-200 hover:bg-brand/90 md:inline-flex",
                     focusRing,
                   )}
                 >
-                  {t("forGuides")}
-                  <ArrowUpRight className="size-3.5 rtl:-scale-x-100" aria-hidden />
+                  {home.planYourTrip}
                 </LocaleLink>
                 <LanguageSwitcher compact />
                 {resolvedAuth.status === "signed-in" ? (
