@@ -18,7 +18,7 @@ One VPS is enough to begin with.
 | OS             | Ubuntu 24.04 LTS | Anything that runs Docker Engine is fine                  |
 | Docker Compose | 2.24 or newer    | `docker-compose.staging.yml` uses the `!override` tag     |
 
-Point a hostname at it (`staging-api.<your-domain>`) before starting, so TLS can be issued.
+Point the domain at it before starting, so TLS can be issued — see [Domain: mshwarlb.com](#domain-mshwarlbcom).
 
 ## 2. Lock the box down first
 
@@ -148,9 +148,59 @@ docker compose -f docker-compose.yml -f docker-compose.staging.yml run --rm api 
 
 ## 7. Terminate TLS
 
-Put Caddy or nginx in front, terminating TLS for `staging-api.<your-domain>` and proxying to the
-`api` container on port 8000. The API reads client addresses through `TRUSTED_PROXY_COUNT`; set it
-to the number of proxies actually in front of it, or rate limits will key on the wrong address.
+The `caddy` service in `docker-compose.staging.yml` terminates TLS for `SITE_ADDRESS` and
+`www.<SITE_ADDRESS>` (which redirects to the bare domain), sends `/api/*`, `/health` and `/docs` to
+the API and everything else to the web app (`ops/caddy/Caddyfile`). The API reads client addresses
+through `TRUSTED_PROXY_COUNT`; set it to the number of proxies actually in front of it (Caddy = 1;
+Caddy behind the Cloudflare proxy = 2), or rate limits will key on the wrong address.
+
+## Domain: mshwarlb.com
+
+The site lives at **https://mshwarlb.com**; `www.mshwarlb.com` redirects to it. DNS is at
+Cloudflare.
+
+**1. DNS records** (Cloudflare → mshwarlb.com → DNS). Start with the proxy **off** (grey cloud,
+"DNS only") so Caddy can obtain its certificates directly:
+
+| Type | Name  | Content           | Proxy    |
+| ---- | ----- | ----------------- | -------- |
+| A    | `@`   | the server's IPv4 | DNS only |
+| A    | `www` | the server's IPv4 | DNS only |
+
+**2. `/opt/mshwar/.env`:**
+
+```
+SITE_ADDRESS=mshwarlb.com
+PUBLIC_WEB_ORIGIN=https://mshwarlb.com
+ALLOWED_ORIGINS=["https://mshwarlb.com"]
+SMTP_FROM=noreply@mshwarlb.com
+```
+
+Then restart: `docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d`, and check
+`docker compose logs caddy` shows `certificate obtained successfully` for both names.
+
+**3. Optional — Cloudflare proxy (orange cloud)** for caching and DDoS protection. Only after the
+certificates exist: set SSL/TLS mode to **Full (strict)** first (anything else causes a redirect
+loop or an unverified hop), then switch both records to Proxied and raise `TRUSTED_PROXY_COUNT` to 2.
+
+**4. Email that lands in the inbox, not Spam.** Add the domain as a sender in your email provider
+(e.g. Brevo → Senders, domains → Add domain) and copy the records it shows into Cloudflare DNS. They
+look like this — use the provider's exact values:
+
+| Type  | Name                | Content                                           |
+| ----- | ------------------- | ------------------------------------------------- |
+| TXT   | `@`                 | `v=spf1 include:spf.brevo.com ~all`               |
+| CNAME | `brevo1._domainkey` | the DKIM target the provider gives you            |
+| CNAME | `brevo2._domainkey` | the second DKIM target                            |
+| TXT   | `@`                 | the provider's domain-verification code           |
+| TXT   | `_dmarc`            | `v=DMARC1; p=none; rua=mailto:dmarc@mshwarlb.com` |
+
+A domain has **one** SPF record: if you also turn on Cloudflare Email Routing (free inboxes such as
+`privacy@mshwarlb.com` forwarded to Gmail), merge them into
+`v=spf1 include:spf.brevo.com include:_spf.mx.cloudflare.net ~all`. Once mail has been passing for a
+couple of weeks, tighten DMARC to `p=quarantine`. Then set `MAILER_BACKEND=smtp` with the
+provider's SMTP host, port 587, login and key, and `NEXT_PUBLIC_PRIVACY_EMAIL` if you created that
+inbox.
 
 ## 8. Turn deploys on
 
@@ -168,7 +218,7 @@ In the repository settings:
    | `DEPLOY_PRODUCTION_ENABLED` | API deploy to production, and rollback | The `PRODUCTION_*` secrets, and a production compose override that does not yet exist |
 
 2. Add secrets to the `staging` environment: `STAGING_API_URL` (e.g.
-   `https://staging-api.<your-domain>`), `STAGING_SSH_HOST`, `STAGING_SSH_USER`, `STAGING_SSH_KEY`.
+   `https://mshwarlb.com`), `STAGING_SSH_HOST`, `STAGING_SSH_USER`, `STAGING_SSH_KEY`.
 3. Leave `production` unconfigured for now. With `DEPLOY_ENABLED` on, an unset production secret
    fails the job loudly, which is the intended behaviour once you are ready to use it.
 
@@ -203,7 +253,7 @@ restarted with the API; to start it by hand:
 
 | Check                            | How                                                                                  | Satisfies      |
 | -------------------------------- | ------------------------------------------------------------------------------------ | -------------- |
-| API is up                        | `curl -fsS https://staging-api.<domain>/health`                                      | Deploy gate    |
+| API is up                        | `curl -fsS https://mshwarlb.com/health`                                              | Deploy gate    |
 | Connected as the restricted role | `SELECT current_user;` from inside the API                                           | SR-02          |
 | Rate limits are shared           | Exceed a limit, confirm `Retry-After` and `RateLimit` headers                        | SR-07          |
 | Sentry receives errors           | Trigger a controlled error, confirm it arrives with a request id and no secrets      | AC-15, SR-09   |

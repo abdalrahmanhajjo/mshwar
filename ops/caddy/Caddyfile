@@ -3,8 +3,10 @@
 #   everything else         -> the Next.js app
 #
 # SITE_ADDRESS comes from the environment (see docker-compose.staging.yml) so the
-# hostname can change without editing this file. Caddy obtains and renews the
-# certificate automatically.
+# hostname can change without editing this file (mshwarlb.com in production).
+# Caddy obtains and renews the certificates automatically, including the one for
+# www.<SITE_ADDRESS>, which only redirects to the bare domain so cookies and the
+# cross-site request guard (PUBLIC_WEB_ORIGIN) always see one origin.
 {$SITE_ADDRESS} {
 	encode zstd gzip
 
@@ -21,4 +23,8 @@
 		output stdout
 		format console
 	}
+}
+
+www.{$SITE_ADDRESS} {
+	redir https://{$SITE_ADDRESS}{uri} permanent
 }
