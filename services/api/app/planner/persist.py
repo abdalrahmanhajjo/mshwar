@@ -19,7 +19,7 @@ def _dump(value: Any) -> str:
 
 
 async def retrieve_candidates(
-    db: AsyncSession, constraints: ExtractedConstraints, *, limit: int = 24
+    db: AsyncSession, constraints: ExtractedConstraints, *, limit: int = 24, keep_hotels: bool = False
 ) -> list[CandidateRecord]:
     payload = constraints.model_dump(mode="json")
     payload["candidate_limit"] = limit
@@ -38,10 +38,11 @@ async def retrieve_candidates(
         items = []
     # Places to stay are where a day ends, not a stop in it: the planner suggests
     # them separately (app.public_venues_near) and never schedules one as a visit.
+    # The manual builder keeps them and ends the day there (``keep_hotels``).
     return [
         CandidateRecord.model_validate(item)
         for item in items
-        if not (isinstance(item, dict) and item.get("listing_kind") == "hotel")
+        if keep_hotels or not (isinstance(item, dict) and item.get("listing_kind") == "hotel")
     ]
 
 

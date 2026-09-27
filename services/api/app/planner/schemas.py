@@ -377,6 +377,10 @@ class ManualPlanRequest(BaseModel):
     destination_slugs: list[str] = Field(default_factory=list, max_length=8)
     party_size: int | None = Field(default=None, ge=1, le=20)
     window_start: datetime | None = None
+    #: When the traveller wants the day to end; defaults to 18:00 Beirut.
+    return_by: datetime | None = None
+    #: Minutes to spend at a pick, by slug. An edited AI plan keeps its own stop lengths.
+    stop_minutes: dict[str, int] = Field(default_factory=dict, max_length=12)
     budget_minor: int | None = Field(default=None, ge=0)
     strict_budget: bool | None = None
     currency: str = "USD"
@@ -396,6 +400,9 @@ class ManualPreviewRequest(BaseModel):
     destination_slugs: list[str] = Field(default_factory=list, max_length=8)
     party_size: int | None = Field(default=None, ge=1, le=20)
     window_start: datetime | None = None
+    return_by: datetime | None = None
+    #: Minutes to spend at a pick, by slug. An edited AI plan keeps its own stop lengths.
+    stop_minutes: dict[str, int] = Field(default_factory=dict, max_length=12)
     budget_minor: int | None = Field(default=None, ge=0)
     strict_budget: bool | None = None
     currency: str = "USD"

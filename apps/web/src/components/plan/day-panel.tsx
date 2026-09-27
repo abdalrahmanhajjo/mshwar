@@ -35,6 +35,10 @@ export type DayCheckInput = {
   destinationSlugs: string[];
   partySize: number;
   windowStart: string;
+  returnBy?: string;
+  stopMinutes?: Record<string, number>;
+  startLat?: number;
+  startLng?: number;
   budgetMinor: number;
   strictBudget: boolean;
   locale: string;
@@ -62,6 +66,10 @@ export function useDayCheck(input: DayCheckInput) {
           destination_slugs: parsed.destinationSlugs,
           party_size: parsed.partySize,
           window_start: parsed.windowStart,
+          return_by: parsed.returnBy,
+          stop_minutes: parsed.stopMinutes,
+          start_lat: parsed.startLat,
+          start_lng: parsed.startLng,
           budget_minor: parsed.budgetMinor,
           strict_budget: parsed.strictBudget,
           currency: "USD",
@@ -152,6 +160,7 @@ function StopRow({
   onRemove: (pick: Experience) => void;
 }) {
   const closed = timing?.flags.includes("closed_that_day") ?? false;
+  const overnight = timing?.flags.includes("overnight") ?? false;
   return (
     <li
       className={cn(
@@ -215,9 +224,11 @@ function StopRow({
           ) : null}
           <span className="tabular-nums">{interpolate(copy.stopArrives, { time: formatTime(timing.arrives_at) })}</span>
           <span className={cn(closed && "font-medium text-danger")}>
-            {timing.opens && timing.closes
-              ? interpolate(copy.stopOpenBetween, { opens: timing.opens, closes: timing.closes })
-              : copy.stopHoursUnknown}
+            {overnight
+              ? copy.stopOvernight
+              : timing.opens && timing.closes
+                ? interpolate(copy.stopOpenBetween, { opens: timing.opens, closes: timing.closes })
+                : copy.stopHoursUnknown}
           </span>
           {timing.wait_minutes >= LONG_WAIT_MINUTES ? (
             <span className="inline-flex items-center gap-1 text-warning">
@@ -330,7 +341,9 @@ export function DayPanel({
                 </Badge>
                 {last ? (
                   <Badge variant="outline" className="tabular-nums">
-                    {interpolate(copy.dayEndsBy, { time: formatTime(last.leaves_at) })}
+                    {last.flags.includes("overnight")
+                      ? interpolate(copy.dayEndsAtStay, { time: formatTime(last.arrives_at) })
+                      : interpolate(copy.dayEndsBy, { time: formatTime(last.leaves_at) })}
                   </Badge>
                 ) : null}
               </>

@@ -91,6 +91,17 @@ class FeasibilityReport(BaseModel):
     order_fixes_hours: bool = False
 
 
+def is_stay(candidate: CandidateRecord) -> bool:
+    """A place to stay: where the day ends, not a visit inside it."""
+    return candidate.listing_kind == "hotel"
+
+
+def is_meal(candidate: CandidateRecord) -> bool:
+    """A place to eat. Where the traveller put it says which meal it is (breakfast
+    first, dinner late), so the suggested order never moves it."""
+    return candidate.listing_kind == "restaurant"
+
+
 def _hhmm(value: Any) -> str | None:
     if value is None:
         return None
@@ -125,6 +136,8 @@ def _visit(candidate: CandidateRecord, arrive: datetime) -> tuple[datetime, floa
     """When the traveller leaves ``candidate`` after arriving at ``arrive``, and the
     penalty in minutes: waiting for it to open, plus a flat cost for a closed door
     or a visit that runs past closing."""
+    if is_stay(candidate):
+        return arrive, 0.0
     opens, closes, closed = opening_hours_for(candidate, arrive)
     penalty = 0.0
     start = arrive
@@ -182,7 +195,7 @@ _State = tuple[float, datetime | None, int]
 
 def _unwind(best: dict[tuple[int, int], _State], count: int) -> list[int]:
     full = (1 << count) - 1
-    last = min(range(count), key=lambda item: (best[(full, item)][0], item))
+    last = min((item for item in range(count) if (full, item) in best), key=lambda item: (best[(full, item)][0], item))
     order: list[int] = []
     mask = full
     while last != -1:
@@ -193,19 +206,30 @@ def _unwind(best: dict[tuple[int, int], _State], count: int) -> list[int]:
     return order[::-1]
 
 
+def _fits(pinned: dict[int, int], position: int, index: int) -> bool:
+    """A pinned stop goes only to its position, and a pinned position takes only its stop."""
+    if position in pinned:
+        return pinned[position] == index
+    return index not in pinned.values()
+
+
 def _exact_order(
     candidates: list[CandidateRecord],
     start_lat: float | None,
     start_lng: float | None,
     window_start: datetime | None,
+    locked: dict[int, int] | None = None,
 ) -> list[int]:
     """Held-Karp over (visited set, last stop). Each state keeps its cheapest path and
     the clock at which that path leaves the last stop, so opening hours are judged on
     the real arrival time of the path being extended."""
     count = len(candidates)
+    pinned = locked or {}
     # best[(mask, last)] = (cost, clock leaving last, previous last)
     best: dict[tuple[int, int], _State] = {}
     for index, candidate in enumerate(candidates):
+        if not _fits(pinned, 0, index):
+            continue
         cost, clock = _step(start_lat, start_lng, candidate, window_start)
         best[(1 << index, index)] = (cost, clock, -1)
     for mask in range(1, 1 << count):
@@ -214,8 +238,9 @@ def _exact_order(
             if state is None:
                 continue
             here = candidates[last]
+            position = mask.bit_count()
             for nxt in range(count):
-                if mask & (1 << nxt):
+                if mask & (1 << nxt) or not _fits(pinned, position, nxt):
                     continue
                 cost, clock = _step(here.lat, here.lng, candidates[nxt], state[1])
                 key = (mask | (1 << nxt), nxt)
@@ -278,12 +303,21 @@ def suggest_order(
     straight-line road estimates, no provider calls. The traveller's order is kept
     unless the suggestion is strictly better, so ties never shuffle their day.
     """
-    if len(candidates) < 2:
+    # A place to stay closes the day wherever the visits end, so it never moves; meals
+    # keep the slot the traveller gave them, and only the sights around them move.
+    stays = [item for item in candidates if is_stay(item)]
+    visits = [item for item in candidates if not is_stay(item)]
+    meals = {position: item for position, item in enumerate(visits) if is_meal(item)}
+    if len(visits) - len(meals) < 2:
         return list(candidates)
-    if len(candidates) <= EXACT_ORDER_LIMIT:
-        suggested = [candidates[index] for index in _exact_order(candidates, start_lat, start_lng, window_start)]
+    if len(visits) <= EXACT_ORDER_LIMIT:
+        locked = {position: position for position in meals}
+        order = _exact_order(visits, start_lat, start_lng, window_start, locked)
+        suggested = [visits[index] for index in order] + stays
     else:
-        suggested = _greedy_order(candidates, start_lat, start_lng, window_start)
+        free = [item for item in visits if not is_meal(item)]
+        moved = iter(_greedy_order(free, start_lat, start_lng, window_start))
+        suggested = [meals[position] if position in meals else next(moved) for position in range(len(visits))] + stays
     mine = sum(order_cost(candidates, start_lat, start_lng, window_start))
     theirs = sum(order_cost(suggested, start_lat, start_lng, window_start))
     return suggested if theirs < mine - 0.5 else list(candidates)
@@ -305,7 +339,9 @@ def stop_timings(candidates: list[CandidateRecord], plan: AssembledPlan) -> list
     timings: list[StopTiming] = []
     for index, (candidate, stop) in enumerate(zip(candidates, plan.stops, strict=False)):
         leg = plan.legs[index] if index < len(plan.legs) else None
-        opens, closes, closed = opening_hours_for(candidate, stop.starts_at)
+        opens, closes, closed = (
+            (None, None, False) if is_stay(candidate) else opening_hours_for(candidate, stop.starts_at)
+        )
         wait = 0
         if opens is not None:
             local = stop.starts_at.astimezone(BEIRUT)
@@ -417,14 +453,17 @@ def assess(
             )
         )
 
-    if timings and constraints.return_by and timings[-1].leaves_at > constraints.return_by:
-        over_by = int((timings[-1].leaves_at - constraints.return_by).total_seconds() // 60)
+    # Ending at a place to stay means the traveller is not going back tonight.
+    ends_at_stay = bool(candidates) and is_stay(candidates[-1])
+    last_visit = next((item for item in reversed(timings) if "overnight" not in item.flags), None)
+    if last_visit and not ends_at_stay and constraints.return_by and last_visit.leaves_at > constraints.return_by:
+        over_by = int((last_visit.leaves_at - constraints.return_by).total_seconds() // 60)
         issues.append(
             DayIssue(
                 code="day_overflow",
                 severity=BLOCKING,
-                positions=[timings[-1].position],
-                labels=[timings[-1].title],
+                positions=[last_visit.position],
+                labels=[last_visit.title],
                 detail={"over_by_minutes": over_by},
             )
         )
@@ -479,6 +518,8 @@ __all__ = [
     "StopTiming",
     "assess",
     "day_split",
+    "is_meal",
+    "is_stay",
     "spread_metres",
     "stop_timings",
     "order_cost",

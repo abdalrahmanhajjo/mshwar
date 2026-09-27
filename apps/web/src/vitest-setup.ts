@@ -55,3 +55,6 @@ HTMLCanvasElement.prototype.getContext = (() => ({
   fillRect: () => undefined,
   getImageData: () => ({ data: new Uint8ClampedArray() }),
 })) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+
+// jsdom has no layout, so scrolling is a no-op rather than a "not implemented" error.
+window.scrollTo = (() => undefined) as typeof window.scrollTo;

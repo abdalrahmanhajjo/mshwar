@@ -157,6 +157,23 @@ describe("day panel", () => {
     expect(screen.queryByRole("button", { name: /best order/i })).not.toBeInTheDocument();
   });
 
+  it("ends the day at a place to stay instead of a back-by time", () => {
+    const [first] = preview().stops;
+    if (!first) throw new Error("fixture has a stop");
+    const stay = {
+      ...first,
+      slug: "saida-souks",
+      opens: null,
+      closes: null,
+      leaves_at: "2026-09-26T21:30:00+03:00",
+      flags: ["overnight"],
+    };
+    renderPanel({ preview: preview({ stops: [stay] }) });
+    expect(screen.getByText("Your stay for the night")).toBeInTheDocument();
+    expect(screen.getByText(/At your stay by/)).toBeInTheDocument();
+    expect(screen.queryByText("Opening hours unknown")).not.toBeInTheDocument();
+  });
+
   it("keeps the day on screen and says so when the check fails", () => {
     renderPanel({ failed: true });
     expect(screen.getByText(/couldn’t check the day just now/i)).toBeInTheDocument();

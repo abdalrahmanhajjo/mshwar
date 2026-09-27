@@ -94,6 +94,12 @@ export type PlannerKey =
   | "flowDetailsTitle"
   | "flowDetailsHint"
   | "flowDateLabel"
+  | "refineUnclear"
+  | "flowStartTimeLabel"
+  | "flowEndTimeLabel"
+  | "flowEndTimeHint"
+  | "stopOvernight"
+  | "dayEndsAtStay"
   | "flowPartyLabel"
   | "flowBudgetLabel"
   | "flowStrictLabel"
@@ -390,7 +396,13 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flowChooseHint: "Pick a destination and we'll build a real day plan from published places there.",
     flowDetailsTitle: "Trip details",
     flowDetailsHint: "A few basics so the plan fits your day. You can change everything later.",
+    refineUnclear: "We couldn’t tell what to change. Try, for example, “start at 10” or “a cheaper dinner”.",
     flowDateLabel: "Date",
+    flowStartTimeLabel: "Start at",
+    flowEndTimeLabel: "Back by",
+    flowEndTimeHint: "Picking a place to stay ends the day there instead.",
+    stopOvernight: "Your stay for the night",
+    dayEndsAtStay: "At your stay by {time}",
     flowPartyLabel: "Group size",
     flowBudgetLabel: "Budget (USD)",
     flowStrictLabel: "Keep the plan within this budget",
@@ -689,7 +701,13 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flowChooseHint: "اختر وجهة وسننشئ لك خطة يوم حقيقية من الأماكن المنشورة هناك.",
     flowDetailsTitle: "تفاصيل الرحلة",
     flowDetailsHint: "بعض الأساسيات لتناسب الخطة يومك. يمكنك تغيير كل شيء لاحقاً.",
+    refineUnclear: "لم نفهم ما الذي تريد تغييره. جرّب مثلاً «ابدأ الساعة 10» أو «عشاء أرخص».",
     flowDateLabel: "التاريخ",
+    flowStartTimeLabel: "البدء عند",
+    flowEndTimeLabel: "العودة قبل",
+    flowEndTimeHint: "اختيار مكان للمبيت ينهي اليوم هناك بدلاً من ذلك.",
+    stopOvernight: "مكان مبيتك الليلة",
+    dayEndsAtStay: "في مكان المبيت قبل {time}",
     flowPartyLabel: "عدد الأشخاص",
     flowBudgetLabel: "الميزانية (دولار)",
     flowStrictLabel: "أبقِ الخطة ضمن هذه الميزانية",
@@ -991,7 +1009,14 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     flowChooseHint: "Choisissez une destination et nous créerons un vrai plan de journée à partir des lieux publiés.",
     flowDetailsTitle: "Détails du voyage",
     flowDetailsHint: "Quelques bases pour adapter le plan à votre journée. Tout est modifiable ensuite.",
+    refineUnclear:
+      "Nous n’avons pas compris quoi changer. Essayez par exemple « commencer à 10 h » ou « un dîner moins cher ».",
     flowDateLabel: "Date",
+    flowStartTimeLabel: "Départ à",
+    flowEndTimeLabel: "Retour avant",
+    flowEndTimeHint: "Choisir un hébergement termine plutôt la journée là-bas.",
+    stopOvernight: "Votre nuit sur place",
+    dayEndsAtStay: "À l’hébergement vers {time}",
     flowPartyLabel: "Nombre de personnes",
     flowBudgetLabel: "Budget (USD)",
     flowStrictLabel: "Rester dans ce budget",
