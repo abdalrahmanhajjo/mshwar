@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { HomeView } from "@/components/browse/home-view";
-import { loadDestinations, loadExperiencePage } from "@/lib/catalogue-api";
+import { loadDestinations, loadExperiencePage, loadTravellerStories } from "@/lib/catalogue-api";
 
 export const metadata: Metadata = {
-  title: "Mshwar — Make room for a little mshwar",
-  description: "From the mountain air to the sea, find your next day at your own pace.",
+  title: "Mshwar — Lebanon, at your own pace",
+  description:
+    "Discover real, sourced places across Lebanon and plan a day that fits you — from the cedars to the sea.",
 };
 
 const HERO_SLUGS = ["baalbek", "baalbek-hermel"];
@@ -13,7 +14,9 @@ const HERO_SLUGS = ["baalbek", "baalbek-hermel"];
 export default async function Home() {
   // Real catalogue data when the API answers; HomeView falls back to the bundled
   // sample when a list is empty, so the page is never blank.
-  const [page, destinations] = await Promise.all([loadExperiencePage({ page: 1, pageSize: 6 }), loadDestinations()]);
+  const [page, destinations] = await Promise.all([loadExperiencePage({ page: 1, pageSize: 8 }), loadDestinations()]);
+  // Traveller stories come only from published reviews of verified bookings.
+  const stories = await loadTravellerStories(page.items);
   // The hero always shows Baalbek: the catalogue's Baalbek cover when it has one,
   // otherwise the bundled Baalbek photo (HomeView's default).
   const heroImage =
@@ -25,6 +28,7 @@ export default async function Home() {
         experiences={page.items.length ? page.items : undefined}
         destinations={destinations.length ? destinations : undefined}
         heroImage={heroImage}
+        stories={stories}
       />
     </Suspense>
   );

@@ -59,7 +59,8 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
   const router = useRouter();
   const params = useSearchParams();
   const nextPath = safeNextPath(params.get("next"));
-  const [email, setEmail] = React.useState("");
+  // "Stay inspired" on the homepage hands the address over; nothing is ticked for them.
+  const [email, setEmail] = React.useState(() => params.get("email")?.slice(0, 254) ?? "");
   const [password, setPassword] = React.useState("");
   const [displayName, setDisplayName] = React.useState("");
   // Nothing is pre-ticked: terms are required, the other two are optional choices (MSHWAR-113).

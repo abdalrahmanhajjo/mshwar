@@ -419,7 +419,7 @@ test.describe("MSHWAR-32 language URLs", () => {
     await page.goto("/ar");
     await expect(page).toHaveURL(/\/ar\/?/);
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-    await expect(page.getByRole("heading", { name: "اترك مساحة لمشوار صغير." })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "اكتشف فصلك التالي في لبنان." })).toBeVisible();
     await page.goto("/fr/destinations");
     await expect(page.getByRole("heading", { name: "Où allez-vous flâner ?" })).toBeVisible();
     await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
@@ -454,8 +454,10 @@ test.describe("MSHWAR-36 / MSHWAR-39 marketing browse", () => {
   test("home and destinations match the marketing hierarchy at 390 and 1440", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "Make room for a little mshwar." })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Find my next place" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Find your next chapter in Lebanon." })).toBeVisible();
+    await expect(
+      page.getByRole("search", { name: "Search experiences" }).getByRole("button", { name: "Search" }),
+    ).toBeVisible();
     await assertNoHorizontalScroll(page);
 
     await page.setViewportSize({ width: 1440, height: 900 });
