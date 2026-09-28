@@ -3,7 +3,6 @@
 import {
   DestinationMosaic,
   EditorialMoment,
-  FeaturedExperiences,
   HomeHero,
   MobilePlanBar,
   MoodGrid,
@@ -12,6 +11,7 @@ import {
   TravellerStories,
   WhyMshwar,
 } from "@/components/home/home-sections";
+import { HomeMap } from "@/components/home/home-map";
 import { DESTINATIONS, EXPERIENCES, HOME_HERO_IMAGE } from "@/lib/catalog";
 import type { Destination, Experience } from "@/lib/catalog";
 import type { TravellerStory } from "@/lib/catalogue-api";
@@ -19,7 +19,7 @@ import type { TravellerStory } from "@/lib/catalogue-api";
 /**
  * The traveller homepage, in the order a first visit needs it: what this is and
  * where to start (hero + search), why to trust it, then ways in — by mood, by
- * listing, by planning, by place — and one human moment before the sign-off.
+ * map, by planning, by place — and one human moment before the sign-off.
  */
 export function HomeView({
   experiences = EXPERIENCES,
@@ -39,7 +39,7 @@ export function HomeView({
       <WhyMshwar />
       <div className="grid gap-16 pt-14 md:gap-24 md:pt-20 lg:gap-28">
         <MoodGrid destinations={destinations} />
-        <FeaturedExperiences experiences={experiences} />
+        <HomeMap experiences={experiences} />
         <PlannerShowcase />
         <DestinationMosaic destinations={destinations} />
         <EditorialMoment destinations={destinations} />

@@ -7,18 +7,15 @@ import { LebanonMap } from "@/components/browse/lebanon-map";
 import { BidiText } from "@/components/ui/bidi-text";
 import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/ui/notice";
-import { useCookieChoices } from "@/components/legal/cookie-consent-state";
-import { ESSENTIAL_ONLY, writeCookieChoices } from "@/lib/cookie-consent";
-import { useTrustCopy } from "@/lib/trust-copy";
 import { cn, focusRing } from "@/lib/utils";
 import { useBrowseCopy } from "@/lib/browse-copy";
 import type { Experience } from "@/lib/catalog";
 
 /**
- * Map view of the experiences list. The map is OpenStreetMap data served by OpenFreeMap
- * through MapLibre, so it needs no API key. It still loads only once maps are allowed
- * (MSHWAR-113): the tiles come from a third party. The list beside it works with or
- * without the map, and by keyboard.
+ * Map view of the experiences list. The map is OpenStreetMap data from OpenFreeMap through
+ * MapLibre: no API key, and the tiles come through Mshwar's own origin, so the browser never
+ * contacts a third party and no cookie choice is needed (MSHWAR-113 covers third-party embeds).
+ * The list beside it works with or without the map, and by keyboard.
  */
 export function ExperiencesMap({
   items,
@@ -28,35 +25,16 @@ export function ExperiencesMap({
   onSearchArea: (destination?: string) => void;
 }) {
   const copy = useBrowseCopy();
-  const trust = useTrustCopy();
-  const choices = useCookieChoices();
   const [active, setActive] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
   const selected = items.find((item) => item.slug === active) ?? null;
-  const blocked = !choices?.maps;
 
   return (
     <div className="grid gap-4">
-      {blocked ? (
-        <Notice>
-          <p className="font-semibold text-text">{trust.mapOffTitle}</p>
-          <p>{trust.mapOffBody}</p>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="mt-2"
-            onClick={() => writeCookieChoices({ ...(choices ?? ESSENTIAL_ONLY), maps: true })}
-          >
-            {trust.mapAllow}
-          </Button>
-        </Notice>
-      ) : failed ? (
-        <Notice>{copy.mapUnavailable}</Notice>
-      ) : null}
+      {failed ? <Notice>{copy.mapUnavailable}</Notice> : null}
 
-      <div className={cn("grid gap-4", !blocked && !failed && "lg:grid-cols-[1fr_20rem]")}>
-        {!blocked && !failed ? (
+      <div className={cn("grid gap-4", !failed && "lg:grid-cols-[1fr_20rem]")}>
+        {!failed ? (
           <LebanonMap
             items={items}
             active={active}

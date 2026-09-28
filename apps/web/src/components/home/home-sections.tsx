@@ -17,15 +17,13 @@ import {
   Tag,
 } from "lucide-react";
 import { CatalogImage } from "@/components/browse/catalog-image";
-import { ExperienceCard } from "@/components/browse/experience-card";
 import { HomeSearch } from "@/components/home/home-search";
 import { MOODS, moodPhoto } from "@/components/home/moods";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { useLocale } from "@/components/shell/locale-provider";
 import { BidiText } from "@/components/ui/bidi-text";
 import { formatDate, interpolate } from "@/i18n/catalogues";
-import { useBrowseCopy } from "@/lib/browse-copy";
-import type { Destination, Experience } from "@/lib/catalog";
+import type { Destination } from "@/lib/catalog";
 import type { TravellerStory } from "@/lib/catalogue-api";
 import { useHomeCopy } from "@/lib/home-copy";
 import { withLocalePrefix } from "@/lib/locale";
@@ -245,67 +243,6 @@ export function MoodGrid({ destinations }: { destinations: Destination[] }) {
           );
         })}
       </ul>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------- featured listings */
-
-export function FeaturedExperiences({ experiences }: { experiences: Experience[] }) {
-  const copy = useHomeCopy();
-  const browse = useBrowseCopy();
-  const rail = React.useRef<HTMLUListElement>(null);
-  const { locale } = useLocale();
-  const rtl = locale === "ar";
-
-  function scrollBy(direction: -1 | 1) {
-    const node = rail.current;
-    if (!node) return;
-    const step = node.clientWidth * 0.9 * direction * (rtl ? -1 : 1);
-    node.scrollBy({ left: step, behavior: "smooth" });
-  }
-
-  const arrow = cn(
-    "grid size-11 place-items-center rounded-full border border-border-subtle bg-surface-raised text-text transition-colors duration-200 hover:border-brand/40 hover:bg-brand-subtle",
-    focusRing,
-  );
-
-  return (
-    <section aria-labelledby="home-featured" className="shell-frame grid gap-8">
-      <SectionHead
-        id="home-featured"
-        kicker={copy.featuredKicker}
-        title={copy.featuredTitle}
-        action={
-          <div className="flex items-center gap-4">
-            <TextLink href="/experiences">{copy.featuredAll}</TextLink>
-            {experiences.length > 4 ? (
-              <span className="hidden gap-2 md:flex">
-                <button type="button" className={arrow} aria-label={copy.featuredPrev} onClick={() => scrollBy(-1)}>
-                  <ChevronLeft className="size-5 rtl:-scale-x-100" aria-hidden />
-                </button>
-                <button type="button" className={arrow} aria-label={copy.featuredNext} onClick={() => scrollBy(1)}>
-                  <ChevronRight className="size-5 rtl:-scale-x-100" aria-hidden />
-                </button>
-              </span>
-            ) : null}
-          </div>
-        }
-      />
-      <ul
-        ref={rail}
-        className="scrollbar-hide -mx-[var(--layout-gutter-mobile)] flex snap-x snap-mandatory scroll-px-[var(--layout-gutter-mobile)] gap-4 overflow-x-auto scroll-smooth px-[var(--layout-gutter-mobile)] pb-2 md:mx-0 md:scroll-px-0 md:gap-5 md:px-0"
-      >
-        {experiences.map((experience) => (
-          <li
-            key={experience.slug}
-            className="w-[82%] shrink-0 snap-start sm:w-[46%] md:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-3.75rem)/4)]"
-          >
-            <ExperienceCard experience={experience} />
-          </li>
-        ))}
-      </ul>
-      <p className="-mt-3 text-xs text-text-muted">{browse.illustrativePrices}</p>
     </section>
   );
 }

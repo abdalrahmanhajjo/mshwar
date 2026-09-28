@@ -46,11 +46,23 @@ export type HomeKey =
   | "moodCityLine"
   | "moodFood"
   | "moodFoodLine"
-  | "featuredKicker"
-  | "featuredTitle"
-  | "featuredAll"
-  | "featuredPrev"
-  | "featuredNext"
+  | "mapKicker"
+  | "mapTitleLead"
+  | "mapTitleAccent"
+  | "mapBody"
+  | "mapStatPlaces"
+  | "mapStatRegions"
+  | "mapHint"
+  | "mapOpenFull"
+  | "mapAll"
+  | "mapLabel"
+  | "mapPin"
+  | "mapSea"
+  | "mapBeirut"
+  | "mapTripoli"
+  | "mapBaalbek"
+  | "mapTyre"
+  | "mapPreview"
   | "cardViewDetails"
   | "cardUpTo"
   | "cardRating"
@@ -146,11 +158,24 @@ export const homeCopy: Record<Locale, Record<HomeKey, string>> = {
     moodCityLine: "Streets that stay up late",
     moodFood: "Food & drink",
     moodFoodLine: "Sweets, mezze and long lunches",
-    featuredKicker: "Featured experiences",
-    featuredTitle: "Places worth the drive.",
-    featuredAll: "See all experiences",
-    featuredPrev: "Previous experiences",
-    featuredNext: "Next experiences",
+    mapKicker: "Explore on the map",
+    mapTitleLead: "All of Lebanon,",
+    mapTitleAccent: "one map away.",
+    mapBody:
+      "From the coast to the Bekaa, every place on Mshwar sits where it really is. Tap a pin to see it, zoom into any town, then plan the drive.",
+    mapStatPlaces: "places on the map",
+    mapStatRegions: "regions",
+    mapHint: "Tap a pin to see the place",
+    mapOpenFull: "Open the full map",
+    mapAll: "See all experiences",
+    mapLabel: "Map of places across Lebanon",
+    mapPin: "{title}, {place}",
+    mapSea: "Mediterranean Sea",
+    mapBeirut: "Beirut",
+    mapTripoli: "Tripoli",
+    mapBaalbek: "Baalbek",
+    mapTyre: "Tyre",
+    mapPreview: "Preview of Lebanon with the places on Mshwar",
     cardViewDetails: "View details",
     cardUpTo: "Up to {n} people",
     cardRating: "Rated {n} out of 5",
@@ -248,11 +273,24 @@ export const homeCopy: Record<Locale, Record<HomeKey, string>> = {
     moodCityLine: "شوارع تسهر حتى الصباح",
     moodFood: "أكل وشرب",
     moodFoodLine: "حلويات ومازة وغداء طويل",
-    featuredKicker: "تجارب مختارة",
-    featuredTitle: "أماكن تستاهل المشوار.",
-    featuredAll: "كل التجارب",
-    featuredPrev: "التجارب السابقة",
-    featuredNext: "التجارب التالية",
+    mapKicker: "استكشف على الخريطة",
+    mapTitleLead: "لبنان كلّه،",
+    mapTitleAccent: "على خريطة واحدة.",
+    mapBody:
+      "من الساحل إلى البقاع، كل مكان على مشوار في موقعه الحقيقي. اضغط على علامة لترى المكان، وقرّب على أي بلدة، ثم خطّط للطريق.",
+    mapStatPlaces: "مكانًا على الخريطة",
+    mapStatRegions: "مناطق",
+    mapHint: "اضغط على علامة لترى المكان",
+    mapOpenFull: "افتح الخريطة الكاملة",
+    mapAll: "كل التجارب",
+    mapLabel: "خريطة الأماكن في لبنان",
+    mapPin: "{title}، {place}",
+    mapSea: "البحر المتوسط",
+    mapBeirut: "بيروت",
+    mapTripoli: "طرابلس",
+    mapBaalbek: "بعلبك",
+    mapTyre: "صور",
+    mapPreview: "معاينة لبنان مع الأماكن على مشوار",
     cardViewDetails: "عرض التفاصيل",
     cardUpTo: "حتى {n} أشخاص",
     cardRating: "التقييم {n} من 5",
@@ -350,11 +388,24 @@ export const homeCopy: Record<Locale, Record<HomeKey, string>> = {
     moodCityLine: "Des rues qui veillent tard",
     moodFood: "Cuisine",
     moodFoodLine: "Douceurs, mezzés et longs déjeuners",
-    featuredKicker: "Expériences à la une",
-    featuredTitle: "Des lieux qui valent le détour.",
-    featuredAll: "Toutes les expériences",
-    featuredPrev: "Expériences précédentes",
-    featuredNext: "Expériences suivantes",
+    mapKicker: "Explorer sur la carte",
+    mapTitleLead: "Tout le Liban,",
+    mapTitleAccent: "sur une seule carte.",
+    mapBody:
+      "De la côte à la Békaa, chaque lieu de Mshwar est placé là où il se trouve vraiment. Touchez un repère pour le voir, zoomez sur une ville, puis préparez la route.",
+    mapStatPlaces: "lieux sur la carte",
+    mapStatRegions: "régions",
+    mapHint: "Touchez un repère pour voir le lieu",
+    mapOpenFull: "Ouvrir la carte complète",
+    mapAll: "Toutes les expériences",
+    mapLabel: "Carte des lieux au Liban",
+    mapPin: "{title}, {place}",
+    mapSea: "Mer Méditerranée",
+    mapBeirut: "Beyrouth",
+    mapTripoli: "Tripoli",
+    mapBaalbek: "Baalbek",
+    mapTyre: "Tyr",
+    mapPreview: "Aperçu du Liban avec les lieux de Mshwar",
     cardViewDetails: "Voir les détails",
     cardUpTo: "Jusqu’à {n} personnes",
     cardRating: "Noté {n} sur 5",

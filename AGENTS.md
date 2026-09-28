@@ -24,7 +24,9 @@ call those functions through `app.core.sql.fetch_json`, and map errors with `rai
 - **AI**: LLM for language only; facts come from the database. The trip builder currently runs a
   deterministic stub client (`app/planner/llm.py`); the route optimiser is an exact Held-Karp solver
   (≤ 12 stops), not OR-Tools.
-- **Maps**: Google Maps Platform (Distance Matrix, batched); Haversine stub without a key
+- **Maps**: web maps are MapLibre + OpenFreeMap (OpenStreetMap, no key), proxied at `/map-tiles`; plan road
+  routes from OSRM via `/map-route` (`OSRM_URL`); live traffic is handed to Google Maps / Waze links.
+  API travel times: Google Distance Matrix (batched) with a Haversine stub without a key
 - **Weather**: Open-Meteo (prototype)
 - **Payments**: provider abstraction; Stripe test adapter; stub only in development/test
 - **Images**: ImageKit planned; local private storage today

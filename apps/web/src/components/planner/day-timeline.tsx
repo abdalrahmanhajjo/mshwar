@@ -19,6 +19,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { CatalogImage } from "@/components/browse/catalog-image";
+import { PlanRouteMap, type RouteStop } from "@/components/maps/plan-route-map";
 import { lineAmount } from "@/components/planner/day-cost";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { useLocale } from "@/components/shell/locale-provider";
@@ -55,6 +56,22 @@ export const SHOWN_FLAGS = new Set([
   "meal_unconfirmed",
   "needs_unconfirmed",
 ]);
+
+/** Where the day starts, when the traveller gave a start point. */
+function startOf(plan: PlanDocument | null): { lat: number; lng: number } | null {
+  const lat = plan?.constraints?.start_lat;
+  const lng = plan?.constraints?.start_lng;
+  return typeof lat === "number" && typeof lng === "number" ? { lat, lng } : null;
+}
+
+/** The day's places that have a position, in the order they are visited. */
+function routeStops(steps: DayStepOutcome[], label: (step: DayStepOutcome) => string): RouteStop[] {
+  return steps.flatMap((step) =>
+    step.lat != null && step.lng != null
+      ? [{ key: `${step.day ?? 1}-${step.order}`, lat: step.lat, lng: step.lng, label: label(step) }]
+      : [],
+  );
+}
 
 const whatsapp = (number: string) => `https://wa.me/${number.replace(/[^\d]/g, "")}`;
 
@@ -220,6 +237,9 @@ export function DayTimeline({
   // Only the steps a place or a money changer fills are shown; the others are left out, not listed as gaps.
   const days = byDay(steps.filter((step) => step.status === "filled" || step.status === "office"));
   const stopFor = (step: DayStepOutcome) => plan?.stops.find((stop) => stop.experience_id === step.experience_id);
+  const start = startOf(plan);
+  const stepName = (step: DayStepOutcome) =>
+    step.title ?? step.office?.branch_name ?? step.named_place ?? copy[`role_${step.role}` as PlannerKey];
 
   return (
     <section aria-labelledby="day-timeline-heading" className="grid gap-4">
@@ -232,11 +252,18 @@ export function DayTimeline({
       {days.map(([day, daySteps]) => (
         <div key={day} className="grid gap-3">
           {days.length > 1 ? <h4 className="font-semibold">{interpolate(copy.tripDay, { day })}</h4> : null}
+          {routeStops(daySteps, stepName).length ? (
+            <PlanRouteMap
+              stops={routeStops(daySteps, stepName)}
+              start={day === days[0]?.[0] ? start : null}
+              day={day}
+              copy={copy}
+            />
+          ) : null}
           <ol className="relative grid gap-4" aria-label={interpolate(copy.tripDay, { day })}>
             {daySteps.map((step, index) => {
               const Icon = ROLE_ICON[step.role] ?? MapPin;
-              const name =
-                step.title ?? step.office?.branch_name ?? step.named_place ?? copy[`role_${step.role}` as PlannerKey];
+              const name = stepName(step);
               const trust = trustLabel(step, copy);
               const stop = step.status === "filled" ? stopFor(step) : undefined;
               const flags = step.flags.filter((flag) => SHOWN_FLAGS.has(flag));

@@ -58,5 +58,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/:path*", "/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)"],
+  matcher: ["/api/:path*", "/((?!api|map-tiles|map-route|_next/static|_next/image|favicon.ico|.*\\..*).*)"],
 };

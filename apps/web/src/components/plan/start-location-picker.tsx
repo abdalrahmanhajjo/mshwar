@@ -9,28 +9,7 @@ import { Label } from "@/components/ui/label";
 import { usePlannerCopy } from "@/lib/planner-copy";
 import { reversePlace, saveStartLocation, searchPlaces, type PlaceHit, type StartLocation } from "@/lib/planner";
 import { LEBANON } from "@/lib/portal";
-
-const MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
-
-function pinFromClick(clientX: number, clientY: number, rect: DOMRect): { lat: number; lng: number } {
-  const x = (clientX - rect.left) / rect.width;
-  const y = (clientY - rect.top) / rect.height;
-  const lng = LEBANON.lngMin + x * (LEBANON.lngMax - LEBANON.lngMin);
-  const lat = LEBANON.latMax - y * (LEBANON.latMax - LEBANON.latMin);
-  return { lat, lng };
-}
-
-function pinPosition(lat: number, lng: number) {
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-    return null;
-  }
-  const x = (lng - LEBANON.lngMin) / (LEBANON.lngMax - LEBANON.lngMin);
-  const y = (LEBANON.latMax - lat) / (LEBANON.latMax - LEBANON.latMin);
-  if (x < 0 || x > 1 || y < 0 || y > 1) {
-    return null;
-  }
-  return { x: x * 100, y: y * 100 };
-}
+import { PickMap } from "@/components/maps/pick-map";
 
 export function StartLocationPicker({
   initial,
@@ -79,10 +58,13 @@ export function StartLocationPicker({
     setHits([]);
   }
 
-  async function onPin(event: React.MouseEvent<HTMLDivElement>) {
-    const point = pinFromClick(event.clientX, event.clientY, event.currentTarget.getBoundingClientRect());
-    const place = await reversePlace(point.lat, point.lng);
-    await applyPlace(place, "pin");
+  async function onPin(point: { lat: number; lng: number }) {
+    // The pin is where it was dropped even before its name comes back.
+    setLat(String(point.lat));
+    setLng(String(point.lng));
+    setSource("pin");
+    const place = await reversePlace(point.lat, point.lng).catch(() => null);
+    if (place) await applyPlace({ ...place, lat: point.lat, lng: point.lng }, "pin");
   }
 
   function onLocate() {
@@ -122,7 +104,9 @@ export function StartLocationPicker({
     }
   }
 
-  const pin = pinPosition(Number(lat), Number(lng));
+  const [mapFailed, setMapFailed] = React.useState(false);
+  const point =
+    Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)) ? { lat: Number(lat), lng: Number(lng) } : null;
   const Heading = standalone ? "h1" : "h3";
 
   return (
@@ -206,31 +190,19 @@ export function StartLocationPicker({
         </div>
         <div className="grid content-start gap-2">
           <p className="text-sm font-medium">{copy.dropPin}</p>
-          <div
-            role="application"
-            aria-label={copy.dropPin}
-            dir="ltr"
-            className="surface-grain relative min-h-[260px] cursor-crosshair overflow-hidden rounded-card border border-border-subtle bg-brand-subtle/60"
-            onClick={(event) => void onPin(event)}
-          >
-            <div
-              aria-hidden
-              className="absolute inset-y-0 start-0 w-[18%] bg-gradient-to-r from-[#bfd9dd] to-transparent opacity-70"
+          {mapFailed ? (
+            <p className="rounded-card border border-border-subtle bg-surface-sunken px-4 py-3 text-sm text-text-muted">
+              {copy.mapFallback}
+            </p>
+          ) : (
+            <PickMap
+              value={point}
+              onPick={(picked) => void onPin(picked)}
+              onError={() => setMapFailed(true)}
+              label={copy.dropPin}
             />
-            {pin ? (
-              <span
-                aria-hidden
-                className="absolute -translate-x-1/2 -translate-y-full"
-                style={{ insetInlineStart: `${pin.x}%`, top: `${pin.y}%` }}
-              >
-                <MapPin className="size-8 fill-accent text-surface-raised drop-shadow" strokeWidth={1.5} />
-              </span>
-            ) : null}
-            <span className="absolute bottom-3 start-3 max-w-[80%] truncate rounded-pill bg-surface-raised/95 px-3 py-1.5 text-sm font-medium shadow-sm">
-              {label || copy.dropPin}
-            </span>
-          </div>
-          {!MAPS_KEY ? <p className="text-xs text-text-muted">{copy.mapFallback}</p> : null}
+          )}
+          {label ? <p className="truncate text-sm font-medium">{label}</p> : null}
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-3 border-t border-border-subtle pt-5">

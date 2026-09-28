@@ -288,6 +288,21 @@ export type PlannerKey =
   | "action_book"
   | "checkInFrom"
   | "driveMinutes"
+  | "routeMapLabel"
+  | "routeRoad"
+  | "routeHours"
+  | "routeMinutes"
+  | "routeStraight"
+  | "routeLocate"
+  | "routeLocateStop"
+  | "routeLocating"
+  | "routeLocateDenied"
+  | "routeLocateUnavailable"
+  | "routeGoogle"
+  | "routeWaze"
+  | "routeTrafficNote"
+  | "routeYou"
+  | "routeMapUnavailable"
   | "freeMinutes"
   | "understoodTitle"
   | "understoodDriver"
@@ -317,7 +332,7 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     saveStart: "Save as default start",
     savedStart: "Saved to your profile",
     precisePermission: "Precise location is requested only when you tap Use my location.",
-    mapFallback: "Map tiles need a browser Maps key. The pin grid still works.",
+    mapFallback: "The map couldn’t load. Search for the place or use your location instead.",
     planTitle: "Route, weather and replan",
     planHint: "Travel times come from the routing service. Weather warnings never change bookings.",
     optimize: "Optimise stop order",
@@ -595,6 +610,22 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     action_book: "Book the stay",
     checkInFrom: "Check-in from {time}",
     driveMinutes: "{minutes} min drive",
+    routeMapLabel: "Map of day {day}",
+    routeRoad: "{km} km · about {time} by car, without traffic",
+    routeHours: "{h} h {m} min",
+    routeMinutes: "{m} min",
+    routeStraight: "The road route isn’t available right now; straight lines show the order.",
+    routeLocate: "Show my location",
+    routeLocateStop: "Hide my location",
+    routeLocating: "Finding you…",
+    routeLocateDenied: "Location is off. Allow it in your browser to see yourself on the map.",
+    routeLocateUnavailable: "Your location isn’t available on this device.",
+    routeGoogle: "Live traffic in Google Maps",
+    routeWaze: "First stop in Waze",
+    routeTrafficNote:
+      "Live traffic and turn-by-turn directions open in Google Maps or Waze. Your location stays on your device.",
+    routeYou: "You are here",
+    routeMapUnavailable: "The map couldn’t load. Every place is still listed below.",
     freeMinutes: "{minutes} min free before",
     understoodTitle: "Here's your day as I understood it",
     understoodDriver: "With a driver",
@@ -622,7 +653,7 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     saveStart: "احفظ كنقطة انطلاق افتراضية",
     savedStart: "حُفظ في ملفك",
     precisePermission: "يُطلب الموقع الدقيق فقط عند الضغط على استخدم موقعي.",
-    mapFallback: "بلاطات الخريطة تحتاج مفتاح متصفح. شبكة الدبابيس ما زالت تعمل.",
+    mapFallback: "تعذّر تحميل الخريطة. ابحث عن المكان أو استخدم موقعك بدلًا منها.",
     planTitle: "المسار والطقس وإعادة التخطيط",
     planHint: "أوقات التنقل من خدمة التوجيه. تحذيرات الطقس لا تغيّر الحجوزات.",
     optimize: "حسّن ترتيب المحطات",
@@ -899,6 +930,21 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     action_book: "احجز الإقامة",
     checkInFrom: "تسجيل الدخول من {time}",
     driveMinutes: "{minutes} دقيقة بالسيارة",
+    routeMapLabel: "خريطة اليوم {day}",
+    routeRoad: "{km} كم · نحو {time} بالسيارة، من دون زحمة",
+    routeHours: "{h} س {m} د",
+    routeMinutes: "{m} دقيقة",
+    routeStraight: "مسار الطريق غير متاح الآن؛ الخطوط المستقيمة تُظهر الترتيب.",
+    routeLocate: "أظهر موقعي",
+    routeLocateStop: "أخفِ موقعي",
+    routeLocating: "نبحث عن موقعك…",
+    routeLocateDenied: "الموقع متوقف. اسمح به في المتصفح لترى نفسك على الخريطة.",
+    routeLocateUnavailable: "موقعك غير متاح على هذا الجهاز.",
+    routeGoogle: "الزحمة الحيّة في خرائط Google",
+    routeWaze: "المحطة الأولى في Waze",
+    routeTrafficNote: "تفتح الزحمة الحيّة والإرشادات خطوة بخطوة في خرائط Google أو Waze. يبقى موقعك على جهازك.",
+    routeYou: "أنت هنا",
+    routeMapUnavailable: "تعذّر تحميل الخريطة. كل الأماكن مذكورة أدناه.",
     freeMinutes: "{minutes} دقيقة حرّة قبلها",
     understoodTitle: "هكذا فهمت يومك",
     understoodDriver: "مع سائق",
@@ -926,7 +972,7 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     saveStart: "Enregistrer comme départ par défaut",
     savedStart: "Enregistré dans le profil",
     precisePermission: "La position précise n’est demandée que si vous appuyez sur Utiliser ma position.",
-    mapFallback: "Les tuiles carte nécessitent une clé navigateur. La grille d’épingles reste utilisable.",
+    mapFallback: "La carte n’a pas pu se charger. Recherchez le lieu ou utilisez votre position.",
     planTitle: "Itinéraire, météo et replanification",
     planHint:
       "Les temps de trajet viennent du service d’itinéraire. Les alertes météo ne modifient jamais les réservations.",
@@ -1215,6 +1261,22 @@ export const plannerCopy: Record<Locale, Record<PlannerKey, string>> = {
     action_book: "Réserver le séjour",
     checkInFrom: "Arrivée dès {time}",
     driveMinutes: "{minutes} min de route",
+    routeMapLabel: "Carte du jour {day}",
+    routeRoad: "{km} km · environ {time} en voiture, hors trafic",
+    routeHours: "{h} h {m} min",
+    routeMinutes: "{m} min",
+    routeStraight: "L’itinéraire routier n’est pas disponible ; des lignes droites indiquent l’ordre.",
+    routeLocate: "Afficher ma position",
+    routeLocateStop: "Masquer ma position",
+    routeLocating: "Recherche de votre position…",
+    routeLocateDenied: "La localisation est désactivée. Autorisez-la dans le navigateur pour vous voir sur la carte.",
+    routeLocateUnavailable: "Votre position n’est pas disponible sur cet appareil.",
+    routeGoogle: "Trafic en direct dans Google Maps",
+    routeWaze: "Premier arrêt dans Waze",
+    routeTrafficNote:
+      "Le trafic en direct et le guidage s’ouvrent dans Google Maps ou Waze. Votre position reste sur votre appareil.",
+    routeYou: "Vous êtes ici",
+    routeMapUnavailable: "La carte n’a pas pu se charger. Tous les lieux restent listés ci-dessous.",
     freeMinutes: "{minutes} min libres avant",
     understoodTitle: "Voici votre journée telle que je l'ai comprise",
     understoodDriver: "Avec chauffeur",

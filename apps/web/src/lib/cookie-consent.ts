@@ -10,7 +10,7 @@ const OPEN_EVENT = "mshwar:cookie-settings";
 export type CookieChoices = {
   /** Browser error reporting (Sentry). */
   errors: boolean;
-  /** Google Maps and other embedded third-party content. */
+  /** Google Maps and other embedded third-party content (Mshwar's own maps are first-party and need no choice). */
   maps: boolean;
 };
 

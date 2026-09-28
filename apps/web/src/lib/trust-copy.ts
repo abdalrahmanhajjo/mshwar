@@ -27,9 +27,6 @@ export type TrustKey =
   | "cookieMapsBody"
   | "cookiePolicyLink"
   | "cookieSaved"
-  | "mapOffTitle"
-  | "mapOffBody"
-  | "mapAllow"
   | "acceptLead"
   | "acceptJoin"
   | "acceptEnd"
@@ -82,12 +79,10 @@ export const trustCopy: Record<Locale, Record<TrustKey, string>> = {
     cookieErrorsBody:
       "Sends details of errors in your browser to our monitoring service, with personal details removed.",
     cookieMaps: "Maps and embedded content",
-    cookieMapsBody: "Loads Google Maps, which may set its own cookies.",
+    cookieMapsBody:
+      "Content embedded from other companies, such as Google Maps, which may set their own cookies. Mshwar’s own maps load from mshwarlb.com and need no cookies.",
     cookiePolicyLink: "How we use cookies",
     cookieSaved: "Your cookie choices were saved.",
-    mapOffTitle: "The map is off",
-    mapOffBody: "Maps are provided by Google, which may set its own cookies. Allow maps to show it here.",
-    mapAllow: "Allow maps",
     acceptLead: "I agree to the",
     acceptJoin: "and the",
     acceptEnd: ".",
@@ -139,12 +134,10 @@ export const trustCopy: Record<Locale, Record<TrustKey, string>> = {
     cookieErrors: "الإبلاغ عن الأخطاء",
     cookieErrorsBody: "يرسل تفاصيل الأخطاء التي تحدث في متصفحك إلى خدمة المراقبة لدينا بعد إزالة البيانات الشخصية.",
     cookieMaps: "الخرائط والمحتوى المضمّن",
-    cookieMapsBody: "يحمّل خرائط Google التي قد تضع ملفات تعريف ارتباط خاصة بها.",
+    cookieMapsBody:
+      "محتوى مضمّن من شركات أخرى مثل خرائط Google، وقد تضع ملفات تعريف ارتباط خاصة بها. خرائط مشوار نفسها تُحمَّل من mshwarlb.com ولا تحتاج إلى ملفات تعريف ارتباط.",
     cookiePolicyLink: "كيف نستخدم ملفات تعريف الارتباط",
     cookieSaved: "حُفظت اختياراتك لملفات تعريف الارتباط.",
-    mapOffTitle: "الخريطة متوقفة",
-    mapOffBody: "توفّر Google الخرائط وقد تضع ملفات تعريف ارتباط خاصة بها. اسمح بالخرائط لعرضها هنا.",
-    mapAllow: "السماح بالخرائط",
     acceptLead: "أوافق على",
     acceptJoin: "و",
     acceptEnd: ".",
@@ -197,13 +190,10 @@ export const trustCopy: Record<Locale, Record<TrustKey, string>> = {
     cookieErrorsBody:
       "Envoie les détails des erreurs survenues dans votre navigateur à notre service de suivi, sans données personnelles.",
     cookieMaps: "Cartes et contenus intégrés",
-    cookieMapsBody: "Charge Google Maps, qui peut déposer ses propres cookies.",
+    cookieMapsBody:
+      "Contenus intégrés d’autres sociétés, comme Google Maps, qui peuvent déposer leurs propres cookies. Les cartes de Mshwar se chargent depuis mshwarlb.com, sans cookie.",
     cookiePolicyLink: "Notre usage des cookies",
     cookieSaved: "Vos choix de cookies ont été enregistrés.",
-    mapOffTitle: "La carte est désactivée",
-    mapOffBody:
-      "Les cartes sont fournies par Google, qui peut déposer ses propres cookies. Autorisez les cartes pour l’afficher ici.",
-    mapAllow: "Autoriser les cartes",
     acceptLead: "J’accepte les",
     acceptJoin: "et la",
     acceptEnd: ".",

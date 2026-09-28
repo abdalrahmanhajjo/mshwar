@@ -23,4 +23,12 @@ Planner travel time uses `app.planner.routing.RoutingService` (Google Distance M
 
 The experiences list/map toggle keeps the same filter query string (`view=map`). Markers are the current result set.
 
-Set `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` to a **referrer-restricted** Google Maps key. When it is empty, the UI degrades to clustered pins (Beirut density) and the list remains usable at 390px.
+Every web map (homepage, experiences, plan days, start-point picker) is MapLibre on OpenFreeMap's
+OpenStreetMap tiles: no key. The browser only talks to Mshwar: tiles go through the `/map-tiles`
+rewrite in `next.config.ts`, and plan road routes through `/map-route`, which asks the OSRM server
+in `OSRM_URL` and caches each route for a day. If a map cannot load (no WebGL, offline) the list
+stays usable at 390px; if routing fails the plan map draws dashed straight lines between stops.
+
+Live traffic and turn-by-turn directions are not drawn in-app (no keyless live-traffic source
+exists); each plan day hands its stops to Google Maps (up to ten) or its first stop to Waze.
+The traveller's position is shown only after they tap "Show my location" and never leaves the device.

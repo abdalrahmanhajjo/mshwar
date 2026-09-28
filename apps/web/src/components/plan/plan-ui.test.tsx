@@ -5,6 +5,15 @@ import { WeatherWarningList } from "./weather-warning";
 import { ReplanDiff } from "./replan-diff";
 import { LocaleProvider } from "@/components/shell/locale-provider";
 
+// The real map needs WebGL; this stand-in drops a pin where a tap on the map would.
+vi.mock("@/components/maps/pick-map", () => ({
+  PickMap: ({ onPick, label }: { onPick: (point: { lat: number; lng: number }) => void; label: string }) => (
+    <button type="button" onClick={() => onPick({ lat: 33.896, lng: 35.506 })}>
+      {label}
+    </button>
+  ),
+}));
+
 describe("start location picker", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -95,8 +104,10 @@ describe("start location picker", () => {
     fireEvent.change(screen.getByLabelText("Search a place"), { target: { value: "byb" } });
     await waitFor(() => expect(screen.getByRole("button", { name: "Byblos (Jbeil)" })).toBeInTheDocument());
     fireEvent.click(screen.getByRole("button", { name: "Byblos (Jbeil)" }));
-    fireEvent.click(screen.getByRole("application", { name: "Drop a pin on the map" }));
+    fireEvent.click(screen.getByRole("button", { name: "Drop a pin on the map" }));
     await waitFor(() => expect(screen.getByLabelText("Type a label and coordinates")).toHaveValue("Downtown Beirut"));
+    expect(screen.getByLabelText("lat")).toHaveValue("33.896");
+    expect(screen.getByLabelText("lng")).toHaveValue("35.506");
   });
 });
 

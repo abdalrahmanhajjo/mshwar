@@ -304,8 +304,7 @@ export const browseCopy: Record<Locale, Record<BrowseKey, string>> = {
     mapView: "Map",
     listView: "List",
     searchThisArea: "Search this area",
-    mapUnavailable:
-      "Map is unavailable. Showing the list pins instead. Set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY for Google Maps.",
+    mapUnavailable: "The map couldn’t load here. Every place is still in the list.",
     clusterLabel: "Cluster",
     collectionsEyebrow: "Ready-made days",
     collectionsTitle: "Collections",
