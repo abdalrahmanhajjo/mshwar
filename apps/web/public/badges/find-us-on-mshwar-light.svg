@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 232 56" width="232" height="56" role="img" aria-label="Find us on Mshwar">
+  <rect x="0.5" y="0.5" width="231" height="55" rx="12" fill="#FCFCF8" stroke="#D9DED8"/>
+  <g transform="translate(14,11) scale(0.5)">
+    <path d="M6 29.5V18.2c0-2.3.8-4.4 2.3-6.1l3.9-4.4c2.5-2.8 6.9-2.8 9.4 0l5.6 6.4c1.6 1.8 4.4 1.8 6 0l4.6-5.3c2.5-2.9 7-2.9 9.5 0l6.6 7.6c1.3 1.5 3 2.5 4.9 2.9" fill="none" stroke="#12352F" stroke-width="7.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="63.4" cy="20.6" r="4" fill="#F3653E"/>
+  </g>
+  <text x="58" y="24" font-family="'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="11" fill="#4F5F58" letter-spacing="0.4">FIND US ON</text>
+  <text x="57" y="43" font-family="'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="700" fill="#12352F" letter-spacing="-0.8">mshwar<tspan fill="#F3653E">.</tspan></text>
+  <text x="218" y="43" text-anchor="end" font-family="'Noto Sans Arabic', Tahoma, sans-serif" font-size="13" font-weight="600" fill="#4F5F58">مشوار</text>
+</svg>

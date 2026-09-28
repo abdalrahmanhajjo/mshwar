@@ -5,7 +5,8 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { loadDestination, loadDestinations, loadExperiencePage } from "@/lib/catalogue-api";
 import { DESTINATIONS, type Destination } from "@/lib/catalog";
 import { seoText } from "@/lib/seo-copy";
-import { crumbsFor, destinationFaqs } from "@/lib/seo/content";
+import { publishedGuide } from "@/content/destination-guides";
+import { crumbsFor, destinationFaqs, guideBlock, guideFaqs } from "@/lib/seo/content";
 import { buildMetadata, pathLocale } from "@/lib/seo/metadata";
 import { breadcrumbSchema, destinationSchema, faqSchema, graph } from "@/lib/seo/schema";
 
@@ -23,7 +24,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const values = { name: destination.name, region: destination.region };
   return buildMetadata({
     title: seoText(locale, "destTitle", values),
-    description: destination.blurb || seoText(locale, "destDescription", values),
+    description:
+      publishedGuide(destination.slug)?.overview[locale === "ar" ? "ar" : "en"][0] ||
+      destination.blurb ||
+      seoText(locale, "destDescription", values),
     path: `/destinations/${destination.slug}`,
     image: destination.image,
     imageAlt: destination.imageAlt,
@@ -53,13 +57,19 @@ export default async function DestinationDetailPage({ params }: { params: Promis
   const related = all
     .filter((item) => item.slug !== destination.slug && item.region === destination.region)
     .slice(0, 8);
-  const faqs = destinationFaqs(locale, destination, page.items);
+  const guide = publishedGuide(destination.slug);
+  const faqs = [...destinationFaqs(locale, destination, page.items), ...guideFaqs(locale, destination, guide)];
+  const block = guideBlock(locale, destination, guide);
 
   return (
     <>
       <JsonLd
         data={graph(
-          destinationSchema(destination, page.items, locale),
+          destinationSchema(
+            block ? { ...destination, blurb: block.paragraphs.join(" ") } : destination,
+            page.items,
+            locale,
+          ),
           breadcrumbSchema(crumbs, locale),
           faqSchema(faqs),
         )}
@@ -72,6 +82,7 @@ export default async function DestinationDetailPage({ params }: { params: Promis
         related={related}
         relatedTitle={seoText(locale, "destRelatedTitle", { region: destination.region })}
         faqs={faqs}
+        guide={block}
         faqTitle={seoText(locale, "faqHeading")}
       />
     </>

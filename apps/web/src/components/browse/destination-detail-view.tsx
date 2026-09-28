@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Eyebrow, SectionHeader } from "@/components/ui/page-header";
 import { useBrowseCopy } from "@/lib/browse-copy";
 import type { Destination, Experience } from "@/lib/catalog";
+import type { GuideBlock } from "@/lib/seo/content";
 import type { Crumb, Faq } from "@/lib/seo/schema";
 import { cn, focusRing } from "@/lib/utils";
 
@@ -23,6 +24,7 @@ export function DestinationDetailView({
   relatedTitle,
   faqs = [],
   faqTitle,
+  guide,
 }: {
   destination: Destination;
   experiences: Experience[];
@@ -35,6 +37,8 @@ export function DestinationDetailView({
   /** Questions answered from the catalogue; mirrored in FAQPage data. */
   faqs?: Faq[];
   faqTitle?: string;
+  /** The approved editorial overview, when there is one. */
+  guide?: GuideBlock;
 }) {
   const copy = useBrowseCopy();
   const featured = experiences[0];
@@ -112,6 +116,54 @@ export function DestinationDetailView({
           </Button>
         </aside>
       </div>
+
+      {guide ? (
+        <section
+          aria-labelledby="destination-guide"
+          lang={guide.lang}
+          className="shell-frame grid gap-10 pb-20 lg:grid-cols-[1.35fr_1fr] lg:gap-20"
+        >
+          <div className="grid content-start gap-5">
+            <h2 id="destination-guide" className="title-section">
+              {guide.title}
+            </h2>
+            {guide.paragraphs.map((paragraph) => (
+              <p key={paragraph} className="max-w-2xl text-[1.0625rem] leading-relaxed text-text-muted">
+                {paragraph}
+              </p>
+            ))}
+            {guide.sources.length ? (
+              <p className="text-sm text-text-muted">
+                {guide.sourcesLabel}:{" "}
+                {guide.sources.map((source, index) => (
+                  <span key={source.url}>
+                    {index ? " · " : null}
+                    <a
+                      href={source.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={cn("underline underline-offset-4 hover:text-text", focusRing)}
+                    >
+                      {source.label}
+                    </a>
+                  </span>
+                ))}
+              </p>
+            ) : null}
+          </div>
+          <dl className="grid content-start gap-5 rounded-card border border-border-subtle bg-surface-raised p-6 md:p-8">
+            {guide.facts.map((fact) => (
+              <div key={fact.label} className="grid gap-1.5">
+                <dt className="font-semibold text-text">{fact.label}</dt>
+                <dd className="leading-relaxed text-text-muted">{fact.body}</dd>
+              </div>
+            ))}
+            {guide.advice ? (
+              <p className="border-t border-border-subtle pt-4 text-sm text-text-muted">{guide.advice}</p>
+            ) : null}
+          </dl>
+        </section>
+      ) : null}
 
       {featured ? (
         <div className="shell-frame grid gap-8 pb-20">
