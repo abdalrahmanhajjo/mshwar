@@ -15,6 +15,7 @@ import { useHomeCopy } from "@/lib/home-copy";
 import { LanguageSwitcher } from "@/components/shell/language-switcher";
 import { splitAtQuote } from "@/lib/text";
 import type { ShellSurface } from "@/components/shell/nav-config";
+import { seoText } from "@/lib/seo-copy";
 
 const FOOTER_COPY: Record<ShellSurface, "travellerFooter" | "guideFooter" | "adminFooter" | "partnerFooter"> = {
   traveller: "travellerFooter",
@@ -31,7 +32,7 @@ const linkClass = cn(
 const legalLink = cn("inline-flex min-h-10 items-center hover:text-text md:min-h-0", focusRing);
 
 export function ShellFooter({ surface }: { surface: ShellSurface }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const copy = useBrowseCopy();
   const local = useLocalCopy();
   const partner = usePartnerCopy();
@@ -72,8 +73,9 @@ export function ShellFooter({ surface }: { surface: ShellSurface }) {
     {
       title: home.footerExplore,
       links: [
+        { href: "/lebanon", label: seoText(locale, "footerGuide") },
         { href: "/destinations", label: t("destinations") },
-        { href: "/experiences", label: t("experiences") },
+        { href: "/things-to-do", label: seoText(locale, "thingsH1") },
         { href: "/collections", label: copy.tripIdeas },
       ],
     },
@@ -96,6 +98,7 @@ export function ShellFooter({ surface }: { surface: ShellSurface }) {
     {
       title: home.footerHelp,
       links: [
+        { href: "/about", label: seoText(locale, "footerAbout") },
         { href: "/contact", label: copy.helpCenter },
         { href: "/cancellation-policy", label: trust.cancellationLink },
         { href: "/community-guidelines", label: trust.communityLink },

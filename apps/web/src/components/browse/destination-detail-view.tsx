@@ -4,19 +4,37 @@ import { ArrowLeft, ArrowUpRight, Clock, Info, MapPin, Route } from "lucide-reac
 import { CatalogImage } from "@/components/browse/catalog-image";
 import { ExperienceCard } from "@/components/browse/experience-card";
 import { DestinationServices } from "@/components/local/destination-services";
+import { Breadcrumbs } from "@/components/seo/breadcrumbs";
+import { FaqSection } from "@/components/seo/faq-section";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { Button } from "@/components/ui/button";
 import { Eyebrow, SectionHeader } from "@/components/ui/page-header";
 import { useBrowseCopy } from "@/lib/browse-copy";
 import type { Destination, Experience } from "@/lib/catalog";
+import type { Crumb, Faq } from "@/lib/seo/schema";
 import { cn, focusRing } from "@/lib/utils";
 
 export function DestinationDetailView({
   destination,
   experiences,
+  crumbs,
+  crumbLabel,
+  related = [],
+  relatedTitle,
+  faqs = [],
+  faqTitle,
 }: {
   destination: Destination;
   experiences: Experience[];
+  /** Home › Destinations › (region ›) this place; shown in place of a bare back link. */
+  crumbs?: Crumb[];
+  crumbLabel?: string;
+  /** Other destinations in the same region, for readers and for internal links. */
+  related?: Destination[];
+  relatedTitle?: string;
+  /** Questions answered from the catalogue; mirrored in FAQPage data. */
+  faqs?: Faq[];
+  faqTitle?: string;
 }) {
   const copy = useBrowseCopy();
   const featured = experiences[0];
@@ -32,21 +50,25 @@ export function DestinationDetailView({
         <div className="photo-scrim-side absolute inset-0" />
         <div className="photo-scrim absolute inset-0 opacity-60" />
         <div className="shell-frame relative flex min-h-[30rem] flex-col justify-end gap-5 pb-14 pt-24 text-white md:min-h-[38rem] md:pb-20">
-          <LocaleLink
-            href="/destinations"
-            className={cn(
-              "mb-4 inline-flex w-fit items-center gap-2 rounded-sm text-sm text-white/90 hover:text-white",
-              focusRing,
-            )}
-          >
-            <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
-            {copy.backDestinations}
-          </LocaleLink>
+          {crumbs ? (
+            <Breadcrumbs crumbs={crumbs} label={crumbLabel ?? ""} tone="inverse" className="mb-4" />
+          ) : (
+            <LocaleLink
+              href="/destinations"
+              className={cn(
+                "mb-4 inline-flex w-fit items-center gap-2 rounded-sm text-sm text-white/90 hover:text-white",
+                focusRing,
+              )}
+            >
+              <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
+              {copy.backDestinations}
+            </LocaleLink>
+          )}
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/85">
             {destination.region} · {destination.country}
           </p>
           <h1 className="title-hero max-w-3xl">
-            {destination.name},<span className="text-serif block">{copy.atYourOwnPace}</span>
+            {destination.name}, <span className="text-serif block">{copy.atYourOwnPace}</span>
           </h1>
         </div>
       </section>
@@ -125,6 +147,35 @@ export function DestinationDetailView({
       ) : null}
 
       <DestinationServices slug={destination.slug} name={destination.name} />
+
+      {related.length || faqs.length ? (
+        <div className="shell-frame grid gap-16 pb-20">
+          {related.length ? (
+            <section aria-labelledby="related-destinations" className="grid gap-5">
+              <h2 id="related-destinations" className="title-section">
+                {relatedTitle}
+              </h2>
+              <ul className="flex flex-wrap gap-2">
+                {related.map((item) => (
+                  <li key={item.slug}>
+                    <LocaleLink
+                      href={`/destinations/${item.slug}`}
+                      className={cn(
+                        "inline-flex min-h-11 items-center gap-1.5 rounded-pill border border-border-subtle bg-surface-raised px-4 text-[0.9375rem] font-medium text-text transition-colors hover:border-brand/40 hover:bg-brand-subtle",
+                        focusRing,
+                      )}
+                    >
+                      <MapPin className="size-4 text-text-muted" strokeWidth={1.75} aria-hidden />
+                      {item.name}
+                    </LocaleLink>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+          <FaqSection id="destination-faq" title={faqTitle ?? ""} faqs={faqs} />
+        </div>
+      ) : null}
     </div>
   );
 }

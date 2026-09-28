@@ -1,10 +1,12 @@
 import type { MetadataRoute } from "next";
 import { loadCollections, loadDestinations, loadExperiencePage } from "@/lib/catalogue-api";
 import { LOCALES } from "@/lib/locale";
+import { THINGS } from "@/lib/seo/things";
 import { languageAlternates, siteUrl } from "@/lib/site";
 
-// Rebuilt at most hourly, so new catalogue entries appear without a deploy.
-export const revalidate = 3600;
+// Rebuilt every ten minutes, so new catalogue entries (and the first real data after a
+// deploy, whose build has no API to read) appear without another deploy.
+export const revalidate = 600;
 
 type Entry = { path: string; priority: number; changeFrequency: "daily" | "weekly" | "monthly" | "yearly" };
 
@@ -12,14 +14,21 @@ type Entry = { path: string; priority: number; changeFrequency: "daily" | "weekl
 // read this order and the internal links together when choosing sitelinks.
 const SECTIONS: Entry[] = [
   { path: "/", priority: 1, changeFrequency: "daily" },
+  { path: "/lebanon", priority: 0.95, changeFrequency: "weekly" },
   { path: "/destinations", priority: 0.9, changeFrequency: "weekly" },
   { path: "/experiences", priority: 0.9, changeFrequency: "daily" },
+  { path: "/things-to-do", priority: 0.9, changeFrequency: "weekly" },
+  ...THINGS.map((thing) => ({
+    path: `/things-to-do/${thing.slug}`,
+    priority: 0.85,
+    changeFrequency: "weekly" as const,
+  })),
   { path: "/ideas", priority: 0.8, changeFrequency: "weekly" },
   { path: "/collections", priority: 0.7, changeFrequency: "weekly" },
   { path: "/discover", priority: 0.7, changeFrequency: "weekly" },
   { path: "/drivers", priority: 0.7, changeFrequency: "weekly" },
-  { path: "/rides/new", priority: 0.6, changeFrequency: "monthly" },
   { path: "/guides", priority: 0.6, changeFrequency: "weekly" },
+  { path: "/about", priority: 0.5, changeFrequency: "yearly" },
   { path: "/contact", priority: 0.5, changeFrequency: "yearly" },
   { path: "/signup", priority: 0.4, changeFrequency: "yearly" },
   { path: "/privacy", priority: 0.3, changeFrequency: "yearly" },

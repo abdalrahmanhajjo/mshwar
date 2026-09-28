@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
+import { buildMetadata, pathLocale } from "@/lib/seo/metadata";
+import { seoText } from "@/lib/seo-copy";
 import { Suspense } from "react";
 import { ExperiencesSkeleton } from "@/components/browse/experiences-skeleton";
 import { ExperiencesView } from "@/components/browse/experiences-view";
 import { loadExperiencePage, loadMapListings } from "@/lib/catalogue-api";
 import { parseExperienceFilters } from "@/lib/catalog";
 
-export const metadata: Metadata = {
-  title: "Things to do in Lebanon — Mshwar",
-  description: "Big adventures, little escapes, and everything in between.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await pathLocale();
+  return buildMetadata({
+    title: seoText(locale, "experiencesTitle"),
+    description: seoText(locale, "experiencesDescription"),
+    path: "/experiences",
+  });
+}
 
 export default async function ExperiencesPage({
   searchParams,

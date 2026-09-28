@@ -25,7 +25,7 @@ import { useLocale } from "@/components/shell/locale-provider";
 import { BidiText } from "@/components/ui/bidi-text";
 import { formatDate, interpolate } from "@/i18n/catalogues";
 import { useBrowseCopy } from "@/lib/browse-copy";
-import { serializeExperienceFilters, type Destination, type Experience } from "@/lib/catalog";
+import type { Destination, Experience } from "@/lib/catalog";
 import type { TravellerStory } from "@/lib/catalogue-api";
 import { useHomeCopy } from "@/lib/home-copy";
 import { withLocalePrefix } from "@/lib/locale";
@@ -90,11 +90,6 @@ function TextLink({ href, children }: { href: string; children: React.ReactNode 
       />
     </LocaleLink>
   );
-}
-
-function experiencesHref(filter: Parameters<typeof serializeExperienceFilters>[0]) {
-  const query = serializeExperienceFilters(filter);
-  return query ? `/experiences?${query}` : "/experiences";
 }
 
 /* -------------------------------------------------------------------- hero */
@@ -217,7 +212,7 @@ export function MoodGrid({ destinations }: { destinations: Destination[] }) {
           return (
             <li key={slug} className={cn("w-[13.5rem] shrink-0 snap-start lg:w-auto", MOOD_SPANS[slug])}>
               <LocaleLink
-                href={experiencesHref({ ...mood.filter, page: 1 })}
+                href={`/things-to-do/${mood.slug}`}
                 className={cn(
                   "group relative isolate block h-44 overflow-hidden rounded-[1.125rem] bg-brand-subtle lg:h-full",
                   focusRing,

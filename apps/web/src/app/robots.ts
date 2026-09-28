@@ -12,8 +12,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        // The ride request form is public even though ride pages are not.
-        allow: ["/", ...LOCALES.map((locale) => withLocalePrefix(locale, "/rides/new"))],
+        allow: "/",
         disallow: [...new Set(disallow)],
       },
     ],

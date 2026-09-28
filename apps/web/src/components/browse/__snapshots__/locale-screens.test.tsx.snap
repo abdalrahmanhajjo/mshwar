@@ -654,7 +654,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
           >
             <a
               class="group relative isolate block h-44 overflow-hidden rounded-[1.125rem] bg-brand-subtle lg:h-full outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/ar/experiences?category=nature"
+              href="/ar/things-to-do/nature"
             >
               <img
                 alt=""
@@ -715,7 +715,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
           >
             <a
               class="group relative isolate block h-44 overflow-hidden rounded-[1.125rem] bg-brand-subtle lg:h-full outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/ar/experiences?category=coast"
+              href="/ar/things-to-do/coast"
             >
               <img
                 alt=""
@@ -776,7 +776,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
           >
             <a
               class="group relative isolate block h-44 overflow-hidden rounded-[1.125rem] bg-brand-subtle lg:h-full outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/ar/experiences?category=culture"
+              href="/ar/things-to-do/culture"
             >
               <img
                 alt=""
@@ -837,7 +837,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
           >
             <a
               class="group relative isolate block h-44 overflow-hidden rounded-[1.125rem] bg-brand-subtle lg:h-full outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/ar/experiences?category=adventure"
+              href="/ar/things-to-do/adventure"
             >
               <img
                 alt=""
@@ -941,7 +941,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
           >
             <a
               class="group relative isolate block h-44 overflow-hidden rounded-[1.125rem] bg-brand-subtle lg:h-full outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/ar/experiences?category=city"
+              href="/ar/things-to-do/city"
             >
               <img
                 alt=""
@@ -1002,7 +1002,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in ar 1`] = `
           >
             <a
               class="group relative isolate block h-44 overflow-hidden rounded-[1.125rem] bg-brand-subtle lg:h-full outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/ar/experiences?kind=restaurant"
+              href="/ar/things-to-do/food"
             >
               <img
                 alt=""
@@ -5352,7 +5352,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
           >
             <a
               class="group relative isolate block h-44 overflow-hidden rounded-[1.125rem] bg-brand-subtle lg:h-full outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/experiences?category=nature"
+              href="/things-to-do/nature"
             >
               <img
                 alt=""
@@ -5413,7 +5413,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
           >
             <a
               class="group relative isolate block h-44 overflow-hidden rounded-[1.125rem] bg-brand-subtle lg:h-full outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/experiences?category=coast"
+              href="/things-to-do/coast"
             >
               <img
                 alt=""
@@ -5474,7 +5474,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
           >
             <a
               class="group relative isolate block h-44 overflow-hidden rounded-[1.125rem] bg-brand-subtle lg:h-full outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/experiences?category=culture"
+              href="/things-to-do/culture"
             >
               <img
                 alt=""
@@ -5535,7 +5535,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
           >
             <a
               class="group relative isolate block h-44 overflow-hidden rounded-[1.125rem] bg-brand-subtle lg:h-full outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/experiences?category=adventure"
+              href="/things-to-do/adventure"
             >
               <img
                 alt=""
@@ -5639,7 +5639,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
           >
             <a
               class="group relative isolate block h-44 overflow-hidden rounded-[1.125rem] bg-brand-subtle lg:h-full outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/experiences?category=city"
+              href="/things-to-do/city"
             >
               <img
                 alt=""
@@ -5700,7 +5700,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in en 1`] = `
           >
             <a
               class="group relative isolate block h-44 overflow-hidden rounded-[1.125rem] bg-brand-subtle lg:h-full outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/experiences?kind=restaurant"
+              href="/things-to-do/food"
             >
               <img
                 alt=""
@@ -10050,7 +10050,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
           >
             <a
               class="group relative isolate block h-44 overflow-hidden rounded-[1.125rem] bg-brand-subtle lg:h-full outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/fr/experiences?category=nature"
+              href="/fr/things-to-do/nature"
             >
               <img
                 alt=""
@@ -10111,7 +10111,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
           >
             <a
               class="group relative isolate block h-44 overflow-hidden rounded-[1.125rem] bg-brand-subtle lg:h-full outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/fr/experiences?category=coast"
+              href="/fr/things-to-do/coast"
             >
               <img
                 alt=""
@@ -10172,7 +10172,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
           >
             <a
               class="group relative isolate block h-44 overflow-hidden rounded-[1.125rem] bg-brand-subtle lg:h-full outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/fr/experiences?category=culture"
+              href="/fr/things-to-do/culture"
             >
               <img
                 alt=""
@@ -10233,7 +10233,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
           >
             <a
               class="group relative isolate block h-44 overflow-hidden rounded-[1.125rem] bg-brand-subtle lg:h-full outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/fr/experiences?category=adventure"
+              href="/fr/things-to-do/adventure"
             >
               <img
                 alt=""
@@ -10337,7 +10337,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
           >
             <a
               class="group relative isolate block h-44 overflow-hidden rounded-[1.125rem] bg-brand-subtle lg:h-full outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/fr/experiences?category=city"
+              href="/fr/things-to-do/city"
             >
               <img
                 alt=""
@@ -10398,7 +10398,7 @@ exports[`MSHWAR-32 locale snapshots > renders home in fr 1`] = `
           >
             <a
               class="group relative isolate block h-44 overflow-hidden rounded-[1.125rem] bg-brand-subtle lg:h-full outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-              href="/fr/experiences?kind=restaurant"
+              href="/fr/things-to-do/food"
             >
               <img
                 alt=""
@@ -15240,11 +15240,6 @@ exports[`MSHWAR-32 locale snapshots > renders ideas in fr 1`] = `
 exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
 <div>
   <div>
-    <script
-      type="application/ld+json"
-    >
-      {"@context":"https://schema.org","@type":"TouristAttraction","name":"A slow day in Byblos","description":"Wander stone lanes, pause by the old harbour, and make time for a long lunch beside the Mediterranean. A day for taking the scenic route.","image":["https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80"],"url":"/experiences/slow-day-byblos","address":{"@type":"PostalAddress","addressLocality":"Byblos · Mount Lebanon","addressCountry":"LB"},"offers":{"@type":"Offer","priceCurrency":"USD","price":35,"availability":"https://schema.org/InStock","description":"Estimated from. Request to book."}}
-    </script>
     <div
       class="shell-frame grid gap-5 pb-8 pt-8 md:pt-10"
     >
@@ -17098,11 +17093,6 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in ar 1`] = `
 exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
 <div>
   <div>
-    <script
-      type="application/ld+json"
-    >
-      {"@context":"https://schema.org","@type":"TouristAttraction","name":"A slow day in Byblos","description":"Wander stone lanes, pause by the old harbour, and make time for a long lunch beside the Mediterranean. A day for taking the scenic route.","image":["https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80"],"url":"/experiences/slow-day-byblos","address":{"@type":"PostalAddress","addressLocality":"Byblos · Mount Lebanon","addressCountry":"LB"},"offers":{"@type":"Offer","priceCurrency":"USD","price":35,"availability":"https://schema.org/InStock","description":"Estimated from. Request to book."}}
-    </script>
     <div
       class="shell-frame grid gap-5 pb-8 pt-8 md:pt-10"
     >
@@ -18956,11 +18946,6 @@ exports[`MSHWAR-32 locale snapshots > renders listing detail in en 1`] = `
 exports[`MSHWAR-32 locale snapshots > renders listing detail in fr 1`] = `
 <div>
   <div>
-    <script
-      type="application/ld+json"
-    >
-      {"@context":"https://schema.org","@type":"TouristAttraction","name":"A slow day in Byblos","description":"Wander stone lanes, pause by the old harbour, and make time for a long lunch beside the Mediterranean. A day for taking the scenic route.","image":["https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1600&q=80"],"url":"/experiences/slow-day-byblos","address":{"@type":"PostalAddress","addressLocality":"Byblos · Mount Lebanon","addressCountry":"LB"},"offers":{"@type":"Offer","priceCurrency":"USD","price":35,"availability":"https://schema.org/InStock","description":"Estimated from. Request to book."}}
-    </script>
     <div
       class="shell-frame grid gap-5 pb-8 pt-8 md:pt-10"
     >
@@ -22656,6 +22641,14 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
                 <li>
                   <a
                     class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    href="/ar/lebanon"
+                  >
+                    دليل السفر إلى لبنان
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/ar/destinations"
                   >
                     الوجهات
@@ -22664,9 +22657,9 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
                 <li>
                   <a
                     class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                    href="/ar/experiences"
+                    href="/ar/things-to-do"
                   >
-                    التجارب
+                    ماذا تفعل في لبنان
                   </a>
                 </li>
                 <li>
@@ -22764,6 +22757,14 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
               <ul
                 class="grid text-sm md:gap-2.5"
               >
+                <li>
+                  <a
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    href="/ar/about"
+                  >
+                    من نحن
+                  </a>
+                </li>
                 <li>
                   <a
                     class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
@@ -23224,6 +23225,14 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
                 <li>
                   <a
                     class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    href="/lebanon"
+                  >
+                    Lebanon travel guide
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/destinations"
                   >
                     Destinations
@@ -23232,9 +23241,9 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
                 <li>
                   <a
                     class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                    href="/experiences"
+                    href="/things-to-do"
                   >
-                    Experiences
+                    Things to do in Lebanon
                   </a>
                 </li>
                 <li>
@@ -23332,6 +23341,14 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
               <ul
                 class="grid text-sm md:gap-2.5"
               >
+                <li>
+                  <a
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    href="/about"
+                  >
+                    About Mshwar
+                  </a>
+                </li>
                 <li>
                   <a
                     class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
@@ -23792,6 +23809,14 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
                 <li>
                   <a
                     class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    href="/fr/lebanon"
+                  >
+                    Guide de voyage au Liban
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                     href="/fr/destinations"
                   >
                     Destinations
@@ -23800,9 +23825,9 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
                 <li>
                   <a
                     class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                    href="/fr/experiences"
+                    href="/fr/things-to-do"
                   >
-                    Expériences
+                    Que faire au Liban
                   </a>
                 </li>
                 <li>
@@ -23900,6 +23925,14 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
               <ul
                 class="grid text-sm md:gap-2.5"
               >
+                <li>
+                  <a
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    href="/fr/about"
+                  >
+                    À propos de Mshwar
+                  </a>
+                </li>
                 <li>
                   <a
                     class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"

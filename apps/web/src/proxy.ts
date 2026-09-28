@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { SESSION_COOKIE, isProtectedPath, safeNextPath } from "@/lib/auth";
-import { LOCALE_COOKIE, LOCALE_HEADER, parseLocale, splitLocalePrefix, withLocalePrefix } from "@/lib/locale";
+import {
+  DEFAULT_LOCALE,
+  LOCALE_COOKIE,
+  LOCALE_HEADER,
+  PATH_LOCALE_HEADER,
+  parseLocale,
+  splitLocalePrefix,
+  withLocalePrefix,
+} from "@/lib/locale";
 import { REQUEST_ID_HEADER, newRequestId } from "@/lib/request-id";
 
 export function proxy(request: NextRequest) {
@@ -20,6 +28,7 @@ export function proxy(request: NextRequest) {
   const { locale: prefixLocale, pathname: stripped } = splitLocalePrefix(pathname);
   const locale = prefixLocale ?? parseLocale(request.cookies.get(LOCALE_COOKIE)?.value);
   requestHeaders.set(LOCALE_HEADER, locale);
+  requestHeaders.set(PATH_LOCALE_HEADER, prefixLocale ?? DEFAULT_LOCALE);
 
   function withLocaleCookie(response: NextResponse) {
     response.cookies.set(LOCALE_COOKIE, locale, {
