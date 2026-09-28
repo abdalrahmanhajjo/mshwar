@@ -1,3 +1,4 @@
+import type { DestinationGuide } from "@/content/destination-guides";
 import type { Destination, Experience } from "@/lib/catalog";
 import type { Locale } from "@/lib/locale";
 import { seoCopy, seoText, type SeoKey } from "@/lib/seo-copy";
@@ -61,4 +62,48 @@ export function topDestinations(experiences: Experience[], destinations: Destina
 
 export function joinNames(locale: Locale, names: string[]): string {
   return list(locale, names);
+}
+
+export type GuideBlock = {
+  title: string;
+  /** Language of the text: French pages show the English text, marked as English. */
+  lang: "en" | "ar";
+  paragraphs: string[];
+  facts: { label: string; body: string }[];
+  advice?: string;
+  sourcesLabel: string;
+  sources: { label: string; url: string }[];
+};
+
+/** The approved editorial guide for a destination, in the page's language. */
+export function guideBlock(
+  locale: Locale,
+  destination: Destination,
+  guide: DestinationGuide | undefined,
+): GuideBlock | undefined {
+  if (!guide) return undefined;
+  const lang = locale === "ar" ? "ar" : "en";
+  return {
+    title: seoText(locale, "guideAbout", { name: destination.name }),
+    lang,
+    paragraphs: guide.overview[lang],
+    facts: [
+      { label: seoText(locale, "guideBestTime"), body: guide.bestTime[lang] },
+      { label: seoText(locale, "guideGettingThere"), body: guide.gettingThere[lang] },
+    ],
+    advice: guide.checkAdvice ? seoText(locale, "guideAdvice") : undefined,
+    sourcesLabel: seoText(locale, "guideSources"),
+    sources: guide.sources,
+  };
+}
+
+/** Extra questions an approved guide can answer. */
+export function guideFaqs(locale: Locale, destination: Destination, guide: DestinationGuide | undefined): Faq[] {
+  if (!guide) return [];
+  const lang = locale === "ar" ? "ar" : "en";
+  const values = { name: destination.name };
+  return [
+    { question: seoText(locale, "destFaqWhenQ", values), answer: guide.bestTime[lang] },
+    { question: seoText(locale, "destFaqHowQ", values), answer: guide.gettingThere[lang] },
+  ];
 }

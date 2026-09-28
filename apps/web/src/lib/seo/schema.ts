@@ -21,7 +21,7 @@ export function organizationSchema(): Thing {
     name: SITE_NAME,
     alternateName: "مشوار",
     url: SITE_URL,
-    logo: `${SITE_URL}/icon.svg`,
+    logo: `${SITE_URL}/logo-512.png`,
     description: "A Lebanon travel discovery platform: destinations, places to visit and a day planner.",
     areaServed: { "@type": "Country", name: "Lebanon" },
   };

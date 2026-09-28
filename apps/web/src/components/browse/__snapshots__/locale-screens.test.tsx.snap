@@ -22744,6 +22744,14 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
                     أدرج مكتب الصرافة
                   </a>
                 </li>
+                <li>
+                  <a
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    href="/ar/partners"
+                  >
+                    شارة للشركاء
+                  </a>
+                </li>
               </ul>
             </div>
             <div
@@ -23328,6 +23336,14 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
                     List your exchange
                   </a>
                 </li>
+                <li>
+                  <a
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    href="/partners"
+                  >
+                    Badge for partners
+                  </a>
+                </li>
               </ul>
             </div>
             <div
@@ -23910,6 +23926,14 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
                     href="/fr/exchange"
                   >
                     Référencez votre bureau de change
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                    href="/fr/partners"
+                  >
+                    Badge partenaires
                   </a>
                 </li>
               </ul>

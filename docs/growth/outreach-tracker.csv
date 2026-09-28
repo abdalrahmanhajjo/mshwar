@@ -1,0 +1,6 @@
+priority,category,organisation,contact_page,asset_offered,template,date_sent,follow_up_date,status,link_url,notes
+1,Hub,UNRWA Digital Hub,,/,UNRWA Digital Hub (English),,,to contact,,Projects/alumni page or news post
+2,University,{your university},,/about,University (English),,,to contact,,Project showcase or student news
+3,University,{tourism faculty},,/lebanon,University (English),,,to contact,,Guest talk or class project
+4,Listed place,{place with a website},,/experiences/{slug},Listed place (English/Arabic),,,to contact,,Badge from /partners
+5,Municipality,{town},,/destinations/{slug},Municipality (English),,,to contact,,Visitor resources page

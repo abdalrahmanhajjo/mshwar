@@ -86,6 +86,27 @@ export type SeoKey =
   | "aboutContact"
   | "footerGuide"
   | "footerAbout"
+  | "footerBadge"
+  | "badgeTitle"
+  | "badgeH1"
+  | "badgeBody"
+  | "badgeUrlLabel"
+  | "badgeUrlHint"
+  | "badgeUrlError"
+  | "badgeStyleLabel"
+  | "badgeLight"
+  | "badgeDark"
+  | "badgeCodeLabel"
+  | "badgeCopy"
+  | "badgeCopied"
+  | "badgePreview"
+  | "guideAbout"
+  | "guideBestTime"
+  | "guideGettingThere"
+  | "guideSources"
+  | "guideAdvice"
+  | "destFaqWhenQ"
+  | "destFaqHowQ"
   | "homeTitle"
   | "homeDescription"
   | "destinationsTitle"
@@ -188,6 +209,28 @@ export const seoCopy: Record<Locale, Record<SeoKey, string>> = {
     aboutContact: "Contact us",
     footerGuide: "Lebanon travel guide",
     footerAbout: "About Mshwar",
+    footerBadge: "Badge for partners",
+    badgeTitle: "Link to your Mshwar page — Mshwar",
+    badgeH1: "Show travellers where to find you",
+    badgeBody:
+      "Listed on Mshwar as a place, guide or driver? Add this badge to your website so travellers can see your opening hours, location and plan a day around you.",
+    badgeUrlLabel: "Your Mshwar page",
+    badgeUrlHint: "Open your page on Mshwar and copy its address from the browser.",
+    badgeUrlError: "Use the address of a page on mshwarlb.com.",
+    badgeStyleLabel: "Style",
+    badgeLight: "Light",
+    badgeDark: "Dark",
+    badgeCodeLabel: "Code to paste into your website",
+    badgeCopy: "Copy code",
+    badgeCopied: "Copied",
+    badgePreview: "Preview",
+    guideAbout: "About {name}",
+    guideBestTime: "Best time to visit",
+    guideGettingThere: "Getting there",
+    guideSources: "Sources",
+    guideAdvice: "Check your government’s current travel advice for this area before you go.",
+    destFaqWhenQ: "When is the best time to visit {name}?",
+    destFaqHowQ: "How do I get to {name}?",
     homeTitle: "Mshwar — Lebanon, at your own pace",
     homeDescription:
       "Discover real, sourced places across Lebanon and plan a day that fits you — from the cedars to the sea.",
@@ -287,6 +330,28 @@ export const seoCopy: Record<Locale, Record<SeoKey, string>> = {
     aboutContact: "تواصل معنا",
     footerGuide: "دليل السفر إلى لبنان",
     footerAbout: "من نحن",
+    footerBadge: "شارة للشركاء",
+    badgeTitle: "اربط صفحتك على مشوار — مشوار",
+    badgeH1: "أرِ المسافرين أين يجدونك",
+    badgeBody:
+      "هل أنت مُدرج على مشوار كمكان أو مرشد أو سائق؟ أضف هذه الشارة إلى موقعك ليطّلع المسافرون على ساعات العمل والموقع ويخطّطوا يومهم حولك.",
+    badgeUrlLabel: "صفحتك على مشوار",
+    badgeUrlHint: "افتح صفحتك على مشوار وانسخ عنوانها من المتصفّح.",
+    badgeUrlError: "استخدم عنوان صفحة على mshwarlb.com.",
+    badgeStyleLabel: "النمط",
+    badgeLight: "فاتح",
+    badgeDark: "داكن",
+    badgeCodeLabel: "الرمز الذي تلصقه في موقعك",
+    badgeCopy: "انسخ الرمز",
+    badgeCopied: "تم النسخ",
+    badgePreview: "معاينة",
+    guideAbout: "عن {name}",
+    guideBestTime: "أفضل وقت للزيارة",
+    guideGettingThere: "كيف تصل",
+    guideSources: "المصادر",
+    guideAdvice: "راجع إرشادات السفر الحالية الصادرة عن حكومتك بشأن هذه المنطقة قبل الذهاب.",
+    destFaqWhenQ: "ما أفضل وقت لزيارة {name}؟",
+    destFaqHowQ: "كيف أصل إلى {name}؟",
     homeTitle: "مشوار — لبنان على مهلك",
     homeDescription: "اكتشف أماكن حقيقية موثّقة المصدر في كل لبنان، وخطّط ليوم يناسبك — من الأرز إلى البحر.",
     destinationsTitle: "الوجهات في لبنان — مشوار",
@@ -391,6 +456,28 @@ export const seoCopy: Record<Locale, Record<SeoKey, string>> = {
     aboutContact: "Nous contacter",
     footerGuide: "Guide de voyage au Liban",
     footerAbout: "À propos de Mshwar",
+    footerBadge: "Badge partenaires",
+    badgeTitle: "Lien vers votre page Mshwar — Mshwar",
+    badgeH1: "Montrez aux voyageurs où vous trouver",
+    badgeBody:
+      "Référencé sur Mshwar comme lieu, guide ou chauffeur ? Ajoutez ce badge à votre site pour que les voyageurs voient vos horaires, votre emplacement et organisent une journée autour de vous.",
+    badgeUrlLabel: "Votre page Mshwar",
+    badgeUrlHint: "Ouvrez votre page sur Mshwar et copiez son adresse depuis le navigateur.",
+    badgeUrlError: "Utilisez l’adresse d’une page sur mshwarlb.com.",
+    badgeStyleLabel: "Style",
+    badgeLight: "Clair",
+    badgeDark: "Foncé",
+    badgeCodeLabel: "Code à coller dans votre site",
+    badgeCopy: "Copier le code",
+    badgeCopied: "Copié",
+    badgePreview: "Aperçu",
+    guideAbout: "À propos de {name}",
+    guideBestTime: "Meilleure période",
+    guideGettingThere: "Comment y aller",
+    guideSources: "Sources",
+    guideAdvice: "Consultez les conseils aux voyageurs de votre gouvernement pour cette zone avant de partir.",
+    destFaqWhenQ: "Quelle est la meilleure période pour visiter {name} ?",
+    destFaqHowQ: "Comment aller à {name} ?",
     homeTitle: "Mshwar — le Liban à votre rythme",
     homeDescription:
       "Découvrez de vrais lieux sourcés dans tout le Liban et organisez une journée qui vous ressemble — des cèdres à la mer.",
