@@ -21,7 +21,7 @@ const HERO_SLUGS = ["baalbek", "baalbek-hermel"];
 export default async function Home() {
   // Real catalogue data when the API answers; HomeView falls back to the bundled
   // sample when a list is empty, so the page is never blank.
-  const [page, destinations] = await Promise.all([loadExperiencePage({ page: 1, pageSize: 8 }), loadDestinations()]);
+  const [page, destinations] = await Promise.all([loadExperiencePage({ page: 1, pageSize: 24 }), loadDestinations()]);
   // Traveller stories come only from published reviews of verified bookings.
   const stories = await loadTravellerStories(page.items);
   // The hero always shows Baalbek: the catalogue's Baalbek cover when it has one,

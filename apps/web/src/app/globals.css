@@ -264,3 +264,15 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     display: none;
   }
 }
+
+/* The traveller's own position on a plan map. */
+.plan-map-you {
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: #2f7cf6;
+  border: 3px solid #fff;
+  box-shadow:
+    0 0 0 6px rgb(47 124 246 / 0.25),
+    0 4px 10px -2px rgb(0 0 0 / 0.4);
+}

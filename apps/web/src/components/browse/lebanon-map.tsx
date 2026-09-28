@@ -5,19 +5,8 @@ import type { GeoJSONSource, Map as MapLibreMap, MapLayerMouseEvent } from "mapl
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Experience } from "@/lib/catalog";
 import { listingCoordinates } from "@/lib/listing-coordinates";
+import { createLebanonMap } from "@/lib/maplibre";
 
-/**
- * OpenFreeMap: free vector tiles built from OpenStreetMap, with no API key, no usage
- * limits and no cookies. The light "positron" style keeps the brand colours readable.
- */
-export const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
-
-const LEBANON_CENTRE: [number, number] = [35.86, 33.87];
-// A little beyond the border so coastal and border towns are never cut off.
-const LEBANON_BOUNDS: [[number, number], [number, number]] = [
-  [34.9, 32.85],
-  [37.0, 34.85],
-];
 const CEDAR = "#12352F";
 const ORANGE = "#F3653E";
 
@@ -40,28 +29,35 @@ function toGeoJson(items: Experience[]) {
 
 /**
  * The interactive map of Lebanon. Places cluster when zoomed out; a click on a cluster
- * zooms in, a click on a place selects it. MapLibre is loaded only when the map is shown.
+ * zooms in, a click on a place selects it. MapLibre is loaded only when the map is shown, and
+ * its tiles come through Mshwar's own origin (see src/lib/maplibre.ts).
  */
 export function LebanonMap({
   items,
   active,
   onSelect,
   onError,
+  onReady,
   label,
+  className,
 }: {
   items: Experience[];
   active: string | null;
   onSelect: (slug: string) => void;
   onError: () => void;
+  /** Called once the map has drawn its first frame. */
+  onReady?: () => void;
   label: string;
+  /** Overrides the default size and frame. */
+  className?: string;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const ready = useRef(false);
   // The map's own event handlers read the newest props through this ref.
-  const latest = useRef({ items, onSelect, onError });
+  const latest = useRef({ items, onSelect, onError, onReady });
   useEffect(() => {
-    latest.current = { items, onSelect, onError };
+    latest.current = { items, onSelect, onError, onReady };
   });
 
   useEffect(() => {
@@ -69,23 +65,14 @@ export function LebanonMap({
     let instance: MapLibreMap | null = null;
     (async () => {
       try {
-        // MapLibre 6 is an ES module with named exports only.
-        const { Map, NavigationControl, getVersion, setWorkerUrl } = await import("maplibre-gl");
-        // The worker is served from our own origin (scripts/copy-maplibre-worker.mjs).
-        setWorkerUrl(`/vendor/maplibre/${getVersion()}/maplibre-gl-worker.mjs`);
         if (cancelled || !container.current) return;
-        instance = new Map({
-          container: container.current,
-          style: MAP_STYLE_URL,
-          center: LEBANON_CENTRE,
-          zoom: 7.3,
-          minZoom: 6.5,
-          maxBounds: LEBANON_BOUNDS,
-          attributionControl: { compact: true },
-          cooperativeGestures: true,
-        });
+        const created = await createLebanonMap(container.current);
+        instance = created.map;
+        if (cancelled) {
+          instance.remove();
+          return;
+        }
         map.current = instance;
-        instance.addControl(new NavigationControl({ showCompass: false }), "top-right");
         instance.on("error", (event) => {
           // A missing tile is not fatal; only a style that cannot load is.
           if (!instance?.isStyleLoaded() && !ready.current) {
@@ -155,6 +142,7 @@ export function LebanonMap({
             instance.on("mouseleave", layer, () => instance && (instance.getCanvas().style.cursor = ""));
           }
           fitToItems(instance, latest.current.items);
+          instance.once("idle", () => latest.current.onReady?.());
         });
       } catch (error) {
         // No WebGL, blocked tiles or an old browser: the list stays usable on its own.
@@ -194,7 +182,10 @@ export function LebanonMap({
       data-map-root
       role="region"
       aria-label={label}
-      className="h-[460px] w-full overflow-hidden rounded-[1.5rem] border border-border-subtle bg-brand-subtle/40 lg:h-[560px]"
+      className={
+        className ??
+        "h-[460px] w-full overflow-hidden rounded-[1.5rem] border border-border-subtle bg-brand-subtle/40 lg:h-[560px]"
+      }
     />
   );
 }

@@ -24,3 +24,8 @@ export function sentryServerDsn(): string | undefined {
 export function serverRuntime(): "edge" | "nodejs" {
   return process.env.NEXT_RUNTIME === "edge" ? "edge" : "nodejs";
 }
+
+/** OSRM server for plan road routes (/map-route); the public OpenStreetMap one unless set. */
+export function osrmUrl(): string {
+  return (process.env.OSRM_URL || "https://router.project-osrm.org").replace(/\/$/, "");
+}

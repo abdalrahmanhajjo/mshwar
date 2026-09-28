@@ -63,7 +63,7 @@ export const PRIVACY_POLICY: LegalLibrary = {
           {
             list: [
               "The business you book with: your name, party size, booking details and any note you add, so it can deliver the experience.",
-              "Service providers who work for us under contract: hosting and databases, email delivery, the payment provider, error monitoring (with personal details removed first), image delivery (ImageKit) and maps (Google Maps, only when you choose to load a map).",
+              "Service providers who work for us under contract: hosting and databases, email delivery, the payment provider, error monitoring (with personal details removed first), image delivery (ImageKit), and maps: map tiles from OpenFreeMap and road routes from an OpenStreetMap routing service, both fetched by our server, so your device never contacts them. Your location is used on your device only when you ask to see it on a plan map, and is not sent to us.",
               "Authorities, when Lebanese law requires it or when it is needed to protect people's safety.",
               "A buyer or successor, if Mshwar's business is transferred, under the same protections.",
             ],
@@ -126,7 +126,7 @@ export const PRIVACY_POLICY: LegalLibrary = {
           {
             list: [
               "Error reporting: sends details of errors in your browser to our monitoring service, with personal details removed.",
-              "Maps and embedded content: loads Google Maps, which may set its own cookies.",
+              "Maps and embedded content: content embedded from other companies, such as Google Maps, which may set their own cookies. Mshwar’s own maps need no cookies. Opening directions in Google Maps or Waze takes you to their apps, under their own policies.",
             ],
           },
           "You can change your choices at any time from the Cookie settings link at the bottom of every page.",
@@ -217,7 +217,7 @@ export const PRIVACY_POLICY: LegalLibrary = {
           {
             list: [
               "المنشأة التي تحجز لديها: اسمك وعدد الأشخاص وتفاصيل الحجز وأي ملاحظة تضيفها، كي تتمكّن من تقديم التجربة.",
-              "مزوّدو الخدمات الذين يعملون لصالحنا بموجب عقود: الاستضافة وقواعد البيانات، وإرسال البريد الإلكتروني، ومزوّد الدفع، ومراقبة الأخطاء (بعد حذف البيانات الشخصية)، وتقديم الصور (ImageKit)، والخرائط (خرائط Google، فقط عندما تختار عرض خريطة).",
+              "مزوّدو الخدمات الذين يعملون لصالحنا بموجب عقود: الاستضافة وقواعد البيانات، وإرسال البريد الإلكتروني، ومزوّد الدفع، ومراقبة الأخطاء (بعد حذف البيانات الشخصية)، وتقديم الصور (ImageKit)، والخرائط: بلاطات الخرائط من OpenFreeMap ومسارات الطرق من خدمة توجيه تعتمد على OpenStreetMap، ويجلبها خادمنا فلا يتصل جهازك بها أبدًا. يُستخدم موقعك على جهازك فقط عندما تطلب رؤيته على خريطة الخطة، ولا يُرسل إلينا.",
               "السلطات المختصّة، عندما يفرض القانون اللبناني ذلك أو عندما يكون ذلك ضروريًا لحماية سلامة الأشخاص.",
               "أي مشترٍ أو خلف قانوني في حال انتقال نشاط مشوار، مع الحفاظ على الضمانات نفسها.",
             ],
@@ -280,7 +280,7 @@ export const PRIVACY_POLICY: LegalLibrary = {
           {
             list: [
               "الإبلاغ عن الأخطاء: يرسل تفاصيل الأخطاء التي تحدث في متصفحك إلى خدمة المراقبة لدينا بعد حذف البيانات الشخصية.",
-              "الخرائط والمحتوى المضمَّن: يحمّل خرائط Google، التي قد تضع ملفات تعريف الارتباط الخاصة بها.",
+              "الخرائط والمحتوى المضمَّن: محتوى مضمَّن من شركات أخرى مثل خرائط Google، وقد تضع ملفات تعريف الارتباط الخاصة بها. خرائط مشوار نفسها لا تحتاج إلى ملفات تعريف ارتباط. فتح الاتجاهات في خرائط Google أو Waze ينقلك إلى تطبيقاتهما وفق سياساتهما.",
             ],
           },
           "يمكنك تغيير اختياراتك في أي وقت عبر رابط «إعدادات ملفات تعريف الارتباط» أسفل كل صفحة.",
@@ -371,7 +371,7 @@ export const PRIVACY_POLICY: LegalLibrary = {
           {
             list: [
               "L’établissement auprès duquel vous réservez : votre nom, le nombre de participants, les détails de la réservation et votre éventuelle note, afin qu’il puisse assurer l’expérience.",
-              "Nos sous-traitants liés par contrat : hébergement et bases de données, envoi d’e-mails, prestataire de paiement, suivi des erreurs (après suppression des données personnelles), diffusion des images (ImageKit) et cartes (Google Maps, uniquement si vous choisissez d’afficher une carte).",
+              "Nos sous-traitants liés par contrat : hébergement et bases de données, envoi d’e-mails, prestataire de paiement, suivi des erreurs (après suppression des données personnelles), diffusion des images (ImageKit) et cartes : tuiles d’OpenFreeMap et itinéraires routiers d’un service de calcul d’itinéraire OpenStreetMap, récupérés par notre serveur, si bien que votre appareil ne les contacte jamais. Votre position n’est utilisée que sur votre appareil, lorsque vous demandez à la voir sur la carte d’un plan, et ne nous est pas envoyée.",
               "Les autorités, lorsque la loi libanaise l’exige ou que la sécurité des personnes le requiert.",
               "Un acquéreur ou successeur en cas de transfert de l’activité de Mshwar, avec les mêmes garanties.",
             ],
@@ -434,7 +434,7 @@ export const PRIVACY_POLICY: LegalLibrary = {
           {
             list: [
               "Signalement des erreurs : envoie à notre service de suivi les détails des erreurs survenues dans votre navigateur, après suppression des données personnelles.",
-              "Cartes et contenus intégrés : charge Google Maps, qui peut déposer ses propres cookies.",
+              "Cartes et contenus intégrés : contenus d’autres sociétés, comme Google Maps, qui peuvent déposer leurs propres cookies. Les cartes de Mshwar n’en ont pas besoin. Ouvrir un itinéraire dans Google Maps ou Waze vous mène à leurs applications, selon leurs propres règles.",
             ],
           },
           "Vous pouvez modifier vos choix à tout moment grâce au lien « Réglages des cookies » en bas de chaque page.",

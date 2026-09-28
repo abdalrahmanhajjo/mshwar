@@ -26,8 +26,8 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  // Map tiles, style, fonts and sprites (OpenFreeMap: OpenStreetMap vector tiles, no key).
-  ["connect-src 'self' https://tiles.openfreemap.org", sentry].filter(Boolean).join(" "),
+  // Map tiles and road routes come through our own origin (/map-tiles, /map-route).
+  ["connect-src 'self'", sentry].filter(Boolean).join(" "),
   // MapLibre draws on a web worker it creates from a blob.
   "worker-src 'self' blob:",
   "child-src 'self' blob:",
@@ -58,6 +58,12 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     return [
+      // OpenFreeMap (OpenStreetMap vector tiles, no key) served from our origin: browsers never
+      // contact a third party for a map, so maps need no cookie choice (see src/lib/maplibre.ts).
+      {
+        source: "/map-tiles/:path*",
+        destination: "https://tiles.openfreemap.org/:path*",
+      },
       {
         source: "/api/:path*",
         destination: `${apiUrl}/api/:path*`,
