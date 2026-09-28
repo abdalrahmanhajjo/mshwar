@@ -3,7 +3,7 @@ import { CollectionsView } from "@/components/browse/collections-view";
 import { loadCollections } from "@/lib/catalogue-api";
 
 export const metadata: Metadata = {
-  title: "Collections — Ready-made days.",
+  title: "Ready-made days in Lebanon — Mshwar",
   description: "Curated collections assembled from published inventory.",
 };
 
