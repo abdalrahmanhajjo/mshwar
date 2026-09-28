@@ -21,6 +21,8 @@ import { ExperienceCard } from "@/components/browse/experience-card";
 import { SaveExperienceButton } from "@/components/browse/save-button";
 import { Button } from "@/components/ui/button";
 import { LocaleLink } from "@/components/shell/locale-link";
+import { Breadcrumbs } from "@/components/seo/breadcrumbs";
+import type { Crumb } from "@/lib/seo/schema";
 import { Eyebrow, SectionHeader } from "@/components/ui/page-header";
 import { useBrowseCopy } from "@/lib/browse-copy";
 import {
@@ -29,7 +31,6 @@ import {
   listingAvailable,
   listingDistance,
   listingGallery,
-  listingKind,
   listingPolicies,
   listingRating,
   priceKindLabel,
@@ -47,10 +48,15 @@ export function ExperienceDetailView({
   experience,
   related,
   contributors = [],
+  crumbs,
+  crumbLabel,
 }: {
   experience: Experience;
   related: Experience[];
   contributors?: PlaceContributor[];
+  /** Home › Destinations › place › this listing; shown in place of a bare back link. Its data is emitted by the page. */
+  crumbs?: Crumb[];
+  crumbLabel?: string;
 }) {
   const copy = useBrowseCopy();
   const category = CATEGORIES.find((item) => item.slug === experience.category)?.label ?? experience.category;
@@ -59,48 +65,26 @@ export function ExperienceDetailView({
   const policies = listingPolicies(experience);
   const available = listingAvailable(experience);
   const rating = listingRating(experience);
-  const kind = listingKind(experience);
   const [region] = experience.placeLabel.split(" · ").slice(-1);
   const [summaryLead, summaryTail] = splitSentence(experience.summary ?? experience.title);
 
   return (
     <div>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": kind === "restaurant" ? "Restaurant" : "TouristAttraction",
-            name: experience.title,
-            description: experience.body,
-            image: gallery,
-            url: `/experiences/${experience.slug}`,
-            address: {
-              "@type": "PostalAddress",
-              addressLocality: experience.placeLabel,
-              addressCountry: "LB",
-            },
-            offers: {
-              "@type": "Offer",
-              priceCurrency: "USD",
-              price: experience.priceFrom,
-              availability: available ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
-              description: `${priceKindLabel(experience.priceLabel)}. ${bookingModeLabel(experience.bookingMode)}.`,
-            },
-          }),
-        }}
-      />
       <div className="shell-frame grid gap-5 pb-8 pt-8 md:pt-10">
-        <LocaleLink
-          href="/experiences"
-          className={cn(
-            "inline-flex w-fit items-center gap-2 rounded-sm text-sm text-text-muted hover:text-text",
-            focusRing,
-          )}
-        >
-          <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
-          {copy.backExperiences}
-        </LocaleLink>
+        {crumbs ? (
+          <Breadcrumbs crumbs={crumbs} label={crumbLabel ?? ""} />
+        ) : (
+          <LocaleLink
+            href="/experiences"
+            className={cn(
+              "inline-flex w-fit items-center gap-2 rounded-sm text-sm text-text-muted hover:text-text",
+              focusRing,
+            )}
+          >
+            <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
+            {copy.backExperiences}
+          </LocaleLink>
+        )}
         <Eyebrow>
           {category} · {region}
         </Eyebrow>

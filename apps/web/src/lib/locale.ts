@@ -7,6 +7,11 @@ export const DEFAULT_LOCALE: Locale = "en";
 export const LOCALE_COOKIE = "mshwar-locale";
 
 export const LOCALE_HEADER = "x-mshwar-locale";
+/**
+ * The locale named by the URL itself (/ar/…, /fr/…), or the default for unprefixed URLs.
+ * Unlike LOCALE_HEADER it ignores the cookie, so canonical URLs match what a crawler fetched.
+ */
+export const PATH_LOCALE_HEADER = "x-mshwar-path-locale";
 
 export const LOCALE_LABELS: Record<Locale, string> = {
   en: "English",
