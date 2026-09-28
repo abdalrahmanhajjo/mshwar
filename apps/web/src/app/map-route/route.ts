@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { parseRoutePoints, type RouteLine } from "@/lib/road-route";
+import { osrmUrl } from "@/lib/server-env";
 
 /**
  * Road routes between a plan's stops, drawn on the plan map. It asks an OSRM server (the public
@@ -7,7 +8,6 @@ import { parseRoutePoints, type RouteLine } from "@/lib/road-route";
  * along real roads, so the browser never talks to a third party and no key is needed. Routes are
  * cached for a day. Times are typical drive times, not live traffic.
  */
-const OSRM_URL = (process.env.OSRM_URL || "https://router.project-osrm.org").replace(/\/$/, "");
 const DAY_SECONDS = 60 * 60 * 24;
 
 const unavailable = (status = 200) =>
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
   const path = points.map(([lng, lat]) => `${lng},${lat}`).join(";");
   try {
-    const response = await fetch(`${OSRM_URL}/route/v1/driving/${path}?overview=full&geometries=geojson&steps=false`, {
+    const response = await fetch(`${osrmUrl()}/route/v1/driving/${path}?overview=full&geometries=geojson&steps=false`, {
       headers: { "User-Agent": "Mshwar trip planner (https://mshwarlb.com)" },
       next: { revalidate: DAY_SECONDS },
       signal: AbortSignal.timeout(8000),
