@@ -1,27 +1,25 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { MapPin } from "lucide-react";
 import { ExperienceCard } from "@/components/browse/experience-card";
-import { SaveExperienceButton } from "@/components/browse/save-button";
+import { LebanonMap } from "@/components/browse/lebanon-map";
 import { BidiText } from "@/components/ui/bidi-text";
 import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/ui/notice";
 import { useCookieChoices } from "@/components/legal/cookie-consent-state";
 import { ESSENTIAL_ONLY, writeCookieChoices } from "@/lib/cookie-consent";
 import { useTrustCopy } from "@/lib/trust-copy";
-import { cn } from "@/lib/utils";
+import { cn, focusRing } from "@/lib/utils";
 import { useBrowseCopy } from "@/lib/browse-copy";
-import { listingCoordinates } from "@/lib/listing-coordinates";
 import type { Experience } from "@/lib/catalog";
 
-const MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
-
-function clusterBeirut(items: Experience[]) {
-  const beirut = items.filter((item) => item.destinationSlug === "beirut");
-  const others = items.filter((item) => item.destinationSlug !== "beirut");
-  return { beirut, others };
-}
-
+/**
+ * Map view of the experiences list. The map is OpenStreetMap data served by OpenFreeMap
+ * through MapLibre, so it needs no API key. It still loads only once maps are allowed
+ * (MSHWAR-113): the tiles come from a third party. The list beside it works with or
+ * without the map, and by keyboard.
+ */
 export function ExperiencesMap({
   items,
   onSearchArea,
@@ -33,102 +31,74 @@ export function ExperiencesMap({
   const trust = useTrustCopy();
   const choices = useCookieChoices();
   const [active, setActive] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
   const selected = items.find((item) => item.slug === active) ?? null;
-  const { beirut, others } = useMemo(() => clusterBeirut(items), [items]);
-  const failed = !MAPS_KEY;
-  // Google Maps sets its own cookies, so it loads only once maps are allowed (MSHWAR-113).
-  const blocked = !failed && !choices?.maps;
+  const blocked = !choices?.maps;
 
-  if (failed || blocked) {
-    return (
-      <div className="grid gap-4">
-        {blocked ? (
-          <Notice>
-            <p className="font-semibold text-text">{trust.mapOffTitle}</p>
-            <p>{trust.mapOffBody}</p>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="mt-2"
-              onClick={() => writeCookieChoices({ ...(choices ?? ESSENTIAL_ONLY), maps: true })}
-            >
-              {trust.mapAllow}
-            </Button>
-          </Notice>
-        ) : (
-          <Notice>{copy.mapUnavailable}</Notice>
-        )}
-        <div
-          className="surface-grain relative min-h-[420px] overflow-hidden rounded-[1.5rem] border border-border-subtle bg-brand-subtle/50"
-          role="img"
-          aria-label={copy.mapView}
-        >
-          <div className="absolute inset-6 grid grid-cols-3 gap-3">
-            {beirut.length ? (
-              <button
-                type="button"
-                className="h-fit w-fit rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground shadow-md"
-                onClick={() => onSearchArea("beirut")}
-              >
-                {copy.clusterLabel} <BidiText>Beirut</BidiText> · {beirut.length}
-              </button>
-            ) : null}
-            {others.map((item) => {
-              const point = listingCoordinates(item);
-              return (
-                <button
-                  key={item.slug}
-                  type="button"
-                  className={cn(
-                    "h-fit w-fit rounded-pill border px-3.5 py-2 text-start text-sm font-medium shadow-md transition-colors",
-                    active === item.slug
-                      ? "border-brand bg-brand text-brand-foreground"
-                      : "border-border-subtle bg-surface-raised hover:border-brand",
-                  )}
-                  style={{ marginTop: point ? `${(34.4 - point.lat) * 40}px` : undefined }}
-                  onClick={() => setActive(item.slug)}
-                >
-                  <BidiText>{item.title}</BidiText>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-        <Button type="button" variant="outline" size="sm" className="w-fit" onClick={() => onSearchArea()}>
-          {copy.searchThisArea}
-        </Button>
-        {selected ? (
-          <div className="max-w-sm">
-            <ExperienceCard experience={selected} compact />
-          </div>
-        ) : null}
-      </div>
-    );
-  }
-
-  const src = `https://www.google.com/maps/embed/v1/view?key=${MAPS_KEY}&center=33.89,35.50&zoom=8`;
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_18rem]">
-      <div className="grid gap-3">
-        <iframe title={copy.mapView} src={src} className="min-h-[420px] w-full rounded-[1.5rem] border-0" />
-        <div className="flex flex-wrap gap-2">
-          {items.map((item) => (
-            <Button key={item.slug} type="button" size="sm" variant="outline" onClick={() => setActive(item.slug)}>
-              {item.title}
-            </Button>
-          ))}
-          <Button type="button" size="sm" onClick={() => onSearchArea()}>
+    <div className="grid gap-4">
+      {blocked ? (
+        <Notice>
+          <p className="font-semibold text-text">{trust.mapOffTitle}</p>
+          <p>{trust.mapOffBody}</p>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="mt-2"
+            onClick={() => writeCookieChoices({ ...(choices ?? ESSENTIAL_ONLY), maps: true })}
+          >
+            {trust.mapAllow}
+          </Button>
+        </Notice>
+      ) : failed ? (
+        <Notice>{copy.mapUnavailable}</Notice>
+      ) : null}
+
+      <div className={cn("grid gap-4", !blocked && !failed && "lg:grid-cols-[1fr_20rem]")}>
+        {!blocked && !failed ? (
+          <LebanonMap
+            items={items}
+            active={active}
+            onSelect={setActive}
+            onError={() => setFailed(true)}
+            label={copy.mapView}
+          />
+        ) : null}
+
+        <div className="grid content-start gap-3">
+          {selected ? <ExperienceCard experience={selected} compact /> : null}
+          <ul className="grid max-h-[360px] gap-1.5 overflow-y-auto pe-1 lg:max-h-[560px]">
+            {items.map((item) => (
+              <li key={item.slug}>
+                <button
+                  type="button"
+                  aria-pressed={active === item.slug}
+                  onClick={() => setActive(item.slug)}
+                  className={cn(
+                    "flex min-h-11 w-full items-center gap-2.5 rounded-[0.75rem] border px-3 py-2 text-start text-sm transition-colors",
+                    active === item.slug
+                      ? "border-brand bg-brand-subtle font-semibold text-text"
+                      : "border-border-subtle bg-surface-raised text-text hover:border-brand/40",
+                    focusRing,
+                  )}
+                >
+                  <MapPin className="size-4 shrink-0 text-accent" strokeWidth={1.8} aria-hidden />
+                  <span className="grid min-w-0">
+                    <span className="truncate">
+                      <BidiText>{item.title}</BidiText>
+                    </span>
+                    <span className="truncate text-xs font-normal text-text-muted">{item.placeLabel}</span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <Button type="button" variant="outline" size="sm" className="w-fit" onClick={() => onSearchArea()}>
             {copy.searchThisArea}
           </Button>
         </div>
       </div>
-      {selected ? (
-        <div className="grid gap-3">
-          <SaveExperienceButton slug={selected.slug} />
-          <ExperienceCard experience={selected} compact />
-        </div>
-      ) : null}
     </div>
   );
 }

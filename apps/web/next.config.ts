@@ -26,7 +26,11 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  ["connect-src 'self'", sentry].filter(Boolean).join(" "),
+  // Map tiles, style, fonts and sprites (OpenFreeMap: OpenStreetMap vector tiles, no key).
+  ["connect-src 'self' https://tiles.openfreemap.org", sentry].filter(Boolean).join(" "),
+  // MapLibre draws on a web worker it creates from a blob.
+  "worker-src 'self' blob:",
+  "child-src 'self' blob:",
   "frame-src https://www.google.com",
 ].join("; ");
 
