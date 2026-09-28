@@ -7,6 +7,7 @@ import { LocaleProvider } from "@/components/shell/locale-provider";
 import { SignedInLocaleSync } from "@/components/shell/locale-sync";
 import { CONSENT_COOKIE } from "@/lib/cookie-consent";
 import { LOCALE_COOKIE, LOCALE_HEADER, localeDirection, parseLocale } from "@/lib/locale";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const dmSans = localFont({
@@ -31,8 +32,13 @@ const notoSansArabic = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Mshwar — Plan Your Lebanon Trip",
-  description: "Discover. Plan. Book Lebanon. AI-powered itinerary builder.",
+  // Resolves relative canonical, hreflang and Open Graph URLs against the public site.
+  metadataBase: new URL(SITE_URL),
+  applicationName: SITE_NAME,
+  title: "Mshwar — Lebanon, at your own pace",
+  description:
+    "Discover real, sourced places across Lebanon and plan a day that fits you — from the cedars to the sea.",
+  openGraph: { siteName: SITE_NAME, type: "website" },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

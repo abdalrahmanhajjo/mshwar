@@ -3,7 +3,7 @@ import { DestinationsView } from "@/components/browse/destinations-view";
 import { loadDestinations } from "@/lib/catalogue-api";
 
 export const metadata: Metadata = {
-  title: "Destinations — Where will you wander?",
+  title: "Destinations in Lebanon — Mshwar",
   description: "Start with a place, then make the day your own.",
 };
 

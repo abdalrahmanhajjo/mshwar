@@ -6,7 +6,7 @@ import { loadExperiencePage, loadMapListings } from "@/lib/catalogue-api";
 import { parseExperienceFilters } from "@/lib/catalog";
 
 export const metadata: Metadata = {
-  title: "Experiences — A whole country. Your next discovery.",
+  title: "Things to do in Lebanon — Mshwar",
   description: "Big adventures, little escapes, and everything in between.",
 };
 
