@@ -16,9 +16,12 @@ pnpm-lock.yaml
 **/pnpm-lock.yaml
 mshwar-brand-foundation/generated
 apps/web/src/styles/generated
+# Vendored MapLibre worker, copied at build time (scripts/copy-maplibre-worker.mjs)
+apps/web/public/vendor
 mshwar-brand-foundation/brand.css
 apps/web/test-results
 **/.pytest_cache
+**/.mypy_cache
 .coverage
 # Written by the PGlite test run
 mshwar-database/docs/TEST_RESULTS.json

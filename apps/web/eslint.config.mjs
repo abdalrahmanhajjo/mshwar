@@ -32,6 +32,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "storybook-static/**",
     ".storybook/**",
+    // Vendored MapLibre worker, copied at build time by scripts/copy-maplibre-worker.mjs.
+    "public/vendor/**",
   ]),
 ]);
 

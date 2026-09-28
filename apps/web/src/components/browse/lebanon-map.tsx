@@ -69,9 +69,12 @@ export function LebanonMap({
     let instance: MapLibreMap | null = null;
     (async () => {
       try {
-        const maplibregl = (await import("maplibre-gl")).default;
+        // MapLibre 6 is an ES module with named exports only.
+        const { Map, NavigationControl, getVersion, setWorkerUrl } = await import("maplibre-gl");
+        // The worker is served from our own origin (scripts/copy-maplibre-worker.mjs).
+        setWorkerUrl(`/vendor/maplibre/${getVersion()}/maplibre-gl-worker.mjs`);
         if (cancelled || !container.current) return;
-        instance = new maplibregl.Map({
+        instance = new Map({
           container: container.current,
           style: MAP_STYLE_URL,
           center: LEBANON_CENTRE,
@@ -82,7 +85,7 @@ export function LebanonMap({
           cooperativeGestures: true,
         });
         map.current = instance;
-        instance.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+        instance.addControl(new NavigationControl({ showCompass: false }), "top-right");
         instance.on("error", (event) => {
           // A missing tile is not fatal; only a style that cannot load is.
           if (!instance?.isStyleLoaded() && !ready.current) {

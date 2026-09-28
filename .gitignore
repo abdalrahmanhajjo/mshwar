@@ -115,3 +115,4 @@ Claude outputs/
 
 # Sentry build plugin auth token (never commit)
 .env.sentry-build-plugin
+.mypy_cache/
