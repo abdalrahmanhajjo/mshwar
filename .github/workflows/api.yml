@@ -222,13 +222,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Require staging secrets
         env:
-          STAGING_API_URL: ${{ secrets.STAGING_API_URL }}
           STAGING_SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
           STAGING_SSH_USER: ${{ secrets.STAGING_SSH_USER }}
           STAGING_SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
         run: |
           missing=""
-          for name in STAGING_API_URL STAGING_SSH_HOST STAGING_SSH_USER STAGING_SSH_KEY; do
+          for name in STAGING_SSH_HOST STAGING_SSH_USER STAGING_SSH_KEY; do
             [ -n "${!name}" ] || missing="$missing $name"
           done
           if [ -n "$missing" ]; then
@@ -265,7 +264,9 @@ jobs:
              docker image prune -f'
       - name: Verify staging health
         env:
-          STAGING_API_URL: ${{ secrets.STAGING_API_URL }}
+          # The site's public address is not a secret. Override it with the repository
+          # variable STAGING_API_URL if staging ever moves off mshwarlb.com.
+          STAGING_API_URL: ${{ vars.STAGING_API_URL || 'https://mshwarlb.com' }}
         run: |
           for attempt in 1 2 3 4 5 6 7 8 9 10; do
             if curl -fsS --max-time 10 "${STAGING_API_URL}/health" >/dev/null; then

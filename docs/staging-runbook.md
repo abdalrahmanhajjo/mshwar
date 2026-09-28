@@ -213,12 +213,13 @@ In the repository settings:
 
    | Variable                    | Enables                                | Also needs                                                                            |
    | --------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------- |
-   | `DEPLOY_ENABLED`            | API deploy to staging                  | The four `STAGING_*` secrets below                                                    |
+   | `DEPLOY_ENABLED`            | API deploy to staging                  | The three `STAGING_SSH_*` secrets below                                               |
    | `DEPLOY_WEB_ENABLED`        | Vercel preview, staging and production | `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, `PRODUCTION_WEB_URL`            |
    | `DEPLOY_PRODUCTION_ENABLED` | API deploy to production, and rollback | The `PRODUCTION_*` secrets, and a production compose override that does not yet exist |
 
-2. Add secrets to the `staging` environment: `STAGING_API_URL` (e.g.
-   `https://mshwarlb.com`), `STAGING_SSH_HOST`, `STAGING_SSH_USER`, `STAGING_SSH_KEY`.
+2. Add secrets to the `staging` environment: `STAGING_SSH_HOST`, `STAGING_SSH_USER`,
+   `STAGING_SSH_KEY`. The health check calls `https://mshwarlb.com/health`; set the repository
+   variable `STAGING_API_URL` only if staging moves to another address.
 3. Leave `production` unconfigured for now. With `DEPLOY_ENABLED` on, an unset production secret
    fails the job loudly, which is the intended behaviour once you are ready to use it.
 
