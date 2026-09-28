@@ -6,9 +6,8 @@ afterEach(() => {
   document.cookie = "mshwar-consent=; Path=/; Max-Age=0";
 });
 
-describe("Google Maps waits for consent (MSHWAR-113)", () => {
-  it("shows no third-party map until maps are allowed", async () => {
-    vi.stubEnv("NEXT_PUBLIC_GOOGLE_MAPS_API_KEY", "test-key");
+describe("The map waits for consent (MSHWAR-113)", () => {
+  it("loads no third-party map until maps are allowed, and needs no API key", async () => {
     vi.resetModules();
     const { ExperiencesMap } = await import("@/components/browse/experiences-map");
     const { CookieConsentProvider } = await import("@/components/legal/cookie-consent");
@@ -22,11 +21,12 @@ describe("Google Maps waits for consent (MSHWAR-113)", () => {
         </CookieConsentProvider>
       </LocaleProvider>,
     );
-    expect(container.querySelector("iframe")).toBeNull();
+    expect(container.querySelector("[data-map-root]")).toBeNull();
     expect(screen.getByText("The map is off")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Allow maps" }));
     expect(readCookieChoices()).toEqual({ errors: false, maps: true });
-    expect(container.querySelector("iframe")?.getAttribute("src")).toContain("google.com/maps/embed");
+    expect(container.querySelector("[data-map-root]")).not.toBeNull();
+    expect(container.querySelector("iframe")).toBeNull();
   });
 });
