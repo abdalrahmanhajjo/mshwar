@@ -50,6 +50,14 @@ describe("a new guide's launch checklist", () => {
     expect(steps).toMatchObject({ launchTour: true, launchPublish: false, launchDates: false });
   });
 
+  it("a schedule on a tour says when the guide works, without a weekly rhythm", () => {
+    const empty = { pattern: [], min_notice_hours: 24, max_tours_per_day: 2, exceptions: [] };
+    const byCount = launchSteps(profile(), [tour({})], { ...empty, schedules: 2 });
+    expect(byCount.find((step) => step.key === "launchTimes")?.done).toBe(true);
+    const byTour = launchSteps(profile(), [tour({ schedules: [{ id: "s1" } as never] })], empty);
+    expect(byTour.find((step) => step.key === "launchTimes")?.done).toBe(true);
+  });
+
   it("a local host is never asked for a day rate", () => {
     expect(launchSteps(profile({ tier: "host" }), [], null).some((step) => step.key === "launchHire")).toBe(false);
   });

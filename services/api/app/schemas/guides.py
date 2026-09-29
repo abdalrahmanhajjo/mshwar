@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import date
+import re
+from datetime import date, datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -121,6 +123,9 @@ class GuideTourIn(BaseModel):
     route: list[str] = Field(default_factory=list, max_length=12)
 
 
+HHMM = "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+
+
 class WeeklyStartIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -144,6 +149,50 @@ class GuideAvailabilityIn(BaseModel):
     min_notice_hours: int = Field(default=24, ge=0, le=720)
     max_tours_per_day: int = Field(default=2, ge=1, le=8)
     exceptions: list[AvailabilityExceptionIn] = Field(default_factory=list, max_length=120)
+    # Step 2 rules. Left out, each keeps what the guide set before.
+    buffer_minutes: int | None = Field(default=None, ge=0, le=240)
+    cutoff_time: str | None = Field(default=None, pattern=HHMM)
+    travel_aware: bool | None = None
+
+
+class TourScheduleIn(BaseModel):
+    """One recurring rule for one tour: days, start times, a season, seats and the mode."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str | None = None
+    weekdays: list[int] = Field(min_length=1, max_length=7)
+    start_times: list[str] = Field(min_length=1, max_length=8)
+    valid_from: date | None = None
+    valid_to: date | None = None
+    capacity: int | None = Field(default=None, ge=1, le=60)
+    mode: Literal["shared", "private"] = "shared"
+    min_group: int = Field(default=1, ge=1, le=60)
+    min_group_deadline_hours: int = Field(default=24, ge=1, le=168)
+
+    @field_validator("weekdays")
+    @classmethod
+    def known_weekdays(cls, value: list[int]) -> list[int]:
+        if any(day < 0 or day > 6 for day in value):
+            raise ValueError("weekdays run from 0 (Monday) to 6 (Sunday)")
+        return value
+
+    @field_validator("start_times")
+    @classmethod
+    def clock_times(cls, value: list[str]) -> list[str]:
+        if any(not re.fullmatch(HHMM, item) for item in value):
+            raise ValueError("start times are HH:MM, for example 09:30")
+        return value
+
+
+class BusyBlockIn(BaseModel):
+    """Time the guide cannot work. Only the time is kept, never what it is for."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    starts_at: datetime
+    ends_at: datetime
+    note: str = Field(default="", max_length=200)
 
 
 class TourRequestIn(BaseModel):

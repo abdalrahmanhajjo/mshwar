@@ -29,6 +29,7 @@ const CATALOGUES = [
   "src/lib/guide-day-copy.ts",
   "src/lib/guide-trust-copy.ts",
   "src/lib/guide-join-copy.ts",
+  "src/lib/guide-schedule-copy.ts",
   "src/lib/search-copy.ts",
   "src/lib/verified-copy.ts",
   "src/lib/partner-copy.ts",

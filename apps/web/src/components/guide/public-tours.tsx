@@ -14,6 +14,7 @@ import { Notice } from "@/components/ui/notice";
 import { interpolate } from "@/i18n/catalogues";
 import { formatCurrency, formatDate } from "@/i18n/format";
 import { ApiError } from "@/lib/api/client";
+import { useGuideScheduleCopy } from "@/lib/guide-schedule-copy";
 import { useGuideWorkCopy } from "@/lib/guide-work-copy";
 import { requestTour, type PublicTour } from "@/lib/guide-work";
 import type { PublicGuide } from "@/lib/guides";
@@ -27,6 +28,7 @@ function newKey() {
 
 function TourPanel({ guide, tour }: { guide: PublicGuide; tour: PublicTour }) {
   const copy = useGuideWorkCopy();
+  const scheduleCopy = useGuideScheduleCopy();
   const { locale } = useLocale();
   const { user } = useAuth();
   const [slot, setSlot] = React.useState(tour.next_slots[0]?.id ?? "");
@@ -155,7 +157,15 @@ function TourPanel({ guide, tour }: { guide: PublicGuide; tour: PublicTour }) {
             >
               {tour.next_slots.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {formatDate(locale, item.starts_at, { dateStyle: "medium", timeStyle: "short" })}
+                  {[
+                    formatDate(locale, item.starts_at, { dateStyle: "medium", timeStyle: "short" }),
+                    item.private ? scheduleCopy.slotPrivate : null,
+                    (item.min_group ?? 1) > 1
+                      ? interpolate(scheduleCopy.slotMinGroup, { n: String(item.min_group) })
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </option>
               ))}
             </NativeSelect>

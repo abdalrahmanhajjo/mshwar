@@ -29,6 +29,7 @@ from app.core.storage import delete_private_bytes, media_url, put_private_bytes
 from app.core.uploads import inspect_or_reject, validate_upload
 from app.dependencies import get_auth_db
 from app.schemas.guides import (
+    BusyBlockIn,
     EngagementAnswerIn,
     EngagementCancelIn,
     EngagementDecisionIn,
@@ -47,6 +48,7 @@ from app.schemas.guides import (
     ProposalPhotoIn,
     TourRequestIn,
     TourRequestResponseIn,
+    TourScheduleIn,
 )
 
 router = APIRouter()
@@ -241,11 +243,113 @@ async def set_availability(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
     uid = await _uid(request, db)
+    # Only what was sent: a field left out keeps the guide's earlier choice.
+    body = json.dumps(payload.model_dump(mode="json", exclude_unset=True), default=str)
     return await fetch_json(
         db,
         "SELECT app.guide_set_availability(CAST(:uid AS uuid), CAST(:body AS jsonb))",
+        {"uid": uid, "body": body},
+    )
+
+
+# ---- Step 2: schedules per tour and blocked time ---------------------------------------
+
+
+@router.get("/me/tours/{tour_id}/schedules", dependencies=[access.SESSION])
+async def tour_schedules(
+    tour_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """A tour's recurring schedules, each with how many starts it has open."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_list_schedules(CAST(:uid AS uuid), CAST(:tour AS uuid))",
+        {"uid": uid, "tour": tour_id},
+    )
+
+
+@router.put("/me/tours/{tour_id}/schedules", dependencies=[access.SESSION, limit("guide-write")])
+async def save_tour_schedule(
+    tour_id: str,
+    payload: TourScheduleIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Create or change one schedule and fill its next 120 days. Booked starts are never moved."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_save_schedule(CAST(:uid AS uuid), CAST(:tour AS uuid), CAST(:body AS jsonb))",
+        {"uid": uid, "tour": tour_id, "body": _payload(payload)},
+    )
+
+
+@router.delete("/me/schedules/{schedule_id}", dependencies=[access.SESSION, limit("guide-write")])
+async def delete_tour_schedule(
+    schedule_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Stop a schedule. Its empty future starts go; starts with a booking stay."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_delete_schedule(CAST(:uid AS uuid), CAST(:schedule AS uuid))",
+        {"uid": uid, "schedule": schedule_id},
+    )
+
+
+@router.get("/me/blocks", dependencies=[access.SESSION])
+async def my_blocks(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Blocked time from now on."""
+    uid = await _uid(request, db)
+    return await fetch_json(db, "SELECT app.guide_list_blocks(CAST(:uid AS uuid))", {"uid": uid})
+
+
+@router.post("/me/blocks", dependencies=[access.SESSION, limit("guide-write")])
+async def add_block(
+    payload: BusyBlockIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Block time. Refused over a live booking, so no traveller is stranded."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_add_block(CAST(:uid AS uuid), CAST(:body AS jsonb))",
         {"uid": uid, "body": _payload(payload)},
     )
+
+
+@router.delete("/me/blocks/{block_id}", dependencies=[access.SESSION, limit("guide-write")])
+async def delete_block(
+    block_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_delete_block(CAST(:uid AS uuid), CAST(:block AS uuid))",
+        {"uid": uid, "block": block_id},
+    )
+
+
+@router.post("/ops/generate-slots", dependencies=[access.JOB])
+async def generate_all_slots(db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    """Nightly: keep every live schedule filled 120 days ahead."""
+    return await fetch_json(db, "SELECT app.guide_generate_all_slots()", {})
+
+
+@router.post("/ops/min-group-check", dependencies=[access.JOB])
+async def min_group_check(db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    """Hourly: cancel, with the reason, shared runs that missed their minimum group."""
+    return await fetch_json(db, "SELECT app.guide_min_group_check()", {})
 
 
 @router.get("/me/requests", dependencies=[access.SESSION])

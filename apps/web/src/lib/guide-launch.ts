@@ -23,7 +23,15 @@ export function launchSteps(
     },
     { key: "launchTour", done: tours.length > 0, href: "/guide/tours" },
     { key: "launchPublish", done: tours.some((tour) => tour.status === "published"), href: "/guide/tours" },
-    { key: "launchTimes", done: Boolean(availability?.pattern.length), href: "/guide/calendar" },
+    {
+      key: "launchTimes",
+      // A weekly rhythm or a schedule on any tour both say when the guide works.
+      done:
+        Boolean(availability?.pattern.length) ||
+        Boolean(availability?.schedules) ||
+        tours.some((tour) => (tour.schedules?.length ?? 0) > 0),
+      href: "/guide/calendar",
+    },
     { key: "launchDates", done: tours.some((tour) => tour.upcoming_slots > 0), href: "/guide/tours" },
   ];
   if (profile.tier === "licensed") {

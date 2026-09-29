@@ -9,13 +9,13 @@ The policy model is described in [authorization.md](authorization.md).
 | `admin` | 108 |
 | `admin-signin` | 2 |
 | `dev` | 1 |
-| `job` | 7 |
+| `job` | 9 |
 | `public` | 44 |
-| `session` | 185 |
+| `session` | 191 |
 | `signature` | 1 |
 | `token` | 6 |
 | `verified` | 7 |
-| **Total** | **376** |
+| **Total** | **384** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -204,6 +204,9 @@ The policy model is described in [authorization.md](authorization.md).
 | PUT | `/api/v1/guides/me/agreement` | `session` |
 | GET | `/api/v1/guides/me/availability` | `session` |
 | PUT | `/api/v1/guides/me/availability` | `session` |
+| GET | `/api/v1/guides/me/blocks` | `session` |
+| POST | `/api/v1/guides/me/blocks` | `session` |
+| DELETE | `/api/v1/guides/me/blocks/{block_id}` | `session` |
 | GET | `/api/v1/guides/me/days` | `session` |
 | GET | `/api/v1/guides/me/days/{day_id}` | `session` |
 | POST | `/api/v1/guides/me/days/{day_id}/complete` | `session` |
@@ -220,11 +223,16 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/guides/me/proposals/{proposal_id}/withdraw` | `session` |
 | GET | `/api/v1/guides/me/requests` | `session` |
 | POST | `/api/v1/guides/me/requests/{booking_id}/respond` | `session` |
+| DELETE | `/api/v1/guides/me/schedules/{schedule_id}` | `session` |
 | POST | `/api/v1/guides/me/submit` | `session` |
 | GET | `/api/v1/guides/me/tours` | `session` |
 | PUT | `/api/v1/guides/me/tours` | `session` |
 | POST | `/api/v1/guides/me/tours/{tour_id}/publish` | `session` |
+| GET | `/api/v1/guides/me/tours/{tour_id}/schedules` | `session` |
+| PUT | `/api/v1/guides/me/tours/{tour_id}/schedules` | `session` |
 | POST | `/api/v1/guides/me/tours/{tour_id}/slots` | `session` |
+| POST | `/api/v1/guides/ops/generate-slots` | `job` |
+| POST | `/api/v1/guides/ops/min-group-check` | `job` |
 | GET | `/api/v1/guides/places/{place_slug}/contributors` | `public` |
 | GET | `/api/v1/guides/programme` | `public` |
 | POST | `/api/v1/guides/reports` | `session` |
