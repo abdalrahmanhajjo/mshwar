@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ArrowRight, Award, BadgeCheck, Globe, Loader2, MapPin, Search, X } from "lucide-react";
+import { ArrowRight, Award, BadgeCheck, Globe, Loader2, MapPin, Route, Search, X } from "lucide-react";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { useGuideJoinCopy } from "@/lib/guide-join-copy";
 import { fetchGuideDirectory, type PublicGuide } from "@/lib/guides";
 import { matchesQuery } from "@/lib/place-search";
 import { useSearchCopy } from "@/lib/search-copy";
+import { useToursCopy } from "@/lib/tours-copy";
 import { cn, focusRing } from "@/lib/utils";
 
 export type GuideFilter = { query: string; region: string; language: string };
@@ -113,6 +114,7 @@ export function GuideCard({ guide, copy }: { guide: PublicGuide; copy: GuideCopy
 /** Who is available to run a day with you. Approved guides only. */
 export function GuideDirectory({ initial }: { initial?: PublicGuide[] }) {
   const copy = useGuideCopy();
+  const tours = useToursCopy();
   const [guides, setGuides] = React.useState<PublicGuide[]>(initial ?? []);
   const [loading, setLoading] = React.useState(!initial);
   const search = useSearchCopy();
@@ -151,7 +153,19 @@ export function GuideDirectory({ initial }: { initial?: PublicGuide[] }) {
 
   return (
     <div className="grid gap-8">
-      <PageHeader eyebrow={copy.kicker} title={copy.directoryTitle} description={copy.directoryBody} />
+      <PageHeader
+        eyebrow={copy.kicker}
+        title={copy.directoryTitle}
+        description={copy.directoryBody}
+        actions={
+          <Button asChild variant="outline">
+            <LocaleLink href="/tours">
+              <Route aria-hidden />
+              {tours.browseTours}
+            </LocaleLink>
+          </Button>
+        }
+      />
       <JoinBanner />
       {loading ? (
         <div className="grid place-items-center py-16 text-text-muted">

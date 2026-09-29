@@ -58,6 +58,8 @@ JOBS: dict[str, Job] = {
     "sweep": Job("sweep", "/api/v1/partners/ops/sweep", daily_at=time(3, 0), run_at_start=True),
     # Sends queued email and in-app notifications, including the sweep's warnings.
     "dispatch": Job("dispatch", "/api/v1/notifications/dispatch", every=timedelta(minutes=1)),
+    # Expires unanswered requests and lapsed holds, and tells the traveller (062).
+    "expire-holds": Job("expire-holds", "/api/v1/checkout/ops/expire-holds", every=timedelta(minutes=15)),
     # Keeps every guide schedule filled 120 days ahead (061). Also at start-up.
     "guide-slots": Job("guide-slots", "/api/v1/guides/ops/generate-slots", daily_at=time(2, 30), run_at_start=True),
     # Cancels, with the reason, shared guide runs that missed their minimum group (061).

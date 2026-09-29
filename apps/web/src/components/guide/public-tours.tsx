@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Banknote, Clock, Globe, Loader2, MapPin, Route, Send, Users } from "lucide-react";
+import { Banknote, CalendarDays, Clock, Globe, Loader2, MapPin, Route, Send, Users } from "lucide-react";
 import { useAuth } from "@/components/shell/auth-provider";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { useLocale } from "@/components/shell/locale-provider";
@@ -15,6 +15,7 @@ import { interpolate } from "@/i18n/catalogues";
 import { formatCurrency, formatDate } from "@/i18n/format";
 import { ApiError } from "@/lib/api/client";
 import { useGuideScheduleCopy } from "@/lib/guide-schedule-copy";
+import { useTourBookingCopy } from "@/lib/tour-booking-copy";
 import { useGuideWorkCopy } from "@/lib/guide-work-copy";
 import { requestTour, type PublicTour } from "@/lib/guide-work";
 import type { PublicGuide } from "@/lib/guides";
@@ -29,6 +30,7 @@ function newKey() {
 function TourPanel({ guide, tour }: { guide: PublicGuide; tour: PublicTour }) {
   const copy = useGuideWorkCopy();
   const scheduleCopy = useGuideScheduleCopy();
+  const bookingCopy = useTourBookingCopy();
   const { locale } = useLocale();
   const { user } = useAuth();
   const [slot, setSlot] = React.useState(tour.next_slots[0]?.id ?? "");
@@ -60,7 +62,15 @@ function TourPanel({ guide, tour }: { guide: PublicGuide; tour: PublicTour }) {
   return (
     <li className="grid gap-5 rounded-card border border-border-subtle bg-surface-raised p-5 shadow-sm md:grid-cols-[1fr_20rem] md:p-6">
       <div className="grid content-start gap-3">
-        <h3 className="title-card">{tour.title}</h3>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h3 className="title-card">{tour.title}</h3>
+          <Button asChild size="sm">
+            <LocaleLink href={`/tours/${tour.slug}/book`}>
+              <CalendarDays aria-hidden />
+              {bookingCopy.bookNow}
+            </LocaleLink>
+          </Button>
+        </div>
         <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-text-muted">
           <span className="inline-flex items-center gap-1">
             <Clock className="size-3.5" aria-hidden />

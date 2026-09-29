@@ -244,6 +244,7 @@ a crontab:
 | --------------------- | ------------------------------------ | ---------------------------------------------------------------------- |
 | Partner sweep         | 03:00 Beirut time daily, and at boot | Expiry warnings (30 and 7 days), lapses, transport and venue re-checks |
 | Notification dispatch | Every minute                         | Sends queued email and in-app notifications                            |
+| Expire holds          | Every 15 minutes                     | Lapses unanswered requests and unpaid holds; tells the traveller       |
 | Guide slots           | 02:30 Beirut time daily, and at boot | Keeps every tour schedule filled 120 days ahead                        |
 | Guide minimum group   | Every hour                           | Cancels, with the reason, shared runs that missed their minimum group  |
 

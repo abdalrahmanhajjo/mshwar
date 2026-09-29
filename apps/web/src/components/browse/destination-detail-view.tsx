@@ -1,5 +1,7 @@
 "use client";
 
+import type * as React from "react";
+
 import { ArrowLeft, ArrowUpRight, Clock, Info, MapPin, Route } from "lucide-react";
 import { CatalogImage } from "@/components/browse/catalog-image";
 import { ExperienceCard } from "@/components/browse/experience-card";
@@ -25,6 +27,7 @@ export function DestinationDetailView({
   faqs = [],
   faqTitle,
   guide,
+  tours,
 }: {
   destination: Destination;
   experiences: Experience[];
@@ -39,6 +42,8 @@ export function DestinationDetailView({
   faqTitle?: string;
   /** The approved editorial overview, when there is one. */
   guide?: GuideBlock;
+  /** Guided tours that start here, rendered on the server. */
+  tours?: React.ReactNode;
 }) {
   const copy = useBrowseCopy();
   const featured = experiences[0];
@@ -197,6 +202,8 @@ export function DestinationDetailView({
           </div>
         </div>
       ) : null}
+
+      {tours}
 
       <DestinationServices slug={destination.slug} name={destination.name} />
 

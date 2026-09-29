@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
 import { BlockedTime } from "@/components/guide/blocked-time";
+import { BookingSettings } from "@/components/guide/booking-settings";
 import { ApprovedGuide } from "@/components/guide/guide-provider";
 import { TourSchedules } from "@/components/guide/schedule-editor";
 import { useLocale } from "@/components/shell/locale-provider";
@@ -171,7 +172,10 @@ function Calendar() {
           <ul className="grid gap-6 divide-y divide-border-subtle">
             {tours.map((tour) => (
               <li key={tour.id} className="pt-4 first:pt-0">
-                <TourSchedules tour={tour} />
+                <div className="grid gap-4">
+                  <TourSchedules tour={tour} />
+                  <BookingSettings tour={tour} />
+                </div>
               </li>
             ))}
           </ul>

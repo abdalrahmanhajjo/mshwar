@@ -1,5 +1,6 @@
 import type { Destination, Experience } from "@/lib/catalog";
 import type { Locale } from "@/lib/locale";
+import type { PublicTourPage, TourCard } from "@/lib/tour-booking";
 import { SITE_NAME, SITE_URL, siteUrl } from "@/lib/site";
 import { absoluteImage } from "@/lib/seo/metadata";
 
@@ -152,6 +153,75 @@ export function experienceSchema(experience: Experience, destination: Destinatio
       : undefined,
     offers: offer,
     publicAccess: experience.kind === "attraction" ? true : undefined,
+  };
+}
+
+/**
+ * A guided tour. The offer is the published price (none for a free tour's "Free"); the rating
+ * appears only with released reviews behind it; the itinerary is the tour's real route.
+ */
+export function tourSchema(tour: PublicTourPage, locale: Locale): Thing {
+  const url = siteUrl(`/tours/${tour.slug}`, locale);
+  const images = (tour.photos ?? []).map((photo) => photo.url).filter((image): image is string => Boolean(image));
+  const rating = tour.rating;
+  return {
+    "@type": "TouristTrip",
+    "@id": `${url}#tour`,
+    name: tour.title,
+    description: tour.description || undefined,
+    url,
+    image: images.length ? images : undefined,
+    inLanguage: tour.languages.length ? tour.languages : undefined,
+    provider: {
+      "@type": "Person",
+      name: tour.guide.display_name,
+      url: siteUrl(`/guides/${tour.guide.slug}`, locale),
+    },
+    offers:
+      typeof tour.price_minor === "number"
+        ? {
+            "@type": "Offer",
+            price: (tour.price_minor / 100).toFixed(2),
+            priceCurrency: "USD",
+            url: siteUrl(`/tours/${tour.slug}/book`, locale),
+            availability: tour.next_start ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
+          }
+        : undefined,
+    aggregateRating:
+      rating && rating.count > 0 && rating.average !== null
+        ? { "@type": "AggregateRating", ratingValue: rating.average, reviewCount: rating.count, bestRating: 5 }
+        : undefined,
+    itinerary: tour.route.length
+      ? {
+          "@type": "ItemList",
+          numberOfItems: tour.route.length,
+          itemListElement: tour.route.map((stop) => ({
+            "@type": "ListItem",
+            position: stop.position,
+            item: {
+              "@type": "TouristAttraction",
+              name: stop.title,
+              url: siteUrl(`/experiences/${stop.slug}`, locale),
+            },
+          })),
+        }
+      : undefined,
+  };
+}
+
+/** A list of tours, for the marketplace and destination pages. */
+export function tourListSchema(name: string, tours: TourCard[], locale: Locale): Thing | null {
+  if (!tours.length) return null;
+  return {
+    "@type": "ItemList",
+    name,
+    numberOfItems: tours.length,
+    itemListElement: tours.map((tour, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: siteUrl(`/tours/${tour.slug}`, locale),
+      name: tour.title,
+    })),
   };
 }
 

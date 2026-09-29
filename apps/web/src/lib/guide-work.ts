@@ -1,6 +1,7 @@
 import { apiRequest } from "@/lib/api/client";
 import type { PortalBooking, PortalExperience } from "@/lib/portal";
 import type { GuideTier } from "@/lib/guides";
+import type { BookingTerms } from "@/lib/tour-booking";
 
 /** One stop on a tour's route: a published catalogue place. */
 export type TourStop = {
@@ -24,6 +25,7 @@ export type GuideTour = PortalExperience & {
   route: TourStop[];
   upcoming_slots: number;
   schedules?: TourSchedule[];
+  booking?: BookingTerms;
 };
 
 /** One recurring rule for one tour (guide plan step 2). Monday = 0. */
@@ -112,6 +114,7 @@ export type PublicTour = {
   price_minor: number | null;
   price_unit: "person" | "group" | null;
   route: TourStop[];
+  booking?: BookingTerms;
   next_slots: { id: string; starts_at: string; remaining: number; private?: boolean; min_group?: number }[];
 };
 

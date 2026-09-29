@@ -14,10 +14,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+from datetime import date
 from typing import Any
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import access, imagekit
@@ -29,6 +30,7 @@ from app.core.storage import delete_private_bytes, media_url, put_private_bytes
 from app.core.uploads import inspect_or_reject, validate_upload
 from app.dependencies import get_auth_db
 from app.schemas.guides import (
+    BookingSettingsIn,
     BusyBlockIn,
     EngagementAnswerIn,
     EngagementCancelIn,
@@ -46,6 +48,11 @@ from app.schemas.guides import (
     HireTermsIn,
     ProposalIn,
     ProposalPhotoIn,
+    RescheduleAnswerIn,
+    RescheduleIn,
+    TourBookingIn,
+    TourCancelIn,
+    TourContentIn,
     TourRequestIn,
     TourRequestResponseIn,
     TourScheduleIn,
@@ -337,6 +344,239 @@ async def delete_block(
         db,
         "SELECT app.guide_delete_block(CAST(:uid AS uuid), CAST(:block AS uuid))",
         {"uid": uid, "block": block_id},
+    )
+
+
+# ---- Step 3: how a tour is booked -------------------------------------------------------
+
+
+@router.put("/me/tours/{tour_id}/booking-settings", dependencies=[access.SESSION, limit("guide-write")])
+async def set_booking_settings(
+    tour_id: str,
+    payload: BookingSettingsIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Instant or request, the reply window, the policy, a child price and extras. A host stays free."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_set_booking_settings(CAST(:uid AS uuid), CAST(:tour AS uuid), CAST(:body AS jsonb))",
+        {"uid": uid, "tour": tour_id, "body": _payload(payload)},
+    )
+
+
+@router.get("/me/bookings/{booking_id}", dependencies=[access.SESSION])
+async def guide_booking(
+    booking_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """One booking on the guide's tours, with who is coming, extras and the traveller's note."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_tour_booking(CAST(:uid AS uuid), CAST(:booking AS uuid))",
+        {"uid": uid, "booking": booking_id},
+    )
+
+
+# ---- Step 4: the tours marketplace ---------------------------------------------------------
+
+
+def _with_tour_photos(value: Any) -> Any:
+    """Turn stored photo keys into viewable URLs on a tour card, a tour page or a list of cards."""
+    if isinstance(value, list):
+        return [_with_tour_photos(item) for item in value]
+    if isinstance(value, dict):
+        for key in ("photo", "photos"):
+            item = value.get(key)
+            for photo in item if isinstance(item, list) else [item] if isinstance(item, dict) else []:
+                photo["url"] = media_url(photo.pop("provider", None), photo.pop("object_key", None))
+        if isinstance(value.get("tours"), list):
+            value["tours"] = _with_tour_photos(value["tours"])
+    return value
+
+
+@router.get("/tours", dependencies=[access.PUBLIC, limit("search")])
+async def search_tours(
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+    q: str | None = Query(default=None, max_length=80),
+    destination: str | None = Query(default=None, max_length=80),
+    language: str | None = Query(default=None, max_length=12),
+    day: date | None = Query(default=None, alias="date"),  # noqa: B008
+    max_duration: int | None = Query(default=None, ge=30, le=1440),
+    max_price: int | None = Query(default=None, ge=0, le=100_000_000),
+    instant: bool = False,
+    sort: str = Query(default="recommended", pattern="^(recommended|price|duration|soonest)$"),
+    limit_to: int = Query(default=60, ge=1, le=100, alias="limit"),
+) -> Any:
+    """Published tours by approved guides, filtered and sorted. Ratings are only released reviews."""
+    filters = {
+        "q": q,
+        "destination": destination,
+        "language": language,
+        "date": day.isoformat() if day else None,
+        "max_duration": max_duration,
+        "max_price": max_price,
+        "instant": instant,
+        "sort": sort,
+        "limit": limit_to,
+    }
+    row = await fetch_json(
+        db,
+        "SELECT app.public_tours_search(CAST(:filters AS jsonb))",
+        {"filters": json.dumps({k: v for k, v in filters.items() if v is not None})},
+    )
+    return _with_tour_photos(row)
+
+
+@router.get("/tour-slugs", dependencies=[access.PUBLIC])
+async def tour_slugs(db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    """Every listed tour, for the sitemap."""
+    return await fetch_json(db, "SELECT app.public_tour_slugs()", {})
+
+
+@router.get("/destinations/{destination_slug}/tours", dependencies=[access.PUBLIC])
+async def destination_tours(
+    destination_slug: str,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Guided tours that start in one destination, for its page."""
+    rows = await fetch_json(db, "SELECT app.public_destination_tours(:slug, 6)", {"slug": destination_slug})
+    return _with_tour_photos(rows or [])
+
+
+@router.put("/me/tours/{tour_id}/content", dependencies=[access.SESSION, limit("guide-write")])
+async def set_tour_content(
+    tour_id: str,
+    payload: TourContentIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Highlights, questions and answers, and accessibility for the tour page."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_set_tour_content(CAST(:uid AS uuid), CAST(:tour AS uuid), CAST(:body AS jsonb))",
+        {"uid": uid, "tour": tour_id, "body": _payload(payload)},
+    )
+
+
+@router.get("/tours/{tour_slug}", dependencies=[access.PUBLIC])
+async def public_tour(
+    tour_slug: str,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """One published tour: photos, highlights, route, guide, real rating and how it books."""
+    row = await fetch_json(db, "SELECT app.public_tour(:slug)", {"slug": tour_slug})
+    if row is None:
+        raise HTTPException(status_code=404, detail="Tour not found")
+    return _with_tour_photos(row)
+
+
+@router.get("/tours/{tour_slug}/availability", dependencies=[access.PUBLIC])
+async def tour_availability(
+    tour_slug: str,
+    month: str = Query(pattern=r"^\d{4}-(0[1-9]|1[0-2])$"),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """A month of bookable starts, each day with its times and seats left."""
+    row = await fetch_json(
+        db,
+        "SELECT app.public_tour_availability(:slug, CAST(:month AS date))",
+        {"slug": tour_slug, "month": date.fromisoformat(f"{month}-01")},
+    )
+    if row is None:
+        raise HTTPException(status_code=404, detail="Tour not found")
+    return row
+
+
+@router.post("/tours/{tour_slug}/book", dependencies=[access.VERIFIED, limit("booking"), limit("booking-ip")])
+async def book_tour(
+    tour_slug: str,
+    payload: TourBookingIn,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+    user: dict[str, Any] = Depends(require_verified_user),  # noqa: B008
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+) -> Any:
+    """Book a start. Instant tours are confirmed at once; others are a request. Paid on the day."""
+    key = (idempotency_key or payload.idempotency_key or f"tour-{uuid4().hex}").strip()
+    body = payload.model_dump(mode="json", exclude={"idempotency_key"})
+    digest = hashlib.sha256(json.dumps({"tour": tour_slug, **body}, sort_keys=True).encode("utf-8")).hexdigest()
+    return await fetch_json(
+        db,
+        "SELECT app.tour_book(CAST(:uid AS uuid), :slug, CAST(:body AS jsonb), :key, :hash)",
+        {
+            "uid": str(user["user_id"]),
+            "slug": tour_slug,
+            "body": json.dumps(body),
+            "key": key,
+            "hash": digest,
+        },
+    )
+
+
+@router.get("/bookings/{booking_id}", dependencies=[access.SESSION])
+async def my_tour_booking(
+    booking_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """The traveller's own tour booking: code, time, who is coming, the total and the policy."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.traveller_tour_booking(CAST(:uid AS uuid), CAST(:booking AS uuid))",
+        {"uid": uid, "booking": booking_id},
+    )
+
+
+@router.post("/bookings/{booking_id}/cancel", dependencies=[access.SESSION, limit("booking")])
+async def cancel_tour_booking(
+    booking_id: str,
+    payload: TourCancelIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Either side cancels, with a reason. Late traveller cancellations are recorded as late."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.tour_cancel(CAST(:uid AS uuid), CAST(:booking AS uuid), :reason)",
+        {"uid": uid, "booking": booking_id, "reason": payload.reason},
+    )
+
+
+@router.post("/bookings/{booking_id}/reschedule", dependencies=[access.SESSION, limit("booking")])
+async def propose_reschedule(
+    booking_id: str,
+    payload: RescheduleIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Propose another start of the same tour. The other side accepts or declines."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.tour_propose_reschedule(CAST(:uid AS uuid), CAST(:booking AS uuid), CAST(:slot AS uuid), :message)",
+        {"uid": uid, "booking": booking_id, "slot": payload.slot_id, "message": payload.message},
+    )
+
+
+@router.post("/bookings/{booking_id}/reschedule/answer", dependencies=[access.SESSION, limit("booking")])
+async def answer_reschedule(
+    booking_id: str,
+    payload: RescheduleAnswerIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Accept (the booking moves, with a new code) or decline another side's proposal."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.tour_answer_reschedule(CAST(:uid AS uuid), CAST(:booking AS uuid), :accept)",
+        {"uid": uid, "booking": booking_id, "accept": payload.accept},
     )
 
 

@@ -14,7 +14,10 @@ import {
   Send,
   Trash2,
   Users,
+  FileText,
+  ExternalLink,
 } from "lucide-react";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { useLocale } from "@/components/shell/locale-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,6 +44,8 @@ import { ApiError } from "@/lib/api/client";
 import { useGuideWorkCopy, type GuideWorkCopy } from "@/lib/guide-work-copy";
 import { useGuideJoinCopy } from "@/lib/guide-join-copy";
 import { TOUR_TEMPLATES } from "@/lib/guide-templates";
+import { TourContentEditor } from "@/components/guide/tour-content-editor";
+import { useToursCopy } from "@/lib/tours-copy";
 import { fetchMyTours, openTourDates, publishTour, saveTour, type GuideTour, type TourInput } from "@/lib/guide-work";
 import type { MyGuideProfile } from "@/lib/guides";
 import { matchesQuery, type PlaceHit } from "@/lib/place-search";
@@ -547,6 +552,8 @@ function TourCard({
   const copy = useGuideWorkCopy();
   const { locale } = useLocale();
   const [busy, setBusy] = React.useState<null | "publish" | "dates" | "photo">(null);
+  const [pageOpen, setPageOpen] = React.useState(false);
+  const toursCopy = useToursCopy();
   const [message, setMessage] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const amount = tour.price?.amount_minor ?? 0;
@@ -700,7 +707,26 @@ function TourCard({
           {busy === "dates" ? <Loader2 className="animate-spin" aria-hidden /> : <CalendarPlus aria-hidden />}
           {copy.tourOpenDates}
         </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          aria-expanded={pageOpen}
+          onClick={() => setPageOpen((open) => !open)}
+        >
+          <FileText aria-hidden />
+          {toursCopy.contentTitle}
+        </Button>
+        {tour.status === "published" ? (
+          <Button asChild size="sm" variant="ghost">
+            <LocaleLink href={`/tours/${tour.slug}`}>
+              <ExternalLink aria-hidden />
+              {toursCopy.viewPage}
+            </LocaleLink>
+          </Button>
+        ) : null}
       </div>
+      {pageOpen ? <TourContentEditor tour={tour} /> : null}
     </li>
   );
 }

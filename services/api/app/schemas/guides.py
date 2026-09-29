@@ -399,3 +399,77 @@ class GuideDocumentUploadIn(BaseModel):
         if value not in DOCUMENT_KINDS:
             raise ValueError("unknown document kind")
         return value
+
+
+class TourAddonIn(BaseModel):
+    """A fixed-price extra a guide offers on a tour (pickup, tasting, tickets...)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str | None = None
+    name: str = Field(min_length=2, max_length=80)
+    price_minor: int = Field(default=0, ge=0, le=100_000_000)
+    unit: Literal["person", "booking"] = "booking"
+
+
+class BookingSettingsIn(BaseModel):
+    """How one tour is booked: instant or request, the policy, a child price and extras."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    instant_booking: bool = False
+    request_ttl_hours: int = Field(default=24, ge=12, le=48)
+    policy: Literal["flexible", "moderate", "strict"] = "flexible"
+    child_price_minor: int | None = Field(default=None, ge=0, le=100_000_000)
+    child_age_max: int | None = Field(default=None, ge=1, le=17)
+    addons: list[TourAddonIn] = Field(default_factory=list, max_length=12)
+
+
+class TourBookingIn(BaseModel):
+    """A traveller books a start: who is coming, in which language, extras and a note."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    slot_id: str
+    adults: int = Field(ge=1, le=60)
+    children: int = Field(default=0, ge=0, le=60)
+    language: str | None = Field(default=None, max_length=12)
+    addons: list[str] = Field(default_factory=list, max_length=12)
+    note: str = Field(default="", max_length=1000)
+    idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)
+
+
+class TourCancelIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    reason: str = Field(min_length=2, max_length=500)
+
+
+class RescheduleIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    slot_id: str
+    message: str = Field(default="", max_length=500)
+
+
+class RescheduleAnswerIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    accept: bool
+
+
+class TourFaqIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    question: str = Field(min_length=3, max_length=200)
+    answer: str = Field(min_length=2, max_length=1000)
+
+
+class TourContentIn(BaseModel):
+    """What the tour page says beyond the listing: highlights, questions and accessibility."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    highlights: list[str] = Field(default_factory=list, max_length=8)
+    faq: list[TourFaqIn] = Field(default_factory=list, max_length=10)
+    accessibility: str = Field(default="", max_length=1000)

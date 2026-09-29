@@ -10,12 +10,12 @@ The policy model is described in [authorization.md](authorization.md).
 | `admin-signin` | 2 |
 | `dev` | 1 |
 | `job` | 9 |
-| `public` | 44 |
-| `session` | 191 |
+| `public` | 49 |
+| `session` | 198 |
 | `signature` | 1 |
 | `token` | 6 |
-| `verified` | 7 |
-| **Total** | **384** |
+| `verified` | 8 |
+| **Total** | **397** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -194,6 +194,11 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/groups/trips/{trip_id}/tally` | `actor` |
 | PUT | `/api/v1/groups/trips/{trip_id}/votes` | `actor` |
 | GET | `/api/v1/guides` | `public` |
+| GET | `/api/v1/guides/bookings/{booking_id}` | `session` |
+| POST | `/api/v1/guides/bookings/{booking_id}/cancel` | `session` |
+| POST | `/api/v1/guides/bookings/{booking_id}/reschedule` | `session` |
+| POST | `/api/v1/guides/bookings/{booking_id}/reschedule/answer` | `session` |
+| GET | `/api/v1/guides/destinations/{destination_slug}/tours` | `public` |
 | POST | `/api/v1/guides/engagements` | `verified` |
 | GET | `/api/v1/guides/engagements/{engagement_id}` | `session` |
 | POST | `/api/v1/guides/engagements/{engagement_id}/cancel` | `session` |
@@ -207,6 +212,7 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/guides/me/blocks` | `session` |
 | POST | `/api/v1/guides/me/blocks` | `session` |
 | DELETE | `/api/v1/guides/me/blocks/{block_id}` | `session` |
+| GET | `/api/v1/guides/me/bookings/{booking_id}` | `session` |
 | GET | `/api/v1/guides/me/days` | `session` |
 | GET | `/api/v1/guides/me/days/{day_id}` | `session` |
 | POST | `/api/v1/guides/me/days/{day_id}/complete` | `session` |
@@ -227,6 +233,8 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/guides/me/submit` | `session` |
 | GET | `/api/v1/guides/me/tours` | `session` |
 | PUT | `/api/v1/guides/me/tours` | `session` |
+| PUT | `/api/v1/guides/me/tours/{tour_id}/booking-settings` | `session` |
+| PUT | `/api/v1/guides/me/tours/{tour_id}/content` | `session` |
 | POST | `/api/v1/guides/me/tours/{tour_id}/publish` | `session` |
 | GET | `/api/v1/guides/me/tours/{tour_id}/schedules` | `session` |
 | PUT | `/api/v1/guides/me/tours/{tour_id}/schedules` | `session` |
@@ -238,6 +246,11 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/guides/reports` | `session` |
 | POST | `/api/v1/guides/reviews` | `session` |
 | GET | `/api/v1/guides/reviews/inbox` | `session` |
+| GET | `/api/v1/guides/tour-slugs` | `public` |
+| GET | `/api/v1/guides/tours` | `public` |
+| GET | `/api/v1/guides/tours/{tour_slug}` | `public` |
+| GET | `/api/v1/guides/tours/{tour_slug}/availability` | `public` |
+| POST | `/api/v1/guides/tours/{tour_slug}/book` | `verified` |
 | POST | `/api/v1/guides/tours/{tour_slug}/request` | `verified` |
 | GET | `/api/v1/guides/trips/{trip_id}/engagements` | `session` |
 | GET | `/api/v1/guides/{slug}` | `public` |
