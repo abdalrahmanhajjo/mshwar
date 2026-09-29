@@ -4,6 +4,7 @@ import type { Locale } from "@/lib/locale";
 /** Copy for the traveller homepage and the traveller header / footer. */
 export type HomeKey =
   | "planYourTrip"
+  | "findAGuide"
   | "heroEyebrow"
   | "heroTitleLead"
   | "heroTitleAccent"
@@ -116,6 +117,7 @@ export type HomeKey =
 export const homeCopy: Record<Locale, Record<HomeKey, string>> = {
   en: {
     planYourTrip: "Plan your trip",
+    findAGuide: "Find a guide",
     heroEyebrow: "Mountains, coast, cities and villages",
     heroTitleLead: "Find your next",
     heroTitleAccent: "chapter",
@@ -231,6 +233,7 @@ export const homeCopy: Record<Locale, Record<HomeKey, string>> = {
   },
   ar: {
     planYourTrip: "خطّط لرحلتك",
+    findAGuide: "اختر مرشدك",
     heroEyebrow: "جبال، ساحل، مدن وقرى",
     heroTitleLead: "اكتشف",
     heroTitleAccent: "فصلك",
@@ -345,6 +348,7 @@ export const homeCopy: Record<Locale, Record<HomeKey, string>> = {
   },
   fr: {
     planYourTrip: "Planifier mon voyage",
+    findAGuide: "Trouver un guide",
     heroEyebrow: "Montagnes, côte, villes et villages",
     heroTitleLead: "Écrivez votre prochain",
     heroTitleAccent: "chapitre",

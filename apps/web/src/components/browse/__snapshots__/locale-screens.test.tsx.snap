@@ -17407,10 +17407,35 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
           class="flex items-center justify-end gap-1.5 sm:gap-3"
         >
           <a
-            class="hidden h-10 items-center rounded-pill bg-brand px-4 text-sm font-semibold text-brand-foreground transition-colors duration-200 hover:bg-brand/90 md:inline-flex outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-            href="/ar/plan"
+            class="hidden h-10 items-center gap-2 rounded-pill bg-brand px-4 text-sm font-semibold text-brand-foreground transition-colors duration-200 hover:bg-brand/90 md:inline-flex outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            href="/ar/guides"
           >
-            خطّط لرحلتك
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-user-round-check size-4"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M2 21a8 8 0 0 1 13.292-6"
+              />
+              <circle
+                cx="10"
+                cy="8"
+                r="5"
+              />
+              <path
+                d="m16 19 2 2 4-4"
+              />
+            </svg>
+            اختر مرشدك
           </a>
           <div
             aria-label="اللغة"
@@ -17999,10 +18024,35 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
           class="flex items-center justify-end gap-1.5 sm:gap-3"
         >
           <a
-            class="hidden h-10 items-center rounded-pill bg-brand px-4 text-sm font-semibold text-brand-foreground transition-colors duration-200 hover:bg-brand/90 md:inline-flex outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-            href="/plan"
+            class="hidden h-10 items-center gap-2 rounded-pill bg-brand px-4 text-sm font-semibold text-brand-foreground transition-colors duration-200 hover:bg-brand/90 md:inline-flex outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            href="/guides"
           >
-            Plan your trip
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-user-round-check size-4"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M2 21a8 8 0 0 1 13.292-6"
+              />
+              <circle
+                cx="10"
+                cy="8"
+                r="5"
+              />
+              <path
+                d="m16 19 2 2 4-4"
+              />
+            </svg>
+            Find a guide
           </a>
           <div
             aria-label="Language"
@@ -18591,10 +18641,35 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
           class="flex items-center justify-end gap-1.5 sm:gap-3"
         >
           <a
-            class="hidden h-10 items-center rounded-pill bg-brand px-4 text-sm font-semibold text-brand-foreground transition-colors duration-200 hover:bg-brand/90 md:inline-flex outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-            href="/fr/plan"
+            class="hidden h-10 items-center gap-2 rounded-pill bg-brand px-4 text-sm font-semibold text-brand-foreground transition-colors duration-200 hover:bg-brand/90 md:inline-flex outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            href="/fr/guides"
           >
-            Planifier mon voyage
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-user-round-check size-4"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M2 21a8 8 0 0 1 13.292-6"
+              />
+              <circle
+                cx="10"
+                cy="8"
+                r="5"
+              />
+              <path
+                d="m16 19 2 2 4-4"
+              />
+            </svg>
+            Trouver un guide
           </a>
           <div
             aria-label="Langue"
