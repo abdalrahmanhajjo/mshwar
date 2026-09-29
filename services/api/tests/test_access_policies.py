@@ -48,6 +48,8 @@ PUBLIC_ROUTES = {
     "GET /api/v1/guides/{slug}/tours",
     "GET /api/v1/guides/places/{place_slug}/contributors",
     "GET /api/v1/guides/{slug}/reviews",
+    # How many Founding Guide places are left: a count, nothing personal.
+    "GET /api/v1/guides/programme",
     "GET /api/v1/partners/public/{slug}",
     "GET /api/v1/transport/destinations/{slug}",
     "GET /api/v1/transport/between",

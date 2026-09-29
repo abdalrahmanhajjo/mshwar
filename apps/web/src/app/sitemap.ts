@@ -28,6 +28,7 @@ const SECTIONS: Entry[] = [
   { path: "/discover", priority: 0.7, changeFrequency: "weekly" },
   { path: "/drivers", priority: 0.7, changeFrequency: "weekly" },
   { path: "/guides", priority: 0.6, changeFrequency: "weekly" },
+  { path: "/guides/join", priority: 0.5, changeFrequency: "monthly" },
   { path: "/about", priority: 0.5, changeFrequency: "yearly" },
   { path: "/partners", priority: 0.3, changeFrequency: "yearly" },
   { path: "/contact", priority: 0.5, changeFrequency: "yearly" },

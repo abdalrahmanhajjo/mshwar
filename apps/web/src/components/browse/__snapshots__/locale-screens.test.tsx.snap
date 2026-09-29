@@ -17714,7 +17714,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in ar 1`] =
                 <li>
                   <a
                     class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                    href="/ar/guide"
+                    href="/ar/guides/join"
                   >
                     أرشِد معنا
                   </a>
@@ -18331,7 +18331,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in en 1`] =
                 <li>
                   <a
                     class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                    href="/guide"
+                    href="/guides/join"
                   >
                     Guide with us
                   </a>
@@ -18948,7 +18948,7 @@ exports[`MSHWAR-32 locale snapshots > renders traveller shell chrome in fr 1`] =
                 <li>
                   <a
                     class="inline-flex min-h-10 items-center rounded-sm text-text transition-colors hover:text-text/60 md:min-h-0 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                    href="/fr/guide"
+                    href="/fr/guides/join"
                   >
                     Guidez avec nous
                   </a>

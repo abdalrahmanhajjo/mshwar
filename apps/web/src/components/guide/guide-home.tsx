@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { GuideApplication } from "@/components/guide/guide-application";
 import { useGuide } from "@/components/guide/guide-provider";
+import type { MyGuideProfile } from "@/lib/guides";
 import { HireTerms } from "@/components/guide/hire-terms";
+import { FoundingBanner, LaunchChecklist } from "@/components/guide/launch-checklist";
 import { interpolate } from "@/i18n/catalogues";
 import { formatDate } from "@/i18n/format";
 import { useGuideWorkCopy } from "@/lib/guide-work-copy";
@@ -103,7 +105,7 @@ function UpcomingDays() {
   );
 }
 
-function Dashboard() {
+function Dashboard({ profile }: { profile: MyGuideProfile }) {
   const copy = useGuideWorkCopy();
   const { locale } = useLocale();
   const [summary, setSummary] = React.useState<Summary | null>(null);
@@ -144,6 +146,8 @@ function Dashboard() {
           </>
         }
       />
+      <FoundingBanner number={profile.founding_number} />
+      <LaunchChecklist profile={profile} />
       {summary === null ? (
         <div className="grid place-items-center py-10 text-text-muted">
           <Loader2 className="size-6 animate-spin" aria-hidden />
@@ -211,7 +215,7 @@ export function GuideHome() {
   }
   return (
     <div className="grid gap-10">
-      {profile?.status === "approved" && profile.organization_id ? <Dashboard /> : null}
+      {profile?.status === "approved" && profile.organization_id ? <Dashboard profile={profile} /> : null}
       <GuideApplication />
     </div>
   );

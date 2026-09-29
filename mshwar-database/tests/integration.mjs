@@ -20,6 +20,7 @@ import { testCatalogueLeisureTags, testCataloguePlaceTypes } from "./catalogue-p
 import { testTownsInGovernorates } from "./towns-in-governorates.mjs";
 import { testSourcedRestaurants } from "./sourced-restaurants.mjs";
 import { testPlaceImages } from "./place-images.mjs";
+import { testFoundingGuides } from "./founding-guides.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const db = new PGlite({ extensions: { postgis, vector, btree_gist, pg_trgm } });
 const report = [];
@@ -101,6 +102,9 @@ try {
   );
   await good("every place has a picture: its own photo, else its town's, marked as the area", () =>
     testPlaceImages(db),
+  );
+  await good("the first fifty approved guides are numbered Founding Guides, in order, for good", () =>
+    testFoundingGuides(db),
   );
   await sql("SELECT set_config('app.user_id',$1,false)", [alice]);
   await good("all app tables have forced RLS", async () =>

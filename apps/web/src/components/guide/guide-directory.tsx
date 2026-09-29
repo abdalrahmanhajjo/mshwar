@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { BadgeCheck, Globe, Loader2, MapPin, Search, X } from "lucide-react";
+import { ArrowRight, Award, BadgeCheck, Globe, Loader2, MapPin, Search, X } from "lucide-react";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { useDisplayNames } from "@/components/guide/pickers";
 import { interpolate } from "@/i18n/catalogues";
 import { useGuideCopy, type GuideCopy } from "@/lib/guide-copy";
+import { useGuideJoinCopy } from "@/lib/guide-join-copy";
 import { fetchGuideDirectory, type PublicGuide } from "@/lib/guides";
 import { matchesQuery } from "@/lib/place-search";
 import { useSearchCopy } from "@/lib/search-copy";
@@ -27,6 +28,44 @@ export function filterGuides(guides: PublicGuide[], filter: GuideFilter): Public
       matchesQuery(filter.query, guide.display_name, guide.headline, ...guide.specialities) &&
       (!filter.region || guide.regions.includes(filter.region)) &&
       (!filter.language || guide.languages.includes(filter.language)),
+  );
+}
+
+/** "Founding Guide #n": given by the database to the first fifty approved guides. */
+export function FoundingBadge({ number, className }: { number: number | null | undefined; className?: string }) {
+  const join = useGuideJoinCopy();
+  if (!number) return null;
+  return (
+    <Badge variant="outline" className={cn("gap-1 border-accent/40 text-text", className)}>
+      <Award className="size-3.5 text-accent" aria-hidden />
+      {interpolate(join.foundingBadge, { n: String(number) })}
+    </Badge>
+  );
+}
+
+/** Links a guide who is browsing the directory to "Earn with Mshwar". */
+function JoinBanner() {
+  const join = useGuideJoinCopy();
+  return (
+    <LocaleLink
+      href="/guides/join"
+      className={cn(
+        "group flex flex-wrap items-center justify-between gap-3 rounded-card border border-accent/30 bg-accent/5 px-5 py-4 transition-colors hover:border-accent/60",
+        focusRing,
+      )}
+    >
+      <span className="grid gap-0.5">
+        <span className="font-semibold text-text">{join.dirJoinTitle}</span>
+        <span className="text-sm text-text-muted">{join.dirJoinBody}</span>
+      </span>
+      <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-text">
+        {join.dirJoinCta}
+        <ArrowRight
+          className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 rtl:-scale-x-100"
+          aria-hidden
+        />
+      </span>
+    </LocaleLink>
   );
 }
 
@@ -50,6 +89,7 @@ export function GuideCard({ guide, copy }: { guide: PublicGuide; copy: GuideCopy
         ) : (
           <Badge variant="outline">{guide.tier === "licensed" ? copy.badgeLicensed : copy.badgeHost}</Badge>
         )}
+        <FoundingBadge number={guide.founding_number} />
       </span>
       {guide.headline ? <span className="text-sm text-text-muted">{guide.headline}</span> : null}
       <span className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-muted">
@@ -112,6 +152,7 @@ export function GuideDirectory({ initial }: { initial?: PublicGuide[] }) {
   return (
     <div className="grid gap-8">
       <PageHeader eyebrow={copy.kicker} title={copy.directoryTitle} description={copy.directoryBody} />
+      <JoinBanner />
       {loading ? (
         <div className="grid place-items-center py-16 text-text-muted">
           <Loader2 className="size-6 animate-spin" aria-hidden />
@@ -209,11 +250,16 @@ export function GuidePage({ guide }: { guide: PublicGuide }) {
         title={guide.display_name}
         description={guide.headline}
       />
-      {guide.badge ? (
-        <Badge variant="accent" className="w-fit gap-1.5">
-          <BadgeCheck className="size-4" aria-hidden />
-          {copy.badgeLicensed}
-        </Badge>
+      {guide.badge || guide.founding_number ? (
+        <span className="flex flex-wrap items-center gap-2">
+          {guide.badge ? (
+            <Badge variant="accent" className="w-fit gap-1.5">
+              <BadgeCheck className="size-4" aria-hidden />
+              {copy.badgeLicensed}
+            </Badge>
+          ) : null}
+          <FoundingBadge number={guide.founding_number} />
+        </span>
       ) : null}
       {guide.bio ? <p className="max-w-2xl whitespace-pre-line text-text">{guide.bio}</p> : null}
       {facts.length ? (

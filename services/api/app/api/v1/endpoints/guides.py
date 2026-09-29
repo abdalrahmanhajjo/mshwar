@@ -73,6 +73,14 @@ async def list_guides(
     return list(rows or [])
 
 
+@router.get("/programme", dependencies=[access.PUBLIC])
+async def founding_programme(
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """How many Founding Guide places are left (migration 060): a count, never a guess."""
+    return await fetch_json(db, "SELECT app.founding_guide_programme()", {})
+
+
 @router.get("/me", dependencies=[access.SESSION])
 async def my_guide_profile(
     request: Request,

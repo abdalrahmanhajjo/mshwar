@@ -1,5 +1,5 @@
 import "server-only";
-import type { PublicGuide } from "@/lib/guides";
+import type { FoundingProgramme, PublicGuide } from "@/lib/guides";
 import type { PublicTour } from "@/lib/guide-work";
 import type { PlaceContributor } from "@/lib/guide-contribute";
 import type { PublicGuideReviews } from "@/lib/guide-day";
@@ -60,6 +60,20 @@ export async function loadGuideReviews(slug: string): Promise<PublicGuideReviews
       next: { revalidate: REVALIDATE_SECONDS },
     });
     return response.ok ? ((await response.json()) as PublicGuideReviews) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** The Founding Guide count for "Earn with Mshwar". Null when the API cannot say: no number is shown then. */
+export async function loadFoundingProgramme(): Promise<FoundingProgramme | null> {
+  try {
+    const response = await fetch(`${API_ROOT}/api/v1/guides/programme`, { next: { revalidate: 300 } });
+    if (!response.ok) {
+      return null;
+    }
+    const body = (await response.json()) as FoundingProgramme;
+    return typeof body?.remaining === "number" && typeof body?.limit === "number" ? body : null;
   } catch {
     return null;
   }

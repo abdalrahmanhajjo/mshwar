@@ -90,7 +90,7 @@ export function ShellFooter({ surface }: { surface: ShellSurface }) {
     {
       title: home.footerWork,
       links: [
-        { href: "/guide", label: t("forGuides") },
+        { href: "/guides/join", label: t("forGuides") },
         { href: "/drive", label: partner.driveKicker },
         { href: "/exchange", label: partner.exchangeTitle },
         { href: "/partners", label: seoText(locale, "footerBadge") },
