@@ -495,3 +495,27 @@ class ConversationCloseIn(BaseModel):
 
     report: bool = False
     reason: str = Field(default="", max_length=2000)
+
+
+class ExternalCalendarIn(BaseModel):
+    """A calendar's secret address (Google "Secret address in iCal format", Apple, Outlook)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    url: str = Field(min_length=12, max_length=1000)
+    label: str = Field(default="", max_length=60)
+
+
+class CheckInIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    status: Literal["arrived", "no_show"]
+
+
+class PaymentRecordIn(BaseModel):
+    """What the guide received on the day. Mshwar never moves this money."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    amount_minor: int = Field(ge=0, le=100_000_000)
+    method: Literal["cash", "wallet", "card", "transfer", "other"]

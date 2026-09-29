@@ -12,9 +12,13 @@ function decide what may be touched, the same way the rest of the API works.
 
 from __future__ import annotations
 
+import csv
 import hashlib
+import io
 import json
-from datetime import date, datetime
+import re
+import secrets
+from datetime import date, datetime, timedelta
 from typing import Any
 from uuid import uuid4
 from zoneinfo import ZoneInfo
@@ -24,7 +28,7 @@ from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.concurrency import run_in_threadpool
 
-from app.core import access, imagekit
+from app.core import access, ical_import, imagekit
 from app.core.auth_session import require_session, require_verified_user
 from app.core.config import settings
 from app.core.ics import CalendarEvent, calendar
@@ -38,6 +42,7 @@ from app.planner.weather import WeatherService
 from app.schemas.guides import (
     BookingSettingsIn,
     BusyBlockIn,
+    CheckInIn,
     ConversationCloseIn,
     ConversationStartIn,
     EngagementAnswerIn,
@@ -45,6 +50,7 @@ from app.schemas.guides import (
     EngagementDecisionIn,
     EngagementProposalIn,
     EngagementRequestIn,
+    ExternalCalendarIn,
     GuideAgreementIn,
     GuideAvailabilityIn,
     GuideCredentialIn,
@@ -55,6 +61,7 @@ from app.schemas.guides import (
     GuideTourIn,
     HireTermsIn,
     MessageIn,
+    PaymentRecordIn,
     ProposalIn,
     ProposalPhotoIn,
     RescheduleAnswerIn,
@@ -783,6 +790,298 @@ async def generate_all_slots(db: AsyncSession = Depends(get_auth_db)) -> Any:  #
 async def min_group_check(db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
     """Hourly: cancel, with the reason, shared runs that missed their minimum group."""
     return await fetch_json(db, "SELECT app.guide_min_group_check()", {})
+
+
+# ---- Step 6: the guide's workspace -------------------------------------------------------
+
+
+@router.get("/me/calendar", dependencies=[access.SESSION])
+async def my_calendar(
+    request: Request,
+    start: date = Query(alias="from"),  # noqa: B008
+    end: date = Query(alias="to"),  # noqa: B008
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Runs (with who booked), blocked and imported busy time, hired days and days off, up to two months."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_calendar(CAST(:uid AS uuid), :start, :end)",
+        {"uid": uid, "start": start, "end": end},
+    )
+
+
+@router.get("/me/calendar-feed", dependencies=[access.SESSION])
+async def calendar_feed_status(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Whether the guide has a private calendar address. The address itself is never shown again."""
+    uid = await _uid(request, db)
+    return await fetch_json(db, "SELECT app.guide_calendar_feed_status(CAST(:uid AS uuid))", {"uid": uid})
+
+
+def _feed_url(token: str) -> str:
+    return f"{settings.public_web_origin.rstrip('/')}/api/v1/guides/feeds/{token}.ics"
+
+
+@router.post("/me/calendar-feed", dependencies=[access.SESSION, limit("guide-write")])
+async def new_calendar_feed(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """A new private calendar address (the old one stops working). Shown once; only its hash is kept."""
+    uid = await _uid(request, db)
+    token = secrets.token_urlsafe(32)
+    await fetch_json(
+        db,
+        "SELECT app.guide_new_calendar_feed(CAST(:uid AS uuid), :hash)",
+        {"uid": uid, "hash": hashlib.sha256(token.encode()).hexdigest()},
+    )
+    status = await fetch_json(db, "SELECT app.guide_calendar_feed_status(CAST(:uid AS uuid))", {"uid": uid})
+    return {**status, "url": _feed_url(token)}
+
+
+@router.delete("/me/calendar-feed", dependencies=[access.SESSION, limit("guide-write")])
+async def revoke_calendar_feed(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    uid = await _uid(request, db)
+    return await fetch_json(db, "SELECT app.guide_revoke_calendar_feed(CAST(:uid AS uuid))", {"uid": uid})
+
+
+@router.get("/feeds/{token}.ics", dependencies=[access.PUBLIC, limit("search")])
+async def calendar_feed(
+    token: str,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Response:
+    """The guide's confirmed runs and hired days as a calendar subscription. The address is the key."""
+    if not re.fullmatch(r"[A-Za-z0-9_-]{20,100}", token):
+        raise HTTPException(status_code=404, detail="Calendar not found")
+    feed = await fetch_json(
+        db, "SELECT app.guide_calendar_feed(:hash)", {"hash": hashlib.sha256(token.encode()).hexdigest()}
+    )
+    if not feed:
+        raise HTTPException(status_code=404, detail="Calendar not found")
+    origin = settings.public_web_origin.rstrip("/")
+    events = [
+        CalendarEvent(
+            uid=f"tour-run-{run['id']}@mshwar",
+            starts_at=datetime.fromisoformat(run["starts_at"]),
+            ends_at=datetime.fromisoformat(run["ends_at"]),
+            summary=f"{run['title']} · {run['guests'] or 0} guests",
+            location=run.get("meeting_point") or "",
+            description=f"{origin}/guide/calendar",
+            url=f"{origin}/guide/calendar",
+        )
+        for run in feed["runs"]
+    ]
+    for day in feed["hired_days"]:
+        local = date.fromisoformat(day["local_date"])
+        events.append(
+            CalendarEvent(
+                uid=f"hired-day-{day['id']}@mshwar",
+                starts_at=datetime.combine(local, datetime.min.time(), BEIRUT),
+                ends_at=datetime.combine(local + timedelta(days=1), datetime.min.time(), BEIRUT),
+                summary="Hired for the day (Mshwar)",
+                description=f"{origin}/guide/requests/{day['id']}",
+                url=f"{origin}/guide/requests/{day['id']}",
+            )
+        )
+    return Response(
+        content=calendar(events, name=f"Mshwar · {feed['name']}"),
+        media_type="text/calendar; charset=utf-8",
+        headers={"Cache-Control": "private, max-age=300", "X-Robots-Tag": "noindex"},
+    )
+
+
+@router.get("/me/calendars", dependencies=[access.SESSION])
+async def my_external_calendars(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Other calendars whose busy time keeps travellers from booking over it."""
+    uid = await _uid(request, db)
+    return await fetch_json(db, "SELECT app.guide_list_external_calendars(CAST(:uid AS uuid))", {"uid": uid})
+
+
+async def _sync_calendars(db: AsyncSession, uid: str | None, cap: int = 200) -> dict[str, int]:
+    """Read each calendar and replace its busy time. A calendar that cannot be read keeps its last busy time."""
+    rows = await fetch_json(
+        db, "SELECT app.guide_calendars_to_sync(CAST(:uid AS uuid), :cap)", {"uid": uid, "cap": cap}
+    )
+    synced = failed = 0
+    for row in rows or []:
+        periods: list[dict[str, str]] = []
+        error: str | None = None
+        try:
+            text_body = await run_in_threadpool(ical_import.fetch_calendar, row["url"])
+            periods = [period.as_json() for period in ical_import.busy_periods(text_body)]
+        except ical_import.CalendarFetchError as exc:
+            error = str(exc)
+        await fetch_json(
+            db,
+            "SELECT to_jsonb(app.guide_replace_external_blocks(CAST(:id AS uuid), CAST(:periods AS jsonb), :error))",
+            {"id": row["id"], "periods": json.dumps(periods), "error": error},
+        )
+        if error is None:
+            synced += 1
+        else:
+            failed += 1
+    return {"synced": synced, "failed": failed}
+
+
+@router.post("/me/calendars", dependencies=[access.SESSION, limit("guide-write")])
+async def add_external_calendar(
+    payload: ExternalCalendarIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Connect a calendar and read it straight away."""
+    uid = await _uid(request, db)
+    await fetch_json(
+        db,
+        "SELECT app.guide_add_external_calendar(CAST(:uid AS uuid), :url, :label)",
+        {"uid": uid, "url": payload.url, "label": payload.label},
+    )
+    await _sync_calendars(db, uid)
+    return await fetch_json(db, "SELECT app.guide_list_external_calendars(CAST(:uid AS uuid))", {"uid": uid})
+
+
+@router.post("/me/calendars/sync", dependencies=[access.SESSION, limit("guide-write")])
+async def sync_external_calendars(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Read the guide's calendars now instead of waiting for the next 15-minute round."""
+    uid = await _uid(request, db)
+    await _sync_calendars(db, uid)
+    return await fetch_json(db, "SELECT app.guide_list_external_calendars(CAST(:uid AS uuid))", {"uid": uid})
+
+
+@router.delete("/me/calendars/{calendar_id}", dependencies=[access.SESSION, limit("guide-write")])
+async def remove_external_calendar(
+    calendar_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Disconnect a calendar; its busy time goes with it."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_remove_external_calendar(CAST(:uid AS uuid), CAST(:calendar AS uuid))",
+        {"uid": uid, "calendar": calendar_id},
+    )
+
+
+@router.post("/ops/calendar-sync", dependencies=[access.JOB])
+async def calendar_sync(db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    """Every 15 minutes: refresh busy time from every connected calendar."""
+    return await _sync_calendars(db, None)
+
+
+@router.post("/me/bookings/{booking_id}/check-in", dependencies=[access.SESSION, limit("guide-write")])
+async def check_in(
+    booking_id: str,
+    payload: CheckInIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """On the day: the guests arrived, or did not come."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_check_in(CAST(:uid AS uuid), CAST(:booking AS uuid), :status)",
+        {"uid": uid, "booking": booking_id, "status": payload.status},
+    )
+
+
+@router.post("/me/bookings/{booking_id}/payment", dependencies=[access.SESSION, limit("guide-write")])
+async def record_payment(
+    booking_id: str,
+    payload: PaymentRecordIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """What the guide received on the day, and how."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_record_payment(CAST(:uid AS uuid), CAST(:booking AS uuid), :amount, :method)",
+        {"uid": uid, "booking": booking_id, "amount": payload.amount_minor, "method": payload.method},
+    )
+
+
+@router.get("/me/earnings", dependencies=[access.SESSION])
+async def my_earnings(
+    request: Request,
+    month: date = Query(),  # noqa: B008
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """A month's statement: what bookings said, what the guide recorded, the fee and what is theirs."""
+    uid = await _uid(request, db)
+    return await fetch_json(db, "SELECT app.guide_earnings(CAST(:uid AS uuid), :month)", {"uid": uid, "month": month})
+
+
+def _csv_cell(value: Any) -> str:
+    """One cell, safe to open in a spreadsheet (no formulas)."""
+    text_value = "" if value is None else str(value)
+    return "'" + text_value if text_value[:1] in ("=", "+", "-", "@", "\t", "\r") else text_value
+
+
+def _money(minor: Any) -> str:
+    return "" if minor is None else f"{int(minor) / 100:.2f}"
+
+
+@router.get("/me/earnings.csv", dependencies=[access.SESSION])
+async def my_earnings_csv(
+    request: Request,
+    month: date = Query(),  # noqa: B008
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Response:
+    """The month's statement as a spreadsheet, one row per booking."""
+    uid = await _uid(request, db)
+    statement = await fetch_json(
+        db, "SELECT app.guide_earnings(CAST(:uid AS uuid), :month)", {"uid": uid, "month": month}
+    )
+    out = io.StringIO()
+    writer = csv.writer(out)
+    writer.writerow(["date", "booking", "tour", "guests", "status", "expected_usd", "received_usd", "method"])
+    for row in statement["rows"]:
+        writer.writerow(
+            [
+                _csv_cell(datetime.fromisoformat(row["starts_at"]).astimezone(BEIRUT).strftime("%Y-%m-%d %H:%M")),
+                _csv_cell(row["code"]),
+                _csv_cell(row["tour_title"]),
+                row["party_size"],
+                "no-show" if row["no_show"] else row["status"],
+                _money(row["expected_minor"]),
+                _money(row["paid_minor"]),
+                _csv_cell(row["paid_method"]),
+            ]
+        )
+    writer.writerow([])
+    writer.writerow(["received_usd", _money(statement["recorded_minor"])])
+    writer.writerow(["mshwar_fee_percent", statement["fee_percent"]])
+    writer.writerow(["mshwar_fee_usd", _money(statement["fee_minor"])])
+    writer.writerow(["yours_usd", _money(statement["net_minor"])])
+    return Response(
+        content=out.getvalue(),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="mshwar-earnings-{statement["month"]}.csv"'},
+    )
+
+
+@router.get("/me/insights", dependencies=[access.SESSION])
+async def my_insights(
+    request: Request,
+    days: int = Query(default=90, ge=7, le=365),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Per tour: requests, confirmations, declines, lapses, cancellations, seats filled and reply speed."""
+    uid = await _uid(request, db)
+    return await fetch_json(db, "SELECT app.guide_insights(CAST(:uid AS uuid), :days)", {"uid": uid, "days": days})
 
 
 @router.get("/me/requests", dependencies=[access.SESSION])

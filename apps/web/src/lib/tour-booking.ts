@@ -178,7 +178,15 @@ export type TourBooking = {
   meeting_lng?: number | null;
   guide_phone?: string | null;
   arrived_at?: string | null;
+  /** The guide's record of the day (guide view only). */
+  checked_in_at?: string | null;
+  no_show?: boolean;
+  paid_minor?: number | null;
+  paid_method?: PaymentMethod | null;
+  paid_at?: string | null;
 };
+
+export type PaymentMethod = "cash" | "wallet" | "card" | "transfer" | "other";
 
 export type BookingInput = {
   slot_id: string;

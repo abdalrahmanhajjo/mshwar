@@ -66,6 +66,8 @@ JOBS: dict[str, Job] = {
     "guide-reminders": Job("guide-reminders", "/api/v1/guides/ops/reminders", every=timedelta(minutes=15)),
     # Weather warnings for booked outdoor runs two days out (064).
     "guide-weather": Job("guide-weather", "/api/v1/guides/ops/weather-alerts", every=timedelta(hours=6)),
+    # Busy time from the calendars guides connected (065).
+    "guide-calendars": Job("guide-calendars", "/api/v1/guides/ops/calendar-sync", every=timedelta(minutes=15)),
     # Cancels, with the reason, shared guide runs that missed their minimum group (061).
     "guide-min-group": Job("guide-min-group", "/api/v1/guides/ops/min-group-check", every=timedelta(hours=1)),
 }

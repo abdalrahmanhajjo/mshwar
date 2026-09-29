@@ -9,13 +9,13 @@ The policy model is described in [authorization.md](authorization.md).
 | `admin` | 108 |
 | `admin-signin` | 2 |
 | `dev` | 1 |
-| `job` | 11 |
-| `public` | 49 |
-| `session` | 205 |
+| `job` | 12 |
+| `public` | 50 |
+| `session` | 218 |
 | `signature` | 1 |
 | `token` | 6 |
 | `verified` | 9 |
-| **Total** | **407** |
+| **Total** | **422** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -210,6 +210,7 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/guides/engagements/{engagement_id}` | `session` |
 | POST | `/api/v1/guides/engagements/{engagement_id}/cancel` | `session` |
 | POST | `/api/v1/guides/engagements/{engagement_id}/decision` | `session` |
+| GET | `/api/v1/guides/feeds/{token}.ics` | `public` |
 | GET | `/api/v1/guides/match` | `session` |
 | GET | `/api/v1/guides/me` | `session` |
 | PUT | `/api/v1/guides/me` | `session` |
@@ -220,16 +221,29 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/guides/me/blocks` | `session` |
 | DELETE | `/api/v1/guides/me/blocks/{block_id}` | `session` |
 | GET | `/api/v1/guides/me/bookings/{booking_id}` | `session` |
+| POST | `/api/v1/guides/me/bookings/{booking_id}/check-in` | `session` |
+| POST | `/api/v1/guides/me/bookings/{booking_id}/payment` | `session` |
+| GET | `/api/v1/guides/me/calendar` | `session` |
+| DELETE | `/api/v1/guides/me/calendar-feed` | `session` |
+| GET | `/api/v1/guides/me/calendar-feed` | `session` |
+| POST | `/api/v1/guides/me/calendar-feed` | `session` |
+| GET | `/api/v1/guides/me/calendars` | `session` |
+| POST | `/api/v1/guides/me/calendars` | `session` |
+| POST | `/api/v1/guides/me/calendars/sync` | `session` |
+| DELETE | `/api/v1/guides/me/calendars/{calendar_id}` | `session` |
 | GET | `/api/v1/guides/me/days` | `session` |
 | GET | `/api/v1/guides/me/days/{day_id}` | `session` |
 | POST | `/api/v1/guides/me/days/{day_id}/complete` | `session` |
 | POST | `/api/v1/guides/me/days/{day_id}/start` | `session` |
 | PUT | `/api/v1/guides/me/documents` | `session` |
 | POST | `/api/v1/guides/me/documents/upload` | `session` |
+| GET | `/api/v1/guides/me/earnings` | `session` |
+| GET | `/api/v1/guides/me/earnings.csv` | `session` |
 | GET | `/api/v1/guides/me/engagements` | `session` |
 | POST | `/api/v1/guides/me/engagements/{engagement_id}/answer` | `session` |
 | POST | `/api/v1/guides/me/engagements/{engagement_id}/proposal` | `session` |
 | PUT | `/api/v1/guides/me/hire-terms` | `session` |
+| GET | `/api/v1/guides/me/insights` | `session` |
 | GET | `/api/v1/guides/me/proposals` | `session` |
 | POST | `/api/v1/guides/me/proposals` | `session` |
 | POST | `/api/v1/guides/me/proposals/{proposal_id}/photos` | `session` |
@@ -247,6 +261,7 @@ The policy model is described in [authorization.md](authorization.md).
 | PUT | `/api/v1/guides/me/tours/{tour_id}/schedules` | `session` |
 | POST | `/api/v1/guides/me/tours/{tour_id}/slots` | `session` |
 | GET | `/api/v1/guides/my-bookings` | `session` |
+| POST | `/api/v1/guides/ops/calendar-sync` | `job` |
 | POST | `/api/v1/guides/ops/generate-slots` | `job` |
 | POST | `/api/v1/guides/ops/min-group-check` | `job` |
 | POST | `/api/v1/guides/ops/reminders` | `job` |

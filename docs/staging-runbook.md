@@ -249,6 +249,7 @@ a crontab:
 | Guide minimum group   | Every hour                           | Cancels, with the reason, shared runs that missed their minimum group  |
 | Guide reminders       | Every 15 minutes                     | Day-before and two-hour reminders, request nudges, guides' manifests   |
 | Guide weather         | Every 6 hours                        | Warns guides about rain, heat or wind for booked outdoor runs          |
+| Guide calendars       | Every 15 minutes                     | Refreshes busy time from the calendars guides connected (https only)   |
 
 All are safe to repeat. `SCHEDULER_JOBS=sweep` limits it to the sweep. It is deployed and
 restarted with the API; to start it by hand:

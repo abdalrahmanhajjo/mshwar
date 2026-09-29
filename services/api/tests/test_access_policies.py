@@ -52,6 +52,7 @@ PUBLIC_ROUTES = {
     "GET /api/v1/guides/programme",
     "GET /api/v1/guides/tours",
     "GET /api/v1/guides/tour-slugs",
+    "GET /api/v1/guides/feeds/{token}.ics",
     "GET /api/v1/guides/destinations/{destination_slug}/tours",
     "GET /api/v1/guides/tours/{tour_slug}",
     "GET /api/v1/guides/tours/{tour_slug}/availability",

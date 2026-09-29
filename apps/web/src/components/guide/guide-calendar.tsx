@@ -10,6 +10,8 @@ import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
 import { BlockedTime } from "@/components/guide/blocked-time";
 import { BookingSettings } from "@/components/guide/booking-settings";
+import { CalendarSync } from "@/components/guide/calendar-sync";
+import { GuideMonthView } from "@/components/guide/guide-month";
 import { ApprovedGuide } from "@/components/guide/guide-provider";
 import { TourSchedules } from "@/components/guide/schedule-editor";
 import { useLocale } from "@/components/shell/locale-provider";
@@ -160,6 +162,8 @@ function Calendar() {
           {notice}
         </Notice>
       ) : null}
+
+      <GuideMonthView />
 
       {tours.length ? (
         <section
@@ -388,6 +392,8 @@ function Calendar() {
       </section>
 
       <BlockedTime />
+
+      <CalendarSync />
 
       {tours.length ? (
         <section className="grid gap-3 rounded-card border border-border-subtle bg-surface-raised p-5 md:p-6">

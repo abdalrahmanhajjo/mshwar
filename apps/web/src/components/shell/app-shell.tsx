@@ -151,7 +151,7 @@ export function AppShell({ surface, children, auth, currentPath, items: itemsOve
                 <LocaleLink
                   href="/guides"
                   className={cn(
-                    "hidden h-10 items-center gap-2 rounded-pill bg-brand px-4 text-sm font-semibold text-brand-foreground transition-colors duration-200 hover:bg-brand/90 md:inline-flex",
+                    "hidden h-10 items-center gap-1.5 rounded-control px-2 text-sm font-semibold text-text underline-offset-4 transition-colors duration-200 hover:text-brand hover:underline md:inline-flex",
                     focusRing,
                   )}
                 >

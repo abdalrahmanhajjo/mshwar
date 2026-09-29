@@ -18,7 +18,7 @@ const refused = async (db, run, pattern) => {
   await db.exec("ROLLBACK TO SAVEPOINT expected_refusal");
 };
 
-const guide = async (db, user, org, tier, tour, n) => {
+export const bookingGuide = async (db, user, org, tier, tour, n) => {
   await db.query("INSERT INTO app.organizations (id, name, slug, verification) VALUES ($1, $2, $3, 'verified')", [
     org,
     `Test Booking Org ${n}`,
@@ -62,8 +62,8 @@ export async function testTourBooking(db) {
       "INSERT INTO app.users (id, auth_issuer, auth_subject, display_name) VALUES ($1, 'test', 'booking-guide', 'Test Guide'), ($2, 'test', 'booking-host', 'Test Host'), ($3, 'test', 'booking-traveller', 'Test Traveller')",
       [GUIDE, HOST, TRAVELLER],
     );
-    await guide(db, GUIDE, ORG, "licensed", TOUR, 1);
-    await guide(db, HOST, HOST_ORG, "host", HOST_TOUR, 2);
+    await bookingGuide(db, GUIDE, ORG, "licensed", TOUR, 1);
+    await bookingGuide(db, HOST, HOST_ORG, "host", HOST_TOUR, 2);
 
     // A host's extras and child price stay free, from the function and from a direct write.
     await refused(

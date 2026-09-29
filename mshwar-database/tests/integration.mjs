@@ -23,6 +23,7 @@ import { testPlaceImages } from "./place-images.mjs";
 import { testFoundingGuides } from "./founding-guides.mjs";
 import { testTourSchedules } from "./tour-schedules.mjs";
 import { testTourBooking } from "./tour-booking.mjs";
+import { testGuideWorkspace } from "./guide-workspace.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const db = new PGlite({ extensions: { postgis, vector, btree_gist, pg_trgm } });
 const report = [];
@@ -115,6 +116,9 @@ try {
   await good(
     "tour bookings: priced only from published prices, a host's extras free, late cancellations recorded",
     () => testTourBooking(db),
+  );
+  await good("guide workspace: imported busy time keeps only the time, a private feed by hash, day-of check-in", () =>
+    testGuideWorkspace(db),
   );
   await sql("SELECT set_config('app.user_id',$1,false)", [alice]);
   await good("all app tables have forced RLS", async () =>

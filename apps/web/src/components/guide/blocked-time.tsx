@@ -28,7 +28,8 @@ export function BlockedTime() {
 
   const reload = React.useCallback(async () => {
     try {
-      setRows(await fetchBlocks());
+      // Imported busy time is shown in the month view and summarised per calendar, not here.
+      setRows((await fetchBlocks()).filter((block) => block.kind === "manual"));
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : String(caught));
       setRows([]);
@@ -40,7 +41,7 @@ export function BlockedTime() {
     fetchBlocks()
       .then((loaded) => {
         if (!cancelled) {
-          setRows(Array.isArray(loaded) ? loaded : []);
+          setRows(Array.isArray(loaded) ? loaded.filter((block) => block.kind === "manual") : []);
         }
       })
       .catch((caught: unknown) => {

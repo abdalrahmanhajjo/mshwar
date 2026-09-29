@@ -3,6 +3,7 @@ import {
   ArrowLeftRight,
   BadgeCheck,
   Banknote,
+  BarChart3,
   Bell,
   BusFront,
   Car,
@@ -31,6 +32,7 @@ import {
   Tags,
   Ticket,
   Users,
+  Wallet,
 } from "lucide-react";
 import type { MessageKey } from "@/lib/messages";
 
@@ -58,6 +60,8 @@ export const GUIDE_NAV: ShellNavItem[] = [
   { href: "/guide/requests", labelKey: "guideRequests", icon: Inbox },
   { href: "/guide/tours", labelKey: "guideTours", icon: Route },
   { href: "/guide/calendar", labelKey: "guideCalendar", icon: CalendarDays },
+  { href: "/guide/earnings", labelKey: "guideEarnings", icon: Wallet },
+  { href: "/guide/insights", labelKey: "guideInsights", icon: BarChart3 },
   { href: "/guide/contribute", labelKey: "guideContribute", icon: MapPinned },
   { href: "/guide/reviews", labelKey: "guideReviews", icon: Star },
   { href: "/guide/help", labelKey: "guideHelp", icon: LifeBuoy },

@@ -15,6 +15,7 @@ import {
   Users,
   XCircle,
 } from "lucide-react";
+import { DayRecord } from "@/components/guide/day-record";
 import { MessageGuide } from "@/components/messages/message-guide";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { useLocale } from "@/components/shell/locale-provider";
@@ -356,7 +357,9 @@ export function TourBookingView({ bookingId, role }: { bookingId: string; role: 
 
       {role === "traveller" ? (
         <MessageGuide guideSlug={booking.guide_slug} next={`/tour-bookings/${booking.id}`} />
-      ) : null}
+      ) : (
+        <DayRecord booking={booking} onChange={setBooking} />
+      )}
 
       {error ? (
         <Notice tone="danger" role="alert">
