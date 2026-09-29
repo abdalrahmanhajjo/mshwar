@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
-import { Bell } from "lucide-react";
+import { Bell, UserRoundCheck } from "lucide-react";
 import { cn, focusRing } from "@/lib/utils";
 import { VerificationBanner } from "@/components/auth/verification-banner";
 import { PolicyUpdateBanner } from "@/components/legal/policy-update-banner";
@@ -149,13 +149,14 @@ export function AppShell({ surface, children, auth, currentPath, items: itemsOve
               </nav>
               <div className="flex items-center justify-end gap-1.5 sm:gap-3">
                 <LocaleLink
-                  href="/plan"
+                  href="/guides"
                   className={cn(
-                    "hidden h-10 items-center rounded-pill bg-brand px-4 text-sm font-semibold text-brand-foreground transition-colors duration-200 hover:bg-brand/90 md:inline-flex",
+                    "hidden h-10 items-center gap-2 rounded-pill bg-brand px-4 text-sm font-semibold text-brand-foreground transition-colors duration-200 hover:bg-brand/90 md:inline-flex",
                     focusRing,
                   )}
                 >
-                  {home.planYourTrip}
+                  <UserRoundCheck className="size-4" strokeWidth={2} aria-hidden />
+                  {home.findAGuide}
                 </LocaleLink>
                 <LanguageSwitcher compact />
                 {resolvedAuth.status === "signed-in" ? (
