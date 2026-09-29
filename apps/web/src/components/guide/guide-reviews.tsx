@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, MessageSquareQuote, Send, Star } from "lucide-react";
+import { Loader2, MessageSquareQuote, Reply, Send, Star } from "lucide-react";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { useLocale } from "@/components/shell/locale-provider";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,8 @@ import { formatDate } from "@/i18n/format";
 import { ApiError } from "@/lib/api/client";
 import { useGuideDayCopy } from "@/lib/guide-day-copy";
 import { fetchReviewInbox, writeGuideReview, type PublicGuideReviews, type ReviewInbox } from "@/lib/guide-day";
+import { ratedParts, replyToReview, REVIEW_PARTS, type ReviewParts } from "@/lib/guide-quality";
+import { useGuideQualityCopy, type GuideQualityKey } from "@/lib/guide-quality-copy";
 
 /** One half of a review. Stays private until the other half exists. */
 export function ReviewForm({
@@ -30,7 +32,9 @@ export function ReviewForm({
   onSent: () => void;
 }) {
   const copy = useGuideDayCopy();
+  const quality = useGuideQualityCopy();
   const [rating, setRating] = React.useState(0);
+  const [parts, setParts] = React.useState<ReviewParts>({});
   const [body, setBody] = React.useState("");
   const [pending, setPending] = React.useState(false);
   const [done, setDone] = React.useState<string | null>(null);
@@ -42,7 +46,16 @@ export function ReviewForm({
     setPending(true);
     setError(null);
     try {
-      const result = await writeGuideReview({ run_id: runId, traveller_id: travellerId, rating, body: body.trim() });
+      const rated = Object.fromEntries(
+        Object.entries(parts).filter(([, value]) => typeof value === "number" && value > 0),
+      );
+      const result = await writeGuideReview({
+        run_id: runId,
+        traveller_id: travellerId,
+        rating,
+        body: body.trim(),
+        ...(travellerId ? {} : { parts: rated }),
+      });
       setDone(result.released ? copy.sentReleased : copy.sent);
       onSent();
     } catch (caught) {
@@ -67,6 +80,25 @@ export function ReviewForm({
     >
       <h3 className="font-semibold">{heading}</h3>
       <Rating value={rating} onValueChange={setRating} label={copy.ratingLabel} />
+      {travellerId ? null : (
+        <fieldset className="grid gap-2">
+          <legend className="mb-1 text-sm text-text-muted">{quality.partsOptional}</legend>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {REVIEW_PARTS.map((key) => (
+              <div key={key} className="grid gap-1">
+                <span className="text-sm" aria-hidden>
+                  {quality[`part${key}` as GuideQualityKey]}
+                </span>
+                <Rating
+                  value={parts[key] ?? 0}
+                  onValueChange={(value) => setParts((current) => ({ ...current, [key]: value }))}
+                  label={quality[`part${key}` as GuideQualityKey]}
+                />
+              </div>
+            ))}
+          </div>
+        </fieldset>
+      )}
       <div className="grid gap-1.5">
         <Label htmlFor={`body-${id}`}>{copy.reviewBody}</Label>
         <Textarea id={`body-${id}`} rows={3} maxLength={2000} value={body} onChange={(e) => setBody(e.target.value)} />
@@ -84,21 +116,42 @@ export function ReviewForm({
   );
 }
 
+type ReviewRow = {
+  id?: string;
+  rating: number;
+  body: string;
+  created_at: string;
+  title?: string;
+  author?: string;
+  parts?: ReviewParts | null;
+  reply?: string | null;
+};
+
 export function ReviewList({
   rows,
   empty,
+  replyName,
+  canReply = false,
 }: {
-  rows: { id?: string; rating: number; body: string; created_at: string; title?: string; author?: string }[];
+  rows: ReviewRow[];
   empty: string;
+  /** Whose reply this is, for "Reply from {name}". */
+  replyName?: string;
+  /** The guide's own list: offers a reply under each review without one. */
+  canReply?: boolean;
 }) {
   const { locale } = useLocale();
+  const quality = useGuideQualityCopy();
   if (!rows.length) {
     return <p className="text-sm text-text-muted">{empty}</p>;
   }
   return (
     <ul className="grid gap-3">
       {rows.map((row, index) => (
-        <li key={row.id ?? index} className="grid gap-1 rounded-card border border-border-subtle bg-surface-raised p-4">
+        <li
+          key={row.id ?? index}
+          className="grid gap-1.5 rounded-card border border-border-subtle bg-surface-raised p-4"
+        >
           <span className="flex flex-wrap items-center gap-2 text-sm">
             <span className="inline-flex items-center gap-0.5 font-semibold" aria-label={`${row.rating}/5`}>
               {row.rating}
@@ -114,9 +167,98 @@ export function ReviewList({
               {row.body}
             </p>
           ) : null}
+          {ratedParts(row.parts).length ? (
+            <p className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-text-muted">
+              {ratedParts(row.parts).map(([key, value]) => (
+                <span key={key}>
+                  {quality[`part${key}` as GuideQualityKey]} {value}/5
+                </span>
+              ))}
+            </p>
+          ) : null}
+          {row.reply ? (
+            <div className="ms-6 grid gap-0.5 border-s-2 border-border-strong ps-3 text-sm">
+              <span className="text-xs font-medium text-text-muted">
+                {canReply ? quality.replyYours : interpolate(quality.replyFrom, { name: replyName ?? "" })}
+              </span>
+              <p className="whitespace-pre-line">{row.reply}</p>
+            </div>
+          ) : canReply && row.id ? (
+            <ReplyForm reviewId={row.id} />
+          ) : null}
         </li>
       ))}
     </ul>
+  );
+}
+
+/** The guide's one public reply. */
+function ReplyForm({ reviewId }: { reviewId: string }) {
+  const copy = useGuideDayCopy();
+  const quality = useGuideQualityCopy();
+  const [open, setOpen] = React.useState(false);
+  const [body, setBody] = React.useState("");
+  const [pending, setPending] = React.useState(false);
+  const [sent, setSent] = React.useState<string | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+
+  if (sent) {
+    return (
+      <div className="ms-6 grid gap-0.5 border-s-2 border-border-strong ps-3 text-sm">
+        <span className="text-xs font-medium text-text-muted">{quality.replyYours}</span>
+        <p className="whitespace-pre-line">{sent}</p>
+      </div>
+    );
+  }
+  if (!open) {
+    return (
+      <Button type="button" size="sm" variant="ghost" className="w-fit" onClick={() => setOpen(true)}>
+        <Reply aria-hidden />
+        {quality.reply}
+      </Button>
+    );
+  }
+
+  async function onSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    setPending(true);
+    setError(null);
+    try {
+      const result = await replyToReview(reviewId, body.trim());
+      setSent(result.reply);
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : copy.loadError);
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <form className="grid gap-2" onSubmit={(event) => void onSubmit(event)}>
+      <Label htmlFor={`reply-${reviewId}`}>{quality.replyLabel}</Label>
+      <Textarea
+        id={`reply-${reviewId}`}
+        rows={2}
+        maxLength={1000}
+        value={body}
+        onChange={(event) => setBody(event.target.value)}
+      />
+      <p className="text-xs text-text-muted">{quality.replyOnce}</p>
+      {error ? (
+        <Notice tone="danger" role="alert">
+          {error}
+        </Notice>
+      ) : null}
+      <div className="flex gap-2">
+        <Button type="submit" size="sm" disabled={pending || body.trim().length < 2}>
+          {pending ? <Loader2 className="animate-spin" aria-hidden /> : <Send aria-hidden />}
+          {quality.replySend}
+        </Button>
+        <Button type="button" size="sm" variant="ghost" onClick={() => setOpen(false)}>
+          {quality.cancel}
+        </Button>
+      </div>
+    </form>
   );
 }
 
@@ -193,7 +335,7 @@ function GuideSide() {
         <h2 id="about-you" className="title-section text-[1.15rem]">
           {copy.aboutYou}
         </h2>
-        <ReviewList rows={inbox.about_me_as_guide} empty={copy.aboutYouEmpty} />
+        <ReviewList rows={inbox.about_me_as_guide} empty={copy.aboutYouEmpty} canReply />
       </section>
     </div>
   );
@@ -252,7 +394,13 @@ export function TravellerGuideReviews() {
 }
 
 /** Released reviews on a guide's public page. */
-export function PublicGuideReviewsSection({ reviews }: { reviews: PublicGuideReviews | null }) {
+export function PublicGuideReviewsSection({
+  reviews,
+  guideName,
+}: {
+  reviews: PublicGuideReviews | null;
+  guideName?: string;
+}) {
   const copy = useGuideDayCopy();
   return (
     <section className="grid gap-3" aria-labelledby="guide-reviews">
@@ -264,11 +412,29 @@ export function PublicGuideReviewsSection({ reviews }: { reviews: PublicGuideRev
           <p className="font-medium">
             {interpolate(copy.publicSummary, { average: String(reviews.average ?? ""), n: String(reviews.count) })}
           </p>
-          <ReviewList rows={reviews.recent} empty={copy.publicEmpty} />
+          <ReviewPartAverages parts={reviews.parts} />
+          <ReviewList rows={reviews.recent} empty={copy.publicEmpty} replyName={guideName} />
         </>
       ) : (
         <p className="text-sm text-text-muted">{copy.publicEmpty}</p>
       )}
     </section>
+  );
+}
+
+/** Knowledge, communication, value and route, averaged over the reviews that rated them. */
+export function ReviewPartAverages({ parts }: { parts: PublicGuideReviews["parts"] }) {
+  const quality = useGuideQualityCopy();
+  const rated = ratedParts(parts);
+  if (!rated.length) return null;
+  return (
+    <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      {rated.map(([key, value]) => (
+        <div key={key} className="grid gap-0.5 rounded-control border border-border-subtle bg-surface px-3 py-2">
+          <dt className="text-xs text-text-muted">{quality[`part${key}` as GuideQualityKey]}</dt>
+          <dd className="font-semibold tabular-nums">{value.toFixed(1)}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }

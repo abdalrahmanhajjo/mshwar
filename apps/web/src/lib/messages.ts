@@ -89,6 +89,8 @@ export type MessageKey =
   | "guideHelp"
   | "guideEarnings"
   | "guideInsights"
+  | "guideQuality"
+  | "guideQualityAdmin"
   | "guideFunnel"
   | "placeProposals"
   | "verificationQueue"
@@ -260,6 +262,8 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     guideHelp: "Help",
     guideEarnings: "Earnings",
     guideInsights: "Insights",
+    guideQuality: "Level",
+    guideQualityAdmin: "Guide quality",
     guideFunnel: "Guide funnel",
     placeProposals: "Place proposals",
     taxonomy: "Taxonomy",
@@ -431,6 +435,8 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     guideHelp: "المساعدة",
     guideEarnings: "الأرباح",
     guideInsights: "المؤشرات",
+    guideQuality: "المستوى",
+    guideQualityAdmin: "جودة المرشدين",
     guideFunnel: "مسار المرشدين",
     placeProposals: "اقتراحات الأماكن",
     taxonomy: "التصنيف",
@@ -603,6 +609,8 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     guideHelp: "Aide",
     guideEarnings: "Revenus",
     guideInsights: "Statistiques",
+    guideQuality: "Niveau",
+    guideQualityAdmin: "Qualité des guides",
     guideFunnel: "Parcours des guides",
     placeProposals: "Propositions de lieux",
     taxonomy: "Taxonomie",

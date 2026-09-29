@@ -1,4 +1,5 @@
 import { apiRequest } from "@/lib/api/client";
+import type { ReviewPartKey, ReviewParts } from "@/lib/guide-quality";
 
 export type RunState = "scheduled" | "started" | "completed";
 
@@ -69,7 +70,15 @@ export type ReviewInbox = {
     guide_slug: string;
     guide_name: string;
   }[];
-  about_me_as_guide: { id: string; rating: number; body: string; created_at: string; title: string }[];
+  about_me_as_guide: {
+    id: string;
+    rating: number;
+    body: string;
+    created_at: string;
+    title: string;
+    parts?: ReviewParts | null;
+    reply?: string | null;
+  }[];
   about_me_as_traveller: { id: string; rating: number; body: string; created_at: string; title: string }[];
   waiting_to_release: number;
 };
@@ -77,7 +86,17 @@ export type ReviewInbox = {
 export type PublicGuideReviews = {
   count: number;
   average: number | null;
-  recent: { rating: number; body: string; created_at: string; author: string }[];
+  /** Averages of the four parts; null where nobody rated that part. */
+  parts?: Partial<Record<ReviewPartKey, number | null>>;
+  recent: {
+    id?: string;
+    rating: number;
+    body: string;
+    created_at: string;
+    author: string;
+    parts?: ReviewParts | null;
+    reply?: string | null;
+  }[];
 };
 
 const post = (body?: unknown): RequestInit => ({
@@ -106,7 +125,13 @@ export function fetchReviewInbox() {
   return apiRequest<ReviewInbox>("/api/v1/guides/reviews/inbox");
 }
 
-export function writeGuideReview(input: { run_id: string; traveller_id?: string; rating: number; body: string }) {
+export function writeGuideReview(input: {
+  run_id: string;
+  traveller_id?: string;
+  rating: number;
+  body: string;
+  parts?: ReviewParts;
+}) {
   return apiRequest<{ id: string; direction: string; released: boolean }>("/api/v1/guides/reviews", post(input));
 }
 

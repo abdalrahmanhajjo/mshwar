@@ -6,16 +6,16 @@ The policy model is described in [authorization.md](authorization.md).
 | Policy | Routes |
 |---|---|
 | `actor` | 15 |
-| `admin` | 108 |
+| `admin` | 113 |
 | `admin-signin` | 2 |
 | `dev` | 1 |
-| `job` | 12 |
+| `job` | 13 |
 | `public` | 50 |
-| `session` | 218 |
+| `session` | 220 |
 | `signature` | 1 |
 | `token` | 6 |
 | `verified` | 9 |
-| **Total** | **422** |
+| **Total** | **430** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -44,10 +44,15 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/admin/flags` | `admin` |
 | PUT | `/api/v1/admin/flags` | `admin` |
 | GET | `/api/v1/admin/guide-funnel` | `admin` |
+| GET | `/api/v1/admin/guide-quality` | `admin` |
+| GET | `/api/v1/admin/guide-reviews` | `admin` |
+| POST | `/api/v1/admin/guide-reviews/{review_id}` | `admin` |
+| POST | `/api/v1/admin/guide-strikes/{strike_id}/void` | `admin` |
 | GET | `/api/v1/admin/guides` | `admin` |
 | POST | `/api/v1/admin/guides/documents/{credential_id}` | `admin` |
 | GET | `/api/v1/admin/guides/{profile_id}` | `admin` |
 | POST | `/api/v1/admin/guides/{profile_id}` | `admin` |
+| POST | `/api/v1/admin/guides/{profile_id}/strikes` | `admin` |
 | GET | `/api/v1/admin/kpis` | `admin` |
 | GET | `/api/v1/admin/leads` | `admin` |
 | GET | `/api/v1/admin/leads/field-sheet` | `admin` |
@@ -248,6 +253,7 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/guides/me/proposals` | `session` |
 | POST | `/api/v1/guides/me/proposals/{proposal_id}/photos` | `session` |
 | POST | `/api/v1/guides/me/proposals/{proposal_id}/withdraw` | `session` |
+| GET | `/api/v1/guides/me/quality` | `session` |
 | GET | `/api/v1/guides/me/requests` | `session` |
 | POST | `/api/v1/guides/me/requests/{booking_id}/respond` | `session` |
 | DELETE | `/api/v1/guides/me/schedules/{schedule_id}` | `session` |
@@ -263,6 +269,7 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/guides/my-bookings` | `session` |
 | POST | `/api/v1/guides/ops/calendar-sync` | `job` |
 | POST | `/api/v1/guides/ops/generate-slots` | `job` |
+| POST | `/api/v1/guides/ops/levels` | `job` |
 | POST | `/api/v1/guides/ops/min-group-check` | `job` |
 | POST | `/api/v1/guides/ops/reminders` | `job` |
 | POST | `/api/v1/guides/ops/weather-alerts` | `job` |
@@ -271,6 +278,7 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/guides/reports` | `session` |
 | POST | `/api/v1/guides/reviews` | `session` |
 | GET | `/api/v1/guides/reviews/inbox` | `session` |
+| POST | `/api/v1/guides/reviews/{review_id}/reply` | `session` |
 | GET | `/api/v1/guides/tour-slugs` | `public` |
 | GET | `/api/v1/guides/tours` | `public` |
 | GET | `/api/v1/guides/tours/{tour_slug}` | `public` |

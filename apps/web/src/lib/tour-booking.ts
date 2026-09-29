@@ -1,4 +1,5 @@
 import { apiRequest } from "@/lib/api/client";
+import type { GuideLevel } from "@/lib/guide-quality";
 import type { TourStop } from "@/lib/guide-work";
 
 /** Guide plan step 3: booking a tour. Prices are only what the guide published. */
@@ -51,6 +52,7 @@ export type TourCard = {
     badge: boolean;
     founding_number: number | null;
     tier: "licensed" | "host";
+    level?: GuideLevel;
   };
   /** Only released reviews count. */
   rating: { count: number; average: number | null };
@@ -91,6 +93,10 @@ export type PublicTourPage = {
     founding_number: number | null;
     headline?: string;
     languages?: string[];
+    level?: GuideLevel;
+    tours_given?: number;
+    /** Typical reply time from the nightly numbers; null until there is one. */
+    response_minutes?: number | null;
   };
   summary?: string;
   photos?: TourPhoto[];

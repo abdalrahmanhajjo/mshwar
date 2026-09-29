@@ -38,7 +38,13 @@ from app.schemas.admin import (
     TaxonomyMergeIn,
     TaxonomyRenameIn,
 )
-from app.schemas.guides import GuideDecisionIn, GuideDocumentDecisionIn, ProposalDecisionIn
+from app.schemas.guides import (
+    GuideDecisionIn,
+    GuideDocumentDecisionIn,
+    GuideStrikeIn,
+    ProposalDecisionIn,
+    ReviewModerationIn,
+)
 from app.schemas.planner import ThresholdIn
 from app.schemas.portal import AdminVerificationAction
 
@@ -1051,6 +1057,84 @@ async def decide_place_proposal(
             "SELECT app.admin_decide_proposal(CAST(:admin_id AS uuid), CAST(:id AS uuid), :decision, :reason)",
             {"admin_id": _uid(session), "id": str(proposal_id), "decision": payload.decision, "reason": payload.reason},
         )
+    )
+
+
+@router.get("/guide-quality", dependencies=[access.ADMIN])
+async def guide_quality(
+    request: Request,
+    q: str = Query(default="", max_length=100),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Every guide's level, score and strikes, those with live strikes first."""
+    session = await _admin(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.admin_guide_quality(CAST(:admin_id AS uuid), CAST(:filter AS jsonb))",
+        {"admin_id": _uid(session), "filter": json.dumps({"q": q})},
+    )
+
+
+@router.post("/guides/{profile_id}/strikes", dependencies=[access.ADMIN])
+async def add_guide_strike(
+    profile_id: UUID,
+    payload: GuideStrikeIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Record a checked problem. One strike warns, two pause new bookings, three suspend."""
+    session = await _admin(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.admin_add_guide_strike(CAST(:admin_id AS uuid), CAST(:guide AS uuid), CAST(:body AS jsonb))",
+        {"admin_id": _uid(session), "guide": str(profile_id), "body": payload.model_dump_json()},
+    )
+
+
+@router.post("/guide-strikes/{strike_id}/void", dependencies=[access.ADMIN])
+async def void_guide_strike(
+    strike_id: UUID,
+    payload: ReasonIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Withdraw a strike (for example after an appeal). A pause lifts below two strikes."""
+    session = await _admin(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.admin_void_guide_strike(CAST(:admin_id AS uuid), CAST(:strike AS uuid), :reason)",
+        {"admin_id": _uid(session), "strike": str(strike_id), "reason": payload.reason},
+    )
+
+
+@router.get("/guide-reviews", dependencies=[access.ADMIN])
+async def guide_reviews_for_moderation(
+    request: Request,
+    state: str = Query(default="all", pattern="^(all|hidden|low|replied)$"),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Recent guide reviews in both directions, with replies, for moderation."""
+    session = await _admin(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.admin_guide_reviews(CAST(:admin_id AS uuid), CAST(:filter AS jsonb))",
+        {"admin_id": _uid(session), "filter": json.dumps({"state": state})},
+    )
+
+
+@router.post("/guide-reviews/{review_id}", dependencies=[access.ADMIN])
+async def moderate_guide_review(
+    review_id: UUID,
+    payload: ReviewModerationIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Hide or show a review, or remove a guide's reply. Hiding and removing need a reason."""
+    session = await _admin(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.admin_moderate_guide_review(CAST(:admin_id AS uuid), CAST(:review AS uuid), :action, :reason)",
+        {"admin_id": _uid(session), "review": str(review_id), "action": payload.action, "reason": payload.reason},
     )
 
 

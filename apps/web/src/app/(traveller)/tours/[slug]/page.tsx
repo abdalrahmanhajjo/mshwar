@@ -16,6 +16,8 @@ import {
   Users,
   Zap,
 } from "lucide-react";
+import { GuideLevelBadge, replyTime } from "@/components/guide/guide-level";
+import { ReviewList, ReviewPartAverages } from "@/components/guide/guide-reviews";
 import { MessageGuide } from "@/components/messages/message-guide";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { FaqSection } from "@/components/seo/faq-section";
@@ -26,6 +28,7 @@ import { tourPrice } from "@/components/tours/tour-card";
 import { TourRouteMap } from "@/components/tours/tour-route-map";
 import { interpolate } from "@/i18n/catalogues";
 import { formatDate } from "@/i18n/format";
+import { guideQualityCopy } from "@/lib/guide-quality-copy";
 import { loadGuideReviews, loadTour } from "@/lib/guides-server";
 import { languageName } from "@/lib/place-search";
 import { seoText } from "@/lib/seo-copy";
@@ -82,6 +85,7 @@ export default async function TourPage({ params }: Props) {
   }
   const copy = toursCopy[locale];
   const bookingCopy = tourBookingCopy[locale];
+  const qualityCopy = guideQualityCopy[locale];
   const reviews = await loadGuideReviews(tour.guide.slug);
   const photos = (tour.photos ?? []).filter((photo) => photo.url);
   const price = tourPrice(copy, locale, { price_minor: tour.price_minor, price_unit: tour.price_unit });
@@ -255,7 +259,17 @@ export default async function TourPage({ params }: Props) {
                 {tour.guide.founding_number ? (
                   <span>· {interpolate(copy.founding, { n: String(tour.guide.founding_number) })}</span>
                 ) : null}
+                {tour.guide.tours_given ? (
+                  <span>· {interpolate(qualityCopy.toursGiven, { n: String(tour.guide.tours_given) })}</span>
+                ) : null}
+                {typeof tour.guide.response_minutes === "number" ? (
+                  <span>
+                    ·{" "}
+                    {interpolate(qualityCopy.repliesIn, { time: replyTime(qualityCopy, tour.guide.response_minutes) })}
+                  </span>
+                ) : null}
               </p>
+              <GuideLevelBadge level={tour.guide.level} className="w-fit" />
               {tour.guide.headline ? <p>{tour.guide.headline}</p> : null}
               <LocaleLink
                 href={`/guides/${tour.guide.slug}`}
@@ -273,23 +287,14 @@ export default async function TourPage({ params }: Props) {
             icon={<Star className="size-5" aria-hidden />}
           >
             {reviews && reviews.count > 0 ? (
-              <ul className="grid gap-3">
-                {reviews.recent.slice(0, 6).map((review) => (
-                  <li
-                    key={`${review.author}-${review.created_at}`}
-                    className="grid gap-1 rounded-card border border-border-subtle bg-surface-raised p-4"
-                  >
-                    <p className="flex items-center gap-1 text-sm font-medium">
-                      <Star className="size-4 fill-accent text-accent" aria-hidden />
-                      {review.rating}/5 · {review.author}
-                      <span className="text-text-muted">
-                        · {formatDate(locale, review.created_at, { dateStyle: "medium" })}
-                      </span>
-                    </p>
-                    {review.body ? <p>{review.body}</p> : null}
-                  </li>
-                ))}
-              </ul>
+              <div className="grid gap-3">
+                <ReviewPartAverages parts={reviews.parts} />
+                <ReviewList
+                  rows={reviews.recent.slice(0, 6)}
+                  empty={copy.noReviews}
+                  replyName={tour.guide.display_name}
+                />
+              </div>
             ) : (
               <p className="text-text-muted">{copy.noReviews}</p>
             )}

@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 from typing import Literal
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -346,6 +347,17 @@ class ProposalDecisionIn(BaseModel):
 # ---- G5: running the day ------------------------------------------------------------------
 
 
+class ReviewPartsIn(BaseModel):
+    """A traveller's four part ratings, each optional."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    knowledge: int | None = Field(default=None, ge=1, le=5)
+    communication: int | None = Field(default=None, ge=1, le=5)
+    value: int | None = Field(default=None, ge=1, le=5)
+    route: int | None = Field(default=None, ge=1, le=5)
+
+
 class GuideReviewIn(BaseModel):
     """One half of a two-sided review. A guide names the traveller; a traveller does not."""
 
@@ -355,6 +367,7 @@ class GuideReviewIn(BaseModel):
     traveller_id: str | None = None
     rating: int = Field(ge=1, le=5)
     body: str = Field(default="", max_length=2000)
+    parts: ReviewPartsIn | None = None
 
 
 # ---- G6: trust and safety -------------------------------------------------------------
@@ -519,3 +532,26 @@ class PaymentRecordIn(BaseModel):
 
     amount_minor: int = Field(ge=0, le=100_000_000)
     method: Literal["cash", "wallet", "card", "transfer", "other"]
+
+
+class ReviewReplyIn(BaseModel):
+    """The guide's one public reply to a review."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    body: str = Field(min_length=2, max_length=1000)
+
+
+class GuideStrikeIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["guide_cancellation", "no_show", "safety", "conduct", "other"]
+    reason: str = Field(min_length=3, max_length=500)
+    support_case_id: UUID | None = None
+
+
+class ReviewModerationIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    action: Literal["hide", "show", "remove_reply"]
+    reason: str = Field(default="", max_length=300)

@@ -15,7 +15,7 @@ export default async function GuideProfilePage({ params }: { params: Promise<{ s
     <ShellMain>
       <GuidePage guide={guide} />
       <PublicTours guide={guide} tours={tours} />
-      <PublicGuideReviewsSection reviews={reviews} />
+      <PublicGuideReviewsSection reviews={reviews} guideName={guide.display_name} />
     </ShellMain>
   );
 }

@@ -12,6 +12,7 @@ import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
 import { useDisplayNames } from "@/components/guide/pickers";
 import { MessageGuide } from "@/components/messages/message-guide";
+import { GuideLevelBadge } from "@/components/guide/guide-level";
 import { interpolate } from "@/i18n/catalogues";
 import { useGuideCopy, type GuideCopy } from "@/lib/guide-copy";
 import { useGuideJoinCopy } from "@/lib/guide-join-copy";
@@ -92,6 +93,7 @@ export function GuideCard({ guide, copy }: { guide: PublicGuide; copy: GuideCopy
           <Badge variant="outline">{guide.tier === "licensed" ? copy.badgeLicensed : copy.badgeHost}</Badge>
         )}
         <FoundingBadge number={guide.founding_number} />
+        <GuideLevelBadge level={guide.level} />
       </span>
       {guide.headline ? <span className="text-sm text-text-muted">{guide.headline}</span> : null}
       <span className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-muted">
@@ -265,8 +267,9 @@ export function GuidePage({ guide }: { guide: PublicGuide }) {
         title={guide.display_name}
         description={guide.headline}
       />
-      {guide.badge || guide.founding_number ? (
+      {guide.badge || guide.founding_number || guide.level === "trusted" || guide.level === "top" ? (
         <span className="flex flex-wrap items-center gap-2">
+          <GuideLevelBadge level={guide.level} />
           {guide.badge ? (
             <Badge variant="accent" className="w-fit gap-1.5">
               <BadgeCheck className="size-4" aria-hidden />

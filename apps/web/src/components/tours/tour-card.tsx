@@ -1,5 +1,6 @@
 import { Award, CalendarDays, Clock, ImageOff, Star, Zap } from "lucide-react";
 import { LocaleLink } from "@/components/shell/locale-link";
+import { GuideLevelBadge } from "@/components/guide/guide-level";
 import { interpolate } from "@/i18n/catalogues";
 import { formatCurrency, formatDate } from "@/i18n/format";
 import type { Locale } from "@/lib/locale";
@@ -83,6 +84,7 @@ export function TourCardView({ tour, copy, locale }: { tour: Tour; copy: ToursCo
           {tour.guide.founding_number ? <Award className="size-3.5 text-accent" aria-hidden /> : null}
           {interpolate(copy.byGuide, { name: tour.guide.display_name })}
           <span className="text-text-muted">· {tour.guide.tier === "host" ? copy.localHost : copy.licensed}</span>
+          <GuideLevelBadge level={tour.guide.level} className="ms-1 px-1.5 py-0 text-[0.7rem]" />
         </p>
         <div className="flex flex-wrap items-end justify-between gap-2 pt-1">
           <span className="inline-flex items-center gap-1 text-xs text-text-muted">

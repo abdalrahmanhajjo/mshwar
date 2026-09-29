@@ -66,6 +66,7 @@ from app.schemas.guides import (
     ProposalPhotoIn,
     RescheduleAnswerIn,
     RescheduleIn,
+    ReviewReplyIn,
     TourBookingIn,
     TourCancelIn,
     TourContentIn,
@@ -1507,19 +1508,60 @@ async def write_review(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
-    """Write one half. It stays hidden from the other side until both halves exist or 14 days pass."""
+    """Write one half. It stays hidden from the other side until both halves exist or 14 days pass.
+
+    A traveller may also rate knowledge, communication, value and route (each optional).
+    """
     uid = await _uid(request, db)
+    parts = payload.parts.model_dump(exclude_none=True) if payload.parts else {}
     return await fetch_json(
         db,
-        "SELECT app.write_guide_review(CAST(:uid AS uuid), CAST(:run AS uuid), CAST(:traveller AS uuid), :rating, :body)",
+        "SELECT app.write_guide_review_full(CAST(:uid AS uuid), CAST(:run AS uuid), CAST(:traveller AS uuid), "
+        ":rating, :body, CAST(:parts AS jsonb))",
         {
             "uid": uid,
             "run": payload.run_id,
             "traveller": payload.traveller_id,
             "rating": payload.rating,
             "body": payload.body,
+            "parts": json.dumps(parts),
         },
     )
+
+
+@router.post("/reviews/{review_id}/reply", dependencies=[access.SESSION, limit("community-write")])
+async def reply_to_review(
+    review_id: str,
+    payload: ReviewReplyIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """The guide answers a published review once, in public."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_reply_to_review(CAST(:uid AS uuid), CAST(:review AS uuid), :body)",
+        {"uid": uid, "review": review_id, "body": payload.body},
+    )
+
+
+# ---- Step 7: quality, levels and ranking ---------------------------------------------------
+
+
+@router.get("/me/quality", dependencies=[access.SESSION])
+async def my_quality(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """The guide's level, the numbers behind it, their ranking parts and any strikes."""
+    uid = await _uid(request, db)
+    return await fetch_json(db, "SELECT app.guide_my_quality(CAST(:uid AS uuid))", {"uid": uid})
+
+
+@router.post("/ops/levels", dependencies=[access.JOB])
+async def recompute_levels(db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    """Nightly: levels and ranking scores from the last 12 months."""
+    return await fetch_json(db, "SELECT app.guide_recompute_levels()", {})
 
 
 @router.get("/{slug}/reviews", dependencies=[access.PUBLIC])

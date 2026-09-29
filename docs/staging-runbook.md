@@ -250,6 +250,7 @@ a crontab:
 | Guide reminders       | Every 15 minutes                     | Day-before and two-hour reminders, request nudges, guides' manifests   |
 | Guide weather         | Every 6 hours                        | Warns guides about rain, heat or wind for booked outdoor runs          |
 | Guide calendars       | Every 15 minutes                     | Refreshes busy time from the calendars guides connected (https only)   |
+| Guide levels          | 03:15 Beirut time daily, and at boot | Levels (New, Trusted, Top guide) and "Recommended" scores, 12 months   |
 
 All are safe to repeat. `SCHEDULER_JOBS=sweep` limits it to the sweep. It is deployed and
 restarted with the API; to start it by hand:
