@@ -9,13 +9,13 @@ The policy model is described in [authorization.md](authorization.md).
 | `admin` | 108 |
 | `admin-signin` | 2 |
 | `dev` | 1 |
-| `job` | 9 |
+| `job` | 11 |
 | `public` | 49 |
-| `session` | 198 |
+| `session` | 205 |
 | `signature` | 1 |
 | `token` | 6 |
-| `verified` | 8 |
-| **Total** | **397** |
+| `verified` | 9 |
+| **Total** | **407** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -195,9 +195,16 @@ The policy model is described in [authorization.md](authorization.md).
 | PUT | `/api/v1/groups/trips/{trip_id}/votes` | `actor` |
 | GET | `/api/v1/guides` | `public` |
 | GET | `/api/v1/guides/bookings/{booking_id}` | `session` |
+| POST | `/api/v1/guides/bookings/{booking_id}/arrived` | `session` |
+| GET | `/api/v1/guides/bookings/{booking_id}/calendar.ics` | `session` |
 | POST | `/api/v1/guides/bookings/{booking_id}/cancel` | `session` |
 | POST | `/api/v1/guides/bookings/{booking_id}/reschedule` | `session` |
 | POST | `/api/v1/guides/bookings/{booking_id}/reschedule/answer` | `session` |
+| GET | `/api/v1/guides/conversations` | `session` |
+| POST | `/api/v1/guides/conversations` | `verified` |
+| GET | `/api/v1/guides/conversations/{conversation_id}` | `session` |
+| POST | `/api/v1/guides/conversations/{conversation_id}/close` | `session` |
+| POST | `/api/v1/guides/conversations/{conversation_id}/messages` | `session` |
 | GET | `/api/v1/guides/destinations/{destination_slug}/tours` | `public` |
 | POST | `/api/v1/guides/engagements` | `verified` |
 | GET | `/api/v1/guides/engagements/{engagement_id}` | `session` |
@@ -239,8 +246,11 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/guides/me/tours/{tour_id}/schedules` | `session` |
 | PUT | `/api/v1/guides/me/tours/{tour_id}/schedules` | `session` |
 | POST | `/api/v1/guides/me/tours/{tour_id}/slots` | `session` |
+| GET | `/api/v1/guides/my-bookings` | `session` |
 | POST | `/api/v1/guides/ops/generate-slots` | `job` |
 | POST | `/api/v1/guides/ops/min-group-check` | `job` |
+| POST | `/api/v1/guides/ops/reminders` | `job` |
+| POST | `/api/v1/guides/ops/weather-alerts` | `job` |
 | GET | `/api/v1/guides/places/{place_slug}/contributors` | `public` |
 | GET | `/api/v1/guides/programme` | `public` |
 | POST | `/api/v1/guides/reports` | `session` |

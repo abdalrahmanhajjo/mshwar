@@ -473,3 +473,25 @@ class TourContentIn(BaseModel):
     highlights: list[str] = Field(default_factory=list, max_length=8)
     faq: list[TourFaqIn] = Field(default_factory=list, max_length=10)
     accessibility: str = Field(default="", max_length=1000)
+
+
+class ConversationStartIn(BaseModel):
+    """A traveller writes to a guide. Contact details are masked until a booking is confirmed."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    guide_slug: str = Field(min_length=2, max_length=80)
+    body: str = Field(min_length=1, max_length=2000)
+
+
+class MessageIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    body: str = Field(min_length=1, max_length=2000)
+
+
+class ConversationCloseIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    report: bool = False
+    reason: str = Field(default="", max_length=2000)

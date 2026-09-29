@@ -62,6 +62,10 @@ JOBS: dict[str, Job] = {
     "expire-holds": Job("expire-holds", "/api/v1/checkout/ops/expire-holds", every=timedelta(minutes=15)),
     # Keeps every guide schedule filled 120 days ahead (061). Also at start-up.
     "guide-slots": Job("guide-slots", "/api/v1/guides/ops/generate-slots", daily_at=time(2, 30), run_at_start=True),
+    # Tour reminders (day before, two hours), request nudges and guides' manifests (064).
+    "guide-reminders": Job("guide-reminders", "/api/v1/guides/ops/reminders", every=timedelta(minutes=15)),
+    # Weather warnings for booked outdoor runs two days out (064).
+    "guide-weather": Job("guide-weather", "/api/v1/guides/ops/weather-alerts", every=timedelta(hours=6)),
     # Cancels, with the reason, shared guide runs that missed their minimum group (061).
     "guide-min-group": Job("guide-min-group", "/api/v1/guides/ops/min-group-check", every=timedelta(hours=1)),
 }

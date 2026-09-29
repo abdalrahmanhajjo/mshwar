@@ -208,7 +208,7 @@ async def test_a_guides_booking_notifications_link_to_the_guide_screens(clients:
                 text("SELECT app.notification_deep_link('guide.proposal_decided', '{\"path\": \"/guide/contribute\"}')")
             )
         ).scalar_one()
-    assert for_guide == "/guide/requests", "a guide never lands in the hidden business portal"
+    assert for_guide == f"/guide/bookings/{booking['id']}", "a guide never lands in the hidden business portal"
     assert other.startswith("/business/bookings"), "an ordinary business keeps its portal link"
     assert path == "/guide/contribute"
 

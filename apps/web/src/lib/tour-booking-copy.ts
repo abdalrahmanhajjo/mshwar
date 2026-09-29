@@ -103,7 +103,20 @@ export type TourBookingKey =
   | "saveSettings"
   | "settingsSaved"
   | "hostFree"
-  | "openBooking";
+  | "openBooking"
+  | "addToCalendar"
+  | "directions"
+  | "imHere"
+  | "imHereDone"
+  | "callGuide"
+  | "whatsapp"
+  | "myToursTitle"
+  | "myToursBody"
+  | "upcoming"
+  | "past"
+  | "noUpcoming"
+  | "noPast"
+  | "findTour";
 
 export type TourBookingCopy = Record<TourBookingKey, string>;
 
@@ -210,6 +223,19 @@ export const tourBookingCopy: Record<Locale, TourBookingCopy> = {
     settingsSaved: "Booking settings saved.",
     hostFree: "As a local host, extras and child places are free.",
     openBooking: "Open",
+    addToCalendar: "Add to calendar",
+    directions: "Directions",
+    imHere: "I'm here",
+    imHereDone: "Your guide knows you're here.",
+    callGuide: "Call {name}",
+    whatsapp: "WhatsApp",
+    myToursTitle: "My tours",
+    myToursBody: "Your tour bookings, with the code, the meeting point and your guide.",
+    upcoming: "Upcoming",
+    past: "Past",
+    noUpcoming: "No upcoming tours.",
+    noPast: "No past tours yet.",
+    findTour: "Find a tour",
   },
   ar: {
     metaTitle: "احجز {title}",
@@ -313,6 +339,19 @@ export const tourBookingCopy: Record<Locale, TourBookingCopy> = {
     settingsSaved: "حُفظت إعدادات الحجز.",
     hostFree: "بصفتك مضيفاً محلياً، الإضافات وأماكن الأطفال مجانية.",
     openBooking: "فتح",
+    addToCalendar: "أضف إلى التقويم",
+    directions: "الاتجاهات",
+    imHere: "وصلت",
+    imHereDone: "يعرف مرشدك أنك وصلت.",
+    callGuide: "اتصل بـ{name}",
+    whatsapp: "واتساب",
+    myToursTitle: "جولاتي",
+    myToursBody: "حجوزات جولاتك، مع الرمز ونقطة اللقاء ومرشدك.",
+    upcoming: "القادمة",
+    past: "السابقة",
+    noUpcoming: "لا جولات قادمة.",
+    noPast: "لا جولات سابقة بعد.",
+    findTour: "ابحث عن جولة",
   },
   fr: {
     metaTitle: "Réserver {title}",
@@ -416,6 +455,19 @@ export const tourBookingCopy: Record<Locale, TourBookingCopy> = {
     settingsSaved: "Réglages de réservation enregistrés.",
     hostFree: "En tant qu'hôte local, les options et les places enfants sont gratuites.",
     openBooking: "Ouvrir",
+    addToCalendar: "Ajouter au calendrier",
+    directions: "Itinéraire",
+    imHere: "Je suis là",
+    imHereDone: "Votre guide sait que vous êtes arrivé.",
+    callGuide: "Appeler {name}",
+    whatsapp: "WhatsApp",
+    myToursTitle: "Mes visites",
+    myToursBody: "Vos réservations de visites, avec le code, le point de rendez-vous et votre guide.",
+    upcoming: "À venir",
+    past: "Passées",
+    noUpcoming: "Aucune visite à venir.",
+    noPast: "Pas encore de visite passée.",
+    findTour: "Trouver une visite",
   },
 };
 

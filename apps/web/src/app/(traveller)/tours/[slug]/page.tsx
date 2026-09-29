@@ -16,6 +16,7 @@ import {
   Users,
   Zap,
 } from "lucide-react";
+import { MessageGuide } from "@/components/messages/message-guide";
 import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 import { FaqSection } from "@/components/seo/faq-section";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -262,6 +263,7 @@ export default async function TourPage({ params }: Props) {
               >
                 {interpolate(copy.seeGuide, { name: tour.guide.display_name })}
               </LocaleLink>
+              <MessageGuide guideSlug={tour.guide.slug} next={`/tours/${tour.slug}`} />
             </div>
           </Section>
 

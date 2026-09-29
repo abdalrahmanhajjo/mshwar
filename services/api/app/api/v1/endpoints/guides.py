@@ -14,24 +14,32 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import date
+from datetime import date, datetime
 from typing import Any
 from uuid import uuid4
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
+from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.concurrency import run_in_threadpool
 
 from app.core import access, imagekit
 from app.core.auth_session import require_session, require_verified_user
+from app.core.config import settings
+from app.core.ics import CalendarEvent, calendar
 from app.core.licences import COMMONS_IMAGE, COMMONS_PAGE, license_allowed
 from app.core.rate_limit import limit
 from app.core.sql import fetch_json
 from app.core.storage import delete_private_bytes, media_url, put_private_bytes
 from app.core.uploads import inspect_or_reject, validate_upload
 from app.dependencies import get_auth_db
+from app.planner.weather import WeatherService
 from app.schemas.guides import (
     BookingSettingsIn,
     BusyBlockIn,
+    ConversationCloseIn,
+    ConversationStartIn,
     EngagementAnswerIn,
     EngagementCancelIn,
     EngagementDecisionIn,
@@ -46,6 +54,7 @@ from app.schemas.guides import (
     GuideReviewIn,
     GuideTourIn,
     HireTermsIn,
+    MessageIn,
     ProposalIn,
     ProposalPhotoIn,
     RescheduleAnswerIn,
@@ -59,6 +68,7 @@ from app.schemas.guides import (
 )
 
 router = APIRouter()
+BEIRUT = ZoneInfo("Asia/Beirut")
 
 
 def _payload(model: Any) -> str:
@@ -578,6 +588,189 @@ async def answer_reschedule(
         "SELECT app.tour_answer_reschedule(CAST(:uid AS uuid), CAST(:booking AS uuid), :accept)",
         {"uid": uid, "booking": booking_id, "accept": payload.accept},
     )
+
+
+# ---- Step 5: after booking --------------------------------------------------------------
+
+
+@router.get("/my-bookings", dependencies=[access.SESSION])
+async def my_tour_bookings(
+    request: Request,
+    when: str = Query(default="upcoming", pattern="^(upcoming|past)$"),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """The traveller's tour bookings: upcoming soonest first, or past most recent first."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db, "SELECT app.traveller_tour_bookings(CAST(:uid AS uuid), :when)", {"uid": uid, "when": when}
+    )
+
+
+@router.get("/bookings/{booking_id}/calendar.ics", dependencies=[access.SESSION])
+async def tour_booking_calendar(
+    booking_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Response:
+    """The booking as a calendar file, for any calendar app."""
+    uid = await _uid(request, db)
+    row = await fetch_json(
+        db,
+        "SELECT app.traveller_tour_booking(CAST(:uid AS uuid), CAST(:booking AS uuid))",
+        {"uid": uid, "booking": booking_id},
+    )
+    link = f"{settings.public_web_origin.rstrip('/')}/tour-bookings/{row['id']}"
+    event = CalendarEvent(
+        uid=f"tour-booking-{row['id']}@mshwar",
+        starts_at=datetime.fromisoformat(row["starts_at"]),
+        ends_at=datetime.fromisoformat(row["ends_at"]),
+        summary=f"{row['tour_title']} ({row['code']})",
+        location=row.get("meeting_point") or "",
+        description=f"Guide: {row['guide_name']}\nBooking {row['code']}\n{link}",
+        url=link,
+        cancelled=row["status"] not in ("pending", "confirmed", "completed"),
+    )
+    return Response(
+        content=calendar([event], name=row["tour_title"]),
+        media_type="text/calendar; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="mshwar-{row["code"]}.ics"'},
+    )
+
+
+@router.post("/bookings/{booking_id}/arrived", dependencies=[access.SESSION, limit("booking")])
+async def traveller_arrived(
+    booking_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """ "I'm here": tell the guide the traveller has reached the meeting point."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.tour_traveller_arrived(CAST(:uid AS uuid), CAST(:booking AS uuid))",
+        {"uid": uid, "booking": booking_id},
+    )
+
+
+@router.get("/conversations", dependencies=[access.SESSION])
+async def my_conversations(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Every conversation the caller has, as a traveller or as a guide, newest first."""
+    uid = await _uid(request, db)
+    return await fetch_json(db, "SELECT app.list_guide_conversations(CAST(:uid AS uuid))", {"uid": uid})
+
+
+@router.post("/conversations", dependencies=[access.VERIFIED, limit("community-write")])
+async def start_conversation(
+    payload: ConversationStartIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Write to a guide. Contact details stay masked until a booking with them is confirmed."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.start_guide_conversation(CAST(:uid AS uuid), :guide, :body)",
+        {"uid": uid, "guide": payload.guide_slug, "body": payload.body},
+    )
+
+
+@router.get("/conversations/{conversation_id}", dependencies=[access.SESSION])
+async def read_conversation(
+    conversation_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """One conversation with its messages; the other side's messages are marked read."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.read_guide_conversation(CAST(:uid AS uuid), CAST(:conversation AS uuid))",
+        {"uid": uid, "conversation": conversation_id},
+    )
+
+
+@router.post("/conversations/{conversation_id}/messages", dependencies=[access.SESSION])
+async def send_message(
+    conversation_id: str,
+    payload: MessageIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.send_guide_message(CAST(:uid AS uuid), CAST(:conversation AS uuid), :body)",
+        {"uid": uid, "conversation": conversation_id, "body": payload.body},
+    )
+
+
+@router.post("/conversations/{conversation_id}/close", dependencies=[access.SESSION, limit("community-write")])
+async def close_conversation(
+    conversation_id: str,
+    payload: ConversationCloseIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Block the conversation; with a report, support gets the thread."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.close_guide_conversation(CAST(:uid AS uuid), CAST(:conversation AS uuid), :report, :reason)",
+        {"uid": uid, "conversation": conversation_id, "report": payload.report, "reason": payload.reason},
+    )
+
+
+@router.post("/ops/reminders", dependencies=[access.JOB])
+async def send_reminders(db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    """Every 15 minutes: day-before and two-hour reminders, request nudges and tomorrow's manifests."""
+    return await fetch_json(db, "SELECT app.tour_send_reminders()", {})
+
+
+# Thresholds for a warning two days before an outdoor run.
+RAIN_MM = 5.0
+HEAT_C = 35.0
+WIND_KMH = 50.0
+
+
+@router.post("/ops/weather-alerts", dependencies=[access.JOB])
+async def weather_alerts(db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    """Every 6 hours: warn guides about rain, heat or wind for booked outdoor runs 36-60 hours out."""
+    candidates = await fetch_json(db, "SELECT app.tour_weather_candidates()", {}) or []
+    service = WeatherService()
+    warned = 0
+    checked = 0
+    for run in candidates:
+        if run.get("lat") is None or run.get("lng") is None:
+            continue
+        day = datetime.fromisoformat(run["starts_at"]).astimezone(BEIRUT).date()
+        forecast = await run_in_threadpool(service.forecast, float(run["lat"]), float(run["lng"]), day)
+        checked += 1
+        if not forecast.available:
+            continue
+        reason = None
+        if (forecast.precip_mm or 0) >= RAIN_MM:
+            reason = "rain"
+        elif (forecast.temp_max_c or 0) >= HEAT_C:
+            reason = "heat"
+        elif (forecast.wind_kmh or 0) >= WIND_KMH:
+            reason = "wind"
+        if reason:
+            detail = {
+                "precip_mm": forecast.precip_mm,
+                "temp_max_c": forecast.temp_max_c,
+                "wind_kmh": forecast.wind_kmh,
+                "source": forecast.source,
+            }
+            recorded = await fetch_json(
+                db,
+                "SELECT app.tour_record_weather_alert(CAST(:slot AS uuid), :reason, CAST(:detail AS jsonb))",
+                {"slot": run["slot_id"], "reason": reason, "detail": json.dumps(detail)},
+            )
+            warned += 1 if recorded else 0
+    return {"checked": checked, "warned": warned}
 
 
 @router.post("/ops/generate-slots", dependencies=[access.JOB])

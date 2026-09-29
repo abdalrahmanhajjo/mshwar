@@ -1,7 +1,21 @@
 "use client";
 
 import * as React from "react";
-import { ArrowRightLeft, CalendarClock, Loader2, MapPin, Receipt, Users, XCircle } from "lucide-react";
+import {
+  ArrowRightLeft,
+  CalendarClock,
+  CalendarPlus,
+  Loader2,
+  MapPin,
+  MapPinCheck,
+  MessageCircle,
+  Navigation,
+  Phone,
+  Receipt,
+  Users,
+  XCircle,
+} from "lucide-react";
+import { MessageGuide } from "@/components/messages/message-guide";
 import { LocaleLink } from "@/components/shell/locale-link";
 import { useLocale } from "@/components/shell/locale-provider";
 import { Badge } from "@/components/ui/badge";
@@ -20,12 +34,15 @@ import {
   fetchAvailabilityMonth,
   fetchGuideTourBooking,
   fetchMyTourBooking,
+  markArrived,
   monthOf,
   proposeReschedule,
   shiftMonth,
   type AvailableStart,
   type TourBooking,
+  whatsappUrl,
 } from "@/lib/tour-booking";
+import { googleDirectionsUrl, wazeUrl } from "@/lib/road-route";
 import { useTourBookingCopy, type TourBookingKey } from "@/lib/tour-booking-copy";
 
 const BEIRUT = "Asia/Beirut";
@@ -140,6 +157,8 @@ export function TourBookingView({ bookingId, role }: { bookingId: string; role: 
       minute: "2-digit",
       timeZone: BEIRUT,
     });
+  const startsAt = new Date(booking.starts_at).getTime();
+  const hereWindow = now >= startsAt - 30 * 60 * 1000 && now <= startsAt + 60 * 60 * 1000;
   const late = booking.status === "confirmed" && now > new Date(booking.free_cancel_until).getTime();
   const proposal = booking.reschedule;
 
@@ -266,6 +285,78 @@ export function TourBookingView({ bookingId, role }: { bookingId: string; role: 
           </div>
         ) : null}
       </dl>
+
+      {role === "traveller" && live ? (
+        <section aria-label={copy.directions} className="flex flex-wrap items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <a href={`/api/v1/guides/bookings/${booking.id}/calendar.ics`} download>
+              <CalendarPlus aria-hidden />
+              {copy.addToCalendar}
+            </a>
+          </Button>
+          {typeof booking.meeting_lat === "number" && typeof booking.meeting_lng === "number" ? (
+            <>
+              <Button asChild variant="outline" size="sm">
+                <a
+                  href={googleDirectionsUrl([{ lat: booking.meeting_lat, lng: booking.meeting_lng }]) ?? "#"}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <Navigation aria-hidden />
+                  {copy.directions} · Google Maps
+                </a>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <a
+                  href={wazeUrl({ lat: booking.meeting_lat, lng: booking.meeting_lng })}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <Navigation aria-hidden />
+                  Waze
+                </a>
+              </Button>
+            </>
+          ) : null}
+          {booking.guide_phone ? (
+            <>
+              <Button asChild variant="outline" size="sm">
+                <a href={`tel:${booking.guide_phone.replace(/\s/g, "")}`}>
+                  <Phone aria-hidden />
+                  {interpolate(copy.callGuide, { name: booking.guide_name })}
+                </a>
+              </Button>
+              {whatsappUrl(booking.guide_phone) ? (
+                <Button asChild variant="outline" size="sm">
+                  <a href={whatsappUrl(booking.guide_phone) as string} target="_blank" rel="noreferrer">
+                    <MessageCircle aria-hidden />
+                    {copy.whatsapp}
+                  </a>
+                </Button>
+              ) : null}
+            </>
+          ) : null}
+          {booking.status === "confirmed" && hereWindow ? (
+            booking.arrived_at ? (
+              <p className="text-sm font-medium text-success">{copy.imHereDone}</p>
+            ) : (
+              <Button
+                type="button"
+                size="sm"
+                disabled={busy !== null}
+                onClick={() => void run("here", () => markArrived(booking.id))}
+              >
+                <MapPinCheck aria-hidden />
+                {copy.imHere}
+              </Button>
+            )
+          ) : null}
+        </section>
+      ) : null}
+
+      {role === "traveller" ? (
+        <MessageGuide guideSlug={booking.guide_slug} next={`/tour-bookings/${booking.id}`} />
+      ) : null}
 
       {error ? (
         <Notice tone="danger" role="alert">

@@ -11,6 +11,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
 import { useDisplayNames } from "@/components/guide/pickers";
+import { MessageGuide } from "@/components/messages/message-guide";
 import { interpolate } from "@/i18n/catalogues";
 import { useGuideCopy, type GuideCopy } from "@/lib/guide-copy";
 import { useGuideJoinCopy } from "@/lib/guide-join-copy";
@@ -276,6 +277,9 @@ export function GuidePage({ guide }: { guide: PublicGuide }) {
         </span>
       ) : null}
       {guide.bio ? <p className="max-w-2xl whitespace-pre-line text-text">{guide.bio}</p> : null}
+      <div className="max-w-xl">
+        <MessageGuide guideSlug={guide.slug} next={`/guides/${guide.slug}`} />
+      </div>
       {facts.length ? (
         <dl className="grid gap-3 rounded-card border border-border-subtle bg-surface-raised p-5 sm:grid-cols-3">
           {facts.map(([label, value]) => (

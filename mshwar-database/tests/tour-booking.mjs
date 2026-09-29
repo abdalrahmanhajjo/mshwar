@@ -171,6 +171,17 @@ export async function testTourBooking(db) {
     await db.query("UPDATE app.experiences SET status = 'draft' WHERE id = $1", [TOUR]);
     const hidden = (await one(db, "SELECT app.public_tours_search($1::jsonb) AS s", [{ q: "Test booking tour 1" }])).s;
     assert.equal(hidden.total, 0, "a draft is never listed");
+
+    // Step 5 (064): contact details are masked before a message is stored.
+    const masked = (
+      await one(db, "SELECT app.mask_contact_details($1) AS m", [
+        "Call +961 70 123 456 or rami@example.com, see www.rami.lb. Meet at 10:30, 8 people, $25.",
+      ])
+    ).m;
+    assert.doesNotMatch(masked, /961|example\.com|rami\.lb/);
+    assert.match(masked, /Meet at 10:30, 8 people, \$25\./, "times, group sizes and prices stay");
+    const reminders = (await one(db, "SELECT app.tour_send_reminders() AS r")).r;
+    assert.equal(typeof reminders.day_before, "number");
   } finally {
     await db.exec("ROLLBACK");
   }

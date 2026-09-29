@@ -32,6 +32,7 @@ const CATALOGUES = [
   "src/lib/guide-schedule-copy.ts",
   "src/lib/tour-booking-copy.ts",
   "src/lib/tours-copy.ts",
+  "src/lib/guide-messages.ts",
   "src/lib/search-copy.ts",
   "src/lib/verified-copy.ts",
   "src/lib/partner-copy.ts",

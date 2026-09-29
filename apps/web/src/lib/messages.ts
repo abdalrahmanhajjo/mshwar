@@ -122,6 +122,8 @@ export type MessageKey =
   | "adminExchange"
   | "adminVenues"
   | "myRides"
+  | "myTours"
+  | "inbox"
   | "auditLog"
   | "notFound"
   | "notFoundBody"
@@ -289,6 +291,8 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     adminExchange: "Money changers",
     adminVenues: "Restaurants and stays",
     myRides: "My rides",
+    myTours: "My tours",
+    inbox: "Messages",
     auditLog: "Audit log",
     notFound: "Page not found",
     notFoundBody: "That page is not in the catalogue.",
@@ -456,6 +460,8 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     adminExchange: "الصرّافون",
     adminVenues: "المطاعم وأماكن الإقامة",
     myRides: "رحلاتي",
+    myTours: "جولاتي",
+    inbox: "الرسائل",
     auditLog: "سجل التدقيق",
     notFound: "الصفحة غير موجودة",
     notFoundBody: "هذه الصفحة ليست في الكتالوج.",
@@ -624,6 +630,8 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     adminExchange: "Bureaux de change",
     adminVenues: "Restaurants et hébergements",
     myRides: "Mes courses",
+    myTours: "Mes visites",
+    inbox: "Messages",
     auditLog: "Journal d’audit",
     notFound: "Page introuvable",
     notFoundBody: "Cette page n’est pas dans le catalogue.",

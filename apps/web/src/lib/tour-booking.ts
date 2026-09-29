@@ -173,6 +173,11 @@ export type TourBooking = {
     status: string;
   } | null;
   created_at: string;
+  /** On the traveller's own booking: the meeting point, and the guide's phone once confirmed. */
+  meeting_lat?: number | null;
+  meeting_lng?: number | null;
+  guide_phone?: string | null;
+  arrived_at?: string | null;
 };
 
 export type BookingInput = {
@@ -238,6 +243,21 @@ export function proposeReschedule(bookingId: string, slotId: string, message: st
     `/api/v1/guides/bookings/${bookingId}/reschedule`,
     send("POST", { slot_id: slotId, message }),
   );
+}
+
+export function tourBookingsList(when: "upcoming" | "past") {
+  return apiRequest<TourBooking[]>(`/api/v1/guides/my-bookings?when=${when}`);
+}
+
+export function markArrived(bookingId: string) {
+  return apiRequest<TourBooking>(`/api/v1/guides/bookings/${bookingId}/arrived`, send("POST", {}));
+}
+
+/** wa.me wants digits only, with the country code. */
+export function whatsappUrl(phone: string): string | null {
+  const digits = phone.replace(/[^\d]/g, "").replace(/^00/, "");
+  if (digits.length < 8) return null;
+  return `https://wa.me/${digits.startsWith("961") || digits.length > 10 ? digits : `961${digits.replace(/^0/, "")}`}`;
 }
 
 export function answerReschedule(bookingId: string, accept: boolean) {
