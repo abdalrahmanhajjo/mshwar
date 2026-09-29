@@ -10,12 +10,12 @@ The policy model is described in [authorization.md](authorization.md).
 | `admin-signin` | 2 |
 | `dev` | 1 |
 | `job` | 7 |
-| `public` | 43 |
+| `public` | 44 |
 | `session` | 185 |
 | `signature` | 1 |
 | `token` | 6 |
 | `verified` | 7 |
-| **Total** | **375** |
+| **Total** | **376** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -226,6 +226,7 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/guides/me/tours/{tour_id}/publish` | `session` |
 | POST | `/api/v1/guides/me/tours/{tour_id}/slots` | `session` |
 | GET | `/api/v1/guides/places/{place_slug}/contributors` | `public` |
+| GET | `/api/v1/guides/programme` | `public` |
 | POST | `/api/v1/guides/reports` | `session` |
 | POST | `/api/v1/guides/reviews` | `session` |
 | GET | `/api/v1/guides/reviews/inbox` | `session` |
