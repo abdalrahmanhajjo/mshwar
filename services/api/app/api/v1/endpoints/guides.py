@@ -12,9 +12,7 @@ function decide what may be touched, the same way the rest of the API works.
 
 from __future__ import annotations
 
-import csv
 import hashlib
-import io
 import json
 import re
 import secrets
@@ -1026,9 +1024,20 @@ async def my_earnings(
 
 
 def _csv_cell(value: Any) -> str:
-    """One cell, safe to open in a spreadsheet (no formulas)."""
+    """One cell, safe to open in a spreadsheet: a leading formula character is neutralised."""
     text_value = "" if value is None else str(value)
     return "'" + text_value if text_value[:1] in ("=", "+", "-", "@", "\t", "\r") else text_value
+
+
+def _csv_line(values: list[Any]) -> str:
+    """One RFC 4180 line. Every cell goes through ``_csv_cell``, so no cell can run a formula."""
+    cells = []
+    for value in values:
+        cell = _csv_cell(value)
+        if any(char in cell for char in (",", '"', "\n", "\r")):
+            cell = '"' + cell.replace('"', '""') + '"'
+        cells.append(cell)
+    return ",".join(cells) + "\r\n"
 
 
 def _money(minor: Any) -> str:
@@ -1046,29 +1055,29 @@ async def my_earnings_csv(
     statement = await fetch_json(
         db, "SELECT app.guide_earnings(CAST(:uid AS uuid), :month)", {"uid": uid, "month": month}
     )
-    out = io.StringIO()
-    writer = csv.writer(out)
-    writer.writerow(["date", "booking", "tour", "guests", "status", "expected_usd", "received_usd", "method"])
+    lines = [_csv_line(["date", "booking", "tour", "guests", "status", "expected_usd", "received_usd", "method"])]
     for row in statement["rows"]:
-        writer.writerow(
-            [
-                _csv_cell(datetime.fromisoformat(row["starts_at"]).astimezone(BEIRUT).strftime("%Y-%m-%d %H:%M")),
-                _csv_cell(row["code"]),
-                _csv_cell(row["tour_title"]),
-                row["party_size"],
-                "no-show" if row["no_show"] else row["status"],
-                _money(row["expected_minor"]),
-                _money(row["paid_minor"]),
-                _csv_cell(row["paid_method"]),
-            ]
+        lines.append(
+            _csv_line(
+                [
+                    datetime.fromisoformat(row["starts_at"]).astimezone(BEIRUT).strftime("%Y-%m-%d %H:%M"),
+                    row["code"],
+                    row["tour_title"],
+                    row["party_size"],
+                    "no-show" if row["no_show"] else row["status"],
+                    _money(row["expected_minor"]),
+                    _money(row["paid_minor"]),
+                    row["paid_method"],
+                ]
+            )
         )
-    writer.writerow([])
-    writer.writerow(["received_usd", _money(statement["recorded_minor"])])
-    writer.writerow(["mshwar_fee_percent", statement["fee_percent"]])
-    writer.writerow(["mshwar_fee_usd", _money(statement["fee_minor"])])
-    writer.writerow(["yours_usd", _money(statement["net_minor"])])
+    lines.append("\r\n")
+    lines.append(_csv_line(["received_usd", _money(statement["recorded_minor"])]))
+    lines.append(_csv_line(["mshwar_fee_percent", statement["fee_percent"]]))
+    lines.append(_csv_line(["mshwar_fee_usd", _money(statement["fee_minor"])]))
+    lines.append(_csv_line(["yours_usd", _money(statement["net_minor"])]))
     return Response(
-        content=out.getvalue(),
+        content="".join(lines),
         media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": f'attachment; filename="mshwar-earnings-{statement["month"]}.csv"'},
     )

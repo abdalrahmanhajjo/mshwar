@@ -401,3 +401,6 @@ def test_spreadsheet_cells_cannot_run_formulas() -> None:
     assert guides_endpoint._csv_cell("+1") == "'+1"
     assert guides_endpoint._csv_cell("Batroun") == "Batroun"
     assert guides_endpoint._csv_cell(None) == ""
+    assert guides_endpoint._csv_line(["Tour, with comma", 'Say "hi"', "-5", 3]) == (
+        '"Tour, with comma","Say ""hi""",\'-5,3\r\n'
+    )
