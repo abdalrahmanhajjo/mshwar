@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DestinationDetailView } from "@/components/browse/destination-detail-view";
 import { JsonLd } from "@/components/seo/json-ld";
+import { DestinationTours } from "@/components/tours/destination-tours";
 import { loadDestination, loadDestinations, loadExperiencePage } from "@/lib/catalogue-api";
 import { DESTINATIONS, type Destination } from "@/lib/catalog";
 import { seoText } from "@/lib/seo-copy";
 import { publishedGuide } from "@/content/destination-guides";
+import { loadDestinationTours } from "@/lib/guides-server";
 import { crumbsFor, destinationFaqs, guideBlock, guideFaqs } from "@/lib/seo/content";
 import { buildMetadata, pathLocale } from "@/lib/seo/metadata";
 import { breadcrumbSchema, destinationSchema, faqSchema, graph } from "@/lib/seo/schema";
@@ -46,7 +48,10 @@ export default async function DestinationDetailPage({ params }: { params: Promis
   if (!destination) {
     notFound();
   }
-  const page = await loadExperiencePage({ destination: slug, pageSize: 24 });
+  const [page, tours] = await Promise.all([
+    loadExperiencePage({ destination: slug, pageSize: 24 }),
+    loadDestinationTours(slug),
+  ]);
   const parent = parentRegion(destination, all);
   const crumbs = crumbsFor(locale, [
     { key: "crumbDestinations", path: "/destinations" },
@@ -84,6 +89,7 @@ export default async function DestinationDetailPage({ params }: { params: Promis
         faqs={faqs}
         guide={block}
         faqTitle={seoText(locale, "faqHeading")}
+        tours={<DestinationTours tours={tours} name={destination.name} slug={destination.slug} locale={locale} />}
       />
     </>
   );

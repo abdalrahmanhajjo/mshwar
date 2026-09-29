@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from datetime import date
+import re
+from datetime import date, datetime
+from typing import Literal
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -121,6 +124,9 @@ class GuideTourIn(BaseModel):
     route: list[str] = Field(default_factory=list, max_length=12)
 
 
+HHMM = "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+
+
 class WeeklyStartIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -144,6 +150,50 @@ class GuideAvailabilityIn(BaseModel):
     min_notice_hours: int = Field(default=24, ge=0, le=720)
     max_tours_per_day: int = Field(default=2, ge=1, le=8)
     exceptions: list[AvailabilityExceptionIn] = Field(default_factory=list, max_length=120)
+    # Step 2 rules. Left out, each keeps what the guide set before.
+    buffer_minutes: int | None = Field(default=None, ge=0, le=240)
+    cutoff_time: str | None = Field(default=None, pattern=HHMM)
+    travel_aware: bool | None = None
+
+
+class TourScheduleIn(BaseModel):
+    """One recurring rule for one tour: days, start times, a season, seats and the mode."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str | None = None
+    weekdays: list[int] = Field(min_length=1, max_length=7)
+    start_times: list[str] = Field(min_length=1, max_length=8)
+    valid_from: date | None = None
+    valid_to: date | None = None
+    capacity: int | None = Field(default=None, ge=1, le=60)
+    mode: Literal["shared", "private"] = "shared"
+    min_group: int = Field(default=1, ge=1, le=60)
+    min_group_deadline_hours: int = Field(default=24, ge=1, le=168)
+
+    @field_validator("weekdays")
+    @classmethod
+    def known_weekdays(cls, value: list[int]) -> list[int]:
+        if any(day < 0 or day > 6 for day in value):
+            raise ValueError("weekdays run from 0 (Monday) to 6 (Sunday)")
+        return value
+
+    @field_validator("start_times")
+    @classmethod
+    def clock_times(cls, value: list[str]) -> list[str]:
+        if any(not re.fullmatch(HHMM, item) for item in value):
+            raise ValueError("start times are HH:MM, for example 09:30")
+        return value
+
+
+class BusyBlockIn(BaseModel):
+    """Time the guide cannot work. Only the time is kept, never what it is for."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    starts_at: datetime
+    ends_at: datetime
+    note: str = Field(default="", max_length=200)
 
 
 class TourRequestIn(BaseModel):
@@ -297,6 +347,17 @@ class ProposalDecisionIn(BaseModel):
 # ---- G5: running the day ------------------------------------------------------------------
 
 
+class ReviewPartsIn(BaseModel):
+    """A traveller's four part ratings, each optional."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    knowledge: int | None = Field(default=None, ge=1, le=5)
+    communication: int | None = Field(default=None, ge=1, le=5)
+    value: int | None = Field(default=None, ge=1, le=5)
+    route: int | None = Field(default=None, ge=1, le=5)
+
+
 class GuideReviewIn(BaseModel):
     """One half of a two-sided review. A guide names the traveller; a traveller does not."""
 
@@ -306,6 +367,7 @@ class GuideReviewIn(BaseModel):
     traveller_id: str | None = None
     rating: int = Field(ge=1, le=5)
     body: str = Field(default="", max_length=2000)
+    parts: ReviewPartsIn | None = None
 
 
 # ---- G6: trust and safety -------------------------------------------------------------
@@ -350,3 +412,146 @@ class GuideDocumentUploadIn(BaseModel):
         if value not in DOCUMENT_KINDS:
             raise ValueError("unknown document kind")
         return value
+
+
+class TourAddonIn(BaseModel):
+    """A fixed-price extra a guide offers on a tour (pickup, tasting, tickets...)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str | None = None
+    name: str = Field(min_length=2, max_length=80)
+    price_minor: int = Field(default=0, ge=0, le=100_000_000)
+    unit: Literal["person", "booking"] = "booking"
+
+
+class BookingSettingsIn(BaseModel):
+    """How one tour is booked: instant or request, the policy, a child price and extras."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    instant_booking: bool = False
+    request_ttl_hours: int = Field(default=24, ge=12, le=48)
+    policy: Literal["flexible", "moderate", "strict"] = "flexible"
+    child_price_minor: int | None = Field(default=None, ge=0, le=100_000_000)
+    child_age_max: int | None = Field(default=None, ge=1, le=17)
+    addons: list[TourAddonIn] = Field(default_factory=list, max_length=12)
+
+
+class TourBookingIn(BaseModel):
+    """A traveller books a start: who is coming, in which language, extras and a note."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    slot_id: str
+    adults: int = Field(ge=1, le=60)
+    children: int = Field(default=0, ge=0, le=60)
+    language: str | None = Field(default=None, max_length=12)
+    addons: list[str] = Field(default_factory=list, max_length=12)
+    note: str = Field(default="", max_length=1000)
+    idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)
+
+
+class TourCancelIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    reason: str = Field(min_length=2, max_length=500)
+
+
+class RescheduleIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    slot_id: str
+    message: str = Field(default="", max_length=500)
+
+
+class RescheduleAnswerIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    accept: bool
+
+
+class TourFaqIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    question: str = Field(min_length=3, max_length=200)
+    answer: str = Field(min_length=2, max_length=1000)
+
+
+class TourContentIn(BaseModel):
+    """What the tour page says beyond the listing: highlights, questions and accessibility."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    highlights: list[str] = Field(default_factory=list, max_length=8)
+    faq: list[TourFaqIn] = Field(default_factory=list, max_length=10)
+    accessibility: str = Field(default="", max_length=1000)
+
+
+class ConversationStartIn(BaseModel):
+    """A traveller writes to a guide. Contact details are masked until a booking is confirmed."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    guide_slug: str = Field(min_length=2, max_length=80)
+    body: str = Field(min_length=1, max_length=2000)
+
+
+class MessageIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    body: str = Field(min_length=1, max_length=2000)
+
+
+class ConversationCloseIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    report: bool = False
+    reason: str = Field(default="", max_length=2000)
+
+
+class ExternalCalendarIn(BaseModel):
+    """A calendar's secret address (Google "Secret address in iCal format", Apple, Outlook)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    url: str = Field(min_length=12, max_length=1000)
+    label: str = Field(default="", max_length=60)
+
+
+class CheckInIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    status: Literal["arrived", "no_show"]
+
+
+class PaymentRecordIn(BaseModel):
+    """What the guide received on the day. Mshwar never moves this money."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    amount_minor: int = Field(ge=0, le=100_000_000)
+    method: Literal["cash", "wallet", "card", "transfer", "other"]
+
+
+class ReviewReplyIn(BaseModel):
+    """The guide's one public reply to a review."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    body: str = Field(min_length=2, max_length=1000)
+
+
+class GuideStrikeIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["guide_cancellation", "no_show", "safety", "conduct", "other"]
+    reason: str = Field(min_length=3, max_length=500)
+    support_case_id: UUID | None = None
+
+
+class ReviewModerationIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    action: Literal["hide", "show", "remove_reply"]
+    reason: str = Field(default="", max_length=300)

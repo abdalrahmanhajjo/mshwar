@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { loadCollections, loadDestinations, loadExperiencePage } from "@/lib/catalogue-api";
+import { loadTourSlugs } from "@/lib/guides-server";
 import { LOCALES } from "@/lib/locale";
 import { THINGS } from "@/lib/seo/things";
 import { languageAlternates, siteUrl } from "@/lib/site";
@@ -27,7 +28,9 @@ const SECTIONS: Entry[] = [
   { path: "/collections", priority: 0.7, changeFrequency: "weekly" },
   { path: "/discover", priority: 0.7, changeFrequency: "weekly" },
   { path: "/drivers", priority: 0.7, changeFrequency: "weekly" },
+  { path: "/tours", priority: 0.8, changeFrequency: "daily" },
   { path: "/guides", priority: 0.6, changeFrequency: "weekly" },
+  { path: "/guides/join", priority: 0.5, changeFrequency: "monthly" },
   { path: "/about", priority: 0.5, changeFrequency: "yearly" },
   { path: "/partners", priority: 0.3, changeFrequency: "yearly" },
   { path: "/contact", priority: 0.5, changeFrequency: "yearly" },
@@ -69,10 +72,11 @@ function expand(entries: Entry[]): MetadataRoute.Sitemap {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Only real catalogue data is listed; when the API is down these come back empty
   // (the bundled sample is never offered to search engines as real places).
-  const [destinations, experiences, collections] = await Promise.all([
+  const [destinations, experiences, collections, tours] = await Promise.all([
     loadDestinations().catch(() => []),
     experienceSlugs().catch(() => []),
     loadCollections().catch(() => []),
+    loadTourSlugs().catch(() => []),
   ]);
 
   return expand([
@@ -88,5 +92,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
       changeFrequency: "weekly" as const,
     })),
+    ...tours.map((item) => ({ path: `/tours/${item.slug}`, priority: 0.7, changeFrequency: "weekly" as const })),
   ]);
 }

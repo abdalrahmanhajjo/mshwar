@@ -58,7 +58,24 @@ JOBS: dict[str, Job] = {
     "sweep": Job("sweep", "/api/v1/partners/ops/sweep", daily_at=time(3, 0), run_at_start=True),
     # Sends queued email and in-app notifications, including the sweep's warnings.
     "dispatch": Job("dispatch", "/api/v1/notifications/dispatch", every=timedelta(minutes=1)),
+    # Expires unanswered requests and lapsed holds, and tells the traveller (062).
+    "expire-holds": Job("expire-holds", "/api/v1/checkout/ops/expire-holds", every=timedelta(minutes=15)),
+    # Keeps every guide schedule filled 120 days ahead (061). Also at start-up.
+    "guide-slots": Job("guide-slots", "/api/v1/guides/ops/generate-slots", daily_at=time(2, 30), run_at_start=True),
+    # Tour reminders (day before, two hours), request nudges and guides' manifests (064).
+    "guide-reminders": Job("guide-reminders", "/api/v1/guides/ops/reminders", every=timedelta(minutes=15)),
+    # Weather warnings for booked outdoor runs two days out (064).
+    "guide-weather": Job("guide-weather", "/api/v1/guides/ops/weather-alerts", every=timedelta(hours=6)),
+    # Guide levels and "Recommended" scores from the last 12 months (066).
+    "guide-levels": Job("guide-levels", "/api/v1/guides/ops/levels", daily_at=time(3, 15), run_at_start=True),
+    # Busy time from the calendars guides connected (065).
+    "guide-calendars": Job("guide-calendars", "/api/v1/guides/ops/calendar-sync", every=timedelta(minutes=15)),
+    # Cancels, with the reason, shared guide runs that missed their minimum group (061).
+    "guide-min-group": Job("guide-min-group", "/api/v1/guides/ops/min-group-check", every=timedelta(hours=1)),
 }
+
+
+DEFAULT_JOBS = ",".join(JOBS)
 
 
 @dataclass(frozen=True)
@@ -76,7 +93,7 @@ class SchedulerConfig:
             raise ValueError(
                 "the scheduler needs INTERNAL_JOB_TOKEN (at least 32 characters), the same one the API uses"
             )
-        names = [name.strip() for name in env.get("SCHEDULER_JOBS", "sweep,dispatch").split(",") if name.strip()]
+        names = [name.strip() for name in env.get("SCHEDULER_JOBS", DEFAULT_JOBS).split(",") if name.strip()]
         unknown = [name for name in names if name not in JOBS]
         if unknown:
             raise ValueError(f"unknown scheduler jobs: {', '.join(unknown)} (known: {', '.join(JOBS)})")

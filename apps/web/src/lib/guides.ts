@@ -1,3 +1,4 @@
+import type { GuideLevel } from "@/lib/guide-quality";
 import { apiRequest } from "@/lib/api/client";
 
 export type GuideTier = "licensed" | "host";
@@ -19,7 +20,15 @@ export type PublicGuide = {
   years_guiding: number | null;
   status: GuideStatus;
   organization_id: string | null;
+  /** 1-50 for the first fifty approved guides (migration 060); null otherwise. */
+  founding_number?: number | null;
+  level?: GuideLevel;
+  tours_given?: number;
+  response_minutes?: number | null;
 };
+
+/** How many Founding Guide places are left: a count from the database, never a guess. */
+export type FoundingProgramme = { limit: number; taken: number; remaining: number };
 
 export type GuideDocument = {
   id: string;

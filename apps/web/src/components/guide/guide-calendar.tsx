@@ -8,11 +8,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Notice } from "@/components/ui/notice";
 import { PageHeader } from "@/components/ui/page-header";
+import { BlockedTime } from "@/components/guide/blocked-time";
+import { BookingSettings } from "@/components/guide/booking-settings";
+import { CalendarSync } from "@/components/guide/calendar-sync";
+import { GuideMonthView } from "@/components/guide/guide-month";
 import { ApprovedGuide } from "@/components/guide/guide-provider";
+import { TourSchedules } from "@/components/guide/schedule-editor";
 import { useLocale } from "@/components/shell/locale-provider";
 import { interpolate } from "@/i18n/catalogues";
 import { formatDate } from "@/i18n/format";
 import { ApiError } from "@/lib/api/client";
+import { useGuideScheduleCopy } from "@/lib/guide-schedule-copy";
 import { useGuideWorkCopy, type GuideWorkKey } from "@/lib/guide-work-copy";
 import {
   fetchAvailability,
@@ -44,6 +50,7 @@ export function normalisePattern(pattern: WeeklyStart[]): WeeklyStart[] {
 
 function Calendar() {
   const copy = useGuideWorkCopy();
+  const scheduleCopy = useGuideScheduleCopy();
   const { locale } = useLocale();
   const dayLabel = (localDate: string) =>
     formatDate(locale, `${localDate}T12:00:00Z`, {
@@ -156,7 +163,37 @@ function Calendar() {
         </Notice>
       ) : null}
 
-      <section className="grid gap-3 rounded-card border border-border-subtle bg-surface-raised p-5 md:p-6">
+      <GuideMonthView />
+
+      {tours.length ? (
+        <section
+          aria-labelledby="schedules-title"
+          className="grid gap-4 rounded-card border border-border-subtle bg-surface-raised p-5 md:p-6"
+        >
+          <h2 id="schedules-title" className="title-section text-[1.15rem]">
+            {scheduleCopy.schedulesTitle}
+          </h2>
+          <ul className="grid gap-6 divide-y divide-border-subtle">
+            {tours.map((tour) => (
+              <li key={tour.id} className="pt-4 first:pt-0">
+                <div className="grid gap-4">
+                  <TourSchedules tour={tour} />
+                  <BookingSettings tour={tour} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      <section
+        aria-labelledby="rules-title"
+        className="grid gap-3 rounded-card border border-border-subtle bg-surface-raised p-5 md:p-6"
+      >
+        <h2 id="rules-title" className="title-section text-[1.15rem]">
+          {scheduleCopy.rulesTitle}
+        </h2>
+        <p className="text-sm text-text-muted">{scheduleCopy.rulesBody}</p>
         <ul className="grid divide-y divide-border-subtle">
           {WEEKDAYS.map((weekday) => {
             const starts = pattern.filter((entry) => entry.weekday === weekday);
@@ -248,6 +285,41 @@ function Calendar() {
             />
             <p className="text-xs text-text-muted">{copy.calendarCapHint}</p>
           </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="buffer-minutes">{scheduleCopy.rulesBuffer}</Label>
+            <Input
+              id="buffer-minutes"
+              type="number"
+              min={0}
+              max={240}
+              step={5}
+              value={value.buffer_minutes ?? 30}
+              onChange={(event) => update({ buffer_minutes: Number(event.target.value) })}
+            />
+            <p className="text-xs text-text-muted">{scheduleCopy.rulesBufferHint}</p>
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="cutoff-time">{scheduleCopy.rulesCutoff}</Label>
+            <Input
+              id="cutoff-time"
+              type="time"
+              value={value.cutoff_time ?? ""}
+              onChange={(event) => update({ cutoff_time: event.target.value ? event.target.value.slice(0, 5) : null })}
+            />
+            <p className="text-xs text-text-muted">{scheduleCopy.rulesCutoffHint}</p>
+          </div>
+          <label className="flex items-start gap-2.5 sm:col-span-2">
+            <input
+              type="checkbox"
+              className="mt-1 size-4 accent-brand"
+              checked={value.travel_aware ?? true}
+              onChange={(event) => update({ travel_aware: event.target.checked })}
+            />
+            <span className="grid gap-0.5">
+              <span className="text-sm font-medium">{scheduleCopy.rulesTravel}</span>
+              <span className="text-xs text-text-muted">{scheduleCopy.rulesTravelHint}</span>
+            </span>
+          </label>
         </div>
 
         <fieldset className="grid gap-3 border-t border-border-subtle pt-4">
@@ -318,6 +390,10 @@ function Calendar() {
           </Button>
         </div>
       </section>
+
+      <BlockedTime />
+
+      <CalendarSync />
 
       {tours.length ? (
         <section className="grid gap-3 rounded-card border border-border-subtle bg-surface-raised p-5 md:p-6">

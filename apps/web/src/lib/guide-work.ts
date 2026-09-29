@@ -1,6 +1,7 @@
 import { apiRequest } from "@/lib/api/client";
 import type { PortalBooking, PortalExperience } from "@/lib/portal";
 import type { GuideTier } from "@/lib/guides";
+import type { BookingTerms } from "@/lib/tour-booking";
 
 /** One stop on a tour's route: a published catalogue place. */
 export type TourStop = {
@@ -23,7 +24,41 @@ export type GuideTour = PortalExperience & {
   cancellation_terms: string;
   route: TourStop[];
   upcoming_slots: number;
+  schedules?: TourSchedule[];
+  booking?: BookingTerms;
 };
+
+/** One recurring rule for one tour (guide plan step 2). Monday = 0. */
+export type TourSchedule = {
+  id: string;
+  experience_id: string;
+  weekdays: number[];
+  start_times: string[];
+  valid_from: string;
+  valid_to: string | null;
+  capacity: number | null;
+  mode: "shared" | "private";
+  min_group: number;
+  min_group_deadline_hours: number;
+  upcoming_slots: number;
+};
+
+export type ScheduleInput = {
+  id?: string;
+  weekdays: number[];
+  start_times: string[];
+  valid_from?: string | null;
+  valid_to?: string | null;
+  capacity?: number | null;
+  mode: "shared" | "private";
+  min_group: number;
+  min_group_deadline_hours: number;
+};
+
+export type SavedSchedule = TourSchedule & { created: number; cleared: number };
+
+/** Time the guide cannot work. */
+export type BusyBlock = { id: string; starts_at: string; ends_at: string; kind: "manual" | "external"; note: string };
 
 export type TourInput = {
   id?: string;
@@ -53,6 +88,11 @@ export type GuideAvailability = {
   min_notice_hours: number;
   max_tours_per_day: number;
   exceptions: { local_date: string; reason: string }[];
+  buffer_minutes?: number;
+  cutoff_time?: string | null;
+  travel_aware?: boolean;
+  /** How many tour schedules the guide has (read only). */
+  schedules?: number;
 };
 
 export type SlotRun = { created: number; skipped_for_daily_cap: number };
@@ -74,7 +114,8 @@ export type PublicTour = {
   price_minor: number | null;
   price_unit: "person" | "group" | null;
   route: TourStop[];
-  next_slots: { id: string; starts_at: string; remaining: number }[];
+  booking?: BookingTerms;
+  next_slots: { id: string; starts_at: string; remaining: number; private?: boolean; min_group?: number }[];
 };
 
 export type TourRequest = {
@@ -114,7 +155,37 @@ export function fetchAvailability() {
 }
 
 export function saveAvailability(input: GuideAvailability) {
-  return apiRequest<GuideAvailability>("/api/v1/guides/me/availability", send("PUT", input));
+  // The count of schedules is read only; everything else is the guide's to set.
+  const { schedules: _count, ...body } = input;
+  void _count;
+  return apiRequest<GuideAvailability>("/api/v1/guides/me/availability", send("PUT", body));
+}
+
+export function fetchSchedules(tourId: string) {
+  return apiRequest<TourSchedule[]>(`/api/v1/guides/me/tours/${tourId}/schedules`);
+}
+
+export function saveSchedule(tourId: string, input: ScheduleInput) {
+  return apiRequest<SavedSchedule>(`/api/v1/guides/me/tours/${tourId}/schedules`, send("PUT", input));
+}
+
+export function deleteSchedule(scheduleId: string) {
+  return apiRequest<{ deleted: boolean; cleared: number; kept_booked: number }>(
+    `/api/v1/guides/me/schedules/${scheduleId}`,
+    send("DELETE"),
+  );
+}
+
+export function fetchBlocks() {
+  return apiRequest<BusyBlock[]>("/api/v1/guides/me/blocks");
+}
+
+export function addBlock(input: { starts_at: string; ends_at: string; note?: string }) {
+  return apiRequest<BusyBlock>("/api/v1/guides/me/blocks", send("POST", input));
+}
+
+export function deleteBlock(blockId: string) {
+  return apiRequest<{ deleted: boolean }>(`/api/v1/guides/me/blocks/${blockId}`, send("DELETE"));
 }
 
 export function fetchGuideRequests(status?: string) {

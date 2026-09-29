@@ -20,6 +20,11 @@ import { testCatalogueLeisureTags, testCataloguePlaceTypes } from "./catalogue-p
 import { testTownsInGovernorates } from "./towns-in-governorates.mjs";
 import { testSourcedRestaurants } from "./sourced-restaurants.mjs";
 import { testPlaceImages } from "./place-images.mjs";
+import { testFoundingGuides } from "./founding-guides.mjs";
+import { testTourSchedules } from "./tour-schedules.mjs";
+import { testTourBooking } from "./tour-booking.mjs";
+import { testGuideWorkspace } from "./guide-workspace.mjs";
+import { testGuideQuality } from "./guide-quality.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const db = new PGlite({ extensions: { postgis, vector, btree_gist, pg_trgm } });
 const report = [];
@@ -101,6 +106,23 @@ try {
   );
   await good("every place has a picture: its own photo, else its town's, marked as the area", () =>
     testPlaceImages(db),
+  );
+  await good("the first fifty approved guides are numbered Founding Guides, in order, for good", () =>
+    testFoundingGuides(db),
+  );
+  await good(
+    "guide schedules make starts, and one guide is in one place: buffer, private, cap, blocks, minimum group",
+    () => testTourSchedules(db),
+  );
+  await good(
+    "tour bookings: priced only from published prices, a host's extras free, late cancellations recorded",
+    () => testTourBooking(db),
+  );
+  await good("guide workspace: imported busy time keeps only the time, a private feed by hash, day-of check-in", () =>
+    testGuideWorkspace(db),
+  );
+  await good("guide quality: public thresholds, a fair score, late cancellations strike, a pause stops bookings", () =>
+    testGuideQuality(db),
   );
   await sql("SELECT set_config('app.user_id',$1,false)", [alice]);
   await good("all app tables have forced RLS", async () =>

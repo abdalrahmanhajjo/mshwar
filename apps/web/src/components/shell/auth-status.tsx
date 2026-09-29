@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, Car, Heart, LogOut, Route, Settings } from "lucide-react";
+import { Bell, CalendarCheck2, Car, Heart, LogOut, MessagesSquare, Route, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/components/shell/auth-provider";
@@ -68,6 +68,8 @@ export function AuthStatus({ auth, variant = "menu" }: { auth?: AuthState; varia
 
     const links = [
       { href: "/trips", label: t("myTrips"), icon: Route },
+      { href: "/tour-bookings", label: t("myTours"), icon: CalendarCheck2 },
+      { href: "/messages", label: t("inbox"), icon: MessagesSquare },
       { href: "/rides", label: t("myRides"), icon: Car },
       { href: "/favorites", label: t("favorites"), icon: Heart },
       { href: "/notifications", label: t("notifications"), icon: Bell },

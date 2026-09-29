@@ -6,16 +6,16 @@ The policy model is described in [authorization.md](authorization.md).
 | Policy | Routes |
 |---|---|
 | `actor` | 15 |
-| `admin` | 108 |
+| `admin` | 113 |
 | `admin-signin` | 2 |
 | `dev` | 1 |
-| `job` | 7 |
-| `public` | 43 |
-| `session` | 185 |
+| `job` | 13 |
+| `public` | 50 |
+| `session` | 220 |
 | `signature` | 1 |
 | `token` | 6 |
-| `verified` | 7 |
-| **Total** | **375** |
+| `verified` | 9 |
+| **Total** | **430** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -44,10 +44,15 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/admin/flags` | `admin` |
 | PUT | `/api/v1/admin/flags` | `admin` |
 | GET | `/api/v1/admin/guide-funnel` | `admin` |
+| GET | `/api/v1/admin/guide-quality` | `admin` |
+| GET | `/api/v1/admin/guide-reviews` | `admin` |
+| POST | `/api/v1/admin/guide-reviews/{review_id}` | `admin` |
+| POST | `/api/v1/admin/guide-strikes/{strike_id}/void` | `admin` |
 | GET | `/api/v1/admin/guides` | `admin` |
 | POST | `/api/v1/admin/guides/documents/{credential_id}` | `admin` |
 | GET | `/api/v1/admin/guides/{profile_id}` | `admin` |
 | POST | `/api/v1/admin/guides/{profile_id}` | `admin` |
+| POST | `/api/v1/admin/guides/{profile_id}/strikes` | `admin` |
 | GET | `/api/v1/admin/kpis` | `admin` |
 | GET | `/api/v1/admin/leads` | `admin` |
 | GET | `/api/v1/admin/leads/field-sheet` | `admin` |
@@ -194,41 +199,91 @@ The policy model is described in [authorization.md](authorization.md).
 | GET | `/api/v1/groups/trips/{trip_id}/tally` | `actor` |
 | PUT | `/api/v1/groups/trips/{trip_id}/votes` | `actor` |
 | GET | `/api/v1/guides` | `public` |
+| GET | `/api/v1/guides/bookings/{booking_id}` | `session` |
+| POST | `/api/v1/guides/bookings/{booking_id}/arrived` | `session` |
+| GET | `/api/v1/guides/bookings/{booking_id}/calendar.ics` | `session` |
+| POST | `/api/v1/guides/bookings/{booking_id}/cancel` | `session` |
+| POST | `/api/v1/guides/bookings/{booking_id}/reschedule` | `session` |
+| POST | `/api/v1/guides/bookings/{booking_id}/reschedule/answer` | `session` |
+| GET | `/api/v1/guides/conversations` | `session` |
+| POST | `/api/v1/guides/conversations` | `verified` |
+| GET | `/api/v1/guides/conversations/{conversation_id}` | `session` |
+| POST | `/api/v1/guides/conversations/{conversation_id}/close` | `session` |
+| POST | `/api/v1/guides/conversations/{conversation_id}/messages` | `session` |
+| GET | `/api/v1/guides/destinations/{destination_slug}/tours` | `public` |
 | POST | `/api/v1/guides/engagements` | `verified` |
 | GET | `/api/v1/guides/engagements/{engagement_id}` | `session` |
 | POST | `/api/v1/guides/engagements/{engagement_id}/cancel` | `session` |
 | POST | `/api/v1/guides/engagements/{engagement_id}/decision` | `session` |
+| GET | `/api/v1/guides/feeds/{token}.ics` | `public` |
 | GET | `/api/v1/guides/match` | `session` |
 | GET | `/api/v1/guides/me` | `session` |
 | PUT | `/api/v1/guides/me` | `session` |
 | PUT | `/api/v1/guides/me/agreement` | `session` |
 | GET | `/api/v1/guides/me/availability` | `session` |
 | PUT | `/api/v1/guides/me/availability` | `session` |
+| GET | `/api/v1/guides/me/blocks` | `session` |
+| POST | `/api/v1/guides/me/blocks` | `session` |
+| DELETE | `/api/v1/guides/me/blocks/{block_id}` | `session` |
+| GET | `/api/v1/guides/me/bookings/{booking_id}` | `session` |
+| POST | `/api/v1/guides/me/bookings/{booking_id}/check-in` | `session` |
+| POST | `/api/v1/guides/me/bookings/{booking_id}/payment` | `session` |
+| GET | `/api/v1/guides/me/calendar` | `session` |
+| DELETE | `/api/v1/guides/me/calendar-feed` | `session` |
+| GET | `/api/v1/guides/me/calendar-feed` | `session` |
+| POST | `/api/v1/guides/me/calendar-feed` | `session` |
+| GET | `/api/v1/guides/me/calendars` | `session` |
+| POST | `/api/v1/guides/me/calendars` | `session` |
+| POST | `/api/v1/guides/me/calendars/sync` | `session` |
+| DELETE | `/api/v1/guides/me/calendars/{calendar_id}` | `session` |
 | GET | `/api/v1/guides/me/days` | `session` |
 | GET | `/api/v1/guides/me/days/{day_id}` | `session` |
 | POST | `/api/v1/guides/me/days/{day_id}/complete` | `session` |
 | POST | `/api/v1/guides/me/days/{day_id}/start` | `session` |
 | PUT | `/api/v1/guides/me/documents` | `session` |
 | POST | `/api/v1/guides/me/documents/upload` | `session` |
+| GET | `/api/v1/guides/me/earnings` | `session` |
+| GET | `/api/v1/guides/me/earnings.csv` | `session` |
 | GET | `/api/v1/guides/me/engagements` | `session` |
 | POST | `/api/v1/guides/me/engagements/{engagement_id}/answer` | `session` |
 | POST | `/api/v1/guides/me/engagements/{engagement_id}/proposal` | `session` |
 | PUT | `/api/v1/guides/me/hire-terms` | `session` |
+| GET | `/api/v1/guides/me/insights` | `session` |
 | GET | `/api/v1/guides/me/proposals` | `session` |
 | POST | `/api/v1/guides/me/proposals` | `session` |
 | POST | `/api/v1/guides/me/proposals/{proposal_id}/photos` | `session` |
 | POST | `/api/v1/guides/me/proposals/{proposal_id}/withdraw` | `session` |
+| GET | `/api/v1/guides/me/quality` | `session` |
 | GET | `/api/v1/guides/me/requests` | `session` |
 | POST | `/api/v1/guides/me/requests/{booking_id}/respond` | `session` |
+| DELETE | `/api/v1/guides/me/schedules/{schedule_id}` | `session` |
 | POST | `/api/v1/guides/me/submit` | `session` |
 | GET | `/api/v1/guides/me/tours` | `session` |
 | PUT | `/api/v1/guides/me/tours` | `session` |
+| PUT | `/api/v1/guides/me/tours/{tour_id}/booking-settings` | `session` |
+| PUT | `/api/v1/guides/me/tours/{tour_id}/content` | `session` |
 | POST | `/api/v1/guides/me/tours/{tour_id}/publish` | `session` |
+| GET | `/api/v1/guides/me/tours/{tour_id}/schedules` | `session` |
+| PUT | `/api/v1/guides/me/tours/{tour_id}/schedules` | `session` |
 | POST | `/api/v1/guides/me/tours/{tour_id}/slots` | `session` |
+| GET | `/api/v1/guides/my-bookings` | `session` |
+| POST | `/api/v1/guides/ops/calendar-sync` | `job` |
+| POST | `/api/v1/guides/ops/generate-slots` | `job` |
+| POST | `/api/v1/guides/ops/levels` | `job` |
+| POST | `/api/v1/guides/ops/min-group-check` | `job` |
+| POST | `/api/v1/guides/ops/reminders` | `job` |
+| POST | `/api/v1/guides/ops/weather-alerts` | `job` |
 | GET | `/api/v1/guides/places/{place_slug}/contributors` | `public` |
+| GET | `/api/v1/guides/programme` | `public` |
 | POST | `/api/v1/guides/reports` | `session` |
 | POST | `/api/v1/guides/reviews` | `session` |
 | GET | `/api/v1/guides/reviews/inbox` | `session` |
+| POST | `/api/v1/guides/reviews/{review_id}/reply` | `session` |
+| GET | `/api/v1/guides/tour-slugs` | `public` |
+| GET | `/api/v1/guides/tours` | `public` |
+| GET | `/api/v1/guides/tours/{tour_slug}` | `public` |
+| GET | `/api/v1/guides/tours/{tour_slug}/availability` | `public` |
+| POST | `/api/v1/guides/tours/{tour_slug}/book` | `verified` |
 | POST | `/api/v1/guides/tours/{tour_slug}/request` | `verified` |
 | GET | `/api/v1/guides/trips/{trip_id}/engagements` | `session` |
 | GET | `/api/v1/guides/{slug}` | `public` |

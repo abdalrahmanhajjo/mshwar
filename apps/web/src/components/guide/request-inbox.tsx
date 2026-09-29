@@ -82,7 +82,11 @@ function RequestCard({ row, onAnswered }: { row: GuideRequest; onAnswered: () =>
       <div className="grid gap-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="grid gap-1">
-            <h2 className="title-card">{row.experience_title}</h2>
+            <h2 className="title-card">
+              <LocaleLink href={`/guide/bookings/${row.id}`} className="hover:underline">
+                {row.experience_title}
+              </LocaleLink>
+            </h2>
             <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-text-muted">
               <span className="inline-flex items-center gap-1">
                 <Clock className="size-3.5" aria-hidden />

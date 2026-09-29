@@ -3,6 +3,7 @@ import {
   ArrowLeftRight,
   BadgeCheck,
   Banknote,
+  BarChart3,
   Bell,
   BusFront,
   Car,
@@ -14,6 +15,7 @@ import {
   ClipboardCheck,
   Compass,
   Filter,
+  Gauge,
   Heart,
   Inbox,
   KeyRound,
@@ -31,6 +33,7 @@ import {
   Tags,
   Ticket,
   Users,
+  Wallet,
 } from "lucide-react";
 import type { MessageKey } from "@/lib/messages";
 
@@ -58,6 +61,9 @@ export const GUIDE_NAV: ShellNavItem[] = [
   { href: "/guide/requests", labelKey: "guideRequests", icon: Inbox },
   { href: "/guide/tours", labelKey: "guideTours", icon: Route },
   { href: "/guide/calendar", labelKey: "guideCalendar", icon: CalendarDays },
+  { href: "/guide/earnings", labelKey: "guideEarnings", icon: Wallet },
+  { href: "/guide/insights", labelKey: "guideInsights", icon: BarChart3 },
+  { href: "/guide/quality", labelKey: "guideQuality", icon: Gauge },
   { href: "/guide/contribute", labelKey: "guideContribute", icon: MapPinned },
   { href: "/guide/reviews", labelKey: "guideReviews", icon: Star },
   { href: "/guide/help", labelKey: "guideHelp", icon: LifeBuoy },
@@ -70,6 +76,7 @@ export const ADMIN_NAV: ShellNavItem[] = [
   { href: "/admin/guides", labelKey: "guideQueue", icon: ShieldCheck },
   { href: "/admin/proposals", labelKey: "placeProposals", icon: MapPinned },
   { href: "/admin/guide-funnel", labelKey: "guideFunnel", icon: Filter },
+  { href: "/admin/guide-quality", labelKey: "guideQualityAdmin", icon: Gauge },
   { href: "/admin/verification", labelKey: "adminVerification", icon: BadgeCheck },
   { href: "/admin/transport", labelKey: "adminTransport", icon: BusFront },
   { href: "/admin/exchange", labelKey: "adminExchange", icon: Banknote },

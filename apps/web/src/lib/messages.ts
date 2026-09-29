@@ -87,6 +87,10 @@ export type MessageKey =
   | "guideContribute"
   | "guideReviews"
   | "guideHelp"
+  | "guideEarnings"
+  | "guideInsights"
+  | "guideQuality"
+  | "guideQualityAdmin"
   | "guideFunnel"
   | "placeProposals"
   | "verificationQueue"
@@ -122,6 +126,8 @@ export type MessageKey =
   | "adminExchange"
   | "adminVenues"
   | "myRides"
+  | "myTours"
+  | "inbox"
   | "auditLog"
   | "notFound"
   | "notFoundBody"
@@ -254,6 +260,10 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     guideContribute: "Places",
     guideReviews: "Reviews",
     guideHelp: "Help",
+    guideEarnings: "Earnings",
+    guideInsights: "Insights",
+    guideQuality: "Level",
+    guideQualityAdmin: "Guide quality",
     guideFunnel: "Guide funnel",
     placeProposals: "Place proposals",
     taxonomy: "Taxonomy",
@@ -289,6 +299,8 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     adminExchange: "Money changers",
     adminVenues: "Restaurants and stays",
     myRides: "My rides",
+    myTours: "My tours",
+    inbox: "Messages",
     auditLog: "Audit log",
     notFound: "Page not found",
     notFoundBody: "That page is not in the catalogue.",
@@ -421,6 +433,10 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     guideContribute: "الأماكن",
     guideReviews: "التقييمات",
     guideHelp: "المساعدة",
+    guideEarnings: "الأرباح",
+    guideInsights: "المؤشرات",
+    guideQuality: "المستوى",
+    guideQualityAdmin: "جودة المرشدين",
     guideFunnel: "مسار المرشدين",
     placeProposals: "اقتراحات الأماكن",
     taxonomy: "التصنيف",
@@ -456,6 +472,8 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     adminExchange: "الصرّافون",
     adminVenues: "المطاعم وأماكن الإقامة",
     myRides: "رحلاتي",
+    myTours: "جولاتي",
+    inbox: "الرسائل",
     auditLog: "سجل التدقيق",
     notFound: "الصفحة غير موجودة",
     notFoundBody: "هذه الصفحة ليست في الكتالوج.",
@@ -589,6 +607,10 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     guideContribute: "Lieux",
     guideReviews: "Avis",
     guideHelp: "Aide",
+    guideEarnings: "Revenus",
+    guideInsights: "Statistiques",
+    guideQuality: "Niveau",
+    guideQualityAdmin: "Qualité des guides",
     guideFunnel: "Parcours des guides",
     placeProposals: "Propositions de lieux",
     taxonomy: "Taxonomie",
@@ -624,6 +646,8 @@ export const messages: Record<Locale, Record<MessageKey, string>> = {
     adminExchange: "Bureaux de change",
     adminVenues: "Restaurants et hébergements",
     myRides: "Mes courses",
+    myTours: "Mes visites",
+    inbox: "Messages",
     auditLog: "Journal d’audit",
     notFound: "Page introuvable",
     notFoundBody: "Cette page n’est pas dans le catalogue.",

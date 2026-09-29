@@ -74,6 +74,12 @@ async def _booking_with_open_payment(api_client: AsyncClient) -> tuple[AsyncClie
         ("get", "/api/v1/checkout/ops/metrics"),
         ("post", "/api/v1/notifications/dispatch"),
         ("post", "/api/v1/notifications/escalate"),
+        ("post", "/api/v1/guides/ops/generate-slots"),
+        ("post", "/api/v1/guides/ops/min-group-check"),
+        ("post", "/api/v1/guides/ops/reminders"),
+        ("post", "/api/v1/guides/ops/weather-alerts"),
+        ("post", "/api/v1/guides/ops/calendar-sync"),
+        ("post", "/api/v1/guides/ops/levels"),
     ],
 )
 async def test_job_endpoints_need_the_job_token(

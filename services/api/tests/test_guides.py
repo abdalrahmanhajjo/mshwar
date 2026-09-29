@@ -104,6 +104,7 @@ async def test_a_guide_applies_is_verified_and_gets_a_public_page(api: AsyncClie
 
     admin = await _register(api, "admin")
     await _grant_admin(admin["id"])
+    programme = (await api.get("/api/v1/guides/programme")).json()
 
     queue = await api.get("/api/v1/admin/guides", params={"status": "submitted"})
     assert queue.status_code == 200, queue.text
@@ -129,10 +130,24 @@ async def test_a_guide_applies_is_verified_and_gets_a_public_page(api: AsyncClie
     assert page.json()["display_name"] == "Rami Haddad"
     assert "documents" not in page.json(), "a public page never carries the documents behind it"
     assert "phone" not in page.json()
+    if programme["remaining"] > 0:
+        assert page.json()["founding_number"] == programme["taken"] + 1, "numbered on approval, in order"
+        after = (await api.get("/api/v1/guides/programme")).json()
+        assert after == {"limit": 50, "taken": programme["taken"] + 1, "remaining": programme["remaining"] - 1}
 
     directory = await api.get("/api/v1/guides", params={"region": "north-lebanon"})
     assert directory.status_code == 200
     assert any(row["slug"] == profile["slug"] for row in directory.json())
+
+
+@pytest.mark.asyncio
+async def test_the_founding_programme_is_a_public_count(api: AsyncClient) -> None:
+    response = await api.get("/api/v1/guides/programme")
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["limit"] == 50
+    assert body["taken"] + body["remaining"] == 50
+    assert set(body) == {"limit", "taken", "remaining"}, "nothing personal, only the count"
 
 
 @pytest.mark.asyncio

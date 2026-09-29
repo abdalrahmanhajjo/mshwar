@@ -14,7 +14,10 @@ import {
   Send,
   Trash2,
   Users,
+  FileText,
+  ExternalLink,
 } from "lucide-react";
+import { LocaleLink } from "@/components/shell/locale-link";
 import { useLocale } from "@/components/shell/locale-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,6 +42,10 @@ import { interpolate } from "@/i18n/catalogues";
 import { formatCurrency } from "@/i18n/format";
 import { ApiError } from "@/lib/api/client";
 import { useGuideWorkCopy, type GuideWorkCopy } from "@/lib/guide-work-copy";
+import { useGuideJoinCopy } from "@/lib/guide-join-copy";
+import { TOUR_TEMPLATES } from "@/lib/guide-templates";
+import { TourContentEditor } from "@/components/guide/tour-content-editor";
+import { useToursCopy } from "@/lib/tours-copy";
 import { fetchMyTours, openTourDates, publishTour, saveTour, type GuideTour, type TourInput } from "@/lib/guide-work";
 import type { MyGuideProfile } from "@/lib/guides";
 import { matchesQuery, type PlaceHit } from "@/lib/place-search";
@@ -324,6 +331,36 @@ function MeetingPoint({
   );
 }
 
+/** For a new tour only: fill the words from a template; the guide adds the real stops. */
+function TemplatePicker({ onPick }: { onPick: (id: string) => void }) {
+  const join = useGuideJoinCopy();
+  const [chosen, setChosen] = React.useState("");
+  const template = TOUR_TEMPLATES.find((item) => item.id === chosen);
+  return (
+    <div className="grid gap-1.5 rounded-control border border-dashed border-border bg-surface-sunken/60 p-4 md:col-span-2">
+      <Label htmlFor="tour-template">{join.templateTitle}</Label>
+      <NativeSelect
+        id="tour-template"
+        value={chosen}
+        onChange={(event) => {
+          setChosen(event.target.value);
+          onPick(event.target.value);
+        }}
+      >
+        <option value="">{join.templateBlank}</option>
+        {TOUR_TEMPLATES.map((item) => (
+          <option key={item.id} value={item.id}>
+            {join[item.title]}
+          </option>
+        ))}
+      </NativeSelect>
+      {template ? (
+        <p className="text-sm text-text-muted">{interpolate(join.templateHint, { stops: join[template.stops] })}</p>
+      ) : null}
+    </div>
+  );
+}
+
 function TourForm({
   profile,
   initial,
@@ -336,6 +373,7 @@ function TourForm({
   onClose: () => void;
 }) {
   const copy = useGuideWorkCopy();
+  const join = useGuideJoinCopy();
   const [draft, setDraft] = React.useState<Draft>(initial);
   const [pending, setPending] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -347,6 +385,20 @@ function TourForm({
       setDraft((prev) => ({ ...prev, [key]: value }));
   const field = (key: keyof Draft) => (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setDraft((prev) => ({ ...prev, [key]: event.target.value }));
+
+  function applyTemplate(id: string) {
+    const template = TOUR_TEMPLATES.find((item) => item.id === id);
+    if (!template) return;
+    setDraft((prev) => ({
+      ...prev,
+      title: join[template.title],
+      description: join[template.body],
+      included: join[template.included],
+      bring: join[template.bring],
+      duration: String(template.durationMinutes),
+      maxParty: String(template.maxParty),
+    }));
+  }
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -377,6 +429,7 @@ function TourForm({
         </Notice>
       ) : null}
       <div className="grid gap-4 md:grid-cols-2">
+        {draft.id ? null : <TemplatePicker onPick={applyTemplate} />}
         <div className="grid gap-1.5 md:col-span-2">
           <Label htmlFor="tour-title">{copy.tourTitle}</Label>
           <Input id="tour-title" required minLength={3} value={draft.title} onChange={field("title")} />
@@ -499,6 +552,8 @@ function TourCard({
   const copy = useGuideWorkCopy();
   const { locale } = useLocale();
   const [busy, setBusy] = React.useState<null | "publish" | "dates" | "photo">(null);
+  const [pageOpen, setPageOpen] = React.useState(false);
+  const toursCopy = useToursCopy();
   const [message, setMessage] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const amount = tour.price?.amount_minor ?? 0;
@@ -652,7 +707,26 @@ function TourCard({
           {busy === "dates" ? <Loader2 className="animate-spin" aria-hidden /> : <CalendarPlus aria-hidden />}
           {copy.tourOpenDates}
         </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          aria-expanded={pageOpen}
+          onClick={() => setPageOpen((open) => !open)}
+        >
+          <FileText aria-hidden />
+          {toursCopy.contentTitle}
+        </Button>
+        {tour.status === "published" ? (
+          <Button asChild size="sm" variant="ghost">
+            <LocaleLink href={`/tours/${tour.slug}`}>
+              <ExternalLink aria-hidden />
+              {toursCopy.viewPage}
+            </LocaleLink>
+          </Button>
+        ) : null}
       </div>
+      {pageOpen ? <TourContentEditor tour={tour} /> : null}
     </li>
   );
 }

@@ -14,26 +14,41 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
+import secrets
+from datetime import date, datetime, timedelta
 from typing import Any
 from uuid import uuid4
+from zoneinfo import ZoneInfo
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
+from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.concurrency import run_in_threadpool
 
-from app.core import access, imagekit
+from app.core import access, ical_import, imagekit
 from app.core.auth_session import require_session, require_verified_user
+from app.core.config import settings
+from app.core.ics import CalendarEvent, calendar
 from app.core.licences import COMMONS_IMAGE, COMMONS_PAGE, license_allowed
 from app.core.rate_limit import limit
 from app.core.sql import fetch_json
 from app.core.storage import delete_private_bytes, media_url, put_private_bytes
 from app.core.uploads import inspect_or_reject, validate_upload
 from app.dependencies import get_auth_db
+from app.planner.weather import WeatherService
 from app.schemas.guides import (
+    BookingSettingsIn,
+    BusyBlockIn,
+    CheckInIn,
+    ConversationCloseIn,
+    ConversationStartIn,
     EngagementAnswerIn,
     EngagementCancelIn,
     EngagementDecisionIn,
     EngagementProposalIn,
     EngagementRequestIn,
+    ExternalCalendarIn,
     GuideAgreementIn,
     GuideAvailabilityIn,
     GuideCredentialIn,
@@ -43,13 +58,23 @@ from app.schemas.guides import (
     GuideReviewIn,
     GuideTourIn,
     HireTermsIn,
+    MessageIn,
+    PaymentRecordIn,
     ProposalIn,
     ProposalPhotoIn,
+    RescheduleAnswerIn,
+    RescheduleIn,
+    ReviewReplyIn,
+    TourBookingIn,
+    TourCancelIn,
+    TourContentIn,
     TourRequestIn,
     TourRequestResponseIn,
+    TourScheduleIn,
 )
 
 router = APIRouter()
+BEIRUT = ZoneInfo("Asia/Beirut")
 
 
 def _payload(model: Any) -> str:
@@ -71,6 +96,14 @@ async def list_guides(
         {"filt": json.dumps(filt)},
     )
     return list(rows or [])
+
+
+@router.get("/programme", dependencies=[access.PUBLIC])
+async def founding_programme(
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """How many Founding Guide places are left (migration 060): a count, never a guess."""
+    return await fetch_json(db, "SELECT app.founding_guide_programme()", {})
 
 
 @router.get("/me", dependencies=[access.SESSION])
@@ -233,11 +266,832 @@ async def set_availability(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
     uid = await _uid(request, db)
+    # Only what was sent: a field left out keeps the guide's earlier choice.
+    body = json.dumps(payload.model_dump(mode="json", exclude_unset=True), default=str)
     return await fetch_json(
         db,
         "SELECT app.guide_set_availability(CAST(:uid AS uuid), CAST(:body AS jsonb))",
+        {"uid": uid, "body": body},
+    )
+
+
+# ---- Step 2: schedules per tour and blocked time ---------------------------------------
+
+
+@router.get("/me/tours/{tour_id}/schedules", dependencies=[access.SESSION])
+async def tour_schedules(
+    tour_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """A tour's recurring schedules, each with how many starts it has open."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_list_schedules(CAST(:uid AS uuid), CAST(:tour AS uuid))",
+        {"uid": uid, "tour": tour_id},
+    )
+
+
+@router.put("/me/tours/{tour_id}/schedules", dependencies=[access.SESSION, limit("guide-write")])
+async def save_tour_schedule(
+    tour_id: str,
+    payload: TourScheduleIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Create or change one schedule and fill its next 120 days. Booked starts are never moved."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_save_schedule(CAST(:uid AS uuid), CAST(:tour AS uuid), CAST(:body AS jsonb))",
+        {"uid": uid, "tour": tour_id, "body": _payload(payload)},
+    )
+
+
+@router.delete("/me/schedules/{schedule_id}", dependencies=[access.SESSION, limit("guide-write")])
+async def delete_tour_schedule(
+    schedule_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Stop a schedule. Its empty future starts go; starts with a booking stay."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_delete_schedule(CAST(:uid AS uuid), CAST(:schedule AS uuid))",
+        {"uid": uid, "schedule": schedule_id},
+    )
+
+
+@router.get("/me/blocks", dependencies=[access.SESSION])
+async def my_blocks(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Blocked time from now on."""
+    uid = await _uid(request, db)
+    return await fetch_json(db, "SELECT app.guide_list_blocks(CAST(:uid AS uuid))", {"uid": uid})
+
+
+@router.post("/me/blocks", dependencies=[access.SESSION, limit("guide-write")])
+async def add_block(
+    payload: BusyBlockIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Block time. Refused over a live booking, so no traveller is stranded."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_add_block(CAST(:uid AS uuid), CAST(:body AS jsonb))",
         {"uid": uid, "body": _payload(payload)},
     )
+
+
+@router.delete("/me/blocks/{block_id}", dependencies=[access.SESSION, limit("guide-write")])
+async def delete_block(
+    block_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_delete_block(CAST(:uid AS uuid), CAST(:block AS uuid))",
+        {"uid": uid, "block": block_id},
+    )
+
+
+# ---- Step 3: how a tour is booked -------------------------------------------------------
+
+
+@router.put("/me/tours/{tour_id}/booking-settings", dependencies=[access.SESSION, limit("guide-write")])
+async def set_booking_settings(
+    tour_id: str,
+    payload: BookingSettingsIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Instant or request, the reply window, the policy, a child price and extras. A host stays free."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_set_booking_settings(CAST(:uid AS uuid), CAST(:tour AS uuid), CAST(:body AS jsonb))",
+        {"uid": uid, "tour": tour_id, "body": _payload(payload)},
+    )
+
+
+@router.get("/me/bookings/{booking_id}", dependencies=[access.SESSION])
+async def guide_booking(
+    booking_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """One booking on the guide's tours, with who is coming, extras and the traveller's note."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_tour_booking(CAST(:uid AS uuid), CAST(:booking AS uuid))",
+        {"uid": uid, "booking": booking_id},
+    )
+
+
+# ---- Step 4: the tours marketplace ---------------------------------------------------------
+
+
+def _with_tour_photos(value: Any) -> Any:
+    """Turn stored photo keys into viewable URLs on a tour card, a tour page or a list of cards."""
+    if isinstance(value, list):
+        return [_with_tour_photos(item) for item in value]
+    if isinstance(value, dict):
+        for key in ("photo", "photos"):
+            item = value.get(key)
+            for photo in item if isinstance(item, list) else [item] if isinstance(item, dict) else []:
+                photo["url"] = media_url(photo.pop("provider", None), photo.pop("object_key", None))
+        if isinstance(value.get("tours"), list):
+            value["tours"] = _with_tour_photos(value["tours"])
+    return value
+
+
+@router.get("/tours", dependencies=[access.PUBLIC, limit("search")])
+async def search_tours(
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+    q: str | None = Query(default=None, max_length=80),
+    destination: str | None = Query(default=None, max_length=80),
+    language: str | None = Query(default=None, max_length=12),
+    day: date | None = Query(default=None, alias="date"),  # noqa: B008
+    max_duration: int | None = Query(default=None, ge=30, le=1440),
+    max_price: int | None = Query(default=None, ge=0, le=100_000_000),
+    instant: bool = False,
+    sort: str = Query(default="recommended", pattern="^(recommended|price|duration|soonest)$"),
+    limit_to: int = Query(default=60, ge=1, le=100, alias="limit"),
+) -> Any:
+    """Published tours by approved guides, filtered and sorted. Ratings are only released reviews."""
+    filters = {
+        "q": q,
+        "destination": destination,
+        "language": language,
+        "date": day.isoformat() if day else None,
+        "max_duration": max_duration,
+        "max_price": max_price,
+        "instant": instant,
+        "sort": sort,
+        "limit": limit_to,
+    }
+    row = await fetch_json(
+        db,
+        "SELECT app.public_tours_search(CAST(:filters AS jsonb))",
+        {"filters": json.dumps({k: v for k, v in filters.items() if v is not None})},
+    )
+    return _with_tour_photos(row)
+
+
+@router.get("/tour-slugs", dependencies=[access.PUBLIC])
+async def tour_slugs(db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    """Every listed tour, for the sitemap."""
+    return await fetch_json(db, "SELECT app.public_tour_slugs()", {})
+
+
+@router.get("/destinations/{destination_slug}/tours", dependencies=[access.PUBLIC])
+async def destination_tours(
+    destination_slug: str,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Guided tours that start in one destination, for its page."""
+    rows = await fetch_json(db, "SELECT app.public_destination_tours(:slug, 6)", {"slug": destination_slug})
+    return _with_tour_photos(rows or [])
+
+
+@router.put("/me/tours/{tour_id}/content", dependencies=[access.SESSION, limit("guide-write")])
+async def set_tour_content(
+    tour_id: str,
+    payload: TourContentIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Highlights, questions and answers, and accessibility for the tour page."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_set_tour_content(CAST(:uid AS uuid), CAST(:tour AS uuid), CAST(:body AS jsonb))",
+        {"uid": uid, "tour": tour_id, "body": _payload(payload)},
+    )
+
+
+@router.get("/tours/{tour_slug}", dependencies=[access.PUBLIC])
+async def public_tour(
+    tour_slug: str,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """One published tour: photos, highlights, route, guide, real rating and how it books."""
+    row = await fetch_json(db, "SELECT app.public_tour(:slug)", {"slug": tour_slug})
+    if row is None:
+        raise HTTPException(status_code=404, detail="Tour not found")
+    return _with_tour_photos(row)
+
+
+@router.get("/tours/{tour_slug}/availability", dependencies=[access.PUBLIC])
+async def tour_availability(
+    tour_slug: str,
+    month: str = Query(pattern=r"^\d{4}-(0[1-9]|1[0-2])$"),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """A month of bookable starts, each day with its times and seats left."""
+    row = await fetch_json(
+        db,
+        "SELECT app.public_tour_availability(:slug, CAST(:month AS date))",
+        {"slug": tour_slug, "month": date.fromisoformat(f"{month}-01")},
+    )
+    if row is None:
+        raise HTTPException(status_code=404, detail="Tour not found")
+    return row
+
+
+@router.post("/tours/{tour_slug}/book", dependencies=[access.VERIFIED, limit("booking"), limit("booking-ip")])
+async def book_tour(
+    tour_slug: str,
+    payload: TourBookingIn,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+    user: dict[str, Any] = Depends(require_verified_user),  # noqa: B008
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+) -> Any:
+    """Book a start. Instant tours are confirmed at once; others are a request. Paid on the day."""
+    key = (idempotency_key or payload.idempotency_key or f"tour-{uuid4().hex}").strip()
+    body = payload.model_dump(mode="json", exclude={"idempotency_key"})
+    digest = hashlib.sha256(json.dumps({"tour": tour_slug, **body}, sort_keys=True).encode("utf-8")).hexdigest()
+    return await fetch_json(
+        db,
+        "SELECT app.tour_book(CAST(:uid AS uuid), :slug, CAST(:body AS jsonb), :key, :hash)",
+        {
+            "uid": str(user["user_id"]),
+            "slug": tour_slug,
+            "body": json.dumps(body),
+            "key": key,
+            "hash": digest,
+        },
+    )
+
+
+@router.get("/bookings/{booking_id}", dependencies=[access.SESSION])
+async def my_tour_booking(
+    booking_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """The traveller's own tour booking: code, time, who is coming, the total and the policy."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.traveller_tour_booking(CAST(:uid AS uuid), CAST(:booking AS uuid))",
+        {"uid": uid, "booking": booking_id},
+    )
+
+
+@router.post("/bookings/{booking_id}/cancel", dependencies=[access.SESSION, limit("booking")])
+async def cancel_tour_booking(
+    booking_id: str,
+    payload: TourCancelIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Either side cancels, with a reason. Late traveller cancellations are recorded as late."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.tour_cancel(CAST(:uid AS uuid), CAST(:booking AS uuid), :reason)",
+        {"uid": uid, "booking": booking_id, "reason": payload.reason},
+    )
+
+
+@router.post("/bookings/{booking_id}/reschedule", dependencies=[access.SESSION, limit("booking")])
+async def propose_reschedule(
+    booking_id: str,
+    payload: RescheduleIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Propose another start of the same tour. The other side accepts or declines."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.tour_propose_reschedule(CAST(:uid AS uuid), CAST(:booking AS uuid), CAST(:slot AS uuid), :message)",
+        {"uid": uid, "booking": booking_id, "slot": payload.slot_id, "message": payload.message},
+    )
+
+
+@router.post("/bookings/{booking_id}/reschedule/answer", dependencies=[access.SESSION, limit("booking")])
+async def answer_reschedule(
+    booking_id: str,
+    payload: RescheduleAnswerIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Accept (the booking moves, with a new code) or decline another side's proposal."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.tour_answer_reschedule(CAST(:uid AS uuid), CAST(:booking AS uuid), :accept)",
+        {"uid": uid, "booking": booking_id, "accept": payload.accept},
+    )
+
+
+# ---- Step 5: after booking --------------------------------------------------------------
+
+
+@router.get("/my-bookings", dependencies=[access.SESSION])
+async def my_tour_bookings(
+    request: Request,
+    when: str = Query(default="upcoming", pattern="^(upcoming|past)$"),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """The traveller's tour bookings: upcoming soonest first, or past most recent first."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db, "SELECT app.traveller_tour_bookings(CAST(:uid AS uuid), :when)", {"uid": uid, "when": when}
+    )
+
+
+@router.get("/bookings/{booking_id}/calendar.ics", dependencies=[access.SESSION])
+async def tour_booking_calendar(
+    booking_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Response:
+    """The booking as a calendar file, for any calendar app."""
+    uid = await _uid(request, db)
+    row = await fetch_json(
+        db,
+        "SELECT app.traveller_tour_booking(CAST(:uid AS uuid), CAST(:booking AS uuid))",
+        {"uid": uid, "booking": booking_id},
+    )
+    link = f"{settings.public_web_origin.rstrip('/')}/tour-bookings/{row['id']}"
+    event = CalendarEvent(
+        uid=f"tour-booking-{row['id']}@mshwar",
+        starts_at=datetime.fromisoformat(row["starts_at"]),
+        ends_at=datetime.fromisoformat(row["ends_at"]),
+        summary=f"{row['tour_title']} ({row['code']})",
+        location=row.get("meeting_point") or "",
+        description=f"Guide: {row['guide_name']}\nBooking {row['code']}\n{link}",
+        url=link,
+        cancelled=row["status"] not in ("pending", "confirmed", "completed"),
+    )
+    return Response(
+        content=calendar([event], name=row["tour_title"]),
+        media_type="text/calendar; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="mshwar-{row["code"]}.ics"'},
+    )
+
+
+@router.post("/bookings/{booking_id}/arrived", dependencies=[access.SESSION, limit("booking")])
+async def traveller_arrived(
+    booking_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """ "I'm here": tell the guide the traveller has reached the meeting point."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.tour_traveller_arrived(CAST(:uid AS uuid), CAST(:booking AS uuid))",
+        {"uid": uid, "booking": booking_id},
+    )
+
+
+@router.get("/conversations", dependencies=[access.SESSION])
+async def my_conversations(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Every conversation the caller has, as a traveller or as a guide, newest first."""
+    uid = await _uid(request, db)
+    return await fetch_json(db, "SELECT app.list_guide_conversations(CAST(:uid AS uuid))", {"uid": uid})
+
+
+@router.post("/conversations", dependencies=[access.VERIFIED, limit("community-write")])
+async def start_conversation(
+    payload: ConversationStartIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Write to a guide. Contact details stay masked until a booking with them is confirmed."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.start_guide_conversation(CAST(:uid AS uuid), :guide, :body)",
+        {"uid": uid, "guide": payload.guide_slug, "body": payload.body},
+    )
+
+
+@router.get("/conversations/{conversation_id}", dependencies=[access.SESSION])
+async def read_conversation(
+    conversation_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """One conversation with its messages; the other side's messages are marked read."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.read_guide_conversation(CAST(:uid AS uuid), CAST(:conversation AS uuid))",
+        {"uid": uid, "conversation": conversation_id},
+    )
+
+
+@router.post("/conversations/{conversation_id}/messages", dependencies=[access.SESSION])
+async def send_message(
+    conversation_id: str,
+    payload: MessageIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.send_guide_message(CAST(:uid AS uuid), CAST(:conversation AS uuid), :body)",
+        {"uid": uid, "conversation": conversation_id, "body": payload.body},
+    )
+
+
+@router.post("/conversations/{conversation_id}/close", dependencies=[access.SESSION, limit("community-write")])
+async def close_conversation(
+    conversation_id: str,
+    payload: ConversationCloseIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Block the conversation; with a report, support gets the thread."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.close_guide_conversation(CAST(:uid AS uuid), CAST(:conversation AS uuid), :report, :reason)",
+        {"uid": uid, "conversation": conversation_id, "report": payload.report, "reason": payload.reason},
+    )
+
+
+@router.post("/ops/reminders", dependencies=[access.JOB])
+async def send_reminders(db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    """Every 15 minutes: day-before and two-hour reminders, request nudges and tomorrow's manifests."""
+    return await fetch_json(db, "SELECT app.tour_send_reminders()", {})
+
+
+# Thresholds for a warning two days before an outdoor run.
+RAIN_MM = 5.0
+HEAT_C = 35.0
+WIND_KMH = 50.0
+
+
+@router.post("/ops/weather-alerts", dependencies=[access.JOB])
+async def weather_alerts(db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    """Every 6 hours: warn guides about rain, heat or wind for booked outdoor runs 36-60 hours out."""
+    candidates = await fetch_json(db, "SELECT app.tour_weather_candidates()", {}) or []
+    service = WeatherService()
+    warned = 0
+    checked = 0
+    for run in candidates:
+        if run.get("lat") is None or run.get("lng") is None:
+            continue
+        day = datetime.fromisoformat(run["starts_at"]).astimezone(BEIRUT).date()
+        forecast = await run_in_threadpool(service.forecast, float(run["lat"]), float(run["lng"]), day)
+        checked += 1
+        if not forecast.available:
+            continue
+        reason = None
+        if (forecast.precip_mm or 0) >= RAIN_MM:
+            reason = "rain"
+        elif (forecast.temp_max_c or 0) >= HEAT_C:
+            reason = "heat"
+        elif (forecast.wind_kmh or 0) >= WIND_KMH:
+            reason = "wind"
+        if reason:
+            detail = {
+                "precip_mm": forecast.precip_mm,
+                "temp_max_c": forecast.temp_max_c,
+                "wind_kmh": forecast.wind_kmh,
+                "source": forecast.source,
+            }
+            recorded = await fetch_json(
+                db,
+                "SELECT app.tour_record_weather_alert(CAST(:slot AS uuid), :reason, CAST(:detail AS jsonb))",
+                {"slot": run["slot_id"], "reason": reason, "detail": json.dumps(detail)},
+            )
+            warned += 1 if recorded else 0
+    return {"checked": checked, "warned": warned}
+
+
+@router.post("/ops/generate-slots", dependencies=[access.JOB])
+async def generate_all_slots(db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    """Nightly: keep every live schedule filled 120 days ahead."""
+    return await fetch_json(db, "SELECT app.guide_generate_all_slots()", {})
+
+
+@router.post("/ops/min-group-check", dependencies=[access.JOB])
+async def min_group_check(db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    """Hourly: cancel, with the reason, shared runs that missed their minimum group."""
+    return await fetch_json(db, "SELECT app.guide_min_group_check()", {})
+
+
+# ---- Step 6: the guide's workspace -------------------------------------------------------
+
+
+@router.get("/me/calendar", dependencies=[access.SESSION])
+async def my_calendar(
+    request: Request,
+    start: date = Query(alias="from"),  # noqa: B008
+    end: date = Query(alias="to"),  # noqa: B008
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Runs (with who booked), blocked and imported busy time, hired days and days off, up to two months."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_calendar(CAST(:uid AS uuid), :start, :end)",
+        {"uid": uid, "start": start, "end": end},
+    )
+
+
+@router.get("/me/calendar-feed", dependencies=[access.SESSION])
+async def calendar_feed_status(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Whether the guide has a private calendar address. The address itself is never shown again."""
+    uid = await _uid(request, db)
+    return await fetch_json(db, "SELECT app.guide_calendar_feed_status(CAST(:uid AS uuid))", {"uid": uid})
+
+
+def _feed_url(token: str) -> str:
+    return f"{settings.public_web_origin.rstrip('/')}/api/v1/guides/feeds/{token}.ics"
+
+
+@router.post("/me/calendar-feed", dependencies=[access.SESSION, limit("guide-write")])
+async def new_calendar_feed(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """A new private calendar address (the old one stops working). Shown once; only its hash is kept."""
+    uid = await _uid(request, db)
+    token = secrets.token_urlsafe(32)
+    await fetch_json(
+        db,
+        "SELECT app.guide_new_calendar_feed(CAST(:uid AS uuid), :hash)",
+        {"uid": uid, "hash": hashlib.sha256(token.encode()).hexdigest()},
+    )
+    status = await fetch_json(db, "SELECT app.guide_calendar_feed_status(CAST(:uid AS uuid))", {"uid": uid})
+    return {**status, "url": _feed_url(token)}
+
+
+@router.delete("/me/calendar-feed", dependencies=[access.SESSION, limit("guide-write")])
+async def revoke_calendar_feed(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    uid = await _uid(request, db)
+    return await fetch_json(db, "SELECT app.guide_revoke_calendar_feed(CAST(:uid AS uuid))", {"uid": uid})
+
+
+@router.get("/feeds/{token}.ics", dependencies=[access.PUBLIC, limit("search")])
+async def calendar_feed(
+    token: str,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Response:
+    """The guide's confirmed runs and hired days as a calendar subscription. The address is the key."""
+    if not re.fullmatch(r"[A-Za-z0-9_-]{20,100}", token):
+        raise HTTPException(status_code=404, detail="Calendar not found")
+    feed = await fetch_json(
+        db, "SELECT app.guide_calendar_feed(:hash)", {"hash": hashlib.sha256(token.encode()).hexdigest()}
+    )
+    if not feed:
+        raise HTTPException(status_code=404, detail="Calendar not found")
+    origin = settings.public_web_origin.rstrip("/")
+    events = [
+        CalendarEvent(
+            uid=f"tour-run-{run['id']}@mshwar",
+            starts_at=datetime.fromisoformat(run["starts_at"]),
+            ends_at=datetime.fromisoformat(run["ends_at"]),
+            summary=f"{run['title']} · {run['guests'] or 0} guests",
+            location=run.get("meeting_point") or "",
+            description=f"{origin}/guide/calendar",
+            url=f"{origin}/guide/calendar",
+        )
+        for run in feed["runs"]
+    ]
+    for day in feed["hired_days"]:
+        local = date.fromisoformat(day["local_date"])
+        events.append(
+            CalendarEvent(
+                uid=f"hired-day-{day['id']}@mshwar",
+                starts_at=datetime.combine(local, datetime.min.time(), BEIRUT),
+                ends_at=datetime.combine(local + timedelta(days=1), datetime.min.time(), BEIRUT),
+                summary="Hired for the day (Mshwar)",
+                description=f"{origin}/guide/requests/{day['id']}",
+                url=f"{origin}/guide/requests/{day['id']}",
+            )
+        )
+    return Response(
+        content=calendar(events, name=f"Mshwar · {feed['name']}"),
+        media_type="text/calendar; charset=utf-8",
+        headers={"Cache-Control": "private, max-age=300", "X-Robots-Tag": "noindex"},
+    )
+
+
+@router.get("/me/calendars", dependencies=[access.SESSION])
+async def my_external_calendars(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Other calendars whose busy time keeps travellers from booking over it."""
+    uid = await _uid(request, db)
+    return await fetch_json(db, "SELECT app.guide_list_external_calendars(CAST(:uid AS uuid))", {"uid": uid})
+
+
+async def _sync_calendars(db: AsyncSession, uid: str | None, cap: int = 200) -> dict[str, int]:
+    """Read each calendar and replace its busy time. A calendar that cannot be read keeps its last busy time."""
+    rows = await fetch_json(
+        db, "SELECT app.guide_calendars_to_sync(CAST(:uid AS uuid), :cap)", {"uid": uid, "cap": cap}
+    )
+    synced = failed = 0
+    for row in rows or []:
+        periods: list[dict[str, str]] = []
+        error: str | None = None
+        try:
+            text_body = await run_in_threadpool(ical_import.fetch_calendar, row["url"])
+            periods = [period.as_json() for period in ical_import.busy_periods(text_body)]
+        except ical_import.CalendarFetchError as exc:
+            error = str(exc)
+        await fetch_json(
+            db,
+            "SELECT to_jsonb(app.guide_replace_external_blocks(CAST(:id AS uuid), CAST(:periods AS jsonb), :error))",
+            {"id": row["id"], "periods": json.dumps(periods), "error": error},
+        )
+        if error is None:
+            synced += 1
+        else:
+            failed += 1
+    return {"synced": synced, "failed": failed}
+
+
+@router.post("/me/calendars", dependencies=[access.SESSION, limit("guide-write")])
+async def add_external_calendar(
+    payload: ExternalCalendarIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Connect a calendar and read it straight away."""
+    uid = await _uid(request, db)
+    await fetch_json(
+        db,
+        "SELECT app.guide_add_external_calendar(CAST(:uid AS uuid), :url, :label)",
+        {"uid": uid, "url": payload.url, "label": payload.label},
+    )
+    await _sync_calendars(db, uid)
+    return await fetch_json(db, "SELECT app.guide_list_external_calendars(CAST(:uid AS uuid))", {"uid": uid})
+
+
+@router.post("/me/calendars/sync", dependencies=[access.SESSION, limit("guide-write")])
+async def sync_external_calendars(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Read the guide's calendars now instead of waiting for the next 15-minute round."""
+    uid = await _uid(request, db)
+    await _sync_calendars(db, uid)
+    return await fetch_json(db, "SELECT app.guide_list_external_calendars(CAST(:uid AS uuid))", {"uid": uid})
+
+
+@router.delete("/me/calendars/{calendar_id}", dependencies=[access.SESSION, limit("guide-write")])
+async def remove_external_calendar(
+    calendar_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Disconnect a calendar; its busy time goes with it."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_remove_external_calendar(CAST(:uid AS uuid), CAST(:calendar AS uuid))",
+        {"uid": uid, "calendar": calendar_id},
+    )
+
+
+@router.post("/ops/calendar-sync", dependencies=[access.JOB])
+async def calendar_sync(db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    """Every 15 minutes: refresh busy time from every connected calendar."""
+    return await _sync_calendars(db, None)
+
+
+@router.post("/me/bookings/{booking_id}/check-in", dependencies=[access.SESSION, limit("guide-write")])
+async def check_in(
+    booking_id: str,
+    payload: CheckInIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """On the day: the guests arrived, or did not come."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_check_in(CAST(:uid AS uuid), CAST(:booking AS uuid), :status)",
+        {"uid": uid, "booking": booking_id, "status": payload.status},
+    )
+
+
+@router.post("/me/bookings/{booking_id}/payment", dependencies=[access.SESSION, limit("guide-write")])
+async def record_payment(
+    booking_id: str,
+    payload: PaymentRecordIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """What the guide received on the day, and how."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_record_payment(CAST(:uid AS uuid), CAST(:booking AS uuid), :amount, :method)",
+        {"uid": uid, "booking": booking_id, "amount": payload.amount_minor, "method": payload.method},
+    )
+
+
+@router.get("/me/earnings", dependencies=[access.SESSION])
+async def my_earnings(
+    request: Request,
+    month: date = Query(),  # noqa: B008
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """A month's statement: what bookings said, what the guide recorded, the fee and what is theirs."""
+    uid = await _uid(request, db)
+    return await fetch_json(db, "SELECT app.guide_earnings(CAST(:uid AS uuid), :month)", {"uid": uid, "month": month})
+
+
+def _csv_cell(value: Any) -> str:
+    """One cell, safe to open in a spreadsheet: a leading formula character is neutralised."""
+    text_value = "" if value is None else str(value)
+    return "'" + text_value if text_value[:1] in ("=", "+", "-", "@", "\t", "\r") else text_value
+
+
+def _csv_line(values: list[Any]) -> str:
+    """One RFC 4180 line. Every cell goes through ``_csv_cell``, so no cell can run a formula."""
+    cells = []
+    for value in values:
+        cell = _csv_cell(value)
+        if any(char in cell for char in (",", '"', "\n", "\r")):
+            cell = '"' + cell.replace('"', '""') + '"'
+        cells.append(cell)
+    return ",".join(cells) + "\r\n"
+
+
+def _money(minor: Any) -> str:
+    return "" if minor is None else f"{int(minor) / 100:.2f}"
+
+
+@router.get("/me/earnings.csv", dependencies=[access.SESSION])
+async def my_earnings_csv(
+    request: Request,
+    month: date = Query(),  # noqa: B008
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Response:
+    """The month's statement as a spreadsheet, one row per booking."""
+    uid = await _uid(request, db)
+    statement = await fetch_json(
+        db, "SELECT app.guide_earnings(CAST(:uid AS uuid), :month)", {"uid": uid, "month": month}
+    )
+    lines = [_csv_line(["date", "booking", "tour", "guests", "status", "expected_usd", "received_usd", "method"])]
+    for row in statement["rows"]:
+        lines.append(
+            _csv_line(
+                [
+                    datetime.fromisoformat(row["starts_at"]).astimezone(BEIRUT).strftime("%Y-%m-%d %H:%M"),
+                    row["code"],
+                    row["tour_title"],
+                    row["party_size"],
+                    "no-show" if row["no_show"] else row["status"],
+                    _money(row["expected_minor"]),
+                    _money(row["paid_minor"]),
+                    row["paid_method"],
+                ]
+            )
+        )
+    lines.append("\r\n")
+    lines.append(_csv_line(["received_usd", _money(statement["recorded_minor"])]))
+    lines.append(_csv_line(["mshwar_fee_percent", statement["fee_percent"]]))
+    lines.append(_csv_line(["mshwar_fee_usd", _money(statement["fee_minor"])]))
+    lines.append(_csv_line(["yours_usd", _money(statement["net_minor"])]))
+    return Response(
+        content="".join(lines),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="mshwar-earnings-{statement["month"]}.csv"'},
+    )
+
+
+@router.get("/me/insights", dependencies=[access.SESSION])
+async def my_insights(
+    request: Request,
+    days: int = Query(default=90, ge=7, le=365),
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Per tour: requests, confirmations, declines, lapses, cancellations, seats filled and reply speed."""
+    uid = await _uid(request, db)
+    return await fetch_json(db, "SELECT app.guide_insights(CAST(:uid AS uuid), :days)", {"uid": uid, "days": days})
 
 
 @router.get("/me/requests", dependencies=[access.SESSION])
@@ -663,19 +1517,60 @@ async def write_review(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
-    """Write one half. It stays hidden from the other side until both halves exist or 14 days pass."""
+    """Write one half. It stays hidden from the other side until both halves exist or 14 days pass.
+
+    A traveller may also rate knowledge, communication, value and route (each optional).
+    """
     uid = await _uid(request, db)
+    parts = payload.parts.model_dump(exclude_none=True) if payload.parts else {}
     return await fetch_json(
         db,
-        "SELECT app.write_guide_review(CAST(:uid AS uuid), CAST(:run AS uuid), CAST(:traveller AS uuid), :rating, :body)",
+        "SELECT app.write_guide_review_full(CAST(:uid AS uuid), CAST(:run AS uuid), CAST(:traveller AS uuid), "
+        ":rating, :body, CAST(:parts AS jsonb))",
         {
             "uid": uid,
             "run": payload.run_id,
             "traveller": payload.traveller_id,
             "rating": payload.rating,
             "body": payload.body,
+            "parts": json.dumps(parts),
         },
     )
+
+
+@router.post("/reviews/{review_id}/reply", dependencies=[access.SESSION, limit("community-write")])
+async def reply_to_review(
+    review_id: str,
+    payload: ReviewReplyIn,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """The guide answers a published review once, in public."""
+    uid = await _uid(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.guide_reply_to_review(CAST(:uid AS uuid), CAST(:review AS uuid), :body)",
+        {"uid": uid, "review": review_id, "body": payload.body},
+    )
+
+
+# ---- Step 7: quality, levels and ranking ---------------------------------------------------
+
+
+@router.get("/me/quality", dependencies=[access.SESSION])
+async def my_quality(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """The guide's level, the numbers behind it, their ranking parts and any strikes."""
+    uid = await _uid(request, db)
+    return await fetch_json(db, "SELECT app.guide_my_quality(CAST(:uid AS uuid))", {"uid": uid})
+
+
+@router.post("/ops/levels", dependencies=[access.JOB])
+async def recompute_levels(db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    """Nightly: levels and ranking scores from the last 12 months."""
+    return await fetch_json(db, "SELECT app.guide_recompute_levels()", {})
 
 
 @router.get("/{slug}/reviews", dependencies=[access.PUBLIC])

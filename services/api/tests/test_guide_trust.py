@@ -41,18 +41,23 @@ def test_every_guide_notification_has_a_template_in_every_language() -> None:
     emitted: set[str] = set()
     templated: dict[str, set[str]] = {}
     for migration in sorted(MIGRATIONS.glob("0*.sql")):
+        body = migration.read_text()
+        # Templates may live in any migration (the booking ones date from 020).
+        for event, locale in re.findall(
+            r"\('([a-z_]+(?:\.[a-z_]+)+)', '(en|ar|fr)', '(?:traveller|business)'",
+            body,
+        ):
+            templated.setdefault(event, set()).add(locale)
         if int(migration.name[:3]) < 33:
             continue
-        body = migration.read_text()
         emitted |= set(re.findall(r"emit_notification_event\(\s*'([a-z_.]+)'", body))
         emitted |= set(re.findall(r"notify_engagement\([^,]+,\s*'([a-z_.]+)'", body))
         emitted |= set(re.findall(r"WHEN [^\n]*THEN '(engagement\.[a-z_]+)'", body))
         emitted |= set(re.findall(r"ELSE '(engagement\.[a-z_]+)'", body))
-        for event, locale in re.findall(
-            r"\('((?:guide|engagement|partner|transport|ride|exchange|venue)\.[a-z_]+)', '(en|ar|fr)', 'traveller'",
-            body,
-        ):
-            templated.setdefault(event, set()).add(locale)
+    # "'booking.' || NEW.status" is every status the booking trigger announces.
+    if "booking." in emitted:
+        emitted.discard("booking.")
+        emitted |= {"booking.confirmed", "booking.rejected", "booking.cancelled", "booking.expired"}
     assert emitted, "the taxonomy test found no events; the pattern is stale"
     missing = {event: {"en", "ar", "fr"} - templated.get(event, set()) for event in emitted}
     assert not {k: v for k, v in missing.items() if v}, missing
@@ -203,7 +208,7 @@ async def test_a_guides_booking_notifications_link_to_the_guide_screens(clients:
                 text("SELECT app.notification_deep_link('guide.proposal_decided', '{\"path\": \"/guide/contribute\"}')")
             )
         ).scalar_one()
-    assert for_guide == "/guide/requests", "a guide never lands in the hidden business portal"
+    assert for_guide == f"/guide/bookings/{booking['id']}", "a guide never lands in the hidden business portal"
     assert other.startswith("/business/bookings"), "an ordinary business keeps its portal link"
     assert path == "/guide/contribute"
 
