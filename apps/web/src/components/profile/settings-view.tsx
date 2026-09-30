@@ -4,7 +4,9 @@ import { HubFrame } from "@/components/hub/hub-nav";
 import { PreferencesPanel } from "@/components/notifications/preferences-panel";
 import { PrivacyPanel } from "@/components/privacy/privacy-panel";
 import { ProfileForm } from "@/components/profile/profile-form";
+import { SecurityPanel } from "@/components/profile/security-panel";
 import { useLocale } from "@/components/shell/locale-provider";
+import { useAccountSecurityCopy } from "@/lib/account-security-copy";
 import { useHubCopy } from "@/lib/hub-copy";
 import { useNotificationCopy } from "@/lib/notifications-copy";
 import { usePrivacyCopy } from "@/lib/privacy-copy";
@@ -15,10 +17,12 @@ export function SettingsView() {
   const hub = useHubCopy();
   const notifications = useNotificationCopy();
   const privacy = usePrivacyCopy();
+  const security = useAccountSecurityCopy();
   const sections = [
     { id: "profile", label: t("profile") },
     { id: "preferences", label: t("preferences") },
     { id: "communication", label: notifications.prefsTitle },
+    { id: "security", label: security.title },
     { id: "privacy", label: privacy.privacyTitle },
   ];
 
@@ -42,6 +46,7 @@ export function SettingsView() {
       <div className="grid gap-8">
         <ProfileForm />
         <PreferencesPanel />
+        <SecurityPanel />
         <PrivacyPanel />
       </div>
     </HubFrame>

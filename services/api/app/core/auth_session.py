@@ -11,7 +11,7 @@ from fastapi import Depends, HTTPException, Request, Response, status
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.sessions import COOKIE_NAME, hash_session_token
+from app.core.sessions import COOKIE_NAME, hash_session_token, session_token
 from app.dependencies import bind_actor, get_auth_db
 
 
@@ -34,7 +34,7 @@ async def optional_session(request: Request, db: AsyncSession) -> dict[str, Any]
     if hasattr(request.state, "auth_session"):
         cached: dict[str, Any] | None = request.state.auth_session
         return dict(cached) if cached is not None else None
-    session = await load_session(db, request.cookies.get(COOKIE_NAME))
+    session = await load_session(db, session_token(request.cookies))
     if session is None or session["status"] != "active":
         session = None
     else:
@@ -59,7 +59,7 @@ async def require_session(request: Request, db: AsyncSession) -> dict[str, Any]:
     session = await optional_session(request, db)
     if session is None:
         # A cookie that no longer maps to an active session is cleared, so the browser stops sending it.
-        headers = {"set-cookie": _clear_cookie_header()} if request.cookies.get(COOKIE_NAME) else None
+        headers = {"set-cookie": _clear_cookie_header()} if session_token(request.cookies) else None
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated", headers=headers)
     return session
 

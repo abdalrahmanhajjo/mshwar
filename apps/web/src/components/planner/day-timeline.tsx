@@ -37,6 +37,7 @@ import {
   type StepOption,
 } from "@/lib/planner";
 import type { PlannerCopy, PlannerKey } from "@/lib/planner-copy";
+import { UserLink } from "@/components/ui/user-link";
 
 const ROLE_ICON: Record<DayStepOutcome["role"], LucideIcon> = {
   meal: Utensils,
@@ -325,14 +326,9 @@ export function DayTimeline({
                             </Badge>
                           ) : null}
                           {step.trust?.source_url ? (
-                            <a
-                              href={step.trust.source_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="underline underline-offset-2"
-                            >
+                            <UserLink href={step.trust.source_url} className="underline underline-offset-2">
                               {copy.sourceLink}
-                            </a>
+                            </UserLink>
                           ) : null}
                           {flags.map((flag) => (
                             <Badge key={flag} variant="warning">

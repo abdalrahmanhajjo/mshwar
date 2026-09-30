@@ -35,6 +35,7 @@ const CATALOGUES = [
   "src/lib/guide-messages.ts",
   "src/lib/guide-workspace-copy.ts",
   "src/lib/guide-quality-copy.ts",
+  "src/lib/account-security-copy.ts",
   "src/lib/search-copy.ts",
   "src/lib/verified-copy.ts",
   "src/lib/partner-copy.ts",

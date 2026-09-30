@@ -4,6 +4,7 @@ import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { ArrowRight, KeyRound, LinkIcon, MailOpen } from "lucide-react";
 import { AuthLayout, type AuthVisual } from "@/components/auth/auth-layout";
+import { HumanCheck, humanCheckEnabled } from "@/components/auth/human-check";
 import {
   authErrorMessage,
   EMAIL_PATTERN,
@@ -55,14 +56,20 @@ function ForgotPassword({ visual }: { visual?: AuthVisual | null }) {
   const [sentTo, setSentTo] = React.useState<string | null>(null);
   const [resent, setResent] = React.useState(false);
   const [pending, setPending] = React.useState(false);
+  const [humanToken, setHumanToken] = React.useState<string | null>(null);
   const cooldown = useCooldown();
 
   async function send(address: string, again: boolean) {
     if (pending) return;
+    if (humanCheckEnabled && !humanToken) {
+      setError(copy.errHumanCheck);
+      return;
+    }
     setError(null);
     setPending(true);
     try {
-      await requestPasswordReset(address);
+      await requestPasswordReset(address, humanToken);
+      setHumanToken(null); // a token is good for one request
       setSentTo(address);
       setResent(again);
       cooldown.start(RESEND_COOLDOWN_SECONDS);
@@ -102,6 +109,7 @@ function ForgotPassword({ visual }: { visual?: AuthVisual | null }) {
           <p className="text-[1.0625rem] font-semibold text-text [overflow-wrap:anywhere]">{sentTo}</p>
           <SpamHelp email={sentTo} />
           {resent && !error ? <AuthAlert tone="success">{copy.fpResent}</AuthAlert> : null}
+          <HumanCheck key={`resend-${resent}`} action="reset" onToken={setHumanToken} />
           {error ? <AuthAlert>{error}</AuthAlert> : null}
           <AuthSubmit
             type="button"
@@ -152,6 +160,7 @@ function ForgotPassword({ visual }: { visual?: AuthVisual | null }) {
             }}
           />
         </AuthField>
+        <HumanCheck action="reset" onToken={setHumanToken} />
         {error ? <AuthAlert>{error}</AuthAlert> : null}
         <AuthSubmit pending={pending} pendingLabel={copy.fpPending} disabled={cooldown.left > 0}>
           {cooldown.left > 0 ? interpolate(copy.resendIn, { n: cooldown.left }) : copy.fpSubmit}

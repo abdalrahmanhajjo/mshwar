@@ -26,7 +26,7 @@ from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.concurrency import run_in_threadpool
 
-from app.core import access, ical_import, imagekit
+from app.core import access, ical_import, imagekit, secret_box, virus_scan
 from app.core.auth_session import require_session, require_verified_user
 from app.core.config import settings
 from app.core.ics import CalendarEvent, calendar
@@ -34,7 +34,7 @@ from app.core.licences import COMMONS_IMAGE, COMMONS_PAGE, license_allowed
 from app.core.rate_limit import limit
 from app.core.sql import fetch_json
 from app.core.storage import delete_private_bytes, media_url, put_private_bytes
-from app.core.uploads import inspect_or_reject, validate_upload
+from app.core.uploads import inspect_or_reject, validate_upload, without_metadata
 from app.dependencies import get_auth_db
 from app.planner.weather import WeatherService
 from app.schemas.guides import (
@@ -156,6 +156,8 @@ async def upload_guide_document(
     uid = await _uid(request, db)
     raw = validate_upload(payload.content_base64, payload.content_type, "verification")
     inspect_or_reject(raw, payload.content_type)
+    raw = without_metadata(raw, payload.content_type)
+    await virus_scan.scan_or_reject(raw, "guide-document")
     stored = put_private_bytes(raw, payload.filename, payload.content_type)
     body = {
         "kind": payload.kind,
@@ -905,6 +907,46 @@ async def my_external_calendars(
     return await fetch_json(db, "SELECT app.guide_list_external_calendars(CAST(:uid AS uuid))", {"uid": uid})
 
 
+_CALENDAR_CONTEXT = "calendar-url"
+_CALENDAR_URL = re.compile(r"^https://[^/\s]+/\S*$")
+
+
+def normalise_calendar_url(raw: str) -> str:
+    """webcal:// is how Google and Apple hand out the same address; anything else must be https."""
+    url = raw.strip()
+    if url.lower().startswith("webcal://"):
+        url = "https://" + url[len("webcal://") :]
+    if not _CALENDAR_URL.match(url) or len(url) > 1000:
+        raise HTTPException(status_code=422, detail="paste the calendar's secret address (https:// or webcal://)")
+    return url
+
+
+def _calendar_host(url: str) -> str:
+    return url.split("/", 3)[2][:255]
+
+
+async def _calendar_url(db: AsyncSession, row: dict[str, Any]) -> str:
+    """The address to read, decrypted. A row from before 068 (plain text) or one encrypted
+    with a previous key is stored again under the current key."""
+    if row.get("ciphertext"):
+        url = secret_box.decrypt(row["ciphertext"], _CALENDAR_CONTEXT)
+        if secret_box.is_current(row["ciphertext"]):
+            return url
+    else:
+        url = str(row["url"])
+    await fetch_json(
+        db,
+        "SELECT to_jsonb(app.guide_store_calendar_secret(CAST(:id AS uuid), :ciphertext, :fingerprint, :host))",
+        {
+            "id": row["id"],
+            "ciphertext": secret_box.encrypt(url, _CALENDAR_CONTEXT),
+            "fingerprint": secret_box.fingerprint(url, _CALENDAR_CONTEXT),
+            "host": _calendar_host(url),
+        },
+    )
+    return url
+
+
 async def _sync_calendars(db: AsyncSession, uid: str | None, cap: int = 200) -> dict[str, int]:
     """Read each calendar and replace its busy time. A calendar that cannot be read keeps its last busy time."""
     rows = await fetch_json(
@@ -915,10 +957,13 @@ async def _sync_calendars(db: AsyncSession, uid: str | None, cap: int = 200) -> 
         periods: list[dict[str, str]] = []
         error: str | None = None
         try:
-            text_body = await run_in_threadpool(ical_import.fetch_calendar, row["url"])
+            url = await _calendar_url(db, row)
+            text_body = await run_in_threadpool(ical_import.fetch_calendar, url)
             periods = [period.as_json() for period in ical_import.busy_periods(text_body)]
         except ical_import.CalendarFetchError as exc:
             error = str(exc)
+        except secret_box.SecretBoxError:
+            error = "the saved address can no longer be read; connect the calendar again"
         await fetch_json(
             db,
             "SELECT to_jsonb(app.guide_replace_external_blocks(CAST(:id AS uuid), CAST(:periods AS jsonb), :error))",
@@ -937,12 +982,19 @@ async def add_external_calendar(
     request: Request,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Any:
-    """Connect a calendar and read it straight away."""
+    """Connect a calendar and read it straight away. The address is stored encrypted (SEC-45)."""
     uid = await _uid(request, db)
+    url = normalise_calendar_url(payload.url)
     await fetch_json(
         db,
-        "SELECT app.guide_add_external_calendar(CAST(:uid AS uuid), :url, :label)",
-        {"uid": uid, "url": payload.url, "label": payload.label},
+        "SELECT app.guide_add_external_calendar_secret(CAST(:uid AS uuid), :ciphertext, :fingerprint, :host, :label)",
+        {
+            "uid": uid,
+            "ciphertext": secret_box.encrypt(url, _CALENDAR_CONTEXT),
+            "fingerprint": secret_box.fingerprint(url, _CALENDAR_CONTEXT),
+            "host": _calendar_host(url),
+            "label": payload.label,
+        },
     )
     await _sync_calendars(db, uid)
     return await fetch_json(db, "SELECT app.guide_list_external_calendars(CAST(:uid AS uuid))", {"uid": uid})
@@ -1372,6 +1424,7 @@ async def add_proposal_photo(
             raise HTTPException(status_code=422, detail="photos must be JPEG, PNG or WebP")
         raw = validate_upload(payload.content_base64, content_type, "listing")
         inspected = inspect_or_reject(raw, content_type)
+        raw = without_metadata(raw, content_type)
         stored_key: str | None = None
         photo: dict[str, Any]
         if imagekit.enabled():

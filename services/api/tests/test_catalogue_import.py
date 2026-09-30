@@ -152,3 +152,22 @@ def test_a_named_commons_photo_is_used_before_the_article_image(monkeypatch: pyt
     assert importer.resolve_place_image(place) is photo
     assert asked == ["Mount Qammouaa - Akkar 3.jpg"]
     assert importer.DESTINATION_COVERS["akkar"] == "qammoua-forest", "Akkar has a cover photo"
+
+
+def test_photo_downloads_are_limited_to_wikimedia(monkeypatch: pytest.MonkeyPatch) -> None:
+    import httpx
+
+    from app.seed import catalogue_import
+
+    calls: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(str(request.url))
+        return httpx.Response(200, content=b"\xff\xd8photo")
+
+    real_client = httpx.Client
+    monkeypatch.setattr(httpx, "Client", lambda **kwargs: real_client(transport=httpx.MockTransport(handler), **kwargs))
+    for refused in ("https://evil.example/x.jpg", "http://upload.wikimedia.org/x.jpg", "file:///etc/passwd"):
+        assert catalogue_import._download(refused) is None
+    assert calls == [], "nothing outside upload.wikimedia.org is fetched"
+    assert catalogue_import._download("https://upload.wikimedia.org/wikipedia/commons/a/ab/x.jpg") == b"\xff\xd8photo"

@@ -30,7 +30,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.auth_session import optional_session
 from app.core.client_ip import client_ip
 from app.core.config import settings
-from app.core.sessions import COOKIE_NAME
+from app.core.sessions import session_token
 from app.dependencies import get_auth_db
 
 logger = logging.getLogger("mshwar.rate_limit")
@@ -166,11 +166,14 @@ class RateLimitMetrics:
         self.rejections: Counter[str] = Counter()
         self.checks: Counter[str] = Counter()
         self.store_failures = 0
+        # Content Security Policy reports from browsers, by directive (SEC-37).
+        self.csp_violations: Counter[str] = Counter()
 
     def reset(self) -> None:
         self.rejections.clear()
         self.checks.clear()
         self.store_failures = 0
+        self.csp_violations.clear()
 
 
 metrics = RateLimitMetrics()
@@ -246,6 +249,8 @@ def _rules() -> dict[str, Rule]:
         Rule("partner-write", None, Allowance(120, hour), "Driver and changer applications, vehicles and documents"),
         Rule("ride-request", None, Allowance(30, hour), "Ride requests, bookings and cancellations"),
         Rule("partner-security", None, Allowance(20, hour), "Phone codes, authenticator set-up and step-up checks"),
+        Rule("account-security", None, Allowance(10, hour), "Password and email changes, ending sessions"),
+        Rule("csp-report", Allowance(60, 10 * minute), None, "Browser Content Security Policy reports per IP"),
     ]
     return {rule.name: rule for rule in items}
 
@@ -309,7 +314,7 @@ def limit(rule_name: str) -> Any:
         raise KeyError(rule_name)
 
     async def _dependency(request: Request, db: AsyncSession = Depends(get_auth_db)) -> None:  # noqa: B008
-        if not hasattr(request.state, "auth_session") and request.cookies.get(COOKIE_NAME):
+        if not hasattr(request.state, "auth_session") and session_token(request.cookies):
             await optional_session(request, db)
         await enforce_rate_limit(request, rule_name)
 
@@ -343,5 +348,11 @@ def prometheus_text() -> str:
         "# HELP mshwar_rate_limit_store_failures_total Redis errors that fell back to in-process limits.",
         "# TYPE mshwar_rate_limit_store_failures_total counter",
         f"mshwar_rate_limit_store_failures_total {metrics.store_failures}",
+        "# HELP mshwar_csp_violations_total Content Security Policy violations browsers reported.",
+        "# TYPE mshwar_csp_violations_total counter",
+    ]
+    lines += [
+        f'mshwar_csp_violations_total{{directive="{name}"}} {count}'
+        for name, count in sorted(metrics.csp_violations.items())
     ]
     return "\n".join(lines) + "\n"

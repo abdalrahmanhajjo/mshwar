@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { SESSION_COOKIE, isProtectedPath, safeNextPath } from "@/lib/auth";
+import { SESSION_COOKIES, isProtectedPath, safeNextPath } from "@/lib/auth";
+import { REPORTING_ENDPOINTS, contentSecurityPolicy, newNonce } from "@/lib/csp";
 import {
   DEFAULT_LOCALE,
   LOCALE_COOKIE,
@@ -25,6 +26,17 @@ export function proxy(request: NextRequest) {
     return response;
   }
 
+  // Pages get a fresh nonce; Next.js reads it from the request's policy and puts it on its scripts.
+  const csp =
+    process.env.NODE_ENV === "production"
+      ? contentSecurityPolicy({
+          nonce: newNonce(),
+          sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+          imagekitUrl: process.env.NEXT_PUBLIC_IMAGEKIT_URL,
+        })
+      : null;
+  if (csp) requestHeaders.set("Content-Security-Policy", csp);
+
   const { locale: prefixLocale, pathname: stripped } = splitLocalePrefix(pathname);
   const locale = prefixLocale ?? parseLocale(request.cookies.get(LOCALE_COOKIE)?.value);
   requestHeaders.set(LOCALE_HEADER, locale);
@@ -37,10 +49,15 @@ export function proxy(request: NextRequest) {
       sameSite: "lax",
     });
     response.headers.set(REQUEST_ID_HEADER, requestId);
+    if (csp) {
+      response.headers.set("Content-Security-Policy", csp);
+      response.headers.set("Reporting-Endpoints", REPORTING_ENDPOINTS);
+    }
     return response;
   }
 
-  if (isProtectedPath(stripped) && !request.cookies.get(SESSION_COOKIE)?.value) {
+  const signedIn = SESSION_COOKIES.some((name) => Boolean(request.cookies.get(name)?.value));
+  if (isProtectedPath(stripped) && !signedIn) {
     const url = request.nextUrl.clone();
     url.pathname = withLocalePrefix(locale, "/signin");
     url.search = "";

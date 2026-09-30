@@ -35,6 +35,8 @@ PUBLIC_ROUTES = {
     "POST /api/v1/auth/forgot-password",
     "POST /api/v1/auth/reset-password",
     "POST /api/v1/auth/verify-email",
+    "POST /api/v1/auth/email/confirm",
+    "POST /api/v1/security/csp-report",
     "POST /api/v1/auth/resend-verification",
     "GET /api/v1/businesses",
     "GET /api/v1/businesses/experiences/{slug}",
@@ -170,8 +172,10 @@ def test_read_only_public_routes_do_not_write() -> None:
         "POST /api/v1/auth/forgot-password",
         "POST /api/v1/auth/reset-password",
         "POST /api/v1/auth/verify-email",
+        "POST /api/v1/auth/email/confirm",
         "POST /api/v1/auth/resend-verification",
         "POST /api/v1/checkout/quote",
+        "POST /api/v1/security/csp-report",
     }
 
 

@@ -9,7 +9,7 @@ from fastapi import HTTPException, status
 
 from app.core.config import settings
 from app.core.http_status import HTTP_413_CONTENT_TOO_LARGE, HTTP_422_UNPROCESSABLE
-from app.core.media_inspect import Inspected, UnsafeUpload, inspect_upload
+from app.core.media_inspect import Inspected, UnsafeUpload, inspect_upload, strip_metadata
 
 _IMAGE_TYPES = frozenset({"image/jpeg", "image/png", "image/webp"})
 ALLOWED_CONTENT_TYPES = {
@@ -57,5 +57,13 @@ def validate_upload(content_base64: str, content_type: str, purpose: str) -> byt
 def inspect_or_reject(data: bytes, content_type: str) -> Inspected:
     try:
         return inspect_upload(data, content_type, settings.max_image_pixels)
+    except UnsafeUpload as exc:
+        raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail=str(exc).capitalize()) from exc
+
+
+def without_metadata(data: bytes, content_type: str) -> bytes:
+    """The bytes to store: images lose EXIF, XMP and text chunks (location, camera, owner)."""
+    try:
+        return strip_metadata(data, content_type)
     except UnsafeUpload as exc:
         raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail=str(exc).capitalize()) from exc

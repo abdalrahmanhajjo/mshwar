@@ -18,6 +18,7 @@ paths = [
   '''(^|/)docs/''',
   '''(^|/)scripts/''',
   '''(^|/)services/api/scripts/''',
+  '''(^|/)services/api/app/core/data/common-passwords\.txt$''',
   '''(?i)\.test\.py$''',
   '''(^|/)test_[^/]*\.py$''',
   '''(?i)\.spec\.ts$''',

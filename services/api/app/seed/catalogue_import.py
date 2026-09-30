@@ -457,12 +457,18 @@ def _commons_geosearch(
         return []
 
 
+_COMMONS_FILES = "https://upload.wikimedia.org/"
+
+
 def _download(url: str, *, timeout: float = 30.0) -> bytes | None:
     import httpx  # lazy
 
+    # The address comes from a Commons API answer: only Wikimedia's own file host is read.
+    if not url.startswith(_COMMONS_FILES):
+        return None
     try:
-        with httpx.Client(timeout=timeout, headers={"User-Agent": _UA}, follow_redirects=True) as client:
-            img = client.get(url)
+        with httpx.Client(timeout=timeout, headers={"User-Agent": _UA}, follow_redirects=False) as client:
+            img = client.get(url)  # nosemgrep: mshwar-httpx-variable-url - upload.wikimedia.org only (checked above)
             if img.status_code != 200 or not img.content or len(img.content) > 15 * 1024 * 1024:
                 return None
             return img.content

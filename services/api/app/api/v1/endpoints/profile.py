@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core import access
 from app.core.auth_session import load_session
 from app.core.http_status import HTTP_422_UNPROCESSABLE
-from app.core.sessions import COOKIE_NAME
+from app.core.sessions import session_token
 from app.dependencies import get_auth_db
 from app.schemas.preferences import (
     HomeArea,
@@ -30,7 +30,7 @@ async def _require_session(
     request: Request,
     db: AsyncSession,
 ) -> dict[str, Any]:
-    session = await load_session(db, request.cookies.get(COOKIE_NAME))
+    session = await load_session(db, session_token(request.cookies))
     if session is None or session["status"] != "active":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
     return session

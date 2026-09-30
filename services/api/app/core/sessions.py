@@ -11,13 +11,31 @@ from __future__ import annotations
 
 import hashlib
 import secrets
+from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 
 from fastapi import Response
 
 from app.core.config import settings
 
-COOKIE_NAME = settings.session_cookie_name
+# Deployed, the cookie carries the __Host- prefix (security plan SEC-21): browsers then accept
+# it only when it is Secure, has Path=/ and no Domain, so no subdomain can set or overwrite it.
+LEGACY_COOKIE_NAME = settings.session_cookie_name
+COOKIE_NAME = (
+    f"__Host-{LEGACY_COOKIE_NAME}"
+    if settings.is_deployed and not LEGACY_COOKIE_NAME.startswith("__Host-")
+    else LEGACY_COOKIE_NAME
+)
+COOKIE_NAMES = tuple(dict.fromkeys((COOKIE_NAME, LEGACY_COOKIE_NAME)))
+
+
+def session_token(cookies: Mapping[str, str]) -> str | None:
+    """The session token from either name, so switching names signs nobody out."""
+    for name in COOKIE_NAMES:
+        value = cookies.get(name)
+        if value:
+            return value
+    return None
 
 
 def new_session_token() -> str:
@@ -52,4 +70,5 @@ def set_session_cookie(response: Response, token: str) -> None:
 
 
 def clear_session_cookie(response: Response) -> None:
-    response.delete_cookie(key=COOKIE_NAME, path="/")
+    for name in COOKIE_NAMES:
+        response.delete_cookie(key=name, path="/", secure=settings.is_deployed, httponly=True, samesite="lax")

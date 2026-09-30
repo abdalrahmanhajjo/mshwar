@@ -3,48 +3,13 @@ import type { NextConfig } from "next";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const isProduction = process.env.NODE_ENV === "production";
 
-// The browser reports errors straight to Sentry's ingest host, so CSP must allow it when enabled.
-function sentryOrigin(): string | null {
-  const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
-  if (!dsn) return null;
-  try {
-    return new URL(dsn).origin;
-  } catch {
-    return null;
-  }
-}
-const sentry = sentryOrigin();
-
-// Next.js still inlines bootstrap scripts, so script-src needs 'unsafe-inline' until nonces are wired.
-const contentSecurityPolicy = [
-  "default-src 'self'",
-  "base-uri 'self'",
-  "object-src 'none'",
-  "frame-ancestors 'none'",
-  "form-action 'self'",
-  "script-src 'self' 'unsafe-inline'",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
-  // Map tiles and road routes come through our own origin (/map-tiles, /map-route).
-  ["connect-src 'self'", sentry].filter(Boolean).join(" "),
-  // MapLibre draws on a web worker it creates from a blob.
-  "worker-src 'self' blob:",
-  "child-src 'self' blob:",
-  "frame-src https://www.google.com",
-].join("; ");
-
+// The Content Security Policy is set per request with a nonce in src/proxy.ts (src/lib/csp.ts).
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), payment=(), geolocation=(self)" },
-  ...(isProduction
-    ? [
-        { key: "Content-Security-Policy", value: contentSecurityPolicy },
-        { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
-      ]
-    : []),
+  ...(isProduction ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" }] : []),
 ];
 
 const nextConfig: NextConfig = {

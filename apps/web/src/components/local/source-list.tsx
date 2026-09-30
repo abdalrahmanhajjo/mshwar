@@ -5,6 +5,7 @@ import { CheckedLine } from "@/components/local/shared";
 import { Button } from "@/components/ui/button";
 import type { DestinationServiceSource } from "@/lib/destination-service-sources";
 import { useLocalCopy, type LocalKey } from "@/lib/local-copy";
+import { UserLink } from "@/components/ui/user-link";
 
 /** Public-source referrals never inherit the partner verification/booking badge. */
 export function SourceList({ entries }: { entries: DestinationServiceSource[] }) {
@@ -36,10 +37,10 @@ export function SourceList({ entries }: { entries: DestinationServiceSource[] })
             </p>
             <CheckedLine checkedOn={entry.checked_on} reviewBy={entry.review_by} />
             <Button asChild variant="outline" size="sm" className="w-fit">
-              <a href={entry.source_url} target="_blank" rel="noreferrer nofollow">
+              <UserLink href={entry.source_url}>
                 {copy.sourceLink}
                 <ArrowUpRight className="rtl:-scale-x-100" aria-hidden />
-              </a>
+              </UserLink>
             </Button>
           </article>
         ))}

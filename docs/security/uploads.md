@@ -22,6 +22,15 @@ Story: MSHWAR-112 · Code: `services/api/app/core/uploads.py`, `media_inspect.py
 
    A file that fails gets `422` with a plain message.
 
+7. **Metadata removed** (SEC-51): EXIF, XMP, IPTC, comments and PNG/WebP text chunks are cut out
+   of the file before it is stored or sent to ImageKit, so a photo never carries the GPS spot it
+   was taken at, the camera's serial number or the owner's name. JPEG orientation is kept. The
+   image data is not decoded or re-encoded.
+8. **Virus scan** (SEC-52): verification documents (IDs, licences, business papers) are streamed to
+   ClamAV when `CLAMD_ADDRESS` is set (the compose `scan` profile). A match is refused with `422`
+   and logged with the signature name; a configured scanner that cannot answer refuses with `503`
+   rather than let an unscanned file through.
+
 ## Where files go
 
 - **ImageKit** (`IMAGEKIT_PRIVATE_KEY` and `IMAGEKIT_URL_ENDPOINT` both set): listing photos are sent with a unique file name. Only the file path is stored; the web app builds delivery URLs with `NEXT_PUBLIC_IMAGEKIT_URL` and asks ImageKit for resized, compressed versions. If the database step fails after the upload, the file is deleted from ImageKit again.
@@ -41,4 +50,4 @@ Signed file links respond with:
 
 ## Tests
 
-`services/api/tests/test_abuse_controls.py` and `test_portal.py` cover each rejection, the quotas, the ImageKit path (with a fake client) and the download headers.
+`services/api/tests/test_abuse_controls.py` and `test_portal.py` cover each rejection, the quotas, the ImageKit path (with a fake client) and the download headers. `test_upload_metadata.py` checks that a stored photo has no location left, and `test_virus_scan.py` sends the EICAR test file through a fake `clamd`.

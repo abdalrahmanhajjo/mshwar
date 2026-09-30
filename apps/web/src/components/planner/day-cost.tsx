@@ -11,6 +11,7 @@ import { interpolate } from "@/i18n/catalogues";
 import { formatDate } from "@/i18n/format";
 import { byDay, formatMinor, requestDayDriver, type DayPrice, type PriceLine } from "@/lib/planner";
 import type { PlannerCopy, PlannerKey } from "@/lib/planner-copy";
+import { UserLink } from "@/components/ui/user-link";
 
 /** One line's amount: an exact figure, a range, "from", or "price on request" - never a made-up $0. */
 export function lineAmount(line: PriceLine, copy: PlannerCopy): string {
@@ -82,17 +83,12 @@ export function DayCostPanel({ pricing, copy }: { pricing: DayPrice; copy: Plann
                   {lineDetail(line, copy) ? <span className="text-text-muted">{lineDetail(line, copy)}</span> : null}
                   {line.note ? <span className="text-xs text-text-muted">{line.note}</span> : null}
                   {line.source_name && line.source_url ? (
-                    <a
-                      href={line.source_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-text-muted underline underline-offset-2"
-                    >
+                    <UserLink href={line.source_url} className="text-xs text-text-muted underline underline-offset-2">
                       {interpolate(copy.priceSource, {
                         source: line.source_name,
                         date: line.checked_on ? formatDate(locale, `${line.checked_on}T12:00:00Z`) : "",
                       })}
-                    </a>
+                    </UserLink>
                   ) : null}
                 </dt>
                 <dd className="tabular-nums text-end">{lineAmount(line, copy)}</dd>

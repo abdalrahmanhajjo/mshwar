@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -12,6 +13,7 @@ from app.core.config import settings
 from app.core.csrf import CrossSiteRequestGuard
 from app.core.db_role import check_database_role
 from app.core.errors import install_error_handlers
+from app.core.http_hardening import HttpHardening
 from app.core.logging import configure_logging
 from app.core.observability import init_sentry
 from app.core.request_context import RequestContextMiddleware
@@ -25,7 +27,17 @@ init_sentry()
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     if settings.is_deployed:
         await check_database_role(engine)
+    for warning in settings.startup_warnings():
+        logging.getLogger("mshwar.config").warning(warning)
     yield
+
+
+def api_doc_urls(deployed: bool) -> dict[str, str | None]:
+    """The interactive docs list every route and field; they stay off wherever the app is
+    deployed (security plan SEC-13). Locally they are at /docs."""
+    if deployed:
+        return {"docs_url": None, "redoc_url": None, "openapi_url": None}
+    return {"docs_url": "/docs", "redoc_url": "/redoc", "openapi_url": "/openapi.json"}
 
 
 app = FastAPI(
@@ -33,6 +45,7 @@ app = FastAPI(
     version=settings.version,
     description="Mshwar AI-Powered Lebanon Trip & Experience Platform API",
     lifespan=lifespan,
+    **api_doc_urls(settings.is_deployed),  # type: ignore[arg-type]
 )
 
 app.add_middleware(
@@ -45,6 +58,8 @@ app.add_middleware(
 )
 # Refuses cookie-carrying writes from other sites (inside the request-id middleware).
 app.add_middleware(CrossSiteRequestGuard)
+# Security headers on every response and a size cap on every request body (SEC-15, SEC-16).
+app.add_middleware(HttpHardening)
 # Outermost, so the id exists for CORS rejections and error handlers too.
 app.add_middleware(RequestContextMiddleware)
 install_error_handlers(app)

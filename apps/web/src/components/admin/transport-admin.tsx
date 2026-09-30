@@ -27,6 +27,7 @@ import {
   fetchAdminTransport,
   type TransportCardPrivate,
 } from "@/lib/transport";
+import { UserLink } from "@/components/ui/user-link";
 
 const STATUSES = ["submitted", "published", "rejected", "retired"] as const;
 type Status = (typeof STATUSES)[number];
@@ -174,9 +175,9 @@ function CardRow({ card, onChange }: { card: TransportCardPrivate; onChange: (ne
               {copy[`ev_${item.kind}` as AdminTrustKey]}
               {item.on ? ` · ${item.on}` : ""} · {item.note}
               {item.url ? (
-                <a href={item.url} target="_blank" rel="noreferrer" className="ms-1 underline">
+                <UserLink href={item.url} ugc className="ms-1 underline">
                   ↗
-                </a>
+                </UserLink>
               ) : null}
             </li>
           ))}

@@ -50,6 +50,7 @@ jobs:
           semgrep scan
           --config p/python --config p/typescript --config p/react
           --config p/owasp-top-ten --config p/secrets
+          --config ops/semgrep/mshwar.yml
           --severity ERROR --error
           --exclude "*.test.ts" --exclude "*.test.tsx" --exclude "tests"
           --sarif --output semgrep.sarif

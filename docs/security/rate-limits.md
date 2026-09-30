@@ -46,6 +46,8 @@ Owner: platform · Story: MSHWAR-110 · Code: `services/api/app/core/rate_limit.
 | `partner-write`     | –                                                            | 120 / h                                             | Driver and changer profiles, vehicles, documents, agreement, branches, rates, quotes; venue details and claims          |
 | `ride-request`      | –                                                            | 30 / h                                              | `POST /rides/requests`, accepting a quote, cancelling, new share links                                                  |
 | `partner-security`  | –                                                            | 20 / h                                              | Phone codes, authenticator set-up and step-up checks (`/partners/security/*`); codes also expire and allow five tries   |
+| `account-security`  | –                                                            | 10 / h                                              | Changing the password or email, and ending sessions (`/auth/password`, `/auth/email`, `/auth/sessions/*`)               |
+| `csp-report`        | 60 / 10 min                                                  | –                                                   | `POST /security/csp-report` (browser Content Security Policy reports; always answers 204)                               |
 
 Every route's rule is declared next to its access policy in `services/api/app/api/v1/endpoints/*.py`. `tests/test_abuse_controls.py` fails if a rule in `RULES` is missing from this table.
 
