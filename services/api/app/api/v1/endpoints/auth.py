@@ -6,6 +6,7 @@ import logging
 import re
 import time
 from datetime import UTC, datetime, timedelta
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
@@ -16,18 +17,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import access
 from app.core.admin_auth import close_admin_sessions, lookup_admin_tier
-from app.core.auth_session import load_session
+from app.core.auth_session import load_session, require_session
 from app.core.config import settings
 from app.core.http_status import HTTP_422_UNPROCESSABLE
 from app.core.mailer import MailMessage, get_mailer
+from app.core.password_policy import require_strong_password
 from app.core.passwords import hash_password_async, verify_password_async
 from app.core.rate_limit import enforce_rate_limit, limit
 from app.core.sessions import (
-    COOKIE_NAME,
     clear_session_cookie,
     hash_session_token,
     new_session_token,
     session_expiry,
+    session_token,
     set_session_cookie,
     should_refresh,
 )
@@ -168,6 +170,7 @@ async def register(
         )
     email = _validate_email(payload.email)
     locale = _validate_locale(payload.locale)
+    require_strong_password(payload.password, email)
     password_hash = await hash_password_async(payload.password)
     try:
         result = await db.execute(
@@ -239,7 +242,7 @@ async def signout(
     response: Response,
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> Response:
-    token = request.cookies.get(COOKIE_NAME)
+    token = session_token(request.cookies)
     session = await load_session(db, token)
     if token:
         if session is not None:
@@ -276,7 +279,7 @@ async def _me_or_refresh(
     db: AsyncSession,
     force_refresh: bool,
 ) -> UserOut:
-    token = request.cookies.get(COOKIE_NAME)
+    token = session_token(request.cookies)
     session = await load_session(db, token)
     if session is None or session["status"] != "active":
         clear_session_cookie(response)
@@ -411,6 +414,7 @@ async def reset_password(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> UserOut:
     await enforce_rate_limit(request, "auth-reset-ip")
+    require_strong_password(payload.password)
     password_hash = await hash_password_async(payload.password)
     result = await db.execute(
         text("SELECT app.consume_password_reset(:token_hash, :password_hash)"),
@@ -491,7 +495,7 @@ async def verify_email(
     if user_id is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=_INVALID_VERIFY)
     user = await _account_out(db, user_id)
-    existing = await load_session(db, request.cookies.get(COOKIE_NAME))
+    existing = await load_session(db, session_token(request.cookies))
     if existing is None or str(existing["user_id"]) != str(user.id):
         await _issue_cookie_session(db, response, user.id, request.headers.get("user-agent"))
     return user
@@ -504,10 +508,183 @@ async def resend_verification(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> ResendVerificationResponse:
     await enforce_rate_limit(request, "auth-verify-ip")
-    session = await load_session(db, request.cookies.get(COOKIE_NAME))
+    session = await load_session(db, session_token(request.cookies))
     email = _normalize_email(payload.email) if payload.email else (session["email"] if session else "")
     if not email:
         raise HTTPException(status_code=HTTP_422_UNPROCESSABLE, detail="Invalid email")
     await enforce_rate_limit(request, "auth-verify-email", subject=email)
     await _send_verification_email(db, email)
     return ResendVerificationResponse()
+
+
+# ---- Account security: sessions, password and email (security plan SEC-22, SEC-24, SEC-25) ----
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(min_length=1, max_length=128, repr=False)
+    new_password: str = Field(min_length=10, max_length=128, repr=False)
+
+
+class ChangeEmailRequest(BaseModel):
+    new_email: str = Field(min_length=3, max_length=254)
+    password: str = Field(min_length=1, max_length=128, repr=False)
+
+
+class ConfirmEmailChangeRequest(BaseModel):
+    token: str = Field(min_length=8, max_length=256, repr=False)
+
+
+def _current_hash(request: Request) -> str:
+    token = session_token(request.cookies)
+    return hash_session_token(token) if token else ""
+
+
+async def _check_password(db: AsyncSession, user_id: object, password: str) -> None:
+    """The current password, checked the same way as sign-in; a wrong one is 403."""
+    stored = (
+        await db.execute(text("SELECT app.my_password_hash(:user_id)"), {"user_id": str(user_id)})
+    ).scalar_one_or_none()
+    if not await verify_password_async(stored, password):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Your current password is not right")
+
+
+@router.get("/sessions", dependencies=[access.SESSION])
+async def my_sessions(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Every signed-in session of this account, this one first."""
+    session = await require_session(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.list_my_sessions(CAST(:uid AS uuid), :current)",
+        {"uid": str(session["user_id"]), "current": _current_hash(request)},
+    )
+
+
+@router.delete("/sessions/{session_id}", dependencies=[access.SESSION, limit("account-security")])
+async def end_session(
+    session_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Sign out one session (for example a lost phone)."""
+    session = await require_session(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.revoke_my_session(CAST(:uid AS uuid), CAST(:session AS uuid))",
+        {"uid": str(session["user_id"]), "session": str(session_id)},
+    )
+
+
+@router.post("/sessions/revoke-others", dependencies=[access.SESSION, limit("account-security")])
+async def end_other_sessions(
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Sign out everywhere except here."""
+    session = await require_session(request, db)
+    return await fetch_json(
+        db,
+        "SELECT app.revoke_my_other_sessions(CAST(:uid AS uuid), :current)",
+        {"uid": str(session["user_id"]), "current": _current_hash(request)},
+    )
+
+
+@router.post("/password", dependencies=[access.SESSION, limit("account-security")])
+async def change_password(
+    payload: ChangePasswordRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Change the password. Every other session is signed out, and the account's email is told."""
+    session = await require_session(request, db)
+    await _check_password(db, session["user_id"], payload.current_password)
+    require_strong_password(payload.new_password, session["email"])
+    password_hash = await hash_password_async(payload.new_password)
+    result = await fetch_json(
+        db,
+        "SELECT app.change_my_password(CAST(:uid AS uuid), :hash, :current)",
+        {"uid": str(session["user_id"]), "hash": password_hash, "current": _current_hash(request)},
+    )
+    await _deliver(
+        MailMessage(
+            to=session["email"],
+            subject="Your Mshwar password was changed",
+            text_body=(
+                "Your password was just changed and every other device was signed out. If this wasn't you, "
+                f"reset your password now: {settings.public_web_origin.rstrip('/')}/forgot-password"
+            ),
+            purpose="password_changed",
+        )
+    )
+    return result
+
+
+def _email_change_link(token: str) -> str:
+    return f"{settings.public_web_origin.rstrip('/')}/account/confirm-email?token={token}"
+
+
+@router.post("/email", dependencies=[access.SESSION, limit("account-security")])
+async def request_email_change(
+    payload: ChangeEmailRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Ask to change the email address. Nothing changes until the link sent to the new address is used;
+    the current address is told straight away."""
+    session = await require_session(request, db)
+    new_email = _validate_email(payload.new_email)
+    await _check_password(db, session["user_id"], payload.password)
+    token = new_session_token()
+    result = await fetch_json(
+        db,
+        "SELECT app.request_email_change(CAST(:uid AS uuid), :email, :hash, :expires)",
+        {
+            "uid": str(session["user_id"]),
+            "email": new_email,
+            "hash": hash_session_token(token),
+            "expires": _verify_expiry(),
+        },
+    )
+    await _deliver(
+        MailMessage(
+            to=new_email,
+            subject="Confirm your new Mshwar email",
+            text_body=f"Use this link to make this your Mshwar email. It expires in 24 hours.\n{_email_change_link(token)}",
+            purpose="email_change",
+            token=token,
+        )
+    )
+    await _deliver(
+        MailMessage(
+            to=result["current_email"],
+            subject="A change of email was requested on your Mshwar account",
+            text_body=(
+                "Someone signed in to your account asked to change its email address. Nothing changes until the new "
+                "address confirms it. If this wasn't you, change your password now: "
+                f"{settings.public_web_origin.rstrip('/')}/settings#security"
+            ),
+            purpose="email_change_notice",
+        )
+    )
+    return {"sent_to": new_email}
+
+
+@router.post("/email/confirm", dependencies=[access.PUBLIC, limit("token-link")])
+async def confirm_email_change(
+    payload: ConfirmEmailChangeRequest,
+    db: AsyncSession = Depends(get_auth_db),  # noqa: B008
+) -> Any:
+    """Use the link from the new address. The old address is told once more."""
+    result = await fetch_json(db, "SELECT app.confirm_email_change(:hash)", {"hash": hash_session_token(payload.token)})
+    if result.get("old_email"):
+        await _deliver(
+            MailMessage(
+                to=result["old_email"],
+                subject="Your Mshwar email was changed",
+                text_body="Your account now uses a different email address. If this wasn't you, contact us at once.",
+                purpose="email_changed",
+            )
+        )
+    return {"email": result["new_email"]}

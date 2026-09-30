@@ -1,6 +1,8 @@
 import { apiRequest } from "@/lib/api/client";
 
 export const SESSION_COOKIE = "mshwar_session";
+/** Deployed, the API sets the __Host- name (security plan SEC-21); the old name is still read. */
+export const SESSION_COOKIES = [`__Host-${SESSION_COOKIE}`, SESSION_COOKIE] as const;
 
 export type AuthUser = {
   id: string;

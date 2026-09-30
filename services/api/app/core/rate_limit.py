@@ -30,7 +30,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.auth_session import optional_session
 from app.core.client_ip import client_ip
 from app.core.config import settings
-from app.core.sessions import COOKIE_NAME
+from app.core.sessions import session_token
 from app.dependencies import get_auth_db
 
 logger = logging.getLogger("mshwar.rate_limit")
@@ -246,6 +246,7 @@ def _rules() -> dict[str, Rule]:
         Rule("partner-write", None, Allowance(120, hour), "Driver and changer applications, vehicles and documents"),
         Rule("ride-request", None, Allowance(30, hour), "Ride requests, bookings and cancellations"),
         Rule("partner-security", None, Allowance(20, hour), "Phone codes, authenticator set-up and step-up checks"),
+        Rule("account-security", None, Allowance(10, hour), "Password and email changes, ending sessions"),
     ]
     return {rule.name: rule for rule in items}
 
@@ -309,7 +310,7 @@ def limit(rule_name: str) -> Any:
         raise KeyError(rule_name)
 
     async def _dependency(request: Request, db: AsyncSession = Depends(get_auth_db)) -> None:  # noqa: B008
-        if not hasattr(request.state, "auth_session") and request.cookies.get(COOKIE_NAME):
+        if not hasattr(request.state, "auth_session") and session_token(request.cookies):
             await optional_session(request, db)
         await enforce_rate_limit(request, rule_name)
 

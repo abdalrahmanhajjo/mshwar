@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { SESSION_COOKIE, isProtectedPath, safeNextPath } from "@/lib/auth";
+import { SESSION_COOKIES, isProtectedPath, safeNextPath } from "@/lib/auth";
 import {
   DEFAULT_LOCALE,
   LOCALE_COOKIE,
@@ -40,7 +40,8 @@ export function proxy(request: NextRequest) {
     return response;
   }
 
-  if (isProtectedPath(stripped) && !request.cookies.get(SESSION_COOKIE)?.value) {
+  const signedIn = SESSION_COOKIES.some((name) => Boolean(request.cookies.get(name)?.value));
+  if (isProtectedPath(stripped) && !signedIn) {
     const url = request.nextUrl.clone();
     url.pathname = withLocalePrefix(locale, "/signin");
     url.search = "";

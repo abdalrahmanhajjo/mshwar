@@ -24,6 +24,7 @@ export const SENSITIVE_FIELDS: Record<"credential" | "payment" | "personal", rea
     "set-cookie",
     "x-job-token",
     "mshwar_session",
+    "__Host-mshwar_session",
     "mshwar_guest",
     "otp",
     "dsn",

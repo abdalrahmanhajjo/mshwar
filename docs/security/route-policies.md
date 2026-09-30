@@ -9,13 +9,13 @@ The policy model is described in [authorization.md](authorization.md).
 | `admin` | 113 |
 | `admin-signin` | 2 |
 | `dev` | 1 |
-| `job` | 13 |
-| `public` | 50 |
-| `session` | 220 |
+| `job` | 14 |
+| `public` | 51 |
+| `session` | 225 |
 | `signature` | 1 |
 | `token` | 6 |
 | `verified` | 9 |
-| **Total** | **430** |
+| **Total** | **437** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -128,12 +128,18 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/admin/venues/{experience_id}/check` | `admin` |
 | GET | `/api/v1/admin/weather-thresholds` | `admin` |
 | PUT | `/api/v1/admin/weather-thresholds` | `admin` |
+| POST | `/api/v1/auth/email` | `session` |
+| POST | `/api/v1/auth/email/confirm` | `public` |
 | POST | `/api/v1/auth/forgot-password` | `public` |
 | GET | `/api/v1/auth/me` | `session` |
+| POST | `/api/v1/auth/password` | `session` |
 | POST | `/api/v1/auth/refresh` | `session` |
 | POST | `/api/v1/auth/register` | `public` |
 | POST | `/api/v1/auth/resend-verification` | `public` |
 | POST | `/api/v1/auth/reset-password` | `public` |
+| GET | `/api/v1/auth/sessions` | `session` |
+| POST | `/api/v1/auth/sessions/revoke-others` | `session` |
+| DELETE | `/api/v1/auth/sessions/{session_id}` | `session` |
 | POST | `/api/v1/auth/signin` | `public` |
 | POST | `/api/v1/auth/signout` | `public` |
 | POST | `/api/v1/auth/verify-email` | `public` |
@@ -398,6 +404,7 @@ The policy model is described in [authorization.md](authorization.md).
 | PUT | `/api/v1/privacy/consents` | `session` |
 | POST | `/api/v1/privacy/delete-account` | `session` |
 | GET | `/api/v1/privacy/export` | `session` |
+| POST | `/api/v1/privacy/ops/purge` | `job` |
 | GET | `/api/v1/privacy/policies` | `public` |
 | POST | `/api/v1/privacy/policies/accept` | `session` |
 | POST | `/api/v1/privacy/reset-personalisation` | `session` |

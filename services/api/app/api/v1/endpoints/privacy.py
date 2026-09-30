@@ -44,6 +44,10 @@ async def export_my_data(
     payload: Any = row[0]
     if isinstance(payload, str):
         payload = json.loads(payload)
+    # Everything from the guide features: bookings, messages, reviews, hire requests (SEC-64).
+    payload["guides"] = await fetch_json(
+        db, "SELECT app.export_my_guide_data(CAST(:user_id AS uuid))", {"user_id": str(session["user_id"])}
+    )
     return JSONResponse(
         content=payload,
         headers={"Content-Disposition": 'attachment; filename="mshwar-data-export.json"'},
@@ -154,3 +158,9 @@ async def accept_policies(
         "SELECT app.accept_policies(:user_id, CAST(:versions AS jsonb), 'policy_update')",
         {"user_id": str(session["user_id"]), "versions": json.dumps(payload.versions)},
     )
+
+
+@router.post("/ops/purge", dependencies=[access.JOB])
+async def purge_expired_data(db: AsyncSession = Depends(get_auth_db)) -> Any:  # noqa: B008
+    """Nightly: delete what is past its retention period (docs/privacy-retention.md, SEC-63)."""
+    return await fetch_json(db, "SELECT app.purge_expired_data()", {})

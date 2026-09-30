@@ -22,6 +22,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 from app.core.config import settings
 from app.core.guests import GUEST_COOKIE
 from app.core.request_context import current_request_id
+from app.core.sessions import COOKIE_NAMES
 
 SAFE_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})
 BLOCKED_DETAIL = "This request came from another site and was blocked."
@@ -40,7 +41,7 @@ def trusted_origins() -> frozenset[str]:
 
 
 def _has_auth_cookie(cookie_header: str) -> bool:
-    names = {settings.session_cookie_name, GUEST_COOKIE}
+    names = {*COOKIE_NAMES, GUEST_COOKIE}
     for part in cookie_header.split(";"):
         name = part.split("=", 1)[0].strip()
         if name in names:
