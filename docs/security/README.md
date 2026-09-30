@@ -16,6 +16,7 @@ This folder explains how Mshwar protects its users, and how to keep it that way.
 | Threat model                               | [threat-model.md](threat-model.md)                                           | MSHWAR-114 |
 | Security review and findings               | [review-2026-09.md](review-2026-09.md)                                       | MSHWAR-114 |
 | Security plan: every remaining gap         | [security-plan.md](security-plan.md)                                         | –          |
+| Server hardening, backups and restore      | [server-hardening.md](server-hardening.md)                                   | –          |
 
 ## Checks that run on every pull request
 

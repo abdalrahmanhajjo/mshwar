@@ -56,27 +56,19 @@ hotfix/*    ─┘        │
 
 ## Protected Branch Rules (`main`)
 
-```yaml
-# .github/branch-protection.json
-required_pull_request_reviews:
-  required_approving_review_count: 2
-  require_code_owner_reviews: true
-  require_last_review_approval: true
+The rule lives in [`.github/branch-protection.json`](../.github/branch-protection.json) and is applied with
+`ops/github/apply-branch-protection.sh` (needs `gh auth login` as a repository admin). CI checks that every
+required check in the file is the name of a real pull-request job, so a renamed job cannot silently leave
+`main` unprotected or block every merge.
 
-status_checks:
-  - gitleaks
-  - lint-format
-  - backend-lint
-  - backend-test
-  - backend-integration
-  - coverage-threshold
-  - e2e
-  - web-build
-  - api-integration
-
-enforce_administrators: true
-require_conversation_resolution: true
-```
+- **Every check must pass**, on a branch that is up to date with `main`: secret scanning, formatting, e2e,
+  API lint, tests, coverage, integration and dependency audit, web lint, build and dependency audit,
+  Semgrep, and both container scans.
+- **Admins follow the same rule**; no force pushes, no deleting `main`, conversations must be resolved.
+- **Reviews:** a pull request is required. Approvals are set to 0 while there is one maintainer, because
+  GitHub does not let an author approve their own pull request. `CODEOWNERS` still requests a review.
+  Raise `required_approving_review_count` to 1 and turn on `require_code_owner_reviews` when a second
+  maintainer joins.
 
 ## Environment Strategy
 

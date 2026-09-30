@@ -22,6 +22,10 @@ Point the domain at it before starting, so TLS can be issued — see [Domain: ms
 
 ## 2. Lock the box down first
 
+Run `ops/server/harden.sh` (keys-only SSH, fail2ban, automatic security updates, audit rules, no container
+access to the metadata service) and set up encrypted off-box backups: see
+[security/server-hardening.md](security/server-hardening.md). The minimum by hand:
+
 ```bash
 ufw default deny incoming
 ufw allow 22/tcp

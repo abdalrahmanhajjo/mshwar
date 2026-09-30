@@ -1,0 +1,19 @@
+# Who is asked to review what. Security-sensitive paths are listed separately so a second
+# maintainer can be added to them alone (see docs/security/security-plan.md, SEC-78).
+* @abdalrahmanhajjo
+
+# Authentication, sessions, access policies and request hardening
+/services/api/app/core/ @abdalrahmanhajjo
+/services/api/app/api/v1/endpoints/auth.py @abdalrahmanhajjo
+/services/api/app/api/v1/endpoints/admin*.py @abdalrahmanhajjo
+# Schema, row-level security and SECURITY DEFINER functions
+/mshwar-database/ @abdalrahmanhajjo
+# Build, deploy and the edge
+/.github/ @abdalrahmanhajjo
+/ops/ @abdalrahmanhajjo
+/docker-compose*.yml @abdalrahmanhajjo
+/services/api/Dockerfile @abdalrahmanhajjo
+/apps/web/Dockerfile @abdalrahmanhajjo
+/apps/web/next.config.ts @abdalrahmanhajjo
+/apps/web/src/proxy.ts @abdalrahmanhajjo
+/docs/security/ @abdalrahmanhajjo

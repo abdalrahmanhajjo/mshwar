@@ -36,6 +36,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Required checks name real jobs
+        run: node .github/scripts/check-branch-protection.mjs
+      - name: Server scripts pass shellcheck
+        run: shellcheck ops/server/*.sh ops/github/*.sh
+      - name: Reverse proxy config is valid
+        run: |
+          docker run --rm -e SITE_ADDRESS=example.com -v "$PWD/ops/caddy:/etc/caddy:ro" caddy:2-alpine \
+            caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
       - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}

@@ -1,0 +1,11 @@
+[Unit]
+Description=Mshwar: run the database backup every night
+
+[Timer]
+# 00:30 UTC is 03:30 in Beirut, before the 03:00/03:15 Beirut jobs on the next night.
+OnCalendar=*-*-* 00:30:00 UTC
+RandomizedDelaySec=10m
+Persistent=true
+
+[Install]
+WantedBy=timers.target
