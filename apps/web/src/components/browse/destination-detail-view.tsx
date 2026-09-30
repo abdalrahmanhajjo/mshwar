@@ -16,6 +16,7 @@ import type { Destination, Experience } from "@/lib/catalog";
 import type { GuideBlock } from "@/lib/seo/content";
 import type { Crumb, Faq } from "@/lib/seo/schema";
 import { cn, focusRing } from "@/lib/utils";
+import { UserLink } from "@/components/ui/user-link";
 
 export function DestinationDetailView({
   destination,
@@ -143,14 +144,12 @@ export function DestinationDetailView({
                 {guide.sources.map((source, index) => (
                   <span key={source.url}>
                     {index ? " · " : null}
-                    <a
+                    <UserLink
                       href={source.url}
-                      target="_blank"
-                      rel="noreferrer"
                       className={cn("underline underline-offset-4 hover:text-text", focusRing)}
                     >
                       {source.label}
-                    </a>
+                    </UserLink>
                   </span>
                 ))}
               </p>

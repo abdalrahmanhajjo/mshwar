@@ -23,7 +23,7 @@ from httpx import AsyncClient
 from sqlalchemy import text
 
 from app.api.v1.endpoints import guides as guides_endpoint
-from app.core import ical_import
+from app.core import ical_import, safe_fetch
 from app.core.config import settings
 from app.core.mailer import RecordingMailer, set_mailer
 from app.core.rate_limit import limiter
@@ -157,9 +157,9 @@ def test_a_calendar_address_is_read_safely(monkeypatch: pytest.MonkeyPatch) -> N
         return httpx.Response(200, text=calendar_file)
 
     real_client = httpx.Client
-    monkeypatch.setattr(ical_import.socket, "getaddrinfo", fake_getaddrinfo)
+    monkeypatch.setattr(safe_fetch.socket, "getaddrinfo", fake_getaddrinfo)
     monkeypatch.setattr(
-        ical_import.httpx, "Client", lambda **kwargs: real_client(transport=httpx.MockTransport(handler), **kwargs)
+        safe_fetch.httpx, "Client", lambda **kwargs: real_client(transport=httpx.MockTransport(handler), **kwargs)
     )
 
     assert "BEGIN:VEVENT" in ical_import.fetch_calendar("https://cal.example.com/private/basic.ics")

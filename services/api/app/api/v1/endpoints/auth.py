@@ -15,7 +15,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core import access
+from app.core import access, human_check
 from app.core.admin_auth import close_admin_sessions, lookup_admin_tier
 from app.core.auth_session import load_session, require_session
 from app.core.config import settings
@@ -72,6 +72,8 @@ class RegisterRequest(BaseModel):
     # Separate, optional and off unless ticked.
     personalisation_consent: bool = False
     marketing_consent: bool = False
+    # Cloudflare Turnstile token, when the human check is on (SEC-55).
+    human_check: str | None = Field(default=None, max_length=2048)
 
 
 class SignInRequest(BaseModel):
@@ -107,6 +109,7 @@ _INVALID_VERIFY = "Invalid or expired verification link"
 
 class ForgotPasswordRequest(BaseModel):
     email: str = Field(min_length=3, max_length=254)
+    human_check: str | None = Field(default=None, max_length=2048)
 
 
 class ForgotPasswordResponse(BaseModel):
@@ -163,6 +166,7 @@ async def register(
     db: AsyncSession = Depends(get_auth_db),  # noqa: B008
 ) -> UserOut:
     await enforce_rate_limit(request, "auth-register")
+    await human_check.require_human(payload.human_check, request, "register")
     if not payload.accept_terms:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE,
@@ -374,6 +378,7 @@ async def forgot_password(
     email = _normalize_email(payload.email)
     await enforce_rate_limit(request, "auth-reset-ip")
     await enforce_rate_limit(request, "auth-reset-email", subject=email)
+    await human_check.require_human(payload.human_check, request, "reset")
 
     token = new_session_token()
     token_hash = hash_session_token(token)

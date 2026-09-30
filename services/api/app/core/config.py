@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from typing import Any, Literal
+from urllib.parse import urlsplit
 
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -44,6 +45,15 @@ class Settings(BaseSettings):
 
     # Auth
     secret_key: str = DEFAULT_SECRET_KEY
+    # AES-256 key for secrets the app stores (a guide's calendar address). Optional: when empty
+    # it is derived from SECRET_KEY. 32 random bytes, base64 (see docs/KEY_ROTATION.md).
+    data_encryption_key: str = Field(
+        default="", validation_alias=AliasChoices("DATA_ENCRYPTION_KEY", "data_encryption_key")
+    )
+    # Keys that still decrypt during a rotation (comma-separated); values are re-encrypted on read.
+    data_encryption_previous_keys: str = Field(
+        default="", validation_alias=AliasChoices("DATA_ENCRYPTION_PREVIOUS_KEYS", "data_encryption_previous_keys")
+    )
     session_cookie_name: str = "mshwar_session"
     session_ttl_seconds: int = 60 * 60 * 24 * 7  # 7 days; refresh extends when < half remains
     password_reset_ttl_seconds: int = 30 * 60  # 30 minutes; single-use; revoked on consume
@@ -158,6 +168,12 @@ class Settings(BaseSettings):
     )
     private_storage_dir: str = "/tmp/mshwar-private"  # noqa: S108 - dev default; production must override
     max_upload_bytes: int = 10 * 1024 * 1024
+    # Human check on sign-up and password reset (SEC-55): Cloudflare Turnstile. Unset: off.
+    turnstile_secret_key: str = Field(
+        default="", validation_alias=AliasChoices("TURNSTILE_SECRET_KEY", "turnstile_secret_key")
+    )
+    # Virus scan for verification documents (SEC-52): clamd's address, host:port. Unset: no scan.
+    clamd_address: str = Field(default="", validation_alias=AliasChoices("CLAMD_ADDRESS", "clamd_address"))
     # Per organisation: uploads per hour and total stored bytes.
     upload_org_hourly_limit: int = 60
     upload_org_quota_bytes: int = 500 * 1024 * 1024
@@ -320,6 +336,21 @@ class Settings(BaseSettings):
             raise ValueError("Fault injection must be disabled in production")
         if self.private_storage_dir.startswith("/tmp"):  # noqa: S108 - rejecting temp dirs, not using one
             raise ValueError("Production PRIVATE_STORAGE_DIR must be a persistent directory")
+        if not self.redis_has_password:
+            raise ValueError("Production REDIS_URL must carry a password (set REDIS_PASSWORD, SEC-46)")
+
+    @property
+    def redis_has_password(self) -> bool:
+        return bool(urlsplit(self.redis_url).password)
+
+    def startup_warnings(self) -> list[str]:
+        """Weaker-than-planned settings that do not stop staging from starting."""
+        warnings: list[str] = []
+        if self.is_staging and self.rate_limit_store == "redis" and not self.redis_has_password:
+            warnings.append("REDIS_URL has no password: set REDIS_PASSWORD in .env (security plan SEC-46)")
+        if self.is_deployed and not self.clamd_address:
+            warnings.append("CLAMD_ADDRESS is not set: uploaded documents are not virus-scanned (SEC-52)")
+        return warnings
 
     @property
     def database_url_public(self) -> str:

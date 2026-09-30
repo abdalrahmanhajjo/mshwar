@@ -102,7 +102,7 @@ describe("sign-in and security settings", () => {
       current_password: "old secret value",
       new_password: "cedar trails at dusk",
     });
-    expect((screen.getByLabelText("New password") as HTMLInputElement).value).toBe("", "cleared after saving");
+    expect((screen.getByLabelText("New password") as HTMLInputElement).value).toBe("");
   });
 
   it("asks the new address to confirm an email change and shows API errors", async () => {

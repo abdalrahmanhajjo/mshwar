@@ -16,6 +16,11 @@ FROM deps AS builder
 # Inlined at build time; server-side calls and the /api rewrite use it.
 ARG NEXT_PUBLIC_API_URL=http://api:8000
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+# Optional: the human check's site key (SEC-55) and a custom ImageKit endpoint (image CSP).
+ARG NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+ENV NEXT_PUBLIC_TURNSTILE_SITE_KEY=${NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+ARG NEXT_PUBLIC_IMAGEKIT_URL=
+ENV NEXT_PUBLIC_IMAGEKIT_URL=${NEXT_PUBLIC_IMAGEKIT_URL}
 COPY mshwar-brand-foundation ./mshwar-brand-foundation
 COPY apps/web ./apps/web
 RUN pnpm --filter web build

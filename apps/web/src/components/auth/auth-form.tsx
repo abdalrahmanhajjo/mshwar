@@ -7,6 +7,7 @@ import { withLocalePrefix } from "@/lib/locale";
 import { AuthLayout, type AuthVisual } from "@/components/auth/auth-layout";
 import { authErrorMessage, EMAIL_PATTERN, PASSWORD_MAX, PASSWORD_MIN } from "@/components/auth/auth-errors";
 import { AuthAlert, AuthField, AuthSubmit, PasswordInput, Requirement, authInput } from "@/components/auth/auth-ui";
+import { HumanCheck, humanCheckEnabled } from "@/components/auth/human-check";
 import { useAuth } from "@/components/shell/auth-provider";
 import { useLocale } from "@/components/shell/locale-provider";
 import { ApiError } from "@/lib/api/client";
@@ -58,7 +59,7 @@ function ConsentCheckbox({
   );
 }
 
-type Errors = Partial<Record<"name" | "email" | "password" | "terms", string>>;
+type Errors = Partial<Record<"name" | "email" | "password" | "terms" | "human", string>>;
 
 export function AuthForm({ mode, visual }: { mode: "signin" | "signup"; visual?: AuthVisual | null }) {
   const { t, locale } = useLocale();
@@ -76,6 +77,7 @@ export function AuthForm({ mode, visual }: { mode: "signin" | "signup"; visual?:
   const [acceptTerms, setAcceptTerms] = React.useState(false);
   const [personalisation, setPersonalisation] = React.useState(false);
   const [marketing, setMarketing] = React.useState(false);
+  const [humanToken, setHumanToken] = React.useState<string | null>(null);
   const [errors, setErrors] = React.useState<Errors>({});
   const [formError, setFormError] = React.useState<React.ReactNode>(null);
   const [pending, setPending] = React.useState(false);
@@ -89,6 +91,7 @@ export function AuthForm({ mode, visual }: { mode: "signin" | "signup"; visual?:
     if (signup && password.length < PASSWORD_MIN) next.password = copy.errPassword;
     if (!signup && !password) next.password = copy.errPassword;
     if (signup && !acceptTerms) next.terms = copy.errTerms;
+    if (signup && humanCheckEnabled && !humanToken) next.human = copy.errHumanCheck;
     return next;
   }
 
@@ -102,6 +105,7 @@ export function AuthForm({ mode, visual }: { mode: "signin" | "signup"; visual?:
     if (first) {
       const target = { name: "display-name", email: "email", password: "password", terms: "accept-terms" }[first];
       document.getElementById(target ?? "")?.focus();
+      if (found.human) setFormError(found.human);
       return;
     }
     inFlight.current = true;
@@ -117,6 +121,7 @@ export function AuthForm({ mode, visual }: { mode: "signin" | "signup"; visual?:
           policy_versions: { terms: LEGAL_VERSIONS.terms, privacy: LEGAL_VERSIONS.privacy },
           personalisation_consent: personalisation,
           marketing_consent: marketing,
+          human_check: humanToken,
         });
         await refresh();
         // A new account is signed in but not yet verified: show where the link went.
@@ -307,6 +312,8 @@ export function AuthForm({ mode, visual }: { mode: "signin" | "signup"; visual?:
             </div>
           </fieldset>
         ) : null}
+
+        {signup ? <HumanCheck action="register" onToken={setHumanToken} /> : null}
 
         {formError ? <AuthAlert id="auth-error">{formError}</AuthAlert> : null}
 

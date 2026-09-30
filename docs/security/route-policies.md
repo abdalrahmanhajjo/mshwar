@@ -10,12 +10,12 @@ The policy model is described in [authorization.md](authorization.md).
 | `admin-signin` | 2 |
 | `dev` | 1 |
 | `job` | 14 |
-| `public` | 51 |
+| `public` | 52 |
 | `session` | 225 |
 | `signature` | 1 |
 | `token` | 6 |
 | `verified` | 9 |
-| **Total** | **437** |
+| **Total** | **438** |
 
 | Method | Path | Policy |
 |---|---|---|
@@ -435,6 +435,7 @@ The policy model is described in [authorization.md](authorization.md).
 | POST | `/api/v1/rides/{ride_id}/finish` | `session` |
 | POST | `/api/v1/rides/{ride_id}/review` | `session` |
 | POST | `/api/v1/rides/{ride_id}/share` | `session` |
+| POST | `/api/v1/security/csp-report` | `public` |
 | GET | `/api/v1/transport/between` | `public` |
 | GET | `/api/v1/transport/destinations/{slug}` | `public` |
 | GET | `/api/v1/transport/guide` | `session` |

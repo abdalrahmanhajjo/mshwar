@@ -18,6 +18,8 @@ All secrets and API keys are rotated through the **platform secret store** (Verc
 | `SENTRY_DSN`            | Monitoring  | 365 days           | Platform secret store |
 | `POSTHOG_API_KEY`       | Analytics   | 365 days           | Platform secret store |
 | `REDIS_URL`             | Cache       | 180 days           | Platform secret store |
+| `REDIS_PASSWORD`        | Cache       | 180 days           | Platform secret store |
+| `DATA_ENCRYPTION_KEY`   | Encryption  | When exposed       | Platform secret store |
 
 ## Rotation Procedures
 
@@ -46,6 +48,38 @@ All secrets and API keys are rotated through the **platform secret store** (Verc
 6. **Verify**: Check that all sessions are re-authenticated and no errors occur
 
 **Rollback**: If issues arise, redeploy with old key restored. Sessions will continue working.
+
+### 1a. Stored secrets (`DATA_ENCRYPTION_KEY`)
+
+A guide's connected calendar address is stored encrypted (`app/core/secret_box.py`). When
+`DATA_ENCRYPTION_KEY` is empty, the key is derived from `SECRET_KEY`, so **rotating `SECRET_KEY`
+alone would make every saved calendar unreadable** (guides would have to connect them again).
+
+Before rotating `SECRET_KEY`, pin the key in use:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.staging.yml run --rm api python scripts/data_key.py current
+# put the output in .env as DATA_ENCRYPTION_KEY=..., restart, then rotate SECRET_KEY
+```
+
+To rotate the data key itself:
+
+1. `python scripts/data_key.py new` gives a fresh key.
+2. In `.env`: move the old value to `DATA_ENCRYPTION_PREVIOUS_KEYS` (comma-separated) and set
+   `DATA_ENCRYPTION_KEY` to the new one. Restart.
+3. Each calendar is re-encrypted with the new key the next time the sync job reads it (every
+   15 minutes). After a day, check nothing is left on the old key, then remove it:
+   ```sql
+   SELECT count(*) FROM app.guide_external_calendars
+   WHERE url_ciphertext NOT LIKE 'v1.' || '<first 8 hex of sha256(new key)>' || '.%';
+   ```
+
+The output of `data_key.py` is a secret: paste it into `.env`, never into a ticket or chat.
+
+### 1b. Redis password (`REDIS_PASSWORD`)
+
+Set the new value in `.env` and run `docker compose ... up -d redis api`: Redis and the API
+restart together with the new password. Rate-limit counters survive (they are in the Redis data).
 
 ### 2. Rotate Database Credentials
 

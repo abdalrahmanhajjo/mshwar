@@ -35,6 +35,7 @@ import {
 import { useAdminCatalogueCopy, type AdminCatalogueCopy } from "@/lib/admin-catalogue-copy";
 import { beirutToday } from "@/lib/local-time";
 import { formatMinor } from "@/lib/planner";
+import { UserLink } from "@/components/ui/user-link";
 
 const LEAD_STATUSES: LeadStatus[] = ["new", "checking", "published", "rejected", "duplicate"];
 const VISIT_FACTS = ["halal", "wheelchair_access", "parking", "kids_friendly", "accepts_card"] as const;
@@ -647,14 +648,9 @@ function PricesSection({ names }: { names: Map<string, string> }) {
                   <span className="font-medium">
                     {price.title} · <span className="tabular-nums">{amount(price)}</span>
                   </span>
-                  <a
-                    href={price.source_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-text-muted underline underline-offset-2"
-                  >
+                  <UserLink href={price.source_url} className="text-text-muted underline underline-offset-2">
                     {price.source_name} · {interpolate(copy.priceCheckedOn, { date: day(price.checked_on) })}
-                  </a>
+                  </UserLink>
                 </span>
                 <span className="flex items-center gap-2">
                   <Badge variant="warning">{interpolate(copy.priceReviewBy, { date: day(price.review_by) })}</Badge>

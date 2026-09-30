@@ -22,6 +22,7 @@ from app.api.v1.endpoints import (
     profile,
     reviews,
     rides,
+    security,
     transport,
     trips,
     venues,
@@ -31,6 +32,7 @@ from app.api.v1.endpoints import (
 router = APIRouter()
 
 router.include_router(health.router, prefix="/health", tags=["health"])
+router.include_router(security.router, prefix="/security", tags=["security"])
 router.include_router(auth.router, prefix="/auth", tags=["auth"])
 router.include_router(admin.router, prefix="/admin", tags=["admin"])
 router.include_router(admin_trust.router, prefix="/admin", tags=["admin"])

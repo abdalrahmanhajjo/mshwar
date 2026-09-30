@@ -68,7 +68,9 @@ class TwilioSms:
         url = f"https://api.twilio.com/2010-04-01/Accounts/{self.account_sid}/Messages.json"
         try:
             async with httpx.AsyncClient(timeout=10, transport=self.transport) as client:
-                response = await client.post(url, data=self.payload(to, body), auth=(self.account_sid, self.auth_token))
+                response = await client.post(  # nosemgrep: mshwar-httpx-variable-url - fixed Twilio API host
+                    url, data=self.payload(to, body), auth=(self.account_sid, self.auth_token)
+                )
         except httpx.HTTPError as exc:
             raise SmsError("could not reach the SMS provider") from exc
         if response.status_code >= 400:

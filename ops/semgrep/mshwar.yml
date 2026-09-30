@@ -1,0 +1,80 @@
+# Rules specific to this codebase (security plan SEC-85). They run in .github/workflows/security.yml
+# next to the public packs. A finding that is a deliberate exception carries an inline
+# `# nosemgrep: <rule id>` with the reason on the same line.
+#
+# Route access policies are not here: tests/test_access_policies.py fails on any route
+# without an `access.*` policy, which is stricter than a pattern match could be.
+rules:
+  - id: mshwar-sql-built-from-strings
+    languages: [python]
+    severity: ERROR
+    message: >-
+      SQL is built from an f-string, concatenation or .format(). Pass values as bound
+      parameters (:name) so user input can never become SQL.
+    paths:
+      include: ["services/api/app/"]
+    pattern-either:
+      - pattern: text(f"...")
+      - pattern: text("..." + $X)
+      - pattern: text($X + "...")
+      - pattern: text("...".format(...))
+      - pattern: text("..." % $X)
+      - pattern: $CONN.exec_driver_sql(f"...", ...)
+      - pattern: $CONN.exec_driver_sql("..." + $X, ...)
+
+  - id: mshwar-httpx-variable-url
+    languages: [python]
+    severity: ERROR
+    message: >-
+      An httpx request goes to a URL held in a variable. If any part of it can come from a
+      user, read it with app.core.safe_fetch.fetch_text (https only, public addresses, pinned
+      connection, capped body). Otherwise mark the line with a nosemgrep comment saying where
+      the address comes from.
+    paths:
+      include: ["services/api/app/"]
+      exclude: ["services/api/app/core/safe_fetch.py"]
+    patterns:
+      - pattern-either:
+          - pattern: $C.get($URL, ...)
+          - pattern: $C.post($URL, ...)
+          - pattern: $C.put($URL, ...)
+          - pattern: $C.patch($URL, ...)
+          - pattern: $C.delete($URL, ...)
+          - pattern: $C.request($METHOD, $URL, ...)
+          - pattern: $C.stream($METHOD, $URL, ...)
+          - pattern: httpx.$FN($URL, ...)
+      - pattern-either:
+          - pattern-inside: |
+              with httpx.$CLIENT(...) as $C:
+                ...
+          - pattern-inside: |
+              async with httpx.$CLIENT(...) as $C:
+                ...
+          - pattern: httpx.$FN($URL, ...)
+      - metavariable-regex:
+          metavariable: $URL
+          regex: ^[a-z_][a-z0-9_]*$
+
+  - id: mshwar-cookie-without-httponly
+    languages: [python]
+    severity: ERROR
+    message: >-
+      A cookie is set without httponly=True and secure=... Session and CSRF cookies must be
+      out of reach of page scripts; set both flags explicitly.
+    paths:
+      include: ["services/api/app/"]
+    patterns:
+      - pattern: $RESP.set_cookie(...)
+      - pattern-not: $RESP.set_cookie(..., httponly=True, ..., secure=$S, ...)
+      - pattern-not: $RESP.set_cookie(..., secure=$S, ..., httponly=True, ...)
+
+  - id: mshwar-dangerously-set-inner-html
+    languages: [typescript]
+    severity: ERROR
+    message: >-
+      dangerouslySetInnerHTML with anything but JSON-LD. Render user text as text; for
+      structured data use the JsonLd component, which escapes '<'.
+    paths:
+      include: ["apps/web/src/"]
+      exclude: ["apps/web/src/components/seo/"]
+    pattern: <$EL dangerouslySetInnerHTML={...} />

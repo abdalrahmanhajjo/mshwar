@@ -24,6 +24,7 @@ export type AuthKey =
   | "errPassword"
   | "errConfirm"
   | "errTerms"
+  | "errHumanCheck"
   | "errEmailTaken"
   | "errEmailTakenSignIn"
   | "errEmailTakenReset"
@@ -125,6 +126,7 @@ export const authCopy: Record<Locale, Record<AuthKey, string>> = {
     errPassword: "Use at least 10 characters.",
     errConfirm: "The two passwords don’t match yet.",
     errTerms: "Please accept the Terms of Service and Privacy Policy to continue.",
+    errHumanCheck: "Please complete the human check to continue.",
     errEmailTaken: "An account with this email already exists.",
     errEmailTakenSignIn: "Sign in instead",
     errEmailTakenReset: "reset your password",
@@ -225,6 +227,7 @@ export const authCopy: Record<Locale, Record<AuthKey, string>> = {
     errPassword: "استخدم 10 أحرف على الأقل.",
     errConfirm: "كلمتا المرور غير متطابقتين بعد.",
     errTerms: "يرجى الموافقة على شروط الخدمة وسياسة الخصوصية للمتابعة.",
+    errHumanCheck: "يرجى إكمال التحقق من أنك لست روبوتاً للمتابعة.",
     errEmailTaken: "يوجد حساب بهذا البريد الإلكتروني.",
     errEmailTakenSignIn: "سجّل الدخول بدلاً من ذلك",
     errEmailTakenReset: "أعد تعيين كلمة المرور",
@@ -325,6 +328,7 @@ export const authCopy: Record<Locale, Record<AuthKey, string>> = {
     errPassword: "Utilisez au moins 10 caractères.",
     errConfirm: "Les deux mots de passe ne correspondent pas encore.",
     errTerms: "Acceptez les conditions d’utilisation et la politique de confidentialité pour continuer.",
+    errHumanCheck: "Terminez la vérification anti-robot pour continuer.",
     errEmailTaken: "Un compte existe déjà avec cette adresse.",
     errEmailTakenSignIn: "Se connecter plutôt",
     errEmailTakenReset: "réinitialiser le mot de passe",

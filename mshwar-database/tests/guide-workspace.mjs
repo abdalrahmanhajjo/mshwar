@@ -97,6 +97,57 @@ export async function testGuideWorkspace(db) {
       "disconnecting a calendar frees its time",
     );
 
+    // Migration 068: addresses arrive encrypted; a fingerprint keeps duplicates out, a
+    // plain row moves to the encrypted form, and the plain entry point is closed to the API.
+    const sealed = `v1.s0000.${"x".repeat(40)}`;
+    const print = "f".repeat(64);
+    const encrypted = (
+      await one(db, "SELECT app.guide_add_external_calendar_secret($1, $2, $3, 'cal.example.org', 'Work') AS c", [
+        GUIDE,
+        sealed,
+        print,
+      ])
+    ).c;
+    assert.equal(encrypted.find((c) => c.label === "Work").host, "cal.example.org");
+    const again = (
+      await one(db, "SELECT app.guide_add_external_calendar_secret($1, $2, $3, 'cal.example.org', 'Twice') AS c", [
+        GUIDE,
+        sealed,
+        print,
+      ])
+    ).c;
+    assert.equal(again.length, encrypted.length, "the same calendar is not connected twice");
+    await refused(
+      db,
+      () => db.query("SELECT app.guide_add_external_calendar_secret($1, 'https://plain', $2, 'x', '')", [GUIDE, print]),
+      /secret address/,
+    );
+    const plain = (
+      await one(db, "SELECT id FROM app.guide_external_calendars WHERE url = 'https://cal.example.com/2.ics'")
+    ).id;
+    await db.query("SELECT app.guide_store_calendar_secret($1, $2, $3, 'cal.example.com')", [
+      plain,
+      `v1.s0000.${"y".repeat(40)}`,
+      "e".repeat(64),
+    ]);
+    const moved = await one(db, "SELECT url, url_ciphertext FROM app.guide_external_calendars WHERE id = $1", [plain]);
+    assert.equal(moved.url, null, "the plain address is forgotten");
+    assert.ok(moved.url_ciphertext.startsWith("v1."));
+    const toSync = (await one(db, "SELECT app.guide_calendars_to_sync($1) AS c", [GUIDE])).c;
+    assert.ok(toSync.some((c) => c.ciphertext === sealed && c.url === null));
+    await refused(
+      db,
+      () =>
+        db.query("INSERT INTO app.guide_external_calendars (guide_profile_id, label) VALUES ($1, 'Empty')", [profile]),
+      /has_address/,
+    );
+    await db.exec("SAVEPOINT backend_role; SET LOCAL ROLE mshwar_backend");
+    await assert.rejects(
+      () => db.query("SELECT app.guide_add_external_calendar($1, 'https://cal.example.com/5.ics', '')", [GUIDE]),
+      /permission denied/,
+    );
+    await db.exec("ROLLBACK TO SAVEPOINT backend_role; RESET ROLE");
+
     // A booked run two days out.
     const { iso, weekday } = await one(
       db,

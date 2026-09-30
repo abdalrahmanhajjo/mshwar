@@ -5,7 +5,8 @@
 # What this changes, and why:
 #   * the API connects as the restricted mshwar_api role, not as postgres (SR-02)
 #   * no --reload, no source bind mount, no dev endpoints
-#   * Redis persists, because rate limits and the AI spend ceiling depend on it (SR-07)
+#   * Redis persists, because rate limits and the AI spend ceiling depend on it (SR-07),
+#     and asks for REDIS_PASSWORD when .env sets one (SEC-46; empty means no password)
 #   * nothing but the reverse proxy is exposed to the host
 #
 # Values come from /opt/mshwar/.env on the staging box. That file is never committed.
@@ -22,7 +23,15 @@ services:
 
   redis:
     ports: !override []
-    command: ["redis-server", "--save", "60", "1000", "--appendonly", "yes"]
+    command: ["redis-server", "--save", "60", "1000", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:-}"]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          '[ -z "$$REDIS_PASSWORD" ] || export REDISCLI_AUTH="$$REDIS_PASSWORD"; redis-cli ping | grep -q PONG',
+        ]
     volumes:
       - redis_data:/data
 
@@ -50,6 +59,7 @@ services:
       ENVIRONMENT: staging
       ENABLE_DEV_ENDPOINTS: "false"
       RATE_LIMIT_STORE: redis
+      REDIS_URL: redis://:${REDIS_PASSWORD:-}@redis:6379/0
 
   # Calls the API's job endpoints on a timetable (app/core/scheduler.py): the partner
   # sweep daily at 03:00 Beirut time (and once at start-up), and notification
@@ -76,9 +86,23 @@ services:
         condition: service_healthy
 
   web:
+    build:
+      args:
+        NEXT_PUBLIC_API_URL: http://api:8000
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-}
+        NEXT_PUBLIC_IMAGEKIT_URL: ${NEXT_PUBLIC_IMAGEKIT_URL:-}
     restart: unless-stopped
     # Only Caddy is public; reach the web app through it, not on port 3000.
     ports: !override []
+
+  # Virus scan for uploaded documents (SEC-52). ClamAV needs about 1.5 GB of memory, so it
+  # is opt-in: start it with --profile scan and set CLAMD_ADDRESS=clamav:3310 in .env.
+  clamav:
+    image: clamav/clamav:1.4
+    profiles: ["scan"]
+    restart: unless-stopped
+    volumes:
+      - clamav_data:/var/lib/clamav
 
   # Terminates TLS and is the only service published to the host. Certificates are
   # obtained from Let's Encrypt automatically, so SITE_ADDRESS must be a hostname
@@ -100,6 +124,7 @@ services:
       - web
 
 volumes:
+  clamav_data:
   redis_data:
   caddy_data:
   caddy_config:

@@ -85,6 +85,8 @@ export function registerAccount(input: {
   policy_versions: Record<string, string>;
   personalisation_consent: boolean;
   marketing_consent: boolean;
+  /** Turnstile token when the human check is on (SEC-55). */
+  human_check?: string | null;
 }): Promise<AuthUser> {
   return authPost("/api/v1/auth/register", input);
 }
@@ -97,8 +99,8 @@ export async function signOutAccount(): Promise<void> {
   await fetch("/api/v1/auth/signout", { method: "POST", credentials: "include" });
 }
 
-export async function requestPasswordReset(email: string): Promise<void> {
-  await authPost("/api/v1/auth/forgot-password", { email });
+export async function requestPasswordReset(email: string, humanCheck?: string | null): Promise<void> {
+  await authPost("/api/v1/auth/forgot-password", { email, human_check: humanCheck ?? null });
 }
 
 export function verifyEmail(token: string): Promise<AuthUser> {

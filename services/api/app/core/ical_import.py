@@ -2,10 +2,9 @@
 
 Two halves, both small on purpose:
 
-* ``fetch_calendar`` reads a calendar address a guide pasted. The address is untrusted, so
-  only https is allowed, every address the host resolves to must be public, the connection
-  is pinned to the checked address (no DNS rebinding), redirects are re-checked one by one,
-  and the body is capped in size and time.
+* ``fetch_calendar`` reads a calendar address a guide pasted, through ``app.core.safe_fetch``:
+  https only, public addresses only, the connection pinned to the checked address (no DNS
+  rebinding), redirects re-checked one by one, and the body capped in size and time.
 * ``busy_periods`` turns the file into start/end pairs. Nothing else is kept: not the title,
   the place, the guests or the notes. Free ("transparent") and cancelled events are skipped,
   and simple repeating events (daily, weekly, monthly, yearly) are expanded over the window
@@ -14,23 +13,17 @@ Two halves, both small on purpose:
 
 from __future__ import annotations
 
-import ipaddress
 import re
-import socket
 from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime, time, timedelta
-from time import monotonic
-from urllib.parse import urlsplit, urlunsplit
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-import httpx
+from app.core import safe_fetch
 
 BEIRUT = ZoneInfo("Asia/Beirut")
 MAX_BYTES = 2_000_000
-TIMEOUT_SECONDS = 10.0  # each connect or read
 TOTAL_SECONDS = 20.0  # the whole read, so a slow drip cannot hold the job
-MAX_REDIRECTS = 3
 MAX_PERIODS = 2000
 WINDOW_DAYS = 120
 MAX_OCCURRENCES = 1000
@@ -52,78 +45,34 @@ class BusyPeriod:
 
 # ---- Fetching -----------------------------------------------------------------------------
 
-
-def _public_addresses(host: str, port: int) -> list[str]:
-    try:
-        infos = socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)
-    except (socket.gaierror, UnicodeError) as exc:
-        raise CalendarFetchError("the calendar's address could not be found") from exc
-    addresses: list[str] = []
-    for info in infos:
-        ip = ipaddress.ip_address(info[4][0])
-        if not ip.is_global or ip.is_multicast:
-            raise CalendarFetchError("that address is not a public calendar")
-        addresses.append(str(ip))
-    if not addresses:
-        raise CalendarFetchError("the calendar's address could not be found")
-    return addresses
-
-
-def _checked_url(url: str) -> tuple[str, str]:
-    """The host, and the checked public address to connect to."""
-    parts = urlsplit(url)
-    if parts.scheme != "https" or not parts.hostname:
-        raise CalendarFetchError("only https:// calendar addresses can be read")
-    if parts.username or parts.password:
-        raise CalendarFetchError("that address is not a public calendar")
-    port = parts.port or 443
-    if port != 443:
-        raise CalendarFetchError("that address is not a public calendar")
-    return parts.hostname, _public_addresses(parts.hostname, port)[0]
+_MESSAGES = {
+    safe_fetch.NOT_HTTPS: "only https:// calendar addresses can be read",
+    safe_fetch.NOT_PUBLIC: "that address is not a public calendar",
+    safe_fetch.NOT_FOUND: "the calendar's address could not be found",
+    safe_fetch.TOO_LARGE: "the calendar is too large to read",
+    safe_fetch.TOO_SLOW: "the calendar took too long to answer",
+    safe_fetch.UNREACHABLE: "the calendar could not be reached",
+    safe_fetch.TOO_MANY_REDIRECTS: "the calendar redirected too many times",
+}
 
 
 def fetch_calendar(url: str) -> str:
-    """Read a calendar file from a guide-supplied https address, safely."""
-    current = url
-    deadline = monotonic() + TOTAL_SECONDS
-    for _ in range(MAX_REDIRECTS + 1):
-        host, address = _checked_url(current)
-        parts = urlsplit(current)
-        literal = f"[{address}]" if ":" in address else address
-        pinned = urlunsplit(("https", literal, parts.path or "/", parts.query, ""))
-        try:
-            # trust_env=False: the pinned address must be the one we connect to.
-            with (
-                httpx.Client(timeout=TIMEOUT_SECONDS, follow_redirects=False, trust_env=False) as client,
-                client.stream(
-                    "GET",
-                    pinned,
-                    headers={"Host": host, "User-Agent": "Mshwar-Calendar/1.0", "Accept": "text/calendar, */*"},
-                    extensions={"sni_hostname": host},
-                ) as response,
-            ):
-                if response.is_redirect:
-                    location = response.headers.get("location", "")
-                    current = str(httpx.URL(current).join(location))
-                    continue
-                if response.status_code != 200:
-                    raise CalendarFetchError(f"the calendar answered {response.status_code}")
-                body = bytearray()
-                for chunk in response.iter_bytes():
-                    body.extend(chunk)
-                    if len(body) > MAX_BYTES:
-                        raise CalendarFetchError("the calendar is too large to read")
-                    if monotonic() > deadline:
-                        raise CalendarFetchError("the calendar took too long to answer")
-        except httpx.TimeoutException as exc:
-            raise CalendarFetchError("the calendar took too long to answer") from exc
-        except httpx.HTTPError as exc:
-            raise CalendarFetchError("the calendar could not be reached") from exc
-        text = bytes(body).decode("utf-8", errors="replace")
-        if "BEGIN:VCALENDAR" not in text[:2000].upper():
-            raise CalendarFetchError("that address is not a calendar file")
-        return text
-    raise CalendarFetchError("the calendar redirected too many times")
+    """Read a calendar file from a guide-supplied https address (app.core.safe_fetch)."""
+    try:
+        text = safe_fetch.fetch_text(
+            url,
+            max_bytes=MAX_BYTES,
+            user_agent="Mshwar-Calendar/1.0",
+            accept="text/calendar, */*",
+            total_seconds=TOTAL_SECONDS,
+        )
+    except safe_fetch.FetchRefused as exc:
+        if exc.reason == safe_fetch.STATUS:
+            raise CalendarFetchError(f"the calendar answered {exc.status}") from exc
+        raise CalendarFetchError(_MESSAGES.get(exc.reason, "the calendar could not be read")) from exc
+    if "BEGIN:VCALENDAR" not in text[:2000].upper():
+        raise CalendarFetchError("that address is not a calendar file")
+    return text
 
 
 # ---- Parsing ------------------------------------------------------------------------------

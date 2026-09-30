@@ -72,14 +72,18 @@ MSHWAR_API_PASSWORD=<generated>
 
 Also required in a deployed environment, per the security review:
 
-| Variable                              | Why                                                                           |
-| ------------------------------------- | ----------------------------------------------------------------------------- |
-| `REDIS_URL`, `RATE_LIMIT_STORE=redis` | Rate limits and the AI spend ceiling must be shared, not per-process (SR-07)  |
-| `PUBLIC_WEB_ORIGIN`                   | Must be `https://…`; the cross-site request guard checks it (SR-03)           |
-| `NEXT_PUBLIC_LEGAL_REVIEWED=true`     | Legal review completed 18 Sep 2026; without this the draft notice still shows |
-| `SENTRY_DSN`                          | AC-15 cannot be demonstrated until Sentry reports from a deployed environment |
-| `INTERNAL_JOB_TOKEN`                  | The scheduler presents it to the API's job endpoints; at least 32 characters  |
-| `SMS_BACKEND=twilio`, `TWILIO_*`      | Partner phone codes. Production refuses to boot without them (see below)      |
+| Variable                                                 | Why                                                                                                                                                        |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `REDIS_URL`, `RATE_LIMIT_STORE=redis`                    | Rate limits and the AI spend ceiling must be shared, not per-process (SR-07)                                                                               |
+| `REDIS_PASSWORD`                                         | Redis asks for it and the API's `REDIS_URL` carries it (SEC-46). Use `openssl rand -hex 32` (it goes in a URL). Empty: no password, and a warning at start |
+| `CLAMD_ADDRESS=clamav:3310`                              | Virus scan for uploaded documents (SEC-52). Needs `--profile scan` on `up`; empty: no scan, and a warning at start                                         |
+| `DATA_ENCRYPTION_KEY`                                    | Optional. Pin it (`python scripts/data_key.py current`) before rotating `SECRET_KEY` (SEC-45)                                                              |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | Optional human check on sign-up and password reset (SEC-55). Set both (a Cloudflare Turnstile widget) or neither                                           |
+| `PUBLIC_WEB_ORIGIN`                                      | Must be `https://…`; the cross-site request guard checks it (SR-03)                                                                                        |
+| `NEXT_PUBLIC_LEGAL_REVIEWED=true`                        | Legal review completed 18 Sep 2026; without this the draft notice still shows                                                                              |
+| `SENTRY_DSN`                                             | AC-15 cannot be demonstrated until Sentry reports from a deployed environment                                                                              |
+| `INTERNAL_JOB_TOKEN`                                     | The scheduler presents it to the API's job endpoints; at least 32 characters                                                                               |
+| `SMS_BACKEND=twilio`, `TWILIO_*`                         | Partner phone codes. Production refuses to boot without them (see below)                                                                                   |
 
 Generate secrets with `openssl rand -base64 32`. Record where each lives; `docs/KEY_ROTATION.md`
 covers rotating them.

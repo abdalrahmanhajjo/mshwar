@@ -41,6 +41,7 @@ import { ReviewsPanel } from "@/components/reviews/reviews-panel";
 import { Rating } from "@/components/ui/rating";
 import { splitSentence } from "@/lib/text";
 import { cn, focusRing } from "@/lib/utils";
+import { UserLink } from "@/components/ui/user-link";
 
 const FACT_ICONS = [Clock, Users, MapPin, ShieldCheck];
 
@@ -214,13 +215,13 @@ export function ExperienceDetailView({
               {experience.attributions.map((credit, index) => (
                 <React.Fragment key={credit.source}>
                   {index > 0 ? ", " : null}
-                  <a href={credit.record_url} target="_blank" rel="noopener noreferrer" className="underline">
+                  <UserLink href={credit.record_url} className="underline">
                     © {credit.name}
-                  </a>{" "}
+                  </UserLink>{" "}
                   (
-                  <a href={credit.licence_url} target="_blank" rel="noopener noreferrer" className="underline">
+                  <UserLink href={credit.licence_url} className="underline">
                     {credit.licence}
-                  </a>
+                  </UserLink>
                   )
                 </React.Fragment>
               ))}

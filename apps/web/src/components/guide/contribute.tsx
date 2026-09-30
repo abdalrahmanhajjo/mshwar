@@ -34,6 +34,8 @@ import {
 import { matchesQuery, type PlaceHit } from "@/lib/place-search";
 import { fileToBase64 } from "@/lib/portal";
 import { useSearchCopy } from "@/lib/search-copy";
+import { UserLink } from "@/components/ui/user-link";
+import { linkHost } from "@/lib/safe-url";
 
 // The catalogue's categories. The server checks them (and the destination) again.
 export const PROPOSAL_CATEGORIES = [
@@ -478,9 +480,9 @@ function ProposalRow({
           <span className="text-xs text-text-muted">
             {proposal.kind === "new" ? copy.kindNew : copy.kindCorrection} ·{" "}
             {proposal.evidence_urls.map((url) => (
-              <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="me-2 underline">
-                <ExternalLink className="inline size-3" aria-hidden /> {new URL(url).hostname}
-              </a>
+              <UserLink key={url} href={url} ugc className="me-2 underline">
+                <ExternalLink className="inline size-3" aria-hidden /> {linkHost(url)}
+              </UserLink>
             ))}
           </span>
         </span>

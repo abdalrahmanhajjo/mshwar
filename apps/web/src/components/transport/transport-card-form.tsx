@@ -23,6 +23,7 @@ import {
   type TransportMode,
   type TransportScope,
 } from "@/lib/transport";
+import { UserLink } from "@/components/ui/user-link";
 
 const SCOPES: TransportScope[] = ["between", "airport", "around"];
 const BASES: FareBasis[] = ["person", "vehicle", "free"];
@@ -419,9 +420,9 @@ export function TransportCardForm({
                   <span className="font-medium">{copy[`ev_${item.kind}` as AdminTrustKey]}</span>
                   {item.on ? ` · ${item.on}` : ""} · {item.note}
                   {item.url ? (
-                    <a href={item.url} target="_blank" rel="noreferrer" className="ms-1 underline">
+                    <UserLink href={item.url} ugc className="ms-1 underline">
                       ↗
-                    </a>
+                    </UserLink>
                   ) : null}
                 </span>
                 <Button

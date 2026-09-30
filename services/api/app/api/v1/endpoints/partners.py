@@ -18,7 +18,7 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core import access, imagekit, totp
+from app.core import access, imagekit, totp, virus_scan
 from app.core.auth_session import require_session
 from app.core.config import settings
 from app.core.http_status import HTTP_422_UNPROCESSABLE
@@ -26,7 +26,7 @@ from app.core.rate_limit import enforce_rate_limit, limit
 from app.core.sms import SmsError, get_sms
 from app.core.sql import fetch_json
 from app.core.storage import delete_private_bytes, media_url, put_private_bytes
-from app.core.uploads import inspect_or_reject, validate_upload
+from app.core.uploads import inspect_or_reject, validate_upload, without_metadata
 from app.dependencies import get_auth_db
 from app.schemas.partners import (
     PHOTO_KINDS,
@@ -252,6 +252,9 @@ async def upload_partner_document(
     raw = validate_upload(payload.content_base64, payload.content_type, purpose)
     await enforce_rate_limit(request, "upload-org", subject=f"partner:{uid}")
     inspect_or_reject(raw, payload.content_type)
+    raw = without_metadata(raw, payload.content_type)
+    if purpose == "verification":
+        await virus_scan.scan_or_reject(raw, "partner-document")
     provider, key, uploaded_id = "local", "", None
     stored: dict[str, str] | None = None
     if payload.kind == "profile_photo" and imagekit.enabled():

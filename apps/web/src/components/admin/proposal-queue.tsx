@@ -18,6 +18,7 @@ import { categoryLabel } from "@/components/guide/contribute";
 import { ListSearch, useDisplayNames } from "@/components/guide/pickers";
 import { matchesQuery } from "@/lib/place-search";
 import { useSearchCopy } from "@/lib/search-copy";
+import { UserLink } from "@/components/ui/user-link";
 
 const COMPARED = ["title", "description", "address"] as const;
 
@@ -134,15 +135,10 @@ function ProposalCase({ proposal, onDecided }: { proposal: QueuedProposal; onDec
         <ul className="grid gap-1">
           {proposal.evidence_urls.map((url) => (
             <li key={url}>
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 underline"
-              >
+              <UserLink href={url} ugc className="inline-flex items-center gap-1 underline">
                 <ExternalLink className="size-3.5" aria-hidden />
                 {url}
-              </a>
+              </UserLink>
             </li>
           ))}
         </ul>
@@ -158,9 +154,9 @@ function ProposalCase({ proposal, onDecided }: { proposal: QueuedProposal; onDec
               ) : null}
               <span>{interpolate(copy.queueLicense, { license: photo.license, author: photo.attribution })}</span>
               {photo.source_url ? (
-                <a href={photo.source_url} target="_blank" rel="noopener noreferrer" className="underline">
+                <UserLink href={photo.source_url} ugc className="underline">
                   Commons
-                </a>
+                </UserLink>
               ) : null}
             </li>
           ))}

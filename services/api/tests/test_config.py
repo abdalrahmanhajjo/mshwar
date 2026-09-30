@@ -22,6 +22,7 @@ def _settings(**overrides: object) -> Settings:
         "twilio_account_sid": "AC" + "0" * 32,
         "twilio_auth_token": "twilio-token",
         "twilio_from": "MG" + "0" * 32,
+        "redis_url": "redis://:redis-secret@redis:6379/0",
     }
     payload["secret_key"] = _PROD_SECRET
     payload.update(overrides)
@@ -151,6 +152,8 @@ def test_unknown_environment_is_rejected() -> None:
         ({"twilio_auth_token": ""}, "TWILIO_AUTH_TOKEN"),
         ({"twilio_from": "", "twilio_account_sid": ""}, "TWILIO_ACCOUNT_SID, TWILIO_FROM"),
         ({"twilio_account_sid": "SK123"}, "starts with AC"),
+        ({"redis_url": "redis://redis:6379/0"}, "REDIS_URL must carry a password"),
+        ({"redis_url": "redis://:@redis:6379/0"}, "REDIS_URL must carry a password"),
     ],
 )
 def test_production_fails_closed(overrides: dict[str, object], message: str) -> None:
@@ -181,3 +184,20 @@ def test_staging_may_log_codes_but_a_half_set_twilio_fails_at_boot() -> None:
     assert Settings(**staging).sms_backend == "console"  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="TWILIO_FROM"):
         Settings(**staging, sms_backend="twilio", twilio_account_sid="AC1", twilio_auth_token="t")  # type: ignore[arg-type]
+
+
+def test_staging_without_a_redis_password_starts_but_warns() -> None:
+    staging = {
+        "environment": "staging",
+        "secret_key": _PROD_SECRET,
+        "internal_job_token": "j" * 40,
+        "enable_dev_endpoints": False,
+        "rate_limit_store": "redis",
+        "public_web_origin": "https://staging.mshwar.example",
+    }
+    open_redis = Settings(**staging, redis_url="redis://:@redis:6379/0")  # type: ignore[arg-type]
+    assert any("REDIS_PASSWORD" in warning for warning in open_redis.startup_warnings())
+    locked = Settings(**staging, redis_url="redis://:s3cret@redis:6379/0", clamd_address="clamav:3310")  # type: ignore[arg-type]
+    assert locked.startup_warnings() == []
+    assert any("CLAMD_ADDRESS" in warning for warning in _settings().startup_warnings())
+    assert _settings(clamd_address="clamav:3310").startup_warnings() == []

@@ -166,11 +166,14 @@ class RateLimitMetrics:
         self.rejections: Counter[str] = Counter()
         self.checks: Counter[str] = Counter()
         self.store_failures = 0
+        # Content Security Policy reports from browsers, by directive (SEC-37).
+        self.csp_violations: Counter[str] = Counter()
 
     def reset(self) -> None:
         self.rejections.clear()
         self.checks.clear()
         self.store_failures = 0
+        self.csp_violations.clear()
 
 
 metrics = RateLimitMetrics()
@@ -247,6 +250,7 @@ def _rules() -> dict[str, Rule]:
         Rule("ride-request", None, Allowance(30, hour), "Ride requests, bookings and cancellations"),
         Rule("partner-security", None, Allowance(20, hour), "Phone codes, authenticator set-up and step-up checks"),
         Rule("account-security", None, Allowance(10, hour), "Password and email changes, ending sessions"),
+        Rule("csp-report", Allowance(60, 10 * minute), None, "Browser Content Security Policy reports per IP"),
     ]
     return {rule.name: rule for rule in items}
 
@@ -344,5 +348,11 @@ def prometheus_text() -> str:
         "# HELP mshwar_rate_limit_store_failures_total Redis errors that fell back to in-process limits.",
         "# TYPE mshwar_rate_limit_store_failures_total counter",
         f"mshwar_rate_limit_store_failures_total {metrics.store_failures}",
+        "# HELP mshwar_csp_violations_total Content Security Policy violations browsers reported.",
+        "# TYPE mshwar_csp_violations_total counter",
+    ]
+    lines += [
+        f'mshwar_csp_violations_total{{directive="{name}"}} {count}'
+        for name, count in sorted(metrics.csp_violations.items())
     ]
     return "\n".join(lines) + "\n"

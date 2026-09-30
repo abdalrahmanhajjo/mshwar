@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -26,6 +27,8 @@ init_sentry()
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     if settings.is_deployed:
         await check_database_role(engine)
+    for warning in settings.startup_warnings():
+        logging.getLogger("mshwar.config").warning(warning)
     yield
 
 

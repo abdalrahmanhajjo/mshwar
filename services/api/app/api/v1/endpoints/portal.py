@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response,
 from fastapi.responses import PlainTextResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core import access, imagekit
+from app.core import access, imagekit, virus_scan
 from app.core.auth_session import require_session
 from app.core.config import settings
 from app.core.geo import lebanon_bounds, point_in_lebanon
@@ -31,7 +31,7 @@ from app.core.storage import (
     sign_object_url,
     verify_signed_token,
 )
-from app.core.uploads import inspect_or_reject, validate_upload
+from app.core.uploads import inspect_or_reject, validate_upload, without_metadata
 from app.dependencies import get_auth_db
 from app.schemas.groups import ReviewResponseIn
 from app.schemas.notifications import EscalationIn, RolePrefIn
@@ -271,6 +271,9 @@ async def upload_org_file(
     )
     await enforce_rate_limit(request, "upload-org", subject=str(org_id))
     inspected = inspect_or_reject(raw, payload.content_type)
+    raw = without_metadata(raw, payload.content_type)
+    if payload.purpose == "verification":
+        await virus_scan.scan_or_reject(raw, "portal-document")
     if payload.purpose == "listing":
         return await _store_listing_image(db, user_id, org_id, payload, raw, inspected)
     return await _store_verification_document(db, user_id, org_id, payload, raw)
