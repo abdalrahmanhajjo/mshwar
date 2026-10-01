@@ -82,7 +82,7 @@ jobs:
       # trivy-action 0.35.0 is an immutable release; earlier tags were hijacked in March 2026
       # (GHSA-69fq-xp46-6x23). Keep this pinned, and never use Trivy 0.69.4-0.69.6.
       - name: Scan for fixable high and critical vulnerabilities
-        uses: aquasecurity/trivy-action@0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           version: v0.69.3
           image-ref: mshwar-${{ matrix.image }}:scan
